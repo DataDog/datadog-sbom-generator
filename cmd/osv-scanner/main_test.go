@@ -273,34 +273,6 @@ func TestRun(t *testing.T) {
 	}
 }
 
-func TestRunCallAnalysis(t *testing.T) {
-	t.Parallel()
-
-	// Switch to acceptance test if this takes too long, or when we add rust tests
-	// testutility.SkipIfNotAcceptanceTesting(t, "Takes a while to run")
-
-	tests := []cliTestCase{
-		{
-			name: "Run with govulncheck",
-			args: []string{
-				"",
-				"--call-analysis=go",
-				"--config=./fixtures/osv-scanner-empty-config.toml",
-				"./fixtures/call-analysis-go-project",
-			},
-			exit: 0,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			testCli(t, tt)
-		})
-	}
-}
-
 func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
 	t.Parallel()
 
@@ -822,34 +794,3 @@ func TestRun_InsertDefaultCommand(t *testing.T) {
 		testutility.NewSnapshot().MatchText(t, normalizeStdStream(t, stderr))
 	}
 }
-
-// We disabled this feature to avoid any connections to deps.dev at this stage
-// func TestRun_MavenTransitive(t *testing.T) {
-//	t.Parallel()
-//	tests := []cliTestCase{
-//		{
-//			name: "scans transitive dependencies for pom.xml by default",
-//			args: []string{"", "./fixtures/maven-transitive/pom.xml"},
-//			exit: 1,
-//		},
-//		{
-//			name: "scans transitive dependencies by specifying pom.xml",
-//			args: []string{"", "-L", "pom.xml:./fixtures/maven-transitive/abc.xml"},
-//			exit: 1,
-//		},
-//		{
-//			// Direct dependencies do not have any vulnerability.
-//			name: "does not scan transitive dependencies for pom.xml with offline mode",
-//			args: []string{"", "--experimental-offline", "--experimental-download-offline-databases", "./fixtures/maven-transitive/pom.xml"},
-//			exit: 0,
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		tt := tt
-//		t.Run(tt.name, func(t *testing.T) {
-//			t.Parallel()
-//			testCli(t, tt)
-//		})
-//	}
-//}
