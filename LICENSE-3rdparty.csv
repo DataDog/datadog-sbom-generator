@@ -26,7 +26,6 @@ core,github.com/ProtonMail/go-crypto/openpgp/internal/ecc,BSD-3-Clause,Copyright
 core,github.com/ProtonMail/go-crypto/openpgp/internal/encoding,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,github.com/ProtonMail/go-crypto/openpgp/packet,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,github.com/ProtonMail/go-crypto/openpgp/s2k,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
-core,github.com/anchore/go-struct-converter,Apache-2.0,
 core,github.com/cloudflare/circl/dh/x25519,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved | Copyright (c) 2019 Cloudflare. All rights reserved
 core,github.com/cloudflare/circl/dh/x448,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved | Copyright (c) 2019 Cloudflare. All rights reserved
 core,github.com/cloudflare/circl/ecc/goldilocks,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved | Copyright (c) 2019 Cloudflare. All rights reserved
@@ -127,31 +126,6 @@ core,github.com/rogpeppe/go-internal/fmtsort,BSD-3-Clause,Copyright (c) 2018 The
 core,github.com/russross/blackfriday/v2,BSD-2-Clause,Copyright © 2011 Russ Ross
 core,github.com/sergi/go-diff/diffmatchpatch,MIT,Copyright (c) 2012-2016 The go-diff Authors. All rights reserved | Danny Yoo <dannyyoo@google.com> | James Kolb <jkolb@google.com> | Jonathan Amsterdam <jba@google.com> | Markus Zimmermann <markus.zimmermann@nethead.at> <markus.zimmermann@symflower.com> <zimmski@gmail.com> | Matt Kovars <akaskik@gmail.com> | Osman Masood <oamasood@gmail.com> | Robert Carlsen <rwcarlsen@gmail.com> | Rory Flynn <roryflynn@users.noreply.github.com> | Sergi Mansilla <sergi.mansilla@gmail.com> | Shatrugna Sadhu <ssadhu@apcera.com> | Shawn Smith <shawnpsmith@gmail.com> | Stas Maksimov <maksimov@gmail.com> | Tor Arvid Lund <torarvid@gmail.com> | Zac Bergquist <zbergquist99@gmail.com> | Örjan Persson <orjan@spotify.com>
 core,github.com/skeema/knownhosts,Apache-2.0,Copyright 2024 Skeema LLC and the Skeema Knownhosts authors | copyright 2024 Skeema LLC and the Skeema Knownhosts authors**
-core,github.com/spdx/gordf/rdfloader,MIT,Copyright (c) 2020 SPDX
-core,github.com/spdx/gordf/rdfloader/parser,MIT,Copyright (c) 2020 SPDX
-core,github.com/spdx/gordf/rdfloader/xmlreader,MIT,Copyright (c) 2020 SPDX
-core,github.com/spdx/gordf/rdfwriter,MIT,Copyright (c) 2020 SPDX
-core,github.com/spdx/gordf/uri,MIT,Copyright (c) 2020 SPDX
-core,github.com/spdx/tools-golang/convert,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/json,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/json/marshal,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/rdf,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/common,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/common,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_1,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_1/tagvalue/reader,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_1/tagvalue/writer,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_2,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_2/rdf/reader,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_2/tagvalue/reader,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_2/tagvalue/writer,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_3,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_3/rdf/reader,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_3/tagvalue/reader,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/spdx/v2/v2_3/tagvalue/writer,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/tagvalue,Apache-2.0,Copyright (c) 2018 The Authors
-core,github.com/spdx/tools-golang/tagvalue/reader,Apache-2.0,Copyright (c) 2018 The Authors
 core,github.com/tidwall/gjson,MIT,Copyright (c) 2016 Josh Baker
 core,github.com/tidwall/match,MIT,Copyright (c) 2016 Josh Baker
 core,github.com/tidwall/pretty,MIT,Copyright (c) 2017 Josh Baker
