@@ -1,0 +1,19 @@
+<project>
+  <properties>
+    <mavenVersion>3.0</mavenVersion>
+  </properties>
+  <version>1.0-SNAPSHOT</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>dev.foo</groupId>
+      <artifactId>bar</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>dev.bar</groupId>
+      <artifactId>foo</artifactId>
+      <version>${pom.version}</version>
+    </dependency>
+  </dependencies>
+</project>

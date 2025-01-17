@@ -1,0 +1,43 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: ./cmd/osv-scanner/
+    id: osv-scanner
+    binary: osv-scanner
+    env:
+      # goreleaser does not work with CGO, it could also complicate
+      # usage by users in CI/CD systems like Terraform Cloud where
+      # they are unable to install libraries.
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      # prettier-ignore
+      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+    goos:
+      # Further testing before supporting freebsd
+      # - freebsd
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      # 32bit does not compile at the moment because of spdx dependency
+      # - '386'
+      # Further testing before supporting arm
+      # - arm
+      - arm64
+
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+checksum:
+  name_template: "{{ .ProjectName }}_SHA256SUMS"
+  algorithm: sha256
+release:
+  draft: true

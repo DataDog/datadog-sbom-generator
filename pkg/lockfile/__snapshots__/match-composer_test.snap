@@ -1,0 +1,44 @@
+
+[TestComposerMatcher_Match_OnePackage - 1]
+[
+  {
+    "name": "brick/math",
+    "version": "0.12.9",
+    "blockLocation": {
+      "line": {
+        "start": 18,
+        "end": 19
+      },
+      "column": {
+        "start": 5,
+        "end": 35
+      },
+      "file_name": "<rootdir>/fixtures/composer/one-package/composer.json"
+    },
+    "versionLocation": {
+      "line": {
+        "start": 19,
+        "end": 19
+      },
+      "column": {
+        "start": 8,
+        "end": 34
+      },
+      "file_name": "<rootdir>/fixtures/composer/one-package/composer.json"
+    },
+    "nameLocation": {
+      "line": {
+        "start": 18,
+        "end": 18
+      },
+      "column": {
+        "start": 6,
+        "end": 16
+      },
+      "file_name": "<rootdir>/fixtures/composer/one-package/composer.json"
+    },
+    "packageManager": "Composer",
+    "isDirect": true
+  }
+]
+---
