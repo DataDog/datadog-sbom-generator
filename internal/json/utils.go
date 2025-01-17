@@ -3,7 +3,7 @@ package json
 import (
 	"strings"
 
-	"github.com/google/osv-scanner/internal/cachedregexp"
+	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 /*

@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/osv-scanner/internal/utility/fileposition"
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
-	"github.com/google/osv-scanner/internal/cachedregexp"
+	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
 	"golang.org/x/exp/maps"
 )
 

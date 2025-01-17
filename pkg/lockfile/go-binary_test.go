@@ -3,9 +3,9 @@ package lockfile_test
 import (
 	"testing"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
-	"github.com/google/osv-scanner/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestGoBinaryExtractor_ShouldExtract(t *testing.T) {

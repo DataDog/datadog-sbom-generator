@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/google/osv-scanner/internal/output"
-	"github.com/google/osv-scanner/internal/testutility"
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/internal/testutility"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 func TestPrintCycloneDX14Results_WithVulnerabilities(t *testing.T) {

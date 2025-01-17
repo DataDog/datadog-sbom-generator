@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 func ExtractPURLFromGolang(packageInfo models.PackageInfo) (namespace string, name string, ok bool) {

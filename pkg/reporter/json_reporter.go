@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/google/osv-scanner/internal/output"
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 // JSONReporter prints vulnerability results in JSON format to stdout. Runtime information

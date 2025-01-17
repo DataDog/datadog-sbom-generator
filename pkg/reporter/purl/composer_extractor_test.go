@@ -3,8 +3,8 @@ package purl_test
 import (
 	"testing"
 
-	"github.com/google/osv-scanner/pkg/models"
-	"github.com/google/osv-scanner/pkg/reporter/purl"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/reporter/purl"
 )
 
 func TestComposerExtraction_shouldExtractPackages(t *testing.T) {

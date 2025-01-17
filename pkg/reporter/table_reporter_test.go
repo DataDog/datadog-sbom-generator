@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/google/osv-scanner/pkg/reporter"
+	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestTableReporter_Errorf(t *testing.T) {

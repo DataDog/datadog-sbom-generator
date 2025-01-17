@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/google/osv-scanner/internal/output"
-	"github.com/google/osv-scanner/internal/testutility"
+	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/internal/testutility"
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 

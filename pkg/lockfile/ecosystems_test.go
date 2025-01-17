@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/osv-scanner/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func numberOfLockfileParsers(t *testing.T) int {

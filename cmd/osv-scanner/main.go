@@ -6,11 +6,11 @@ import (
 	"os"
 	"slices"
 
-	"github.com/google/osv-scanner/pkg/osvscanner"
+	"github.com/datadog/datadog-sbom-generator/pkg/osvscanner"
 
-	"github.com/google/osv-scanner/cmd/osv-scanner/scan"
-	"github.com/google/osv-scanner/internal/version"
-	"github.com/google/osv-scanner/pkg/reporter"
+	"github.com/datadog/datadog-sbom-generator/cmd/osv-scanner/scan"
+	"github.com/datadog/datadog-sbom-generator/internal/version"
+	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/urfave/cli/v2"
 )

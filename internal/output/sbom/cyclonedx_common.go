@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/osv-scanner/internal/utility/purl"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
 
 	"golang.org/x/exp/maps"
 
 	"github.com/CycloneDX/cyclonedx-go"
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 type PackageProcessingHook = func(component *cyclonedx.Component, details models.PackageVulns)

@@ -9,8 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/google/osv-scanner/internal/output"
-	"github.com/google/osv-scanner/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func expectErrContaining(t *testing.T, err error, str string) {

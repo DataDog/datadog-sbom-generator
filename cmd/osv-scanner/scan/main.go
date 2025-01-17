@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/osv-scanner/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 
-	"github.com/google/osv-scanner/pkg/osvscanner"
-	"github.com/google/osv-scanner/pkg/reporter"
+	"github.com/datadog/datadog-sbom-generator/pkg/osvscanner"
+	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
 	"golang.org/x/term"
 
 	"github.com/urfave/cli/v2"

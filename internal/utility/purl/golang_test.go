@@ -3,9 +3,9 @@ package purl_test
 import (
 	"testing"
 
-	"github.com/google/osv-scanner/internal/utility/purl"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 func TestGolangExtraction_shouldExtractPackages(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"io"
 	"path/filepath"
 
-	jsonUtils "github.com/google/osv-scanner/internal/json"
+	jsonUtils "github.com/datadog/datadog-sbom-generator/internal/json"
 )
 
 const composerFilename = "composer.json"

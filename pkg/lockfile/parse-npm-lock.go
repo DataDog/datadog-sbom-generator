@@ -13,9 +13,9 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
-	"github.com/google/osv-scanner/internal/utility/fileposition"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 )
 
 type NpmLockDependency struct {

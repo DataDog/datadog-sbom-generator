@@ -40,10 +40,10 @@ linters-settings:
     settings:
       printf:
         funcs:
-          - (github.com/google/osv-scanner/pkg/reporter.Reporter).Errorf
-          - (github.com/google/osv-scanner/pkg/reporter.Reporter).Warnf
-          - (github.com/google/osv-scanner/pkg/reporter.Reporter).Verbosef
-          - (github.com/google/osv-scanner/pkg/reporter.Reporter).Infof
+          - (github.com/datadog/osv-scanner/pkg/reporter.Reporter).Errorf
+          - (github.com/datadog/osv-scanner/pkg/reporter.Reporter).Warnf
+          - (github.com/datadog/osv-scanner/pkg/reporter.Reporter).Verbosef
+          - (github.com/datadog/osv-scanner/pkg/reporter.Reporter).Infof
   depguard:
     rules:
       regexp:
@@ -52,7 +52,7 @@ linters-settings:
           - "!**/main_test.go"
         deny:
           - pkg: "regexp"
-            desc: "Use github.com/google/osv-scanner/internal/cachedregexp instead"
+            desc: "Use github.com/datadog/osv-scanner/internal/cachedregexp instead"
   gocritic:
     disabled-checks:
       - ifElseChain

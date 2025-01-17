@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/osv-scanner/internal/customgitignore"
-	"github.com/google/osv-scanner/internal/utility/fileposition"
+	"github.com/datadog/datadog-sbom-generator/internal/customgitignore"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
 
-	"github.com/google/osv-scanner/internal/output"
-	"github.com/google/osv-scanner/pkg/lockfile"
-	"github.com/google/osv-scanner/pkg/models"
-	"github.com/google/osv-scanner/pkg/reporter"
+	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )

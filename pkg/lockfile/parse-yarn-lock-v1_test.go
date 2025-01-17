@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/google/osv-scanner/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestParseYarnLock_v1_FileDoesNotExist(t *testing.T) {

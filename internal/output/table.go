@@ -8,9 +8,9 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/google/osv-scanner/internal/utility/results"
-	"github.com/google/osv-scanner/pkg/lockfile"
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/results"
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"

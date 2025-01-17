@@ -3,8 +3,8 @@ package models_test
 import (
 	"testing"
 
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/osv-scanner/pkg/models"
 )
 
 func TestFlatten(t *testing.T) {

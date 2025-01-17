@@ -14,14 +14,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/osv-scanner/internal/utility/fileposition"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
 	"golang.org/x/exp/maps"
 
-	"github.com/google/osv-scanner/internal/utility/filereader"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/filereader"
 
-	"github.com/google/osv-scanner/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
-	"github.com/google/osv-scanner/internal/cachedregexp"
+	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const MavenCentral = "https://repo.maven.apache.org/maven2"

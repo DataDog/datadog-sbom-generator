@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/datadog/datadog-sbom-generator/internal/testutility"
 	"github.com/go-git/go-git/v5"
-	"github.com/google/osv-scanner/internal/testutility"
 )
 
 func TestMain(m *testing.M) {
