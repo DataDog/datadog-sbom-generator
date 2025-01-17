@@ -1,0 +1,123 @@
+name: Pre-release check
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version tag to release, (e.g. v1.2.3)"
+        required: true
+        type: string
+      commit:
+        description: "The commit hash to release"
+        required: true
+        type: string
+
+# Restrict jobs in this workflow to have no permissions by default; permissions
+# should be granted per job as needed using a dedicated `permissions` block
+permissions: {}
+
+jobs:
+  osv-scan:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+      security-events: write # for uploading SARIF files
+    uses: ./.github/workflows/osv-scanner-reusable.yml
+    with:
+      # Only scan the top level go.mod file without recursively scanning directories since
+      # this is pipeline is about releasing the go module and binary
+      scan-args: |-
+        --skip-git
+        ./
+
+  format:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+    name: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+      - name: Run lint action
+        uses: ./.github/workflows/format-action
+  lint:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit }}
+      - name: Set up Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version-file: .go-version
+          check-latest: true
+      - name: Run lint action
+        uses: ./.github/workflows/lint-action
+  prepare_test_image_fixtures:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+      - run: scripts/build_test_images.sh
+      - uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        with:
+          name: image-fixtures-${{ github.run_number }}-${{ github.run_attempt }}
+          path: internal/image/fixtures/*.tar
+          retention-days: 1
+  tests:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+    name: Run unit tests
+    needs:
+      - prepare_test_image_fixtures
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit }}
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: image-fixtures-${{ github.run_number }}-${{ github.run_attempt }}
+          path: internal/image/fixtures/
+      - name: Set up Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version-file: .go-version
+          check-latest: true
+      - name: Run test action
+        uses: ./.github/workflows/test-action
+  release-helper:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+    runs-on: ubuntu-latest
+    needs:
+      - format
+      - lint
+      - tests
+      - osv-scan
+    steps:
+      - name: Print Scripts
+        env:
+          OUTPUT: |
+            git fetch &&
+            git tag ${{ inputs.version }} ${{ inputs.commit }} &&
+            git push origin ${{ inputs.version }}
+        shell: bash
+        run: |
+          echo $OUTPUT

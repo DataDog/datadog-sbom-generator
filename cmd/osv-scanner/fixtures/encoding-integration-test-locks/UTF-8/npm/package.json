@@ -1,0 +1,9 @@
+{
+  "name": "osv-scanner",
+  "dependencies": {
+    "wrappy": "1"
+  },
+  "devDependencies": {
+    "ms": "2.1.3"
+  }
+}
