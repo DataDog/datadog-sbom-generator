@@ -109,7 +109,7 @@ func insertDefaultCommand(args []string, commands []*cli.Command, defaultCommand
 		// Executes the cli app with the new args.
 		return argsTmp
 	} else if _, err := os.Stat(args[1]); err == nil {
-		r := reporter.NewJSONReporter(stdout, stderr, reporter.InfoLevel)
+		r := reporter.NewTableReporter(stdout, stderr, reporter.InfoLevel, false, 0)
 		r.Warnf("Warning: `%[1]s` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `%[1]s` is assumed to be a subcommand here. If you intended for `%[1]s` to be an argument to `%[1]s`, you must specify `%[1]s %[1]s` in your command line.\n", args[1])
 	}
 
