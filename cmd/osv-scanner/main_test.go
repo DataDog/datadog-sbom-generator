@@ -224,17 +224,6 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--recursive", "--no-ignore", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
-		// output with json
-		{
-			name: "json output 1",
-			args: []string{"", "--json", "./fixtures/locks-many/composer.lock"},
-			exit: 0,
-		},
-		{
-			name: "json output 2",
-			args: []string{"", "--format", "json", "./fixtures/locks-many/composer.lock"},
-			exit: 0,
-		},
 		// output format: unsupported
 		{
 			name: "",

@@ -64,7 +64,7 @@ Scanned <rootdir>/fixtures/locks-gitignore/yarn.lock file and found 1 package
 ---
 
 [TestRun/#05 - 2]
-unsupported output format "unknown" - must be one of: table, json, cyclonedx-1-4, cyclonedx-1-5
+unsupported output format "unknown" - must be one of: table, cyclonedx-1-4, cyclonedx-1-5
 
 ---
 
@@ -298,7 +298,6 @@ Scanned <rootdir>/fixtures/locks-insecure/osv-scanner-flutter-deps.json file as 
 ---
 
 [TestRun_InsertDefaultCommand - 6]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 
@@ -8177,7 +8176,6 @@ Scanned <rootdir>/fixtures/locks-one-with-nested/yarn.lock file and found 1 pack
 ---
 
 [TestRun_SubCommands/scan_with_a_flag - 2]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 
@@ -8198,7 +8196,6 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun_SubCommands/with_scan_subcommand - 2]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 

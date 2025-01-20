@@ -167,10 +167,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, error) {
 	format := context.String("format")
 
-	if context.Bool("json") {
-		format = "json"
-	}
-
 	outputPath := context.String("output")
 
 	termWidth := 0
