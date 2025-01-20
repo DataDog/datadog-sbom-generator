@@ -41,7 +41,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		},
 	}
 
-	args = insertDefaultCommand(args, app.Commands, app.DefaultCommand, stdout, stderr)
+	args = insertDefaultCommand(args, app.Commands, app.DefaultCommand)
 
 	if err := app.Run(args); err != nil {
 		if r == nil {
@@ -94,7 +94,7 @@ func getAllCommands(commands []*cli.Command) []string {
 }
 
 // Inserts the default command to args if no command is specified.
-func insertDefaultCommand(args []string, commands []*cli.Command, defaultCommand string, stdout, stderr io.Writer) []string {
+func insertDefaultCommand(args []string, commands []*cli.Command, defaultCommand string) []string {
 	if len(args) < 2 {
 		return args
 	}
