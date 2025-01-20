@@ -2,7 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"log"
 	"os"
 	"slices"
 
@@ -23,9 +25,7 @@ var (
 func run(args []string, stdout, stderr io.Writer) int {
 	var r reporter.Reporter
 	cli.VersionPrinter = func(ctx *cli.Context) {
-		// Use the app Writer and ErrWriter since they will be the writers to keep parallel tests consistent
-		r = reporter.NewTableReporter(ctx.App.Writer, ctx.App.ErrWriter, reporter.InfoLevel, false, 0)
-		r.Infof("osv-scanner version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
+		fmt.Printf("osv-scanner version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
 	}
 
 	app := &cli.App{
@@ -45,7 +45,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 
 	if err := app.Run(args); err != nil {
 		if r == nil {
-			r = reporter.NewTableReporter(stdout, stderr, reporter.InfoLevel, false, 0)
+			log.Fatal("no reporter defined, please define a reporter")
 		}
 		switch {
 		case errors.Is(err, osvscanner.VulnerabilitiesFoundErr):
