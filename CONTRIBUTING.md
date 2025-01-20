@@ -4,7 +4,6 @@
 ./scripts/run_tests.sh
 ```
 
-
 ## Update test snapshots
 
 ```shell
