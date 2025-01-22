@@ -298,9 +298,9 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 	packages := map[string]PackageDetails{}
 
 	group := strings.TrimSuffix(filepath.Base(f.Path()), filepath.Ext(f.Path()))
-	hasGroup := func(groups []string) bool {
+	hasGroup := func(groups []DepGroup) bool {
 		for _, g := range groups {
-			if g == group {
+			if g == (DepGroup)(group) {
 				return true
 			}
 		}
@@ -423,7 +423,7 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 		}
 		d := packages[key]
 		if !hasGroup(d.DepGroups) {
-			d.DepGroups = append(d.DepGroups, group)
+			d.DepGroups = append(d.DepGroups, DepGroup(group))
 			packages[key] = d
 		}
 

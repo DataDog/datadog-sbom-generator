@@ -208,7 +208,7 @@ func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
 			}
 		}
 
-		var depGroups []string
+		var depGroups []DepGroup
 		if pkg.Dev {
 			depGroups = append(depGroups, "dev")
 		}

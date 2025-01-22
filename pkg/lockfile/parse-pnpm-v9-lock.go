@@ -95,11 +95,22 @@ func mergeSlices(slices ...[]string) []string {
 	return maps.Keys(result)
 }
 
+func mergeDepGroups(slices ...[]DepGroup) []DepGroup {
+	result := make(map[DepGroup]bool)
+	for _, slice := range slices {
+		for _, item := range slice {
+			result[item] = true
+		}
+	}
+
+	return maps.Keys(result)
+}
+
 func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]PackageDetails) map[string]PackageDetails {
 	key := dependency.Name + "@" + dependency.Version
 
 	if dep, exists := deps[key]; exists {
-		newDepGroups := mergeSlices(dep.DepGroups, dependency.DepGroups)
+		newDepGroups := mergeDepGroups(dep.DepGroups, dependency.DepGroups)
 		newTargetedVersions := mergeSlices(dep.TargetVersions, dependency.TargetVersions)
 
 		if len(newTargetedVersions) > 0 {
@@ -174,7 +185,7 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 	return deps
 }
 
-func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string) []PnpmDirectDependency {
+func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup DepGroup) []PnpmDirectDependency {
 	for dependencyName, dependency := range dependencies {
 		roots = append(roots, PnpmDirectDependency{
 			Pkg: PackageDetails{
@@ -184,7 +195,7 @@ func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependen
 				TargetVersions: []string{dependency.Specifier},
 				Ecosystem:      PnpmEcosystem,
 				CompareAs:      PnpmEcosystem,
-				DepGroups:      []string{depGroup},
+				DepGroups:      []DepGroup{depGroup},
 				PackageManager: models.Pnpm,
 				IsDirect:       true,
 			},

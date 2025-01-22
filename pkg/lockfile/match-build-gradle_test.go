@@ -307,7 +307,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
-			DepGroups:      []string{"testRuntimeClasspath"},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupTestRuntimeClasspath},
 		},
 	}
 	err = buildGradleMatcher.Match(sourceFile, packages)
@@ -320,7 +320,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
-			DepGroups:      []string{"testRuntimeClasspath", "runtimeClasspath"},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupTestRuntimeClasspath, lockfile.DepGroupRuntimeClasspath},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 75},

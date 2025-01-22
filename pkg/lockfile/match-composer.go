@@ -44,7 +44,7 @@ func (depMap *ComposerMatcherDependencyMap) UnmarshalJSON(bytes []byte) error {
 			// The matcher haven't found package information, lets skip the package
 			continue
 		}
-		depMap.UpdatePackageDetails(pkg, content, pkgIndexes, "")
+		depMap.UpdatePackageDetails(pkg, content, pkgIndexes, DepGroupUnknown)
 	}
 
 	return nil

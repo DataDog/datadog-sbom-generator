@@ -553,8 +553,11 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			IsDirect:        true,
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
-			// Only append non-default scope (compile is the default scope).
-			pkgDetails.DepGroups = append(pkgDetails.DepGroups, strings.ToLower(scope))
+			depGroup, err := GetDepGroupFromString(strings.ToLower(scope))
+			if err == nil {
+				// Only append non-default scope (compile is the default scope).
+				pkgDetails.DepGroups = append(pkgDetails.DepGroups, depGroup)
+			}
 		}
 		details[finalName] = pkgDetails
 	}
@@ -588,7 +591,11 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
 			// Only append non-default scope (compile is the default scope).
-			pkgDetails.DepGroups = append(pkgDetails.DepGroups, scope)
+			depGroup, err := GetDepGroupFromString(strings.ToLower(scope))
+			if err == nil {
+				// Only append non-default scope (compile is the default scope).
+				pkgDetails.DepGroups = append(pkgDetails.DepGroups, depGroup)
+			}
 		}
 		details[finalName] = pkgDetails
 	}

@@ -44,7 +44,13 @@ func packageToString(pkg lockfile.PackageDetails) string {
 		commit = "<no commit>"
 	}
 
-	groups := strings.Join(pkg.DepGroups, ", ")
+	groupsString := make([]string, 0, len(pkg.DepGroups))
+
+	for _, depGroup := range pkg.DepGroups {
+		groupsString = append(groupsString, depGroup.String())
+	}
+
+	groups := strings.Join(groupsString, ", ")
 
 	if groups == "" {
 		groups = "<no groups>"

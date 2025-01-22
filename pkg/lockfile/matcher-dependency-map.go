@@ -40,7 +40,7 @@ content is the full file content as string
 indexes is a [6]int array representing block, name and version location offsets (as defined by ExtractPackageIndexes)
 depGroup represent the new dependency group to add
 */
-func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, content string, indexes []int, depGroup string) {
+func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, content string, indexes []int, depGroup DepGroup) {
 	if pkg == nil {
 		return
 	}
@@ -49,7 +49,8 @@ func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, co
 	if len(indexes) > 0 {
 		depMap.updatePackageDetailLocation(pkg, content, indexes)
 	}
-	if len(depGroup) > 0 {
+
+	if depGroup != DepGroupUnknown {
 		pkg.DepGroups = append(pkg.DepGroups, depGroup)
 		propagateDepGroups(pkg, make(map[*PackageDetails]struct{}))
 	}
@@ -107,7 +108,7 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		return
 	}
 	visitedMap[root] = struct{}{}
-	newDepGroups := make(map[string]bool)
+	newDepGroups := make(map[DepGroup]bool)
 	for _, group := range root.DepGroups {
 		newDepGroups[group] = true
 	}

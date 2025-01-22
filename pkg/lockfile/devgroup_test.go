@@ -9,18 +9,18 @@ import (
 
 type devGroupTestCase struct {
 	name       string
-	scopes     []string
+	scopes     []lockfile.DepGroup
 	isDevGroup bool
 }
 
 func TestIsDevGroup_Maven(t *testing.T) {
 	t.Parallel()
 	testCases := []devGroupTestCase{
-		{name: "compile", scopes: []string{"compile"}, isDevGroup: false},
-		{name: "provided", scopes: []string{"provided"}, isDevGroup: false},
-		{name: "runtime", scopes: []string{"runtime"}, isDevGroup: false},
-		{name: "test", scopes: []string{"test"}, isDevGroup: true},
-		{name: "system", scopes: []string{"system"}, isDevGroup: false},
+		{name: "compile", scopes: []lockfile.DepGroup{"compile"}, isDevGroup: false},
+		{name: "provided", scopes: []lockfile.DepGroup{"provided"}, isDevGroup: false},
+		{name: "runtime", scopes: []lockfile.DepGroup{"runtime"}, isDevGroup: false},
+		{name: "test", scopes: []lockfile.DepGroup{"test"}, isDevGroup: true},
+		{name: "system", scopes: []lockfile.DepGroup{"system"}, isDevGroup: false},
 	}
 
 	runTestCases(t, lockfile.MavenEcosystem, testCases)
@@ -29,16 +29,16 @@ func TestIsDevGroup_Maven(t *testing.T) {
 func TestIsDevGroup_Gradle(t *testing.T) {
 	t.Parallel()
 	testCases := []devGroupTestCase{
-		{name: "annotation", scopes: []string{"annotationProcessor"}, isDevGroup: false},
-		{name: "api", scopes: []string{"compileClasspath", "testRuntimeClasspath", "annotationProcessor"}, isDevGroup: false},
-		{name: "compileOnly", scopes: []string{"compileClasspath"}, isDevGroup: false},
-		{name: "compileOnlyApi", scopes: []string{"compileClasspath", "testCompileClasspath"}, isDevGroup: false},
-		{name: "implementation", scopes: []string{"compileClasspath", "testCompileClasspath", "testRuntimeClasspath"}, isDevGroup: false},
+		{name: "annotation", scopes: []lockfile.DepGroup{"annotationProcessor"}, isDevGroup: false},
+		{name: "api", scopes: []lockfile.DepGroup{"compileClasspath", "testRuntimeClasspath", "annotationProcessor"}, isDevGroup: false},
+		{name: "compileOnly", scopes: []lockfile.DepGroup{"compileClasspath"}, isDevGroup: false},
+		{name: "compileOnlyApi", scopes: []lockfile.DepGroup{"compileClasspath", "testCompileClasspath"}, isDevGroup: false},
+		{name: "implementation", scopes: []lockfile.DepGroup{"compileClasspath", "testCompileClasspath", "testRuntimeClasspath"}, isDevGroup: false},
 		// We create a fake scope when matching locations whenever we see a runtimeOnly instruction as it does not appear in the lockfile
-		{name: "runtimeOnly", scopes: []string{"testRuntimeClasspath", "runtimeClasspath"}, isDevGroup: false},
-		{name: "testCompileOnly", scopes: []string{"testCompileClasspath"}, isDevGroup: true},
-		{name: "testImplementation", scopes: []string{"testCompileClasspath", "testRuntimeClasspath"}, isDevGroup: true},
-		{name: "testRuntimeOnly", scopes: []string{"testRuntimeClasspath"}, isDevGroup: true},
+		{name: "runtimeOnly", scopes: []lockfile.DepGroup{"testRuntimeClasspath", "runtimeClasspath"}, isDevGroup: false},
+		{name: "testCompileOnly", scopes: []lockfile.DepGroup{"testCompileClasspath"}, isDevGroup: true},
+		{name: "testImplementation", scopes: []lockfile.DepGroup{"testCompileClasspath", "testRuntimeClasspath"}, isDevGroup: true},
+		{name: "testRuntimeOnly", scopes: []lockfile.DepGroup{"testRuntimeClasspath"}, isDevGroup: true},
 	}
 
 	runTestCases(t, lockfile.MavenEcosystem, testCases)

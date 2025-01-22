@@ -50,13 +50,13 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			// The matcher haven't found package information, lets skip it
 			continue
 		}
-		var depGroup string
+		var depGroup DepGroup
 		if depMap.RootType == typeDependencies {
-			depGroup = "prod"
+			depGroup = DepGroupProd
 		} else if depMap.RootType == typeDevDependencies {
-			depGroup = "dev"
+			depGroup = DepGroupDev
 		} else if depMap.RootType == typeOptionalDependencies {
-			depGroup = "optional"
+			depGroup = DepGroupOptional
 		}
 
 		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.BlockLocation.Line.Start != 0 {

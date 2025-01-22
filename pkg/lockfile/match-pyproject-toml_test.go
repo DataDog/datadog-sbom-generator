@@ -131,7 +131,7 @@ func TestPyprojectTomlMatcher_Match_OnePackageDev(t *testing.T) {
 				Filename: sourceFile.Path(),
 			},
 			IsDirect:  true,
-			DepGroups: []string{"dev"},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupDev},
 		},
 	})
 }

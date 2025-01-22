@@ -46,7 +46,7 @@ func (e PipenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	return maps.Values(details), nil
 }
 
-func addPkgDetails(details map[string]PackageDetails, packages map[string]PipenvPackage, group string) {
+func addPkgDetails(details map[string]PackageDetails, packages map[string]PipenvPackage, group DepGroup) {
 	for name, pipenvPackage := range packages {
 		if pipenvPackage.Version == "" {
 			continue

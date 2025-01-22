@@ -233,7 +233,7 @@ func TestParsePnpmLock_OnePackageDev(t *testing.T) {
 			Ecosystem:      lockfile.PnpmEcosystem,
 			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 		},
 	})
 }
@@ -609,7 +609,7 @@ func TestParsePnpmLock_Tarball(t *testing.T) {
 			Ecosystem:      lockfile.PnpmEcosystem,
 			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "",
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 			IsDirect:       true,
 		},
 	})

@@ -123,7 +123,14 @@ func tableBuilderInner(vulnResult *models.VulnerabilityResults, calledVulns bool
 					shouldMerge = true
 				} else {
 					name := pkg.Package.Name
-					if lockfile.Ecosystem(pkg.Package.Ecosystem).IsDevGroup(pkg.DepGroups) {
+					depGroups := make([]lockfile.DepGroup, 0)
+					for _, dg := range pkg.DepGroups {
+						depGroup, err := lockfile.GetDepGroupFromString(dg)
+						if err == nil {
+							depGroups = append(depGroups, depGroup)
+						}
+					}
+					if lockfile.Ecosystem(pkg.Package.Ecosystem).IsDevGroup(depGroups) {
 						name += " (dev)"
 					}
 					outputRow = append(outputRow, pkg.Package.Ecosystem, name, pkg.Package.Version)

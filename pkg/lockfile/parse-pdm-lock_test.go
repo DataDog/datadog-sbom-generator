@@ -162,7 +162,7 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
 			CompareAs:      lockfile.PdmEcosystem,
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 		},
 		{
 			Name:           "win-inet-pton",
@@ -170,7 +170,7 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
 			CompareAs:      lockfile.PdmEcosystem,
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 		},
 	})
 }
@@ -195,7 +195,7 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
 			CompareAs:      lockfile.PdmEcosystem,
-			DepGroups:      []string{"optional"},
+			DepGroups:      []lockfile.DepGroup{"optional"},
 		},
 		{
 			Name:           "win-inet-pton",
@@ -203,7 +203,7 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
 			CompareAs:      lockfile.PdmEcosystem,
-			DepGroups:      []string{"optional"},
+			DepGroups:      []lockfile.DepGroup{"optional"},
 		},
 	})
 }

@@ -1224,7 +1224,7 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 				Column:   models.Position{Start: 16, End: 20},
 				Filename: path,
 			},
-			DepGroups: []string{"test"},
+			DepGroups: []lockfile.DepGroup{"test"},
 			IsDirect:  true,
 		},
 	})
@@ -1522,7 +1522,7 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 				Column:   models.Position{Start: 18, End: 23},
 				Filename: remotePom,
 			},
-			DepGroups: []string{"test"},
+			DepGroups: []lockfile.DepGroup{"test"},
 			IsDirect:  true,
 		},
 		{

@@ -137,7 +137,7 @@ func TestParsePubspecLock_OnePackageDev(t *testing.T) {
 			Version:        "2.2.1",
 			PackageManager: models.Pub,
 			Ecosystem:      lockfile.PubEcosystem,
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 		},
 	})
 }
@@ -188,7 +188,7 @@ func TestParsePubspecLock_MixedPackages(t *testing.T) {
 			Version:        "2.2.1",
 			PackageManager: models.Pub,
 			Ecosystem:      lockfile.PubEcosystem,
-			DepGroups:      []string{"dev"},
+			DepGroups:      []lockfile.DepGroup{"dev"},
 		},
 		{
 			Name:           "shelf",

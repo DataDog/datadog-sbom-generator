@@ -55,7 +55,7 @@ func TestParseConanLock_v2_OnePackage(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 	})
 }
@@ -76,7 +76,7 @@ func TestParseConanLock_v2_NoName(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 	})
 }
@@ -97,7 +97,7 @@ func TestParseConanLock_v2_TwoPackages(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 		{
 			Name:           "bzip2",
@@ -105,7 +105,7 @@ func TestParseConanLock_v2_TwoPackages(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 	})
 }
@@ -126,7 +126,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 		{
 			Name:           "bzip2",
@@ -134,7 +134,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 		{
 			Name:           "freetype",
@@ -142,7 +142,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 		{
 			Name:           "libpng",
@@ -150,7 +150,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 		{
 			Name:           "brotli",
@@ -158,7 +158,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"requires"},
+			DepGroups:      []lockfile.DepGroup{"requires"},
 		},
 	})
 }
@@ -179,7 +179,7 @@ func TestParseConanLock_v2_OnePackageDev(t *testing.T) {
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
 			CompareAs:      lockfile.ConanEcosystem,
-			DepGroups:      []string{"build-requires"},
+			DepGroups:      []lockfile.DepGroup{"build-requires"},
 		},
 	})
 }

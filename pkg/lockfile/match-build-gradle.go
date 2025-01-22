@@ -48,8 +48,8 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 			group, artifact, _ := strings.Cut(pkg.Name, ":")
 			// TODO: what to do if, while using extended format, components are split in multiple lines?
 			if strings.Contains(line, group) && strings.Contains(line, artifact) {
-				scope := m.extractScope(line)
-				if len(scope) > 0 {
+				scope, err := GetDepGroupFromString(m.extractScope(line))
+				if err == nil {
 					packages[key].DepGroups = append(packages[key].DepGroups, scope)
 				}
 

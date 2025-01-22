@@ -258,7 +258,7 @@ type scannedPackage struct {
 	Commit          string
 	Version         string
 	Source          models.SourceInfo
-	DepGroups       []string
+	DepGroups       []lockfile.DepGroup
 	BlockLocation   models.FilePosition
 	VersionLocation *models.FilePosition
 	NameLocation    *models.FilePosition

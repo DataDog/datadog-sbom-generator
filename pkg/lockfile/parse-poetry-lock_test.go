@@ -296,7 +296,7 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
 			CompareAs:      lockfile.PoetryEcosystem,
-			DepGroups:      []string{"optional"},
+			DepGroups:      []lockfile.DepGroup{"optional"},
 		},
 	})
 }

@@ -225,7 +225,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
-				DepGroups: []string{"prod"},
+				DepGroups: []DepGroup{DepGroupProd},
 			},
 		},
 		{
@@ -252,12 +252,12 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
-				DepGroups: []string{"prod"},
+				DepGroups: []DepGroup{DepGroupProd},
 				Dependencies: []*PackageDetails{
 					{
 						Name:      "Bar",
 						Version:   "2.1.3",
-						DepGroups: []string{"prod"},
+						DepGroups: []DepGroup{DepGroupProd},
 					},
 				},
 			},
@@ -278,22 +278,22 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
-				DepGroups: []string{"prod"},
+				DepGroups: []DepGroup{DepGroupProd},
 				Dependencies: []*PackageDetails{
 					{
 						Name:      "Bar",
 						Version:   "2.1.3",
-						DepGroups: []string{"prod"},
+						DepGroups: []DepGroup{DepGroupProd},
 						Dependencies: []*PackageDetails{
 							{
 								Name:      "circular-dep",
 								Version:   "1.0.0",
-								DepGroups: []string{"prod"},
+								DepGroups: []DepGroup{DepGroupProd},
 								Dependencies: []*PackageDetails{
 									{
 										Name:      "Foobar",
 										Version:   "1.2.3",
-										DepGroups: []string{"prod"},
+										DepGroups: []DepGroup{DepGroupProd},
 										IsDirect:  true,
 									},
 								},
@@ -322,7 +322,9 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 					Version: "1.2.3",
 				})
 			}
-			depMap.UpdatePackageDetails(tt.args.pkg, tt.args.content, tt.args.indexes, tt.args.depGroup)
+			depGroup, _ := GetDepGroupFromString(tt.args.depGroup)
+
+			depMap.UpdatePackageDetails(tt.args.pkg, tt.args.content, tt.args.indexes, depGroup)
 
 			if tt.isCircular {
 				dependencies := depMap.Packages[0].Dependencies
