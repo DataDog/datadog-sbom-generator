@@ -147,9 +147,7 @@ core,golang.org/x/crypto/ssh,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All
 core,golang.org/x/crypto/ssh/agent,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,golang.org/x/crypto/ssh/internal/bcrypt_pbkdf,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,golang.org/x/crypto/ssh/knownhosts,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
-core,golang.org/x/exp/constraints,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/exp/maps,BSD-3-Clause,Copyright 2009 The Go Authors
-core,golang.org/x/exp/slices,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/net/context,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,golang.org/x/net/internal/socks,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
 core,golang.org/x/net/proxy,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved
@@ -187,5 +185,3 @@ core,golang.org/x/tools/internal/versions,BSD-3-Clause,Copyright (c) 2009 The Go
 core,golang/go,BSD-3-Clause,Copyright (c) 2009 The Go Authors. All rights reserved.
 core,gopkg.in/warnings.v0,BSD-2-Clause,Copyright (c) 2016 Péter Surányi
 core,gopkg.in/yaml.v3,MIT,Copyright (c) 2006-2010 Kirill Simonov | Copyright 2011-2016 Canonical Ltd
-core,golang.org/x/exp/constraints,BSD-3-Clause,Copyright 2009 The Go Authors
-core,golang.org/x/exp/slices,BSD-3-Clause,Copyright 2009 The Go Authors
