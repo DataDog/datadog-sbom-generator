@@ -2,7 +2,6 @@ package lockfile
 
 import (
 	"errors"
-	"golang.org/x/exp/maps"
 	"sort"
 	"strings"
 
@@ -40,17 +39,20 @@ const (
 	DepGroupLineContinuation            DepGroup = "line-continuation"
 	DepGroupEnvironmentMarkers          DepGroup = "environment-markers"
 	DepGroupURLPackages                 DepGroup = "url-packages"
-	DepGroupWhlUrlPackages              DepGroup = "whl-url-packages"
-	DepGroupGeneratedSimple             DepGroup = "generated-simple"
-	DepGroupGeneratedComplex            DepGroup = "generated-complex"
-	DepGroupWithUrlROption              DepGroup = "with-url-r-option"
-	DepGroupDuplicateRBase              DepGroup = "duplicate-r-base"
-	DepGroupDuplicateRDev               DepGroup = "duplicate-r-dev"
-	DepGroupDuplicateRTest              DepGroup = "duplicate-r-test"
-	DepGroupWithAddedSupport            DepGroup = "with-added-support"
-	DepGroupOtherFile                   DepGroup = "other-file"
-	DepGroupWithMultipleOptions         DepGroup = "with-multiple-options"
-	DepGroupWithMultipleROptions        DepGroup = "with-multiple-r-options"
+	//nolint:all
+	DepGroupWhlURLPackages   DepGroup = "whl-url-packages"
+	DepGroupGeneratedSimple  DepGroup = "generated-simple"
+	DepGroupGeneratedComplex DepGroup = "generated-complex"
+	//nolint:all
+	DepGroupWithURLROption DepGroup = "with-url-r-option"
+	DepGroupDuplicateRBase DepGroup = "duplicate-r-base"
+	DepGroupDuplicateRDev  DepGroup = "duplicate-r-dev"
+	//nolint:all
+	DepGroupDuplicateRTest       DepGroup = "duplicate-r-test"
+	DepGroupWithAddedSupport     DepGroup = "with-added-support"
+	DepGroupOtherFile            DepGroup = "other-file"
+	DepGroupWithMultipleOptions  DepGroup = "with-multiple-options"
+	DepGroupWithMultipleROptions DepGroup = "with-multiple-r-options"
 )
 
 var depGroupFromString = map[string]DepGroup{
@@ -80,10 +82,10 @@ var depGroupFromString = map[string]DepGroup{
 	"line-continuation":             DepGroupLineContinuation,
 	"environment-markers":           DepGroupEnvironmentMarkers,
 	"url-packages":                  DepGroupURLPackages,
-	"whl-url-packages":              DepGroupWhlUrlPackages,
+	"whl-url-packages":              DepGroupWhlURLPackages,
 	"generated-simple":              DepGroupGeneratedSimple,
 	"generated-complex":             DepGroupGeneratedComplex,
-	"with-url-r-option":             DepGroupWithUrlROption,
+	"with-url-r-option":             DepGroupWithURLROption,
 	"duplicate-r-base":              DepGroupDuplicateRBase,
 	"duplicate-r-dev":               DepGroupDuplicateRDev,
 	"with-added-support":            DepGroupWithAddedSupport,
@@ -115,6 +117,7 @@ func (c DepGroup) String() string {
 	return string(c)
 }
 
+// Merge the dependency groups and make sure they are sorted
 func MergeDepGroups(group1 []DepGroup, group2 []DepGroup) []DepGroup {
 	allGroups := make(map[DepGroup]bool)
 	for _, group := range group1 {
@@ -123,7 +126,14 @@ func MergeDepGroups(group1 []DepGroup, group2 []DepGroup) []DepGroup {
 	for _, group := range group2 {
 		allGroups[group] = true
 	}
-	keys := maps.Keys(allGroups)
+
+	keys := make([]DepGroup, 0, len(allGroups))
+
+	// get all the keys from the map
+	for k := range allGroups {
+		keys = append(keys, k)
+	}
+
 	sort.SliceStable(keys, func(i, j int) bool {
 		return len(keys[i].String()) < len(keys[j].String())
 	})
@@ -170,8 +180,6 @@ func (sys Ecosystem) IsDevGroup(groups []DepGroup) bool {
 
 	return false
 }
-
-var mavenDepGroupForDev []DepGroup = []DepGroup{DepGroupTestRuntimeClasspath}
 
 // isMavenDevGroup defines whether the dependency is only present in tests for the maven ecosystem or not (Maven and Gradle).
 func (sys Ecosystem) isMavenDevGroup(groups []DepGroup) bool {

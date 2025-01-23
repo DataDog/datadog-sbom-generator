@@ -1978,7 +1978,7 @@ func TestParseRequirementsTxt_WhlUrlPackages(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWhlUrlPackages},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWhlURLPackages},
 			IsDirect:  true,
 		},
 	})
