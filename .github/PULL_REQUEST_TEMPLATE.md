@@ -1,5 +1,7 @@
-## What does this PR do?
+## What problem are you trying to solve?
 
-- One sentence describing what we do and why
+## What is your solution?
 
-## Additional Notes
+## Alternatives considered
+
+## What the reviewer should know

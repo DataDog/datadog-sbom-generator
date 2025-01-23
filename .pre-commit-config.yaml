@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: local-go-build
+        name: Go Build
+        entry: ./scripts/build.sh
+        language: script
+
+      - id: local-go-lint
+        name: Go Lint
+        entry: ./scripts/run_lints.sh
+        language: script
+
+      - id: local-go-test
+        name: Go Test
+        entry: ./scripts/run_tests.sh
+        language: script

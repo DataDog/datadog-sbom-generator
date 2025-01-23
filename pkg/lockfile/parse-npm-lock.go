@@ -320,5 +320,5 @@ func init() {
 }
 
 func ParseNpmLock(pathToLockfile string) ([]PackageDetails, error) {
-	return extractFromFile(pathToLockfile, NpmExtractor)
+	return ExtractFromFile(pathToLockfile, NpmExtractor)
 }

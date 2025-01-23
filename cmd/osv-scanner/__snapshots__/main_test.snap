@@ -258,16 +258,6 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
-[TestRunCallAnalysis/Run_with_govulncheck - 1]
-Scanning dir ./fixtures/call-analysis-go-project
-Scanned <rootdir>/fixtures/call-analysis-go-project/go.mod file and found 4 packages
-
----
-
-[TestRunCallAnalysis/Run_with_govulncheck - 2]
-
----
-
 [TestRun_GithubActions/scanning_osv-scanner_custom_format - 1]
 Scanned <rootdir>/fixtures/locks-insecure/osv-scanner-flutter-deps.json file as a osv-scanner and found 3 packages
 

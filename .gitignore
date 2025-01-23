@@ -8,3 +8,4 @@
 *.tar
 *.pprof
 .DS_Store
+*~
