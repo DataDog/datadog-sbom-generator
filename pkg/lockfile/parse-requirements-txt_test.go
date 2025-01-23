@@ -1933,7 +1933,7 @@ func TestParseRequirementsTxt_GitUrlPackages(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupUrlPackages},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupURLPackages},
 			IsDirect:  true,
 		},
 	})
