@@ -39,7 +39,7 @@ const (
 	DepGroupWithPerRequirementOptions   DepGroup = "with-per-requirement-options"
 	DepGroupLineContinuation            DepGroup = "line-continuation"
 	DepGroupEnvironmentMarkers          DepGroup = "environment-markers"
-	DepGroupUrlPackages                 DepGroup = "url-packages"
+	DepGroupURLPackages                 DepGroup = "url-packages"
 	DepGroupWhlUrlPackages              DepGroup = "whl-url-packages"
 	DepGroupGeneratedSimple             DepGroup = "generated-simple"
 	DepGroupGeneratedComplex            DepGroup = "generated-complex"
@@ -79,7 +79,7 @@ var depGroupFromString = map[string]DepGroup{
 	"with-per-requirement-options":  DepGroupWithPerRequirementOptions,
 	"line-continuation":             DepGroupLineContinuation,
 	"environment-markers":           DepGroupEnvironmentMarkers,
-	"url-packages":                  DepGroupUrlPackages,
+	"url-packages":                  DepGroupURLPackages,
 	"whl-url-packages":              DepGroupWhlUrlPackages,
 	"generated-simple":              DepGroupGeneratedSimple,
 	"generated-complex":             DepGroupGeneratedComplex,
@@ -107,6 +107,7 @@ func GetDepGroupFromString(str string) (DepGroup, error) {
 	if !ok {
 		return DepGroupUnknown, errors.New("unknown dependency group: " + str)
 	}
+
 	return depGroup, nil
 }
 
@@ -126,6 +127,7 @@ func MergeDepGroups(group1 []DepGroup, group2 []DepGroup) []DepGroup {
 	sort.SliceStable(keys, func(i, j int) bool {
 		return len(keys[i].String()) < len(keys[j].String())
 	})
+
 	return keys
 }
 
