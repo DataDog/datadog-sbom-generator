@@ -136,9 +136,9 @@ func (m NugetCsprojMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 
 		if (packageReference.PrivateAssetsAttr != nil && strings.Contains(*packageReference.PrivateAssetsAttr, "all")) ||
 			(packageReference.PrivateAssets != nil && strings.Contains(*packageReference.PrivateAssets, "all")) {
-			packages[key].DepGroups = []string{string(DepGroupDev)}
+			packages[key].DepGroups = []DepGroup{DepGroupDev}
 		} else {
-			packages[key].DepGroups = []string{string(DepGroupProd)}
+			packages[key].DepGroups = []DepGroup{DepGroupProd}
 		}
 
 		block := lines[packageReference.Line.Start-1 : packageReference.Line.End]

@@ -104,7 +104,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 30, End: 40},
 				Filename: sourceFilePath,
 			},
-			DepGroups: []string{string(lockfile.DepGroupProd)},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupProd},
 		},
 		{
 			Name:           "MaterialDesignThemes",
@@ -124,7 +124,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 30, End: 50},
 				Filename: sourceFilePath,
 			},
-			DepGroups: []string{string(lockfile.DepGroupProd)},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupProd},
 		},
 		{
 			Name:           "Test.Core",
@@ -144,7 +144,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 16, End: 25},
 				Filename: sourceFilePath,
 			},
-			DepGroups: []string{string(lockfile.DepGroupProd)},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupProd},
 		},
 	})
 }

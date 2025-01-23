@@ -1113,7 +1113,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed, "with-multiple-r-options"},
+			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed, lockfile.DepGroupWithMultipleROptions},
 			IsDirect:  true,
 		},
 		{

@@ -551,7 +551,7 @@ func TestParseNpmLock_v1_SamePackageDifferentGroups(t *testing.T) {
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
 			CompareAs:      lockfile.NpmEcosystem,
-			DepGroups:      []lockfile.DepGroup{"dev", "optional", "prod"},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupDev, lockfile.DepGroupProd, lockfile.DepGroupOptional},
 		},
 	})
 }

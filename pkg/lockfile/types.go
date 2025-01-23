@@ -3,6 +3,7 @@ package lockfile
 import (
 	"errors"
 	"golang.org/x/exp/maps"
+	"sort"
 	"strings"
 
 	"github.com/datadog/datadog-sbom-generator/pkg/models"
@@ -23,6 +24,7 @@ const (
 	DepGroupCompileClasspath            DepGroup = "compileClasspath"
 	DepGroupAnnotationProcessor         DepGroup = "annotationProcessor"
 	DepGroupProductionRuntimeClasspath  DepGroup = "productionRuntimeClasspath"
+	DepGroupTest                        DepGroup = "test"
 	DepGroupTestRuntimeClasspath        DepGroup = "testRuntimeClasspath"
 	DepGroupMultiplePackagesConstrained DepGroup = "multiple-packages-constrained"
 	DepGroupOnePackageConstrained       DepGroup = "one-package-constrained"
@@ -41,38 +43,59 @@ const (
 	DepGroupWhlUrlPackages              DepGroup = "whl-url-packages"
 	DepGroupGeneratedSimple             DepGroup = "generated-simple"
 	DepGroupGeneratedComplex            DepGroup = "generated-complex"
+	DepGroupWithUrlROption              DepGroup = "with-url-r-option"
+	DepGroupDuplicateRBase              DepGroup = "duplicate-r-base"
+	DepGroupDuplicateRDev               DepGroup = "duplicate-r-dev"
+	DepGroupDuplicateRTest              DepGroup = "duplicate-r-test"
+	DepGroupWithAddedSupport            DepGroup = "with-added-support"
+	DepGroupOtherFile                   DepGroup = "other-file"
+	DepGroupWithMultipleOptions         DepGroup = "with-multiple-options"
+	DepGroupWithMultipleROptions        DepGroup = "with-multiple-r-options"
 )
 
 var depGroupFromString = map[string]DepGroup{
-	"dev":                         DepGroupDev,
-	"prod":                        DepGroupProd,
-	"optional":                    DepGroupOptional,
-	"requires":                    DepGroupRequires,
-	"build-requires":              DepGroupBuildRequires,
-	"python-requires":             DepGroupPythonRequires,
-	"developmentOnly":             DepGroupDevelopmentOnly,
-	"runtimeClasspath":            DepGroupRuntimeClasspath,
-	"compileClasspath":            DepGroupCompileClasspath,
-	"annotationProcessor":         DepGroupAnnotationProcessor,
-	"productionRuntimeClasspath":  DepGroupProductionRuntimeClasspath,
-	"testRuntimeClasspath":        DepGroupTestRuntimeClasspath,
-	"multiplePackagesConstrained": DepGroupMultiplePackagesConstrained,
-	"onePackageConstrained":       DepGroupOnePackageConstrained,
-	"onePackageUnconstrained":     DepGroupOnePackageUnconstrained,
-	"multiplePackagesMixed":       DepGroupMultiplePackagesMixed,
-	"fileFormatExample":           DepGroupFileFormatExample,
-	"nonNormalizedNames":          DepGroupNonNormalizedNames,
-	"cyclicR-self":                DepGroupCyclicRComplex1,
-	"cyclicR-complex-1":           DepGroupCyclicRComplex2,
-	"cyclicR-complex-2":           DepGroupCyclicRComplex3,
-	"cyclicR-complex-3":           DepGroupCyclicRComplex3,
-	"withPer-requirement-options": DepGroupWithPerRequirementOptions,
-	"line-continuation":           DepGroupLineContinuation,
-	"environmentMarkers":          DepGroupEnvironmentMarkers,
-	"url-packages":                DepGroupUrlPackages,
-	"whl-url-packages":            DepGroupWhlUrlPackages,
-	"generated-simple":            DepGroupGeneratedSimple,
-	"generated-complex":           DepGroupGeneratedComplex,
+	"dev":                           DepGroupDev,
+	"prod":                          DepGroupProd,
+	"optional":                      DepGroupOptional,
+	"test":                          DepGroupTest,
+	"requires":                      DepGroupRequires,
+	"build-requires":                DepGroupBuildRequires,
+	"python-requires":               DepGroupPythonRequires,
+	"developmentOnly":               DepGroupDevelopmentOnly,
+	"runtimeClasspath":              DepGroupRuntimeClasspath,
+	"compileClasspath":              DepGroupCompileClasspath,
+	"annotationProcessor":           DepGroupAnnotationProcessor,
+	"productionRuntimeClasspath":    DepGroupProductionRuntimeClasspath,
+	"testRuntimeClasspath":          DepGroupTestRuntimeClasspath,
+	"multiplePackagesConstrained":   DepGroupMultiplePackagesConstrained,
+	"onePackageConstrained":         DepGroupOnePackageConstrained,
+	"onePackageUnconstrained":       DepGroupOnePackageUnconstrained,
+	"multiplePackagesMixed":         DepGroupMultiplePackagesMixed,
+	"non-normalized-names":          DepGroupNonNormalizedNames,
+	"cyclic-r-self":                 DepGroupCyclicRSelf,
+	"cyclic-r-complex-1":            DepGroupCyclicRComplex1,
+	"cyclic-r-complex-2":            DepGroupCyclicRComplex2,
+	"cyclic-r-complex-3":            DepGroupCyclicRComplex3,
+	"with-per-requirement-options":  DepGroupWithPerRequirementOptions,
+	"line-continuation":             DepGroupLineContinuation,
+	"environment-markers":           DepGroupEnvironmentMarkers,
+	"url-packages":                  DepGroupUrlPackages,
+	"whl-url-packages":              DepGroupWhlUrlPackages,
+	"generated-simple":              DepGroupGeneratedSimple,
+	"generated-complex":             DepGroupGeneratedComplex,
+	"with-url-r-option":             DepGroupWithUrlROption,
+	"duplicate-r-base":              DepGroupDuplicateRBase,
+	"duplicate-r-dev":               DepGroupDuplicateRDev,
+	"with-added-support":            DepGroupWithAddedSupport,
+	"multiple-packages-mixed":       DepGroupMultiplePackagesMixed,
+	"file-format-example":           DepGroupFileFormatExample,
+	"duplicate-r-test":              DepGroupDuplicateRTest,
+	"one-package-unconstrained":     DepGroupOnePackageUnconstrained,
+	"one-package-constrained":       DepGroupOnePackageConstrained,
+	"other-file":                    DepGroupOtherFile,
+	"with-multiple-r-options":       DepGroupWithMultipleROptions,
+	"with-multiple-options":         DepGroupWithMultipleOptions,
+	"multiple-packages-constrained": DepGroupMultiplePackagesConstrained,
 }
 
 func GetDepGroupFromString(str string) (DepGroup, error) {
@@ -99,7 +122,11 @@ func MergeDepGroups(group1 []DepGroup, group2 []DepGroup) []DepGroup {
 	for _, group := range group2 {
 		allGroups[group] = true
 	}
-	return maps.Keys(allGroups)
+	keys := maps.Keys(allGroups)
+	sort.SliceStable(keys, func(i, j int) bool {
+		return len(keys[i].String()) < len(keys[j].String())
+	})
+	return keys
 }
 
 type PackageDetails struct {
@@ -122,14 +149,6 @@ type Ecosystem string
 
 type PackageDetailsParser = func(pathToLockfile string) ([]PackageDetails, error)
 
-type DepGroup string
-
-const (
-	DepGroupProd     DepGroup = "prod"
-	DepGroupDev      DepGroup = "dev"
-	DepGroupOptional DepGroup = "optional"
-)
-
 // IsDevGroup returns if any string in groups indicates the development dependency group for the specified ecosystem.
 func (sys Ecosystem) IsDevGroup(groups []DepGroup) bool {
 	switch sys {
@@ -138,7 +157,7 @@ func (sys Ecosystem) IsDevGroup(groups []DepGroup) bool {
 		return sys.isNpmDevGroup(groups)
 	case ComposerEcosystem, PipEcosystem, PubEcosystem, NuGetEcosystem:
 		// Also PipenvEcosystem(=PipEcosystem,=PoetryEcosystem).
-		return sys.isDevGroup(groups, string(DepGroupDev))
+		return sys.isDevGroup(groups, DepGroupDev)
 	case ConanEcosystem:
 		return sys.isDevGroup(groups, "build-requires")
 	case MavenEcosystem:
@@ -149,6 +168,8 @@ func (sys Ecosystem) IsDevGroup(groups []DepGroup) bool {
 
 	return false
 }
+
+var mavenDepGroupForDev []DepGroup = []DepGroup{DepGroupTestRuntimeClasspath}
 
 // isMavenDevGroup defines whether the dependency is only present in tests for the maven ecosystem or not (Maven and Gradle).
 func (sys Ecosystem) isMavenDevGroup(groups []DepGroup) bool {

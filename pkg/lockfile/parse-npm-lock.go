@@ -84,12 +84,12 @@ func (pdm npmPackageDetailsMap) add(key string, details PackageDetails) {
 func (dep *NpmLockDependency) depGroups() []DepGroup {
 	groups := make([]DepGroup, 0)
 	if dep.Optional {
-		groups = append(groups, "optional")
+		groups = append(groups, DepGroupOptional)
 	}
 	if dep.Dev {
-		groups = append(groups, "dev")
+		groups = append(groups, DepGroupDev)
 	} else {
-		groups = append(groups, "prod")
+		groups = append(groups, DepGroupProd)
 	}
 
 	return groups
@@ -173,16 +173,16 @@ func extractRootKeyPackageName(name string) string {
 func (pkg NpmLockPackage) depGroups() []DepGroup {
 	groups := make([]DepGroup, 0)
 	if pkg.Dev {
-		groups = append(groups, "dev")
+		groups = append(groups, DepGroupDev)
 	}
 	if pkg.Optional {
-		groups = append(groups, "optional")
+		groups = append(groups, DepGroupOptional)
 	}
 	if pkg.DevOptional {
-		groups = append(groups, "dev", "optional")
+		groups = append(groups, DepGroupDev, DepGroupOptional)
 	}
 	if !pkg.Dev && !pkg.DevOptional {
-		groups = append(groups, "prod")
+		groups = append(groups, DepGroupProd)
 	}
 
 	return groups

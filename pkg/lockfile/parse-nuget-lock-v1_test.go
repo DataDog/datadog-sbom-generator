@@ -241,7 +241,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Ecosystem:      lockfile.NuGetEcosystem,
 			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
-			DepGroups:      []string{string(lockfile.DepGroupDev)},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupDev},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 13},
 				Column:   models.Position{Start: 3, End: 22},
@@ -265,7 +265,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Ecosystem:      lockfile.NuGetEcosystem,
 			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
-			DepGroups:      []string{string(lockfile.DepGroupDev)},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupDev},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 3, End: 79},
@@ -289,7 +289,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Ecosystem:      lockfile.NuGetEcosystem,
 			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
-			DepGroups:      []string{string(lockfile.DepGroupProd)},
+			DepGroups:      []lockfile.DepGroup{lockfile.DepGroupProd},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 3, End: 68},
