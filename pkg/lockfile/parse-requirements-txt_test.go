@@ -129,7 +129,7 @@ func TestParseRequirementsTxt_OneRequirementUnconstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupOnePackageUnconstrained},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -170,7 +170,7 @@ func TestParseRequirementsTxt_OneRequirementConstrained(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupOnePackageConstrained},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -211,7 +211,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesConstrained},
+			DepGroups: nil,
 		},
 		{
 			Name:           "beautifulsoup4",
@@ -234,7 +234,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 17, End: 22},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 		},
 		{
 			Name:           "boto3",
@@ -257,7 +257,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -281,7 +281,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 18},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 		},
 		{
 			Name:           "certifi",
@@ -304,7 +304,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 19},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 		},
 		{
 			Name:           "chardet",
@@ -327,7 +327,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 		},
 		{
 			Name:           "circus",
@@ -350,7 +350,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -374,7 +374,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 13},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 		},
 		{
 			Name:           "django-debug-toolbar",
@@ -397,7 +397,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 23, End: 28},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -421,7 +421,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 16, End: 21},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -445,7 +445,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 14, End: 19},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -469,7 +469,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 18, End: 24},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -493,7 +493,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"multiple-packages-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -529,7 +529,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -548,7 +548,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -572,7 +572,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -596,7 +596,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 14},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -620,7 +620,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 15, End: 21},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -639,7 +639,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -658,7 +658,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -677,7 +677,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -714,7 +714,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -733,7 +733,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -752,7 +752,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -776,7 +776,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -800,7 +800,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 12, End: 17},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -819,7 +819,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -843,7 +843,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 18, End: 21},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -862,7 +862,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -881,7 +881,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupFileFormatExample},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -905,7 +905,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: otherPath,
 			},
-			DepGroups: []lockfile.DepGroup{"other-file"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -946,7 +946,7 @@ func TestParseRequirementsTxt_WithAddedSupport(t *testing.T) {
 				Column:   models.Position{Start: 17, End: 23},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"with-added-support"},
+			DepGroups: nil,
 		},
 	})
 }
@@ -986,7 +986,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 17, End: 22},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupNonNormalizedNames},
+			DepGroups: nil,
 		},
 		{
 			Name:           "pillow",
@@ -1009,7 +1009,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 14},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupNonNormalizedNames},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1033,7 +1033,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 17, End: 23},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupNonNormalizedNames},
+			DepGroups: nil,
 		},
 	})
 }
@@ -1070,7 +1070,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1089,7 +1089,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1113,7 +1113,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed, lockfile.DepGroupWithMultipleROptions},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1137,7 +1137,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 14},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1161,7 +1161,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 15, End: 21},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1180,7 +1180,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1199,7 +1199,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1218,7 +1218,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: multiplePackagesPath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupMultiplePackagesMixed},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1242,7 +1242,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{"with-multiple-r-options"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1266,7 +1266,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: onePackagePath,
 			},
-			DepGroups: []lockfile.DepGroup{"one-package-constrained"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1317,7 +1317,7 @@ func TestParseRequirementsTxt_WithURLROption(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{"with-url-r-option"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1360,7 +1360,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 14},
 				Filename: basePath,
 			},
-			DepGroups: []lockfile.DepGroup{"duplicate-r-base"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1384,7 +1384,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{"duplicate-r-dev"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1408,7 +1408,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: testPath,
 			},
-			DepGroups: []lockfile.DepGroup{"duplicate-r-test", "duplicate-r-dev"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1432,7 +1432,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: testPath,
 			},
-			DepGroups: []lockfile.DepGroup{"duplicate-r-test"},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1473,7 +1473,7 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupCyclicRSelf},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1497,7 +1497,7 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 16},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupCyclicRSelf},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1540,7 +1540,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 20},
 				Filename: sourcePath,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupCyclicRComplex1},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1564,7 +1564,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 20},
 				Filename: cyclic2Path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupCyclicRComplex2},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1588,7 +1588,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 20},
 				Filename: cyclic3Path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupCyclicRComplex3},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1629,7 +1629,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 16},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWithPerRequirementOptions},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1653,7 +1653,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 13},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWithPerRequirementOptions},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1677,7 +1677,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 15, End: 18},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWithPerRequirementOptions},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1701,7 +1701,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 15, End: 18},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWithPerRequirementOptions},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1742,7 +1742,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupLineContinuation},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1766,7 +1766,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 13},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupLineContinuation},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1790,7 +1790,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 13},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupLineContinuation},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1814,7 +1814,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 8, End: 16},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupLineContinuation},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1851,7 +1851,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupEnvironmentMarkers},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1871,7 +1871,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupEnvironmentMarkers},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -1896,7 +1896,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupEnvironmentMarkers},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1933,7 +1933,7 @@ func TestParseRequirementsTxt_GitUrlPackages(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupURLPackages},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -1978,7 +1978,7 @@ func TestParseRequirementsTxt_WhlUrlPackages(t *testing.T) {
 				Filename: path,
 			},
 			Commit:    "",
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupWhlURLPackages},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})
@@ -2021,7 +2021,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 19},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedSimple},
+			DepGroups: nil,
 		},
 		{
 			Name:           "charset-normalizer",
@@ -2044,7 +2044,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 21, End: 26},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedSimple},
+			DepGroups: nil,
 		},
 		{
 			Name:           "idna",
@@ -2067,7 +2067,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 7, End: 11},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedSimple},
+			DepGroups: nil,
 		},
 		{
 			Name:           "requests",
@@ -2090,7 +2090,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 17},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedSimple},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		{
@@ -2114,7 +2114,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedSimple},
+			DepGroups: nil,
 		},
 	})
 }
@@ -2156,7 +2156,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 19},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 		},
 		// direct, because the last comment specifies it comes from `requirements.in`
 		{
@@ -2180,7 +2180,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 21, End: 26},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		// direct, because the second comment specifies it comes from `requirements.in`
@@ -2205,7 +2205,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 7, End: 11},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		// direct, because the comment specifies it comes from `requirements.in`
@@ -2230,7 +2230,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 11, End: 17},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		// indirect, because comment specifies it's a dependency of requests
@@ -2255,7 +2255,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 15},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 		},
 		// direct, because the comment is a user comment, not an autogenerated comment
 		{
@@ -2279,7 +2279,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 12, End: 17},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 		// direct, because the comment specifies it comes from `foo.in`
@@ -2304,7 +2304,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 13, End: 18},
 				Filename: path,
 			},
-			DepGroups: []lockfile.DepGroup{lockfile.DepGroupGeneratedComplex},
+			DepGroups: nil,
 			IsDirect:  true,
 		},
 	})

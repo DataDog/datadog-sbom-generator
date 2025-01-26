@@ -11,93 +11,36 @@ import (
 type DepGroup string
 
 const (
-	DepGroupUnknown                     DepGroup = "unknown"
-	DepGroupDev                         DepGroup = "dev"
-	DepGroupProd                        DepGroup = "prod"
-	DepGroupOptional                    DepGroup = "optional"
-	DepGroupRequires                    DepGroup = "requires"
-	DepGroupBuildRequires               DepGroup = "build-requires"
-	DepGroupPythonRequires              DepGroup = "python-requires"
-	DepGroupDevelopmentOnly             DepGroup = "developmentOnly"
-	DepGroupRuntimeClasspath            DepGroup = "runtimeClasspath"
-	DepGroupCompileClasspath            DepGroup = "compileClasspath"
-	DepGroupAnnotationProcessor         DepGroup = "annotationProcessor"
-	DepGroupProductionRuntimeClasspath  DepGroup = "productionRuntimeClasspath"
-	DepGroupTest                        DepGroup = "test"
-	DepGroupTestRuntimeClasspath        DepGroup = "testRuntimeClasspath"
-	DepGroupMultiplePackagesConstrained DepGroup = "multiple-packages-constrained"
-	DepGroupOnePackageConstrained       DepGroup = "one-package-constrained"
-	DepGroupOnePackageUnconstrained     DepGroup = "one-package-unconstrained"
-	DepGroupMultiplePackagesMixed       DepGroup = "multiple-packages-mixed"
-	DepGroupFileFormatExample           DepGroup = "file-format-example"
-	DepGroupNonNormalizedNames          DepGroup = "non-normalized-names"
-	DepGroupCyclicRSelf                 DepGroup = "cyclic-r-self"
-	DepGroupCyclicRComplex1             DepGroup = "cyclic-r-complex-1"
-	DepGroupCyclicRComplex2             DepGroup = "cyclic-r-complex-1"
-	DepGroupCyclicRComplex3             DepGroup = "cyclic-r-complex-1"
-	DepGroupWithPerRequirementOptions   DepGroup = "with-per-requirement-options"
-	DepGroupLineContinuation            DepGroup = "line-continuation"
-	DepGroupEnvironmentMarkers          DepGroup = "environment-markers"
-	DepGroupURLPackages                 DepGroup = "url-packages"
-	//nolint:all
-	DepGroupWhlURLPackages   DepGroup = "whl-url-packages"
-	DepGroupGeneratedSimple  DepGroup = "generated-simple"
-	DepGroupGeneratedComplex DepGroup = "generated-complex"
-	//nolint:all
-	DepGroupWithURLROption DepGroup = "with-url-r-option"
-	DepGroupDuplicateRBase DepGroup = "duplicate-r-base"
-	DepGroupDuplicateRDev  DepGroup = "duplicate-r-dev"
-	//nolint:all
-	DepGroupDuplicateRTest       DepGroup = "duplicate-r-test"
-	DepGroupWithAddedSupport     DepGroup = "with-added-support"
-	DepGroupOtherFile            DepGroup = "other-file"
-	DepGroupWithMultipleOptions  DepGroup = "with-multiple-options"
-	DepGroupWithMultipleROptions DepGroup = "with-multiple-r-options"
+	DepGroupUnknown                    DepGroup = "unknown"
+	DepGroupDev                        DepGroup = "dev"
+	DepGroupProd                       DepGroup = "prod"
+	DepGroupOptional                   DepGroup = "optional"
+	DepGroupRequires                   DepGroup = "requires"
+	DepGroupBuildRequires              DepGroup = "build-requires"
+	DepGroupPythonRequires             DepGroup = "python-requires"
+	DepGroupDevelopmentOnly            DepGroup = "developmentOnly"
+	DepGroupRuntimeClasspath           DepGroup = "runtimeClasspath"
+	DepGroupCompileClasspath           DepGroup = "compileClasspath"
+	DepGroupAnnotationProcessor        DepGroup = "annotationProcessor"
+	DepGroupProductionRuntimeClasspath DepGroup = "productionRuntimeClasspath"
+	DepGroupTest                       DepGroup = "test"
+	DepGroupTestRuntimeClasspath       DepGroup = "testRuntimeClasspath"
 )
 
 var depGroupFromString = map[string]DepGroup{
-	"dev":                           DepGroupDev,
-	"prod":                          DepGroupProd,
-	"optional":                      DepGroupOptional,
-	"test":                          DepGroupTest,
-	"requires":                      DepGroupRequires,
-	"build-requires":                DepGroupBuildRequires,
-	"python-requires":               DepGroupPythonRequires,
-	"developmentOnly":               DepGroupDevelopmentOnly,
-	"runtimeClasspath":              DepGroupRuntimeClasspath,
-	"compileClasspath":              DepGroupCompileClasspath,
-	"annotationProcessor":           DepGroupAnnotationProcessor,
-	"productionRuntimeClasspath":    DepGroupProductionRuntimeClasspath,
-	"testRuntimeClasspath":          DepGroupTestRuntimeClasspath,
-	"multiplePackagesConstrained":   DepGroupMultiplePackagesConstrained,
-	"onePackageConstrained":         DepGroupOnePackageConstrained,
-	"onePackageUnconstrained":       DepGroupOnePackageUnconstrained,
-	"multiplePackagesMixed":         DepGroupMultiplePackagesMixed,
-	"non-normalized-names":          DepGroupNonNormalizedNames,
-	"cyclic-r-self":                 DepGroupCyclicRSelf,
-	"cyclic-r-complex-1":            DepGroupCyclicRComplex1,
-	"cyclic-r-complex-2":            DepGroupCyclicRComplex2,
-	"cyclic-r-complex-3":            DepGroupCyclicRComplex3,
-	"with-per-requirement-options":  DepGroupWithPerRequirementOptions,
-	"line-continuation":             DepGroupLineContinuation,
-	"environment-markers":           DepGroupEnvironmentMarkers,
-	"url-packages":                  DepGroupURLPackages,
-	"whl-url-packages":              DepGroupWhlURLPackages,
-	"generated-simple":              DepGroupGeneratedSimple,
-	"generated-complex":             DepGroupGeneratedComplex,
-	"with-url-r-option":             DepGroupWithURLROption,
-	"duplicate-r-base":              DepGroupDuplicateRBase,
-	"duplicate-r-dev":               DepGroupDuplicateRDev,
-	"with-added-support":            DepGroupWithAddedSupport,
-	"multiple-packages-mixed":       DepGroupMultiplePackagesMixed,
-	"file-format-example":           DepGroupFileFormatExample,
-	"duplicate-r-test":              DepGroupDuplicateRTest,
-	"one-package-unconstrained":     DepGroupOnePackageUnconstrained,
-	"one-package-constrained":       DepGroupOnePackageConstrained,
-	"other-file":                    DepGroupOtherFile,
-	"with-multiple-r-options":       DepGroupWithMultipleROptions,
-	"with-multiple-options":         DepGroupWithMultipleOptions,
-	"multiple-packages-constrained": DepGroupMultiplePackagesConstrained,
+	"dev":                        DepGroupDev,
+	"prod":                       DepGroupProd,
+	"optional":                   DepGroupOptional,
+	"test":                       DepGroupTest,
+	"requires":                   DepGroupRequires,
+	"build-requires":             DepGroupBuildRequires,
+	"python-requires":            DepGroupPythonRequires,
+	"developmentOnly":            DepGroupDevelopmentOnly,
+	"runtimeClasspath":           DepGroupRuntimeClasspath,
+	"compileClasspath":           DepGroupCompileClasspath,
+	"annotationProcessor":        DepGroupAnnotationProcessor,
+	"productionRuntimeClasspath": DepGroupProductionRuntimeClasspath,
+	"testRuntimeClasspath":       DepGroupTestRuntimeClasspath,
 }
 
 func GetDepGroupFromString(str string) (DepGroup, error) {
