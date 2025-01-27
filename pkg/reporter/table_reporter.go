@@ -51,7 +51,7 @@ func (r *TableReporter) Warnf(format string, a ...any) {
 
 func (r *TableReporter) Warn(s string) {
 	if WarnLevel <= r.level {
-		fmt.Fprint(r.stderr, s)
+		fmt.Fprint(r.stdout, s)
 	}
 }
 
@@ -63,7 +63,7 @@ func (r *TableReporter) Infof(format string, a ...any) {
 
 func (r *TableReporter) Info(s string) {
 	if InfoLevel <= r.level {
-		fmt.Fprint(r.stderr, s)
+		fmt.Fprint(r.stdout, s)
 	}
 }
 
@@ -75,7 +75,7 @@ func (r *TableReporter) Verbosef(format string, a ...any) {
 
 func (r *TableReporter) Verbose(s string) {
 	if VerboseLevel <= r.level {
-		fmt.Fprint(r.stderr, s)
+		fmt.Fprint(r.stdout, s)
 	}
 }
 
