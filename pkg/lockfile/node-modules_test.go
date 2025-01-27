@@ -8,30 +8,16 @@ import (
 	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 )
 
-func createTestDir(t *testing.T) (string, func()) {
+func createTestDirWithNodeModulesDir(t *testing.T) string {
 	t.Helper()
 
-	p, err := os.MkdirTemp("", "osv-scanner-test-*")
-	if err != nil {
-		t.Fatalf("could not create test directory: %v", err)
-	}
-
-	return p, func() {
-		_ = os.RemoveAll(p)
-	}
-}
-
-func createTestDirWithNodeModulesDir(t *testing.T) (string, func()) {
-	t.Helper()
-
-	testDir, cleanupTestDir := createTestDir(t)
+	testDir := t.TempDir()
 
 	if err := os.Mkdir(filepath.Join(testDir, "node_modules"), 0750); err != nil {
-		cleanupTestDir()
 		t.Fatalf("could not create node_modules directory: %v", err)
 	}
 
-	return testDir, cleanupTestDir
+	return testDir
 }
 
 func copyFile(t *testing.T, from, to string) string {
@@ -52,8 +38,7 @@ func copyFile(t *testing.T, from, to string) string {
 func testParsingNodeModules(t *testing.T, fixture string) ([]lockfile.PackageDetails, error) {
 	t.Helper()
 
-	testDir, cleanupTestDir := createTestDirWithNodeModulesDir(t)
-	defer cleanupTestDir()
+	testDir := createTestDirWithNodeModulesDir(t)
 
 	filePath := filepath.Join(testDir, "node_modules", ".package-lock.json")
 	file := copyFile(t, fixture, filePath)

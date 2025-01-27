@@ -11,19 +11,20 @@ import (
 type DepGroup string
 
 const (
-	DepGroupUnknown                    DepGroup = "unknown"
-	DepGroupDev                        DepGroup = "dev"
-	DepGroupProd                       DepGroup = "prod"
-	DepGroupOptional                   DepGroup = "optional"
-	DepGroupRequires                   DepGroup = "requires"
-	DepGroupBuildRequires              DepGroup = "build-requires"
-	DepGroupPythonRequires             DepGroup = "python-requires"
+	DepGroupUnknown        DepGroup = "unknown"
+	DepGroupDev            DepGroup = "dev"
+	DepGroupProd           DepGroup = "prod"
+	DepGroupOptional       DepGroup = "optional"
+	DepGroupRequires       DepGroup = "requires"
+	DepGroupTest           DepGroup = "test"
+	DepGroupBuildRequires  DepGroup = "build-requires"
+	DepGroupPythonRequires DepGroup = "python-requires"
+	// Java/JVM-specific
 	DepGroupDevelopmentOnly            DepGroup = "developmentOnly"
 	DepGroupRuntimeClasspath           DepGroup = "runtimeClasspath"
 	DepGroupCompileClasspath           DepGroup = "compileClasspath"
 	DepGroupAnnotationProcessor        DepGroup = "annotationProcessor"
 	DepGroupProductionRuntimeClasspath DepGroup = "productionRuntimeClasspath"
-	DepGroupTest                       DepGroup = "test"
 	DepGroupTestRuntimeClasspath       DepGroup = "testRuntimeClasspath"
 )
 

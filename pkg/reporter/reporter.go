@@ -18,6 +18,7 @@ type Reporter interface {
 	// Where the error is actually printed (if at all) is entirely up to the actual
 	// reporter, though generally it will be to stderr.
 	Errorf(format string, a ...any)
+	Error(s string)
 	// HasErrored returns true if there have been any calls to Errorf.
 	//
 	// This does not actually represent if the error was actually printed anywhere
@@ -25,10 +26,13 @@ type Reporter interface {
 	HasErrored() bool
 	// Warnf prints text indicating potential issues or something that should be brought to the attention of users.
 	Warnf(format string, a ...any)
+	Warn(s string)
 	// Infof prints text providing general information about what OSV-Scanner is doing during its runtime.
 	Infof(format string, a ...any)
+	Info(s string)
 	// Verbosef prints text providing additional information about the inner workings of OSV-Scanner to the user.
 	Verbosef(format string, a ...any)
+	Verbose(s string)
 	// PrintResult prints the models.VulnerabilityResults per the logic of the
 	// actual reporter
 	PrintResult(vulnResult *models.VulnerabilityResults) error

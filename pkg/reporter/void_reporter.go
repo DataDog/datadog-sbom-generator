@@ -12,6 +12,10 @@ func (r *VoidReporter) Errorf(msg string, a ...any) {
 	r.hasErrored = true
 }
 
+func (r *VoidReporter) Error(s string) {
+	r.hasErrored = true
+}
+
 func (r *VoidReporter) HasErrored() bool {
 	return r.hasErrored
 }
@@ -19,10 +23,19 @@ func (r *VoidReporter) HasErrored() bool {
 func (r *VoidReporter) Warnf(msg string, a ...any) {
 }
 
+func (r *VoidReporter) Warn(s string) {
+}
+
 func (r *VoidReporter) Infof(msg string, a ...any) {
 }
 
+func (r *VoidReporter) Info(s string) {
+}
+
 func (r *VoidReporter) Verbosef(msg string, a ...any) {
+}
+
+func (r *VoidReporter) Verbose(s string) {
 }
 
 func (r *VoidReporter) PrintResult(vulnResult *models.VulnerabilityResults) error {

@@ -30,6 +30,11 @@ func NewCycloneDXReporter(stdout, stderr io.Writer, version models.CycloneDXVers
 	}
 }
 
+func (r *CycloneDXReporter) Error(s string) {
+	fmt.Fprint(r.stderr, s)
+	r.hasErrored = true
+}
+
 func (r *CycloneDXReporter) Errorf(format string, a ...any) {
 	fmt.Fprintf(r.stderr, format, a...)
 	r.hasErrored = true
@@ -45,15 +50,33 @@ func (r *CycloneDXReporter) Warnf(format string, a ...any) {
 	}
 }
 
+func (r *CycloneDXReporter) Warn(s string) {
+	if WarnLevel <= r.level {
+		fmt.Fprint(r.stderr, s)
+	}
+}
+
 func (r *CycloneDXReporter) Infof(format string, a ...any) {
 	if InfoLevel <= r.level {
 		fmt.Fprintf(r.stderr, format, a...)
 	}
 }
 
+func (r *CycloneDXReporter) Info(s string) {
+	if InfoLevel <= r.level {
+		fmt.Fprint(r.stderr, s)
+	}
+}
+
 func (r *CycloneDXReporter) Verbosef(format string, a ...any) {
 	if VerboseLevel <= r.level {
 		fmt.Fprintf(r.stderr, format, a...)
+	}
+}
+
+func (r *CycloneDXReporter) Verbose(s string) {
+	if VerboseLevel <= r.level {
+		fmt.Fprint(r.stderr, s)
 	}
 }
 
