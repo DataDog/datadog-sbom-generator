@@ -3,12 +3,13 @@ package lockfile
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"strings"
 
 	"github.com/datadog/datadog-sbom-generator/pkg/models"
 
-	"golang.org/x/exp/maps"
+	xMaps "golang.org/x/exp/maps"
 )
 
 type NuGetLockPackage struct {
@@ -58,7 +59,7 @@ func parseNuGetLock(lockfile NuGetLockfile) ([]PackageDetails, error) {
 		maps.Copy(details, parseNuGetLockDependencies(dependencies))
 	}
 
-	return maps.Values(details), nil
+	return xMaps.Values(details), nil
 }
 
 type NuGetLockExtractor struct {

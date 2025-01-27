@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
-	"golang.org/x/exp/maps"
+	xMaps "golang.org/x/exp/maps"
 
 	"github.com/datadog/datadog-sbom-generator/internal/utility/filereader"
 
@@ -600,7 +601,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		details[finalName] = pkgDetails
 	}
 
-	return maps.Values(details), nil
+	return xMaps.Values(details), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f DepFile) (*models.ScannedArtifact, error) {
