@@ -264,7 +264,6 @@ func TestRun(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -395,7 +394,6 @@ func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -416,7 +414,6 @@ func TestRun_GithubActions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -445,7 +442,6 @@ func TestRun_WithoutHostPathInformation(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			tc := tt
@@ -533,8 +529,7 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 		"v4.6.0",
 	}
 
-	for _, testCase := range testCases {
-		tt := testCase
+	for _, tt := range testCases {
 		t.Run(tt, func(t *testing.T) {
 			t.Parallel()
 			args := []string{
@@ -564,8 +559,7 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 		"v10.9.0",
 	}
 
-	for _, testCase := range testCases {
-		tt := testCase
+	for _, tt := range testCases {
 		t.Run(tt, func(t *testing.T) {
 			t.Parallel()
 			args := []string{
@@ -593,8 +587,7 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 		{encoding: "Windows-1252"},
 	}
 
-	for _, testCase := range testCases {
-		tt := testCase
+	for _, tt := range testCases {
 		t.Run(tt.encoding, func(t *testing.T) {
 			t.Parallel()
 			args := []string{
@@ -681,7 +674,6 @@ func TestRun_OCIImage(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -724,7 +716,6 @@ func TestRun_SubCommands(t *testing.T) {
 		// TODO: add tests for other future subcommands
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -781,7 +772,6 @@ func TestRun_InsertDefaultCommand(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		stdout := &bytes.Buffer{}
 		stderr := &bytes.Buffer{}
 		argsActual := insertDefaultCommand(tt.originalArgs, commands, defaultCommand, stdout, stderr)

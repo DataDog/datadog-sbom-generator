@@ -1,6 +1,8 @@
 module github.com/datadog/datadog-sbom-generator
 
-go 1.21.12
+go 1.22
+
+toolchain go1.22.11
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -12,6 +14,8 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/package-url/packageurl-go v0.1.1
 	github.com/stretchr/testify v1.9.0
+	github.com/tree-sitter/go-tree-sitter v0.24.0
+	github.com/tree-sitter/tree-sitter-ruby v0.23.1
 	github.com/urfave/cli/v2 v2.27.3
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/mod v0.19.0
@@ -38,6 +42,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/maruel/natural v1.1.1 // indirect
+	github.com/mattn/go-pointer v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
