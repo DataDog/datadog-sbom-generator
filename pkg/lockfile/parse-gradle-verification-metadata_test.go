@@ -81,7 +81,6 @@ func TestGradleVerificationMetadataExtractor_ShouldExtract(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			e := lockfile.GradleVerificationMetadataExtractor{}
@@ -159,7 +158,7 @@ func TestParseGradleVerificationMetadata_OnePackage_MatcherFailed(t *testing.T) 
 
 	// Mock buildGradleMatcher to fail
 	matcherError := errors.New("buildGradleMatcher failed")
-	lockfile.GradleVerificationExtractor.Matcher = FailingMatcher{Error: matcherError}
+	lockfile.GradleVerificationExtractor.Matchers = []lockfile.Matcher{FailingMatcher{Error: matcherError}}
 
 	path := filepath.FromSlash(filepath.Join(dir, "fixtures/gradle-verification-metadata/one-package.xml"))
 	packages, err := lockfile.ParseGradleVerificationMetadata(path)

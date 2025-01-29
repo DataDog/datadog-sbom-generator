@@ -56,7 +56,6 @@ func TestPnpmLockExtractor_ShouldExtract(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			e := lockfile.PnpmLockExtractor{}
@@ -150,7 +149,7 @@ func TestParsePnpmLock_OnePackage_MatcherFailed(t *testing.T) {
 
 	// Mock packageJSONMatcher to fail
 	matcherError := errors.New("packageJSONMatcher failed")
-	lockfile.PnpmExtractor.Matcher = FailingMatcher{Error: matcherError}
+	lockfile.PnpmExtractor.Matchers = []lockfile.Matcher{FailingMatcher{Error: matcherError}}
 
 	path := filepath.FromSlash(filepath.Join(dir, "fixtures/pnpm/one-package.yaml"))
 	packages, err := lockfile.ParsePnpmLock(path)
