@@ -264,6 +264,12 @@ type scannedPackage struct {
 	NameLocation    *models.FilePosition
 }
 
+// ShouldBeProcessed we should not process any packages with a ranged version as we do not support that
+// in the ingestion pipeline
+func (sp scannedPackage) ShouldBeProcessed() bool {
+	return !strings.ContainsAny(sp.Version, "<>,")
+}
+
 func initializeEnabledParsers(enabledParsers []string) map[string]bool {
 	result := make(map[string]bool)
 
