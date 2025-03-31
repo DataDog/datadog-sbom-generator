@@ -1,5 +1,7 @@
 package models
 
+// TODO(daniel.strong): lots of unused values in this file, remove them
+
 type Ecosystem string
 
 const (
