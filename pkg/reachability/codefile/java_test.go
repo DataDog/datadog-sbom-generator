@@ -19,7 +19,7 @@ func Test_Detect_NoAdvisories(t *testing.T) {
 	assert.NoError(t, err)
 	defer detector.Close()
 
-	advisoriesToCheck := make([]models.AdvisoryToCheck, 0, 0)
+	advisoriesToCheck := make([]models.AdvisoryToCheck, 0)
 	detectionResults := models.DetectionResults{}
 
 	detector.Detect("", "testdata/vulnerable-class.java", detectionResults, advisoriesToCheck)
