@@ -2,16 +2,19 @@ package osvscanner
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/datadog/datadog-sbom-generator/internal/customgitignore"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
-
 	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
 	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/datadog/datadog-sbom-generator/pkg/reachability"
 	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -243,7 +246,67 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		return models.VulnerabilityResults{}, NoPackagesFoundErr
 	}
 
-	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts)
+	scannedPackages, droppedReasons := sanitizeScannedPackages(scannedPackages)
+	if len(droppedReasons) > 0 {
+		log.Println("Note that some scanned packages were dropped:")
+		for _, reason := range droppedReasons {
+			log.Printf(" - %s\n", reason)
+		}
+	}
+
+	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
+
+	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths)
+
+	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 
 	return vulnerabilityResults, nil
+}
+
+// packageHasRangedVersion checks if the package version is a ranged version
+// which we do not support for now.
+func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
+	return strings.ContainsAny(scannedPackage.Version, ",><")
+}
+
+// sanitizeScannedPackages is used to sanitize scanned packages.
+// 1. filters our packages that have a ranged version
+// 2. creates a PURL for each package and drops the package if it cannot be created
+func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockfile.PackageDetails, []string) {
+	finalPackages := make([]lockfile.PackageDetails, 0, len(scannedPackages))
+	droppedReasons := make([]string, 0, len(scannedPackages))
+
+	for _, pkg := range scannedPackages {
+		if packageHasRangedVersion(pkg) {
+			droppedReasons = append(droppedReasons, fmt.Sprintf("package %s has a ranged version %s", pkg.Name, pkg.Version))
+			continue
+		}
+		packageUrl, err := purl.FromNameVersionEcosystem(pkg.Name, pkg.Version, string(pkg.Ecosystem))
+		if err != nil {
+			droppedReasons = append(droppedReasons, fmt.Sprintf("failed to create PURL for %s: %v", pkg.Name, err))
+			continue
+		}
+		pkg.PURL = packageUrl.ToString()
+
+		finalPackages = append(finalPackages, pkg)
+	}
+
+	return finalPackages, droppedReasons
+}
+
+// getDirectPackagePurls returns a list of PURLs for packages that are directly imported.
+func getDirectPackagePurls(scannedPackages []lockfile.PackageDetails) []string {
+	uniquePurls := make(map[string]struct{})
+	for _, scannedPackage := range scannedPackages {
+		if scannedPackage.IsDirect {
+			uniquePurls[scannedPackage.PURL] = struct{}{}
+		}
+	}
+
+	purls := make([]string, 0, len(uniquePurls))
+	for uniquePurl := range uniquePurls {
+		purls = append(purls, uniquePurl)
+	}
+
+	return purls
 }

@@ -23,6 +23,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	components := make([]cyclonedx.Component, 0)
 	bomVulnerabilities := make([]cyclonedx.Vulnerability, 0)
 	vulnerabilities := make(map[string]cyclonedx.Vulnerability)
+	uniqueAdvisoryIdsAndUniquePurls := make(map[string]map[string]struct{})
 
 	fileComponents, dependsOn := addFileDependencies(artifacts)
 	for packageURL, packageDetail := range uniquePackages {
@@ -32,6 +33,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 
 		addLocations(&libraryComponent, packageDetail)
 		addVulnerabilities(vulnerabilities, packageDetail)
+		addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls, packageDetail)
 
 		components = append(components, libraryComponent)
 	}
@@ -39,6 +41,8 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	slices.SortFunc(components, func(a, b cyclonedx.Component) int {
 		return strings.Compare(a.BOMRef, b.BOMRef)
 	})
+
+	combineReachableVulnerability(vulnerabilities, uniqueAdvisoryIdsAndUniquePurls)
 
 	for _, vulnerability := range vulnerabilities {
 		bomVulnerabilities = append(bomVulnerabilities, vulnerability)
@@ -169,6 +173,45 @@ func addVulnerabilities(vulnerabilities map[string]cyclonedx.Vulnerability, pack
 			Ratings:     buildRatings(vulnerability),
 			Advisories:  buildAdvisories(vulnerability),
 			Credits:     buildCredits(vulnerability),
+		}
+	}
+}
+
+// addToUniqueAdvisoryAndPurls is used to continuously add unique advisory IDs and their affected PURLs
+func addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls map[string]map[string]struct{}, packageDetail models.PackageVulns) {
+	for _, advisoryId := range packageDetail.AdvisoriesForReachability {
+		if _, ok := uniqueAdvisoryIdsAndUniquePurls[advisoryId]; !ok {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryId] = make(map[string]struct{})
+		}
+
+		if _, exists := packageDetail.Metadata[models.ReachableSymbolLocationMetadata.WithValue(advisoryId)]; exists {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryId][packageDetail.Package.Purl] = struct{}{}
+		}
+	}
+}
+
+// combineReachableVulnerability converts a map of unique advisory IDs and their affected PURLs into a map of vulnerabilities
+func combineReachableVulnerability(vulnerabilities map[string]cyclonedx.Vulnerability, uniqueAdvisoriesToPurls map[string]map[string]struct{}) {
+	for advisoryId, purlsMap := range uniqueAdvisoriesToPurls {
+		if len(purlsMap) == 0 {
+			vulnerabilities[advisoryId] = cyclonedx.Vulnerability{
+				ID:     advisoryId,
+				BOMRef: advisoryId,
+			}
+			continue
+		}
+
+		affects := make([]cyclonedx.Affects, 0, len(purlsMap))
+		for uniquePurl := range purlsMap {
+			affects = append(affects, cyclonedx.Affects{
+				Ref: uniquePurl,
+			})
+		}
+
+		vulnerabilities[advisoryId] = cyclonedx.Vulnerability{
+			ID:      advisoryId,
+			BOMRef:  advisoryId,
+			Affects: &affects,
 		}
 	}
 }
