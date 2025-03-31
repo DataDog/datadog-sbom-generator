@@ -25,6 +25,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
+	github.com/DataDog/jsonapi v0.12.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
