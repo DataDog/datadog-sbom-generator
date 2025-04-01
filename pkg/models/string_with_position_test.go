@@ -18,7 +18,7 @@ func TestStringHolder_UnmarshalXML_ShouldFindValueAndPosition(t *testing.T) {
 	}
 
 	type xmlFile struct {
-		TestCase StringHolder `xml:"testCase"`
+		TestCase StringWithPosition `xml:"testCase"`
 	}
 
 	testCases := []struct {

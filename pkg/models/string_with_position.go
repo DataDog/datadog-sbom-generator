@@ -7,18 +7,18 @@ import (
 )
 
 /*
-StringHolder is a structure meant to deserialize string data along with the position of the data in the file when they can be mixed with other such as :
+StringWithPosition is a structure meant to deserialize string data along with the position of the data in the file when they can be mixed with other such as :
   - spaces, tabs and newline for formatting
   - comments (for example with XML based files)
 
 It supports XML based files through the UnmarshalXML method
 */
-type StringHolder struct {
+type StringWithPosition struct {
 	Value string
 	FilePosition
 }
 
-func (stringHolder *StringHolder) computePositions(content, trimmedString string, lineStart, columnStart int) {
+func (stringHolder *StringWithPosition) computePositions(content, trimmedString string, lineStart, columnStart int) {
 	// Lets compute where it starts
 	stringStart := strings.Index(content, trimmedString)
 	endOfLineCount := strings.Count(content[:stringStart], "\n")
@@ -47,7 +47,7 @@ func (stringHolder *StringHolder) computePositions(content, trimmedString string
 	}
 }
 
-func (stringHolder *StringHolder) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+func (stringHolder *StringWithPosition) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	characterOffsetByLine := make(map[int]int) // We keep track of the offset caused by emojis line by line to correct character count with emojis
 	for {
 		lineStart, columnStart := decoder.InputPos()

@@ -75,11 +75,11 @@ func (m *MavenRegistryProject) Path() string {
 }
 
 type MavenLockDependency struct {
-	XMLName    xml.Name            `xml:"dependency"`
-	GroupID    models.StringHolder `xml:"groupId"`
-	ArtifactID models.StringHolder `xml:"artifactId"`
-	Version    models.StringHolder `xml:"version"`
-	Scope      string              `xml:"scope"`
+	XMLName    xml.Name                  `xml:"dependency"`
+	GroupID    models.StringWithPosition `xml:"groupId"`
+	ArtifactID models.StringWithPosition `xml:"artifactId"`
+	Version    models.StringWithPosition `xml:"version"`
+	Scope      string                    `xml:"scope"`
 	SourceFile string
 	models.FilePosition
 }
@@ -96,8 +96,8 @@ type MavenLockDependencyHolder struct {
 	Dependencies []MavenLockDependency `xml:"dependency"`
 }
 
-func buildProjectProperties(lockfile MavenLockFile) map[string]models.StringHolder {
-	return map[string]models.StringHolder{
+func buildProjectProperties(lockfile MavenLockFile) map[string]models.StringWithPosition {
+	return map[string]models.StringWithPosition{
 		"project.version":      lockfile.Version,
 		"project.modelVersion": lockfile.ModelVersion,
 		"project.groupId":      lockfile.GroupID,
@@ -124,7 +124,7 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 		propName := propStr[2 : len(propStr)-1]
 
 		var lockProperty MavenLockProperty
-		var property models.StringHolder
+		var property models.StringWithPosition
 		var ok bool
 
 		if strings.HasPrefix(propName, "pom.") {
@@ -153,7 +153,7 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 					// Property uses other properties
 					var propertyStr string
 					propertyStr, position = mld.resolvePropertiesValue(lockfile, property.Value)
-					property = models.StringHolder{
+					property = models.StringWithPosition{
 						Value: propertyStr,
 					}
 					if position != (models.FilePosition{}) {
@@ -213,10 +213,10 @@ func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile) (string, m
 type MavenLockFile struct {
 	XMLName                  xml.Name                  `xml:"project"`
 	Parent                   MavenLockParent           `xml:"parent"`
-	Version                  models.StringHolder       `xml:"version"`
-	ModelVersion             models.StringHolder       `xml:"modelVersion"`
-	GroupID                  models.StringHolder       `xml:"groupId"`
-	ArtifactID               models.StringHolder       `xml:"artifactId"`
+	Version                  models.StringWithPosition `xml:"version"`
+	ModelVersion             models.StringWithPosition `xml:"modelVersion"`
+	GroupID                  models.StringWithPosition `xml:"groupId"`
+	ArtifactID               models.StringWithPosition `xml:"artifactId"`
 	Properties               MavenLockProperties       `xml:"properties"`
 	Dependencies             MavenLockDependencyHolder `xml:"dependencies"`
 	ManagedDependencies      MavenLockDependencyHolder `xml:"dependencyManagement>dependencies"`
@@ -227,7 +227,7 @@ type MavenLockFile struct {
 const MavenEcosystem Ecosystem = "Maven"
 
 type MavenLockProperty struct {
-	Property   models.StringHolder
+	Property   models.StringWithPosition
 	SourceFile string
 }
 
@@ -246,7 +246,7 @@ func (p *MavenLockProperties) UnmarshalXML(d *xml.Decoder, start xml.StartElemen
 
 		switch tt := t.(type) {
 		case xml.StartElement:
-			var s models.StringHolder
+			var s models.StringWithPosition
 
 			if err := d.DecodeElement(&s, &tt); err != nil {
 				return fmt.Errorf("%w", err)

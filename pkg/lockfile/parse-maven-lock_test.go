@@ -1208,7 +1208,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		Version models.StringHolder
+		Version models.StringWithPosition
 	}
 	type args struct {
 		lockfile lockfile.MavenLockFile
@@ -1222,7 +1222,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// 1.0: Soft requirement for 1.0. Use 1.0 if no other version appears earlier in the dependency tree.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "1.0",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1231,7 +1231,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// [1.0]: Hard requirement for 1.0. Use 1.0 and only 1.0.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "[1.0]",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1240,7 +1240,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// (,1.0]: Hard requirement for any version <= 1.0.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "(,1.0]",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1249,7 +1249,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// [1.2,1.3]: Hard requirement for any version between 1.2 and 1.3 inclusive.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "[1.2,1.3]",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1258,7 +1258,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// [1.0,2.0): 1.0 <= x < 2.0; Hard requirement for any version between 1.0 inclusive and 2.0 exclusive.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "[1.0,2.0)",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1267,7 +1267,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// [1.5,): Hard requirement for any version greater than or equal to 1.5.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "[1.5,)",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1276,7 +1276,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// (,1.0],[1.2,): Hard requirement for any version less than or equal to 1.0 than or greater than or equal to 1.2, but not 1.1.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "(,1.0],[1.2,)",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
@@ -1285,7 +1285,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 		// (,1.1),(1.1,): Hard requirement for any version except 1.1; for example because 1.1 has a critical vulnerability.
 		{
 			name: "",
-			fields: fields{Version: models.StringHolder{
+			fields: fields{Version: models.StringWithPosition{
 				Value: "(,1.1),(1.1,)",
 			}},
 			args: args{lockfile: lockfile.MavenLockFile{}},
