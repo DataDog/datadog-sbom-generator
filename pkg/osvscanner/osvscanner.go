@@ -31,13 +31,12 @@ type ScannerActions struct {
 }
 
 type ExperimentalScannerActions struct {
-	CompareOffline        bool
-	DownloadDatabases     bool
-	ShowAllPackages       bool
-	ScanLicensesSummary   bool
-	OnlyPackages          bool
-	ScanLicensesAllowlist []string
-	ScanOCIImage          string
+	CompareOffline      bool
+	DownloadDatabases   bool
+	ShowAllPackages     bool
+	ScanLicensesSummary bool
+	OnlyPackages        bool
+	ScanOCIImage        string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
@@ -283,10 +282,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	if actions.CompareOffline {
 		actions.SkipGit = true
-
-		if len(actions.ScanLicensesAllowlist) > 0 || actions.ScanLicensesSummary {
-			return models.VulnerabilityResults{}, errors.New("cannot retrieve licenses locally")
-		}
 	}
 
 	if !actions.CompareOffline && actions.DownloadDatabases {

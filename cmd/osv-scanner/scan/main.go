@@ -101,10 +101,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:  "experimental-licenses-summary",
 				Usage: "report a license summary, implying the --experimental-all-packages flag",
 			},
-			&cli.StringSliceFlag{
-				Name:  "experimental-licenses",
-				Usage: "report on licenses based on an allowlist",
-			},
 			&cli.BoolFlag{
 				Name:  "experimental-only-packages",
 				Usage: "only collects packages, does not scan for vulnerabilities",
@@ -174,9 +170,8 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 			// if it's just the UNKNOWN license.
 			ShowAllPackages: context.Bool("experimental-all-packages") ||
 				context.Bool("experimental-licenses-summary"),
-			ScanLicensesSummary:   context.Bool("experimental-licenses-summary"),
-			ScanLicensesAllowlist: context.StringSlice("experimental-licenses"),
-			OnlyPackages:          context.Bool("experimental-only-packages"),
+			ScanLicensesSummary: context.Bool("experimental-licenses-summary"),
+			OnlyPackages:        context.Bool("experimental-only-packages"),
 		},
 	}, r)
 
