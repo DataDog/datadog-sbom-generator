@@ -22,7 +22,6 @@ type ScannerActions struct {
 	LockfilePaths  []string
 	DirectoryPaths []string
 	Recursive      bool
-	SkipGit        bool
 	NoIgnore       bool
 	Debug          bool
 	EnableParsers  []string
@@ -280,7 +279,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 	}
 
 	if actions.CompareOffline {
-		actions.SkipGit = true
 	}
 
 	if !actions.CompareOffline && actions.DownloadDatabases {

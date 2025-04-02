@@ -52,11 +52,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				TakesFile: true,
 			},
 			&cli.BoolFlag{
-				Name:  "skip-git",
-				Usage: "skip scanning git repositories",
-				Value: false,
-			},
-			&cli.BoolFlag{
 				Name:    "recursive",
 				Aliases: []string{"r"},
 				Usage:   "check subdirectories",
@@ -153,7 +148,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		LockfilePaths:  context.StringSlice("lockfile"),
 		Recursive:      context.Bool("recursive"),
-		SkipGit:        context.Bool("skip-git"),
 		NoIgnore:       context.Bool("no-ignore"),
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),
