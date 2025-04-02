@@ -115,12 +115,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:  "experimental-licenses",
 				Usage: "report on licenses based on an allowlist",
 			},
-			&cli.StringFlag{
-				Name:      "experimental-oci-image",
-				Usage:     "scan an exported *docker* container image archive (exported using `docker save` command) file",
-				TakesFile: true,
-				Hidden:    true,
-			},
 			&cli.BoolFlag{
 				Name:  "experimental-only-packages",
 				Usage: "only collects packages, does not scan for vulnerabilities",
@@ -208,7 +202,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 				context.Bool("experimental-licenses-summary"),
 			ScanLicensesSummary:   context.Bool("experimental-licenses-summary"),
 			ScanLicensesAllowlist: context.StringSlice("experimental-licenses"),
-			ScanOCIImage:          context.String("experimental-oci-image"),
 			OnlyPackages:          context.Bool("experimental-only-packages"),
 		},
 	}, r)
