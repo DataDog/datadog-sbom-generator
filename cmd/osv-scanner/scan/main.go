@@ -30,11 +30,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				TakesFile: true,
 			},
 			&cli.StringFlag{
-				Name:      "config",
-				Usage:     "set/override config file",
-				TakesFile: true,
-			},
-			&cli.StringFlag{
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "sets the output format; value can be: " + strings.Join(reporter.Format(), ", "),
@@ -126,10 +121,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:  "enable-parsers",
 				Usage: fmt.Sprintf("Explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
 			},
-			&cli.BoolFlag{
-				Name:  "no-config",
-				Usage: "Disable osv-scanner config and always use a default configuration",
-			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
 		Action: func(c *cli.Context) error {
@@ -180,7 +171,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		Recursive:              context.Bool("recursive"),
 		SkipGit:                context.Bool("skip-git"),
 		NoIgnore:               context.Bool("no-ignore"),
-		ConfigOverridePath:     context.String("config"),
 		DirectoryPaths:         context.Args().Slice(),
 		ConsiderScanPathAsRoot: context.Bool("consider-scan-path-as-root"),
 		PathRelativeToScanDir:  context.Bool("paths-relative-to-scan-dir"),

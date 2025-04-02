@@ -25,7 +25,6 @@ type ScannerActions struct {
 	SkipGit                bool
 	NoIgnore               bool
 	Debug                  bool
-	ConfigOverridePath     string
 	ConsiderScanPathAsRoot bool
 	PathRelativeToScanDir  bool
 	EnableParsers          []string
