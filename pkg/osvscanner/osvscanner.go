@@ -42,8 +42,6 @@ type ExperimentalScannerActions struct {
 	OnlyPackages          bool
 	ScanLicensesAllowlist []string
 	ScanOCIImage          string
-
-	LocalDBPath string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.

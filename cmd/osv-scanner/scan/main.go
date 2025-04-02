@@ -98,11 +98,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:  "experimental-download-offline-databases",
 				Usage: "downloads vulnerability databases for offline comparison",
 			},
-			&cli.StringFlag{
-				Name:   "experimental-local-db-path",
-				Usage:  "sets the path that local databases should be stored",
-				Hidden: true,
-			},
 			&cli.BoolFlag{
 				Name:  "experimental-all-packages",
 				Usage: "when json output is selected, prints all packages",
@@ -191,7 +186,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		PathRelativeToScanDir:  context.Bool("paths-relative-to-scan-dir"),
 		EnableParsers:          context.StringSlice("enable-parsers"),
 		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
-			LocalDBPath:       context.String("experimental-local-db-path"),
 			DownloadDatabases: context.Bool("experimental-download-offline-databases"),
 			CompareOffline:    context.Bool("experimental-offline"),
 			// License summary mode causes all
