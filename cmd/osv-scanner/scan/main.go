@@ -130,12 +130,11 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
-		LockfilePaths:              context.StringSlice("lockfile"),
-		Recursive:                  context.Bool("recursive"),
-		NoIgnore:                   context.Bool("no-ignore"),
-		DirectoryPaths:             context.Args().Slice(),
-		EnableParsers:              context.StringSlice("enable-parsers"),
-		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{},
+		LockfilePaths:  context.StringSlice("lockfile"),
+		Recursive:      context.Bool("recursive"),
+		NoIgnore:       context.Bool("no-ignore"),
+		DirectoryPaths: context.Args().Slice(),
+		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)
 
 	if err != nil && !errors.Is(err, osvscanner.NoPackagesFoundErr) && !errors.Is(err, osvscanner.VulnerabilitiesFoundErr) {

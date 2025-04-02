@@ -25,11 +25,6 @@ type ScannerActions struct {
 	NoIgnore       bool
 	Debug          bool
 	EnableParsers  []string
-
-	ExperimentalScannerActions
-}
-
-type ExperimentalScannerActions struct {
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
