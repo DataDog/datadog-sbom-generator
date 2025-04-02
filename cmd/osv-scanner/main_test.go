@@ -170,18 +170,6 @@ func TestRun(t *testing.T) {
 			args: []string{"", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
-		// one specific supported sbom with vulns
-		{
-			name: "folder of supported sbom with vulns",
-			args: []string{"", "--config=./fixtures/osv-scanner-empty-config.toml", "./fixtures/sbom-insecure/"},
-			exit: 0,
-		},
-		// one specific supported sbom with vulns
-		{
-			name: "one specific supported sbom with vulns",
-			args: []string{"", "--config=./fixtures/osv-scanner-empty-config.toml", "--sbom", "./fixtures/sbom-insecure/alpine.cdx.xml"},
-			exit: 0,
-		},
 		// one specific unsupported lockfile
 		{
 			name: "",

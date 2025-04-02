@@ -93,17 +93,6 @@ Scanned <rootdir>/fixtures/locks-many-with-invalid/yarn.lock file and found 1 pa
 
 ---
 
-[TestRun/folder_of_supported_sbom_with_vulns - 1]
-Scanning dir ./fixtures/sbom-insecure/
-No issues found
-
----
-
-[TestRun/folder_of_supported_sbom_with_vulns - 2]
-No package sources found, --help for usage information.
-
----
-
 [TestRun/invalid_--verbosity_value - 1]
 
 ---
@@ -217,16 +206,6 @@ Scanned <rootdir>/fixtures/locks-test-ignore/package-lock.json file and found 1 
 ---
 
 [TestRun/one_specific_supported_lockfile_with_ignore - 2]
-
----
-
-[TestRun/one_specific_supported_sbom_with_vulns - 1]
-No issues found
-
----
-
-[TestRun/one_specific_supported_sbom_with_vulns - 2]
-No package sources found, --help for usage information.
 
 ---
 

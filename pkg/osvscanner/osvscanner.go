@@ -20,7 +20,6 @@ import (
 
 type ScannerActions struct {
 	LockfilePaths          []string
-	SBOMPaths              []string
 	DirectoryPaths         []string
 	GitCommits             []string
 	Recursive              bool

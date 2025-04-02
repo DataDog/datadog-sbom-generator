@@ -29,12 +29,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Usage:     "scan package lockfile on this path",
 				TakesFile: true,
 			},
-			&cli.StringSliceFlag{
-				Name:      "sbom",
-				Aliases:   []string{"S"},
-				Usage:     "scan sbom file on this path",
-				TakesFile: true,
-			},
 			&cli.StringFlag{
 				Name:      "config",
 				Usage:     "set/override config file",
@@ -194,7 +188,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		LockfilePaths:          context.StringSlice("lockfile"),
-		SBOMPaths:              context.StringSlice("sbom"),
 		Recursive:              context.Bool("recursive"),
 		SkipGit:                context.Bool("skip-git"),
 		NoIgnore:               context.Bool("no-ignore"),
