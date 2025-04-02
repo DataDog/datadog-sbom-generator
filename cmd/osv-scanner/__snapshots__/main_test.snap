@@ -107,7 +107,8 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "results": [
     {
       "source": {
-        "path": "<rootdir>/fixtures/locks-many/composer.lock",
+        "scan_path": "./fixtures/locks-many/composer.lock",
+        "path": "composer.lock",
         "type": "lockfile"
       },
       "packages": [
@@ -145,7 +146,8 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
   "results": [
     {
       "source": {
-        "path": "<rootdir>/fixtures/locks-many/composer.lock",
+        "scan_path": "./fixtures/locks-many/composer.lock",
+        "path": "composer.lock",
         "type": "lockfile"
       },
       "packages": [

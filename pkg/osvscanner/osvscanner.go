@@ -19,15 +19,13 @@ import (
 )
 
 type ScannerActions struct {
-	LockfilePaths          []string
-	DirectoryPaths         []string
-	Recursive              bool
-	SkipGit                bool
-	NoIgnore               bool
-	Debug                  bool
-	ConsiderScanPathAsRoot bool
-	PathRelativeToScanDir  bool
-	EnableParsers          []string
+	LockfilePaths  []string
+	DirectoryPaths []string
+	Recursive      bool
+	SkipGit        bool
+	NoIgnore       bool
+	Debug          bool
+	EnableParsers  []string
 
 	ExperimentalScannerActions
 }
@@ -326,25 +324,24 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			return models.VulnerabilityResults{}, err
 		}
 
-		if actions.ConsiderScanPathAsRoot || actions.PathRelativeToScanDir {
-			for index, pkg := range pkgs {
-				pkgs[index].Source.ScanPath = dir
-				pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
-				pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
+		// Transforming any path into a relative path to the scanned directory path
+		for index, pkg := range pkgs {
+			pkgs[index].Source.ScanPath = dir
+			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
+			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 
-				if pkgs[index].NameLocation != nil {
-					pkgs[index].NameLocation.Filename = fileposition.ToRelativePath(dir, pkg.NameLocation.Filename)
-				}
-
-				if pkgs[index].VersionLocation != nil {
-					pkgs[index].VersionLocation.Filename = fileposition.ToRelativePath(dir, pkg.VersionLocation.Filename)
-				}
+			if pkgs[index].NameLocation != nil {
+				pkgs[index].NameLocation.Filename = fileposition.ToRelativePath(dir, pkg.NameLocation.Filename)
 			}
-			for index, artifact := range artifacts {
-				artifacts[index].Filename = fileposition.ToRelativePath(dir, artifact.Filename)
-				if artifact.DependsOn != nil {
-					artifacts[index].DependsOn.Filename = fileposition.ToRelativePath(dir, artifact.DependsOn.Filename)
-				}
+
+			if pkgs[index].VersionLocation != nil {
+				pkgs[index].VersionLocation.Filename = fileposition.ToRelativePath(dir, pkg.VersionLocation.Filename)
+			}
+		}
+		for index, artifact := range artifacts {
+			artifacts[index].Filename = fileposition.ToRelativePath(dir, artifact.Filename)
+			if artifact.DependsOn != nil {
+				artifacts[index].DependsOn.Filename = fileposition.ToRelativePath(dir, artifact.DependsOn.Filename)
 			}
 		}
 		scannedPackages = append(scannedPackages, pkgs...)

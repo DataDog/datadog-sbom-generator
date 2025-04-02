@@ -109,14 +109,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:  "experimental-only-packages",
 				Usage: "only collects packages, does not scan for vulnerabilities",
 			},
-			&cli.BoolFlag{
-				Name:  "consider-scan-path-as-root",
-				Usage: "Transform package path root to be the scanning path, thus removing any information about the host",
-			},
-			&cli.BoolFlag{
-				Name:  "paths-relative-to-scan-dir",
-				Usage: "Same than --consider-scan-path-as-root but reports a path relative to the scan dir (removing the leading path separator)",
-			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
 				Usage: fmt.Sprintf("Explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
@@ -167,14 +159,12 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
-		LockfilePaths:          context.StringSlice("lockfile"),
-		Recursive:              context.Bool("recursive"),
-		SkipGit:                context.Bool("skip-git"),
-		NoIgnore:               context.Bool("no-ignore"),
-		DirectoryPaths:         context.Args().Slice(),
-		ConsiderScanPathAsRoot: context.Bool("consider-scan-path-as-root"),
-		PathRelativeToScanDir:  context.Bool("paths-relative-to-scan-dir"),
-		EnableParsers:          context.StringSlice("enable-parsers"),
+		LockfilePaths:  context.StringSlice("lockfile"),
+		Recursive:      context.Bool("recursive"),
+		SkipGit:        context.Bool("skip-git"),
+		NoIgnore:       context.Bool("no-ignore"),
+		DirectoryPaths: context.Args().Slice(),
+		EnableParsers:  context.StringSlice("enable-parsers"),
 		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
 			DownloadDatabases: context.Bool("experimental-download-offline-databases"),
 			CompareOffline:    context.Bool("experimental-offline"),

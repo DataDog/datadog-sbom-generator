@@ -416,13 +416,13 @@ func TestRun_WithoutHostPathInformation(t *testing.T) {
 		// one specific supported lockfile
 		{
 			name:          "one specific supported lockfile (relative path)",
-			args:          []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "--paths-relative-to-scan-dir", "./fixtures/locks-many/yarn.lock"},
+			args:          []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "./fixtures/locks-many/yarn.lock"},
 			wantExitCode:  0,
 			wantFilePaths: []string{"package.json"},
 		},
 		{
 			name:         "Multiple lockfiles (relative path)",
-			args:         []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "--paths-relative-to-scan-dir", "./fixtures/locks-many"},
+			args:         []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "./fixtures/locks-many"},
 			wantExitCode: 0,
 			wantFilePaths: []string{
 				"package.json",
@@ -461,7 +461,6 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 		"-r",
 		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"./fixtures/integration-test-locks",
 	}
 
@@ -479,7 +478,6 @@ func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 		"-r",
 		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"./fixtures/locks-empty",
 	}
 
@@ -497,7 +495,6 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 		"-r",
 		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"--enable-parsers=pom.xml",
 		"./fixtures/integration-test-locks",
 	}
@@ -525,7 +522,6 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 				"-r",
 				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--consider-scan-path-as-root",
 				"./fixtures/integration-yarn/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -555,7 +551,6 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 				"-r",
 				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--consider-scan-path-as-root",
 				"./fixtures/integration-npm/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -583,7 +578,6 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 				"-r",
 				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--paths-relative-to-scan-dir",
 				"./fixtures/encoding-integration-test-locks/" + tt.encoding,
 			}
 
