@@ -148,11 +148,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),
 		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
-			CompareOffline: context.Bool("experimental-offline"),
-			// License summary mode causes all
-			// packages to appear in the json as
-			// every package has a license - even
-			// if it's just the UNKNOWN license.
+			CompareOffline:  context.Bool("experimental-offline"),
 			ShowAllPackages: context.Bool("experimental-all-packages"),
 			OnlyPackages:    context.Bool("experimental-only-packages"),
 		},
