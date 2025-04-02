@@ -30,7 +30,6 @@ type ScannerActions struct {
 }
 
 type ExperimentalScannerActions struct {
-	CompareOffline  bool
 	ShowAllPackages bool
 	OnlyPackages    bool
 }
@@ -52,7 +51,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, compareOffline bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -103,7 +102,7 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, "", enabledParsers); extractor != nil {
-				pkgs, artifact, err := scanLockfile(r, path, "", compareOffline, enabledParsers)
+				pkgs, artifact, err := scanLockfile(r, path, "", enabledParsers)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
 				}
@@ -157,7 +156,7 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, parseAs string, _ bool, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
+func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
@@ -276,9 +275,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	if actions.CompareOffline {
-	}
-
 	var scannedPackages []scannedPackage
 	var scannedArtifacts []models.ScannedArtifact
 
@@ -293,7 +289,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			r.Errorf("Failed to resolved path with error %s\n", err)
 			return models.VulnerabilityResults{}, err
 		}
-		pkgs, artifact, err := scanLockfile(r, lockfilePath, parseAs, actions.CompareOffline, enabledParsers)
+		pkgs, artifact, err := scanLockfile(r, lockfilePath, parseAs, enabledParsers)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
@@ -305,7 +301,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	for _, dir := range actions.DirectoryPaths {
 		r.Infof("Scanning dir %s\n", dir)
-		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, actions.CompareOffline, enabledParsers)
+		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
