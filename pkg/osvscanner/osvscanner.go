@@ -31,12 +31,11 @@ type ScannerActions struct {
 }
 
 type ExperimentalScannerActions struct {
-	CompareOffline      bool
-	DownloadDatabases   bool
-	ShowAllPackages     bool
-	ScanLicensesSummary bool
-	OnlyPackages        bool
-	ScanOCIImage        string
+	CompareOffline    bool
+	DownloadDatabases bool
+	ShowAllPackages   bool
+	OnlyPackages      bool
+	ScanOCIImage      string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
