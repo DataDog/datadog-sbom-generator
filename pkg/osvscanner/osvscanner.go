@@ -30,10 +30,9 @@ type ScannerActions struct {
 }
 
 type ExperimentalScannerActions struct {
-	CompareOffline    bool
-	DownloadDatabases bool
-	ShowAllPackages   bool
-	OnlyPackages      bool
+	CompareOffline  bool
+	ShowAllPackages bool
+	OnlyPackages    bool
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
@@ -278,10 +277,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 	}
 
 	if actions.CompareOffline {
-	}
-
-	if !actions.CompareOffline && actions.DownloadDatabases {
-		return models.VulnerabilityResults{}, errors.New("databases can only be downloaded when running in offline mode")
 	}
 
 	var scannedPackages []scannedPackage
