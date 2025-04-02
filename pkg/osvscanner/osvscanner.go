@@ -34,7 +34,6 @@ type ExperimentalScannerActions struct {
 	DownloadDatabases bool
 	ShowAllPackages   bool
 	OnlyPackages      bool
-	ScanOCIImage      string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
