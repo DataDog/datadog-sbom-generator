@@ -21,7 +21,6 @@ import (
 type ScannerActions struct {
 	LockfilePaths          []string
 	DirectoryPaths         []string
-	GitCommits             []string
 	Recursive              bool
 	SkipGit                bool
 	NoIgnore               bool
