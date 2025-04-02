@@ -24,12 +24,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 		Description: "scans various mediums for dependencies and matches it against the OSV database",
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{
-				Name:      "docker",
-				Aliases:   []string{"D"},
-				Usage:     "scan docker image with this name. Warning: Only run this on a trusted container image, as it runs the container image to retrieve the package versions",
-				TakesFile: false,
-			},
-			&cli.StringSliceFlag{
 				Name:      "lockfile",
 				Aliases:   []string{"L"},
 				Usage:     "scan package lockfile on this path",
@@ -201,7 +195,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		LockfilePaths:          context.StringSlice("lockfile"),
 		SBOMPaths:              context.StringSlice("sbom"),
-		DockerContainerNames:   context.StringSlice("docker"),
 		Recursive:              context.Bool("recursive"),
 		SkipGit:                context.Bool("skip-git"),
 		NoIgnore:               context.Bool("no-ignore"),

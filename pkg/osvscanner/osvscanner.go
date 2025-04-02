@@ -27,7 +27,6 @@ type ScannerActions struct {
 	SkipGit                bool
 	NoIgnore               bool
 	Debug                  bool
-	DockerContainerNames   []string
 	ConfigOverridePath     string
 	ConsiderScanPathAsRoot bool
 	PathRelativeToScanDir  bool
