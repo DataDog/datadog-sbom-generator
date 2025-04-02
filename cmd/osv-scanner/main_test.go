@@ -416,13 +416,13 @@ func TestRun_WithoutHostPathInformation(t *testing.T) {
 		// one specific supported lockfile
 		{
 			name:          "one specific supported lockfile (relative path)",
-			args:          []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "./fixtures/locks-many/yarn.lock"},
+			args:          []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many/yarn.lock"},
 			wantExitCode:  0,
 			wantFilePaths: []string{"package.json"},
 		},
 		{
 			name:         "Multiple lockfiles (relative path)",
-			args:         []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "./fixtures/locks-many"},
+			args:         []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many"},
 			wantExitCode: 0,
 			wantFilePaths: []string{
 				"package.json",
@@ -459,7 +459,6 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 	args := []string{
 		"",
 		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
 		"./fixtures/integration-test-locks",
 	}
@@ -476,7 +475,6 @@ func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 	args := []string{
 		"",
 		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
 		"./fixtures/locks-empty",
 	}
@@ -493,7 +491,6 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 	args := []string{
 		"",
 		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
 		"--enable-parsers=pom.xml",
 		"./fixtures/integration-test-locks",
@@ -520,7 +517,6 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 			args := []string{
 				"",
 				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
 				"./fixtures/integration-yarn/" + tt,
 			}
@@ -549,7 +545,6 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 			args := []string{
 				"",
 				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
 				"./fixtures/integration-npm/" + tt,
 			}
@@ -576,7 +571,6 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 			args := []string{
 				"",
 				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
 				"./fixtures/encoding-integration-test-locks/" + tt.encoding,
 			}

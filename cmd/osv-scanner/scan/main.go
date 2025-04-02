@@ -80,10 +80,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
 				Value: "info",
 			},
-			&cli.BoolFlag{
-				Name:  "experimental-only-packages",
-				Usage: "only collects packages, does not scan for vulnerabilities",
-			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
 				Usage: fmt.Sprintf("Explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
@@ -134,14 +130,12 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
-		LockfilePaths:  context.StringSlice("lockfile"),
-		Recursive:      context.Bool("recursive"),
-		NoIgnore:       context.Bool("no-ignore"),
-		DirectoryPaths: context.Args().Slice(),
-		EnableParsers:  context.StringSlice("enable-parsers"),
-		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
-			OnlyPackages: context.Bool("experimental-only-packages"),
-		},
+		LockfilePaths:              context.StringSlice("lockfile"),
+		Recursive:                  context.Bool("recursive"),
+		NoIgnore:                   context.Bool("no-ignore"),
+		DirectoryPaths:             context.Args().Slice(),
+		EnableParsers:              context.StringSlice("enable-parsers"),
+		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{},
 	}, r)
 
 	if err != nil && !errors.Is(err, osvscanner.NoPackagesFoundErr) && !errors.Is(err, osvscanner.VulnerabilitiesFoundErr) {
