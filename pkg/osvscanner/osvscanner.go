@@ -30,8 +30,7 @@ type ScannerActions struct {
 }
 
 type ExperimentalScannerActions struct {
-	ShowAllPackages bool
-	OnlyPackages    bool
+	OnlyPackages bool
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.

@@ -81,10 +81,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Value: "info",
 			},
 			&cli.BoolFlag{
-				Name:  "experimental-all-packages",
-				Usage: "when json output is selected, prints all packages",
-			},
-			&cli.BoolFlag{
 				Name:  "experimental-only-packages",
 				Usage: "only collects packages, does not scan for vulnerabilities",
 			},
@@ -144,8 +140,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),
 		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
-			ShowAllPackages: context.Bool("experimental-all-packages"),
-			OnlyPackages:    context.Bool("experimental-only-packages"),
+			OnlyPackages: context.Bool("experimental-only-packages"),
 		},
 	}, r)
 
