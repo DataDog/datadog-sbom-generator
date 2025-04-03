@@ -59,10 +59,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Value: false,
 			},
 			&cli.StringSliceFlag{
-				Name:  "call-analysis",
-				Usage: "attempt call analysis on code to detect only active vulnerabilities",
-			},
-			&cli.StringSliceFlag{
 				Name:  "no-call-analysis",
 				Usage: "disables call graph analysis",
 			},
