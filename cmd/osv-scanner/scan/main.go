@@ -61,7 +61,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			&cli.StringFlag{
 				Name:  "verbosity",
 				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
-				Value: "info",
+				Value: "error",
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",

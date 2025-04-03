@@ -21,7 +21,6 @@ built at: n/a
 ---
 
 [TestRun/#02 - 1]
-Scanning dir ./fixtures/locks-many/not-a-lockfile.toml
 No issues found
 
 ---
@@ -32,9 +31,6 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#03 - 1]
-Scanning dir ./fixtures/locks-gitignore
-Scanned <rootdir>/fixtures/locks-gitignore/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 package
 
 ---
 
@@ -43,15 +39,6 @@ Scanned <rootdir>/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 pac
 ---
 
 [TestRun/#04 - 1]
-Scanning dir ./fixtures/locks-gitignore
-Scanned <rootdir>/fixtures/locks-gitignore/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/ignored/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/ignored/yarn.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/subdir/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/subdir/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-gitignore/yarn.lock file and found 1 package
 
 ---
 
@@ -69,11 +56,6 @@ unsupported output format "unknown" - must be one of: table, json, cyclonedx-1-4
 ---
 
 [TestRun/Scan_locks-many - 1]
-Scanning dir ./fixtures/locks-many
-Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/package-lock.json file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/yarn.lock file and found 1 package
 
 ---
 
@@ -82,10 +64,6 @@ Scanned <rootdir>/fixtures/locks-many/yarn.lock file and found 1 package
 ---
 
 [TestRun/all_supported_lockfiles_in_the_directory_should_be_checked - 1]
-Scanning dir ./fixtures/locks-many-with-invalid
-Scanned <rootdir>/fixtures/locks-many-with-invalid/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-many-with-invalid/composer.lock file and found 0 packages
-Scanned <rootdir>/fixtures/locks-many-with-invalid/yarn.lock file and found 1 package
 
 ---
 
@@ -136,15 +114,10 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/json_output_2 - 2]
-Scanning dir ./fixtures/locks-many/composer.lock
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
 [TestRun/nested_directories_are_checked_when_`--recursive`_is_passed - 1]
-Scanning dir ./fixtures/locks-one-with-nested
-Scanned <rootdir>/fixtures/locks-one-with-nested/nested/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
 
 ---
 
@@ -153,8 +126,6 @@ Scanned <rootdir>/fixtures/locks-one-with-nested/yarn.lock file and found 1 pack
 ---
 
 [TestRun/one_specific_supported_lockfile - 1]
-Scanning dir ./fixtures/locks-many/composer.lock
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
@@ -163,8 +134,6 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun/one_specific_supported_lockfile_with_ignore - 1]
-Scanning dir ./fixtures/locks-test-ignore/package-lock.json
-Scanned <rootdir>/fixtures/locks-test-ignore/package-lock.json file and found 1 package
 
 ---
 
@@ -173,8 +142,6 @@ Scanned <rootdir>/fixtures/locks-test-ignore/package-lock.json file and found 1 
 ---
 
 [TestRun/only_the_files_in_the_given_directories_are_checked_by_default_(no_recursion) - 1]
-Scanning dir ./fixtures/locks-one-with-nested
-Scanned <rootdir>/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
 
 ---
 
@@ -201,7 +168,6 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun_GithubActions/scanning_osv-scanner_custom_format - 1]
-Scanned <rootdir>/fixtures/locks-insecure/osv-scanner-flutter-deps.json file as a osv-scanner and found 3 packages
 
 ---
 
@@ -276,7 +242,6 @@ could not determine extractor, requested my-file
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#01 - 1]
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
@@ -303,9 +268,6 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#04 - 1]
-Scanned <rootdir>/fixtures/locks-insecure/my-package-lock.json file as a package-lock.json and found 1 package
-Scanning dir ./fixtures/locks-insecure
-Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 
 ---
 
@@ -314,10 +276,6 @@ Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#05 - 1]
-Scanned <rootdir>/fixtures/locks-insecure/my-package-lock.json file as a package-lock.json and found 1 package
-Scanned <rootdir>/fixtures/locks-insecure/my-yarn.lock file as a yarn.lock and found 1 package
-Scanning dir ./fixtures/locks-insecure
-Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 
 ---
 
@@ -326,10 +284,6 @@ Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#06 - 1]
-Scanned <rootdir>/fixtures/locks-insecure/my-yarn.lock file as a yarn.lock and found 1 package
-Scanned <rootdir>/fixtures/locks-insecure/my-package-lock.json file as a package-lock.json and found 1 package
-Scanning dir ./fixtures/locks-insecure
-Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 
 ---
 
@@ -338,14 +292,6 @@ Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#07 - 1]
-Scanned <rootdir>/fixtures/locks-insecure/my-package-lock.json file as a Cargo.lock and found 0 packages
-Scanning dir ./fixtures/locks-insecure
-Scanned <rootdir>/fixtures/locks-insecure/composer.lock file and found 1 package
-Scanning dir ./fixtures/locks-many
-Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/package-lock.json file and found 1 package
-Scanned <rootdir>/fixtures/locks-many/yarn.lock file and found 1 package
 
 ---
 
@@ -354,7 +300,6 @@ Scanned <rootdir>/fixtures/locks-many/yarn.lock file and found 1 package
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#08 - 1]
-Scanned <rootdir>/fixtures/locks-many/yarn.lock file as a package-lock.json and found 0 packages
 No issues found
 
 ---
@@ -365,7 +310,6 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#09 - 1]
-Scanned <rootdir>/fixtures/locks-many/status file as a dpkg-status and found 1 package
 
 ---
 
@@ -374,7 +318,6 @@ Scanned <rootdir>/fixtures/locks-many/status file as a dpkg-status and found 1 p
 ---
 
 [TestRun_LockfileWithExplicitParseAs/one_lockfile_with_local_path - 1]
-Scanned <rootdir>/fixtures/locks-many/replace-local.mod file as a go.mod and found 1 package
 
 ---
 
@@ -1040,8 +983,6 @@ Scanned <rootdir>/fixtures/locks-many/replace-local.mod file as a go.mod and fou
 ---
 
 [TestRun_NpmPackageOnly/v6.14.18 - 2]
-Scanning dir ./fixtures/integration-npm/v6.14.18
-Scanned <rootdir>/fixtures/integration-npm/v6.14.18/package-lock.json file and found 49 packages
 
 ---
 
@@ -2804,8 +2745,6 @@ Scanned <rootdir>/fixtures/integration-npm/v6.14.18/package-lock.json file and f
 ---
 
 [TestRun_NpmPackageOnly/v7.24.2 - 2]
-Scanning dir ./fixtures/integration-npm/v7.24.2
-Scanned <rootdir>/fixtures/integration-npm/v7.24.2/package-lock.json file and found 132 packages
 
 ---
 
@@ -4568,8 +4507,6 @@ Scanned <rootdir>/fixtures/integration-npm/v7.24.2/package-lock.json file and fo
 ---
 
 [TestRun_NpmPackageOnly/v8.19.4 - 2]
-Scanning dir ./fixtures/integration-npm/v8.19.4
-Scanned <rootdir>/fixtures/integration-npm/v8.19.4/package-lock.json file and found 132 packages
 
 ---
 
@@ -6332,8 +6269,6 @@ Scanned <rootdir>/fixtures/integration-npm/v8.19.4/package-lock.json file and fo
 ---
 
 [TestRun_NpmPackageOnly/v9.9.4 - 2]
-Scanning dir ./fixtures/integration-npm/v9.9.4
-Scanned <rootdir>/fixtures/integration-npm/v9.9.4/package-lock.json file and found 132 packages
 
 ---
 
@@ -8096,15 +8031,10 @@ Scanned <rootdir>/fixtures/integration-npm/v9.9.4/package-lock.json file and fou
 ---
 
 [TestRun_NpmPackageOnly/v10.9.0 - 2]
-Scanning dir ./fixtures/integration-npm/v10.9.0
-Scanned <rootdir>/fixtures/integration-npm/v10.9.0/package-lock.json file and found 132 packages
 
 ---
 
 [TestRun_SubCommands/scan_with_a_flag - 1]
-Scanning dir ./fixtures/locks-one-with-nested
-Scanned <rootdir>/fixtures/locks-one-with-nested/nested/composer.lock file and found 1 package
-Scanned <rootdir>/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
 
 ---
 
@@ -8114,8 +8044,6 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_SubCommands/with_no_subcommand - 1]
-Scanning dir ./fixtures/locks-many/composer.lock
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
@@ -8124,8 +8052,6 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun_SubCommands/with_scan_subcommand - 1]
-Scanning dir ./fixtures/locks-many/composer.lock
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 
@@ -8257,11 +8183,6 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_WithCycloneDX15 - 2]
-Scanning dir ./fixtures/integration-test-locks
-Scanned <rootdir>/fixtures/integration-test-locks/libs/pom.xml file and found 0 packages
-Scanned <rootdir>/fixtures/integration-test-locks/other-dir/pom.xml file and found 2 packages
-Scanned <rootdir>/fixtures/integration-test-locks/packages.lock.json file and found 1 package
-Scanned <rootdir>/fixtures/integration-test-locks/pom.xml file and found 1 package
 
 ---
 
@@ -8276,10 +8197,6 @@ Scanned <rootdir>/fixtures/integration-test-locks/pom.xml file and found 1 packa
 ---
 
 [TestRun_WithEmptyCycloneDX15 - 2]
-Scanning dir ./fixtures/locks-empty
-Scanned <rootdir>/fixtures/locks-empty/Gemfile.lock file and found 0 packages
-Scanned <rootdir>/fixtures/locks-empty/composer.lock file and found 0 packages
-Scanned <rootdir>/fixtures/locks-empty/yarn.lock file and found 0 packages
 No package sources found, --help for usage information.
 
 ---
@@ -13154,30 +13071,6 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun_WithEncodedLockfile/UTF-8 - 2]
-Scanning dir ./fixtures/encoding-integration-test-locks/UTF-8
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/Cargo.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/Gemfile.lock file and found 99 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/Pipfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/composer/composer.lock file and found 123 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/conan.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/go.mod file and found 4 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/gradle-groovy/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/gradle-kotlin/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/maven-spring/pom.xml file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/mix.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/npm/package-lock.json file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/nuget/packages.lock.json file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/other-requirements.txt file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/packages.lock.json file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/pnpm/pnpm-lock.yaml file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/pnpm-9/pnpm-lock.yaml file and found 5 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/poetry.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/pom.xml file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/pubspec.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/renv.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/requirements-test.txt file and found 4 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/requirements.txt file and found 6 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/yarn/yarn.lock file and found 3 packages
 
 ---
 
@@ -17983,30 +17876,6 @@ Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-8/yarn/yarn.lock 
 ---
 
 [TestRun_WithEncodedLockfile/UTF-16 - 2]
-Scanning dir ./fixtures/encoding-integration-test-locks/UTF-16
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/Cargo.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/Gemfile.lock file and found 99 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/Pipfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/composer/composer.lock file and found 123 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/conan.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/go.mod file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/gradle-groovy/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/gradle-kotlin/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/maven-spring/pom.xml file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/mix.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/npm/package-lock.json file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/nuget/packages.lock.json file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/other-requirements.txt file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/packages.lock.json file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/pnpm/pnpm-lock.yaml file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/pnpm-9/pnpm-lock.yaml file and found 5 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/poetry.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/pom.xml file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/pubspec.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/renv.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/requirements-test.txt file and found 4 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/requirements.txt file and found 6 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/yarn/yarn.lock file and found 3 packages
 
 ---
 
@@ -22812,30 +22681,6 @@ Scanned <rootdir>/fixtures/encoding-integration-test-locks/UTF-16/yarn/yarn.lock
 ---
 
 [TestRun_WithEncodedLockfile/Windows-1252 - 2]
-Scanning dir ./fixtures/encoding-integration-test-locks/Windows-1252
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/Cargo.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/Gemfile.lock file and found 99 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/Pipfile.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/composer/composer.lock file and found 123 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/conan.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/go.mod file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/gradle-groovy/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/gradle-kotlin/gradle.lockfile file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/maven-spring/pom.xml file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/mix.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/npm/package-lock.json file and found 2 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/nuget/packages.lock.json file and found 3 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/other-requirements.txt file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/packages.lock.json file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/pnpm/pnpm-lock.yaml file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/pnpm-9/pnpm-lock.yaml file and found 5 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/poetry.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/pom.xml file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/pubspec.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/renv.lock file and found 1 package
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/requirements-test.txt file and found 4 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/requirements.txt file and found 6 packages
-Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/yarn/yarn.lock file and found 3 packages
 
 ---
 
@@ -22945,10 +22790,6 @@ Scanned <rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/yarn/yar
 ---
 
 [TestRun_WithExplicitParsers - 2]
-Scanning dir ./fixtures/integration-test-locks
-Scanned <rootdir>/fixtures/integration-test-locks/libs/pom.xml file and found 0 packages
-Scanned <rootdir>/fixtures/integration-test-locks/other-dir/pom.xml file and found 2 packages
-Scanned <rootdir>/fixtures/integration-test-locks/pom.xml file and found 1 package
 
 ---
 
@@ -23598,8 +23439,6 @@ Scanned <rootdir>/fixtures/integration-test-locks/pom.xml file and found 1 packa
 ---
 
 [TestRun_YarnPackageOnly/v1.22.0 - 2]
-Scanning dir ./fixtures/integration-yarn/v1.22.0
-Scanned <rootdir>/fixtures/integration-yarn/v1.22.0/yarn.lock file and found 47 packages
 
 ---
 
@@ -24262,8 +24101,6 @@ Scanned <rootdir>/fixtures/integration-yarn/v1.22.0/yarn.lock file and found 47 
 ---
 
 [TestRun_YarnPackageOnly/v3.8.7 - 2]
-Scanning dir ./fixtures/integration-yarn/v3.8.7
-Scanned <rootdir>/fixtures/integration-yarn/v3.8.7/yarn.lock file and found 48 packages
 
 ---
 
@@ -24926,7 +24763,5 @@ Scanned <rootdir>/fixtures/integration-yarn/v3.8.7/yarn.lock file and found 48 p
 ---
 
 [TestRun_YarnPackageOnly/v4.6.0 - 2]
-Scanning dir ./fixtures/integration-yarn/v4.6.0
-Scanned <rootdir>/fixtures/integration-yarn/v4.6.0/yarn.lock file and found 48 packages
 
 ---
