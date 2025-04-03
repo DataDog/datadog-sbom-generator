@@ -42,10 +42,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 					return fmt.Errorf("unsupported output format \"%s\" - must be one of: %s", s, strings.Join(reporter.Format(), ", "))
 				},
 			},
-			&cli.BoolFlag{
-				Name:  "json",
-				Usage: "sets output to json (deprecated, use --format json instead)",
-			},
 			&cli.StringFlag{
 				Name:      "output",
 				Usage:     "saves the result to the given file path",
@@ -97,10 +93,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 
 func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, error) {
 	format := context.String("format")
-
-	if context.Bool("json") {
-		format = "json"
-	}
 
 	outputPath := context.String("output")
 
