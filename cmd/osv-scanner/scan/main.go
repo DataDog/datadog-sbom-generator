@@ -58,10 +58,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Usage: "also scan files that would be ignored by .gitignore",
 				Value: false,
 			},
-			&cli.StringSliceFlag{
-				Name:  "no-call-analysis",
-				Usage: "disables call graph analysis",
-			},
 			&cli.StringFlag{
 				Name:  "verbosity",
 				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
