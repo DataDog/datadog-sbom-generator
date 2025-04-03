@@ -48,10 +48,9 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				TakesFile: true,
 			},
 			&cli.BoolFlag{
-				Name:    "recursive",
-				Aliases: []string{"r"},
-				Usage:   "check subdirectories",
-				Value:   false,
+				Name:  "not-recursive",
+				Usage: "do not check subdirectories",
+				Value: false,
 			},
 			&cli.BoolFlag{
 				Name:  "no-ignore",
@@ -110,7 +109,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		LockfilePaths:  context.StringSlice("lockfile"),
-		Recursive:      context.Bool("recursive"),
+		Recursive:      !context.Bool("not-recursive"),
 		NoIgnore:       context.Bool("no-ignore"),
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),

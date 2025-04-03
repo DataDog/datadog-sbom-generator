@@ -188,28 +188,28 @@ func TestRun(t *testing.T) {
 			args: []string{"", "./fixtures/locks-many-with-invalid"},
 			exit: 0,
 		},
-		// only the files in the given directories are checked by default (no recursion)
+		// only the files in the given directories are checked when --not-recursive is passed
 		{
-			name: "only the files in the given directories are checked by default (no recursion)",
-			args: []string{"", "./fixtures/locks-one-with-nested"},
+			name: "only the files in the given directories are checked when --not-recursive is passed",
+			args: []string{"", "--not-recursive", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
-		// nested directories are checked when `--recursive` is passed
+		// nested directories are checked by default
 		{
-			name: "nested directories are checked when `--recursive` is passed",
-			args: []string{"", "--recursive", "./fixtures/locks-one-with-nested"},
+			name: "nested directories are checked by default",
+			args: []string{"", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// .gitignored files
 		{
 			name: "",
-			args: []string{"", "--recursive", "./fixtures/locks-gitignore"},
+			args: []string{"", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		// ignoring .gitignore
 		{
 			name: "",
-			args: []string{"", "--recursive", "--no-ignore", "./fixtures/locks-gitignore"},
+			args: []string{"", "--no-ignore", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		{
@@ -452,7 +452,6 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
 		"--format=cyclonedx-1-5",
 		"./fixtures/integration-test-locks",
 	}
@@ -468,7 +467,6 @@ func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
 		"--format=cyclonedx-1-5",
 		"./fixtures/locks-empty",
 	}
@@ -484,7 +482,6 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
 		"--format=cyclonedx-1-5",
 		"--enable-parsers=pom.xml",
 		"./fixtures/integration-test-locks",
@@ -510,7 +507,6 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
 				"--format=cyclonedx-1-5",
 				"./fixtures/integration-yarn/" + tt,
 			}
@@ -538,7 +534,6 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
 				"--format=cyclonedx-1-5",
 				"./fixtures/integration-npm/" + tt,
 			}
@@ -564,7 +559,6 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
 				"--format=cyclonedx-1-5",
 				"./fixtures/encoding-integration-test-locks/" + tt.encoding,
 			}
@@ -680,7 +674,7 @@ func TestRun_SubCommands(t *testing.T) {
 		// scan with a flag
 		{
 			name: "scan with a flag",
-			args: []string{"", "scan", "--recursive", "./fixtures/locks-one-with-nested"},
+			args: []string{"", "scan", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// TODO: add tests for other future subcommands

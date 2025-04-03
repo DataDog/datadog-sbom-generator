@@ -117,11 +117,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 
 ---
 
-[TestRun/nested_directories_are_checked_when_`--recursive`_is_passed - 1]
+[TestRun/nested_directories_are_checked_by_default - 1]
 
 ---
 
-[TestRun/nested_directories_are_checked_when_`--recursive`_is_passed - 2]
+[TestRun/nested_directories_are_checked_by_default - 2]
 
 ---
 
@@ -141,11 +141,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 
 ---
 
-[TestRun/only_the_files_in_the_given_directories_are_checked_by_default_(no_recursion) - 1]
+[TestRun/only_the_files_in_the_given_directories_are_checked_when_--not-recursive_is_passed - 1]
 
 ---
 
-[TestRun/only_the_files_in_the_given_directories_are_checked_by_default_(no_recursion) - 2]
+[TestRun/only_the_files_in_the_given_directories_are_checked_when_--not-recursive_is_passed - 2]
 
 ---
 
