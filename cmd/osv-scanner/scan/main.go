@@ -23,12 +23,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 		Usage:       "scans various package managers for dependencies and produce an SBOM",
 		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
-			&cli.StringSliceFlag{
-				Name:      "lockfile",
-				Aliases:   []string{"L"},
-				Usage:     "scan package lockfile on this path",
-				TakesFile: true,
-			},
 			&cli.StringFlag{
 				Name:    "format",
 				Aliases: []string{"f"},
@@ -108,7 +102,6 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
-		LockfilePaths:  context.StringSlice("lockfile"),
 		Recursive:      !context.Bool("not-recursive"),
 		NoIgnore:       context.Bool("no-ignore"),
 		DirectoryPaths: context.Args().Slice(),

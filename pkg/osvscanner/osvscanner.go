@@ -19,7 +19,6 @@ import (
 )
 
 type ScannerActions struct {
-	LockfilePaths  []string
 	DirectoryPaths []string
 	Recursive      bool
 	NoIgnore       bool
@@ -218,16 +217,6 @@ func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParse
 	return packages, parsedLockfile.Artifact, nil
 }
 
-func parseLockfilePath(lockfileElem string) (string, string) {
-	if !strings.Contains(lockfileElem, ":") {
-		lockfileElem = ":" + lockfileElem
-	}
-
-	splits := strings.SplitN(lockfileElem, ":", 2)
-
-	return splits[0], splits[1]
-}
-
 type scannedPackage struct {
 	PURL            string
 	Name            string
@@ -273,23 +262,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	if actions.Debug {
 		os.Setenv("debug", "true")
-	}
-
-	for _, lockfileElem := range actions.LockfilePaths {
-		parseAs, lockfilePath := parseLockfilePath(lockfileElem)
-		lockfilePath, err := filepath.Abs(lockfilePath)
-		if err != nil {
-			r.Errorf("Failed to resolved path with error %s\n", err)
-			return models.VulnerabilityResults{}, err
-		}
-		pkgs, artifact, err := scanLockfile(r, lockfilePath, parseAs, enabledParsers)
-		if err != nil {
-			return models.VulnerabilityResults{}, err
-		}
-		scannedPackages = append(scannedPackages, pkgs...)
-		if artifact != nil {
-			scannedArtifacts = append(scannedArtifacts, *artifact)
-		}
 	}
 
 	for _, dir := range actions.DirectoryPaths {
