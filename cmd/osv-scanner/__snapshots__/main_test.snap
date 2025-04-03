@@ -72,21 +72,10 @@ No package sources found, --help for usage information.
       "purl": "pkg:npm/balanced-match@1.0.2",
       "properties": [
         {
-          "name": "osv-scanner:is-direct",
-          "value": "true"
-        },
-        {
           "name": "osv-scanner:package-manager",
           "value": "Yarn"
         }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
-          }
-        ]
-      }
+      ]
     }
   ]
 }
@@ -152,9 +141,6 @@ No package sources found, --help for usage information.
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
           }
