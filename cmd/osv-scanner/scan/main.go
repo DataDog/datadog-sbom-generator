@@ -20,8 +20,8 @@ import (
 func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 	return &cli.Command{
 		Name:        "scan",
-		Usage:       "scans various mediums for dependencies and matches it against the OSV database",
-		Description: "scans various mediums for dependencies and matches it against the OSV database",
+		Usage:       "scans various package managers for dependencies and produce an SBOM",
+		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{
 				Name:      "lockfile",
