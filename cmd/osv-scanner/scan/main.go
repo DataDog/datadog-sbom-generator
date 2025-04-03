@@ -54,11 +54,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Value:   false,
 			},
 			&cli.BoolFlag{
-				Name:  "experimental-call-analysis",
-				Usage: "[Deprecated] attempt call analysis on code to detect only active vulnerabilities",
-				Value: false,
-			},
-			&cli.BoolFlag{
 				Name:  "no-ignore",
 				Usage: "also scan files that would be ignored by .gitignore",
 				Value: false,
