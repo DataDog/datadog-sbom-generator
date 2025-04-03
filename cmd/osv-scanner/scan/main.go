@@ -33,7 +33,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "sets the output format; value can be: " + strings.Join(reporter.Format(), ", "),
-				Value:   "table",
+				Value:   "cyclonedx-1-5",
 				Action: func(context *cli.Context, s string) error {
 					if slices.Contains(reporter.Format(), s) {
 						return nil

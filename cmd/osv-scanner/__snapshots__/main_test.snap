@@ -1,6 +1,11 @@
 
 [TestRun/#00 - 1]
-No issues found
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1
+}
 
 ---
 
@@ -21,7 +26,12 @@ built at: n/a
 ---
 
 [TestRun/#02 - 1]
-No issues found
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1
+}
 
 ---
 
@@ -31,6 +41,55 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#03 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -39,6 +98,71 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#04 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"subdir/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          },
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -56,6 +180,81 @@ unsupported output format "unknown" - must be one of: table, json, cyclonedx-1-4
 ---
 
 [TestRun/Scan_locks-many - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -64,6 +263,55 @@ unsupported output format "unknown" - must be one of: table, json, cyclonedx-1-4
 ---
 
 [TestRun/all_supported_lockfiles_in_the_directory_should_be_checked - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -118,6 +366,51 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/nested_directories_are_checked_by_default - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -126,6 +419,27 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/one_specific_supported_lockfile - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -134,6 +448,27 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/one_specific_supported_lockfile_with_ignore - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -142,6 +477,38 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/only_the_files_in_the_given_directories_are_checked_when_--not-recursive_is_passed - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -168,6 +535,12 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun_GithubActions/scanning_osv-scanner_custom_format - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1
+}
 
 ---
 
@@ -242,6 +615,27 @@ could not determine extractor, requested my-file
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#01 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -268,6 +662,40 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#04 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/league/flysystem@1.0.8",
+      "type": "library",
+      "name": "league/flysystem",
+      "version": "1.0.8",
+      "purl": "pkg:composer/league/flysystem@1.0.8",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -276,6 +704,51 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#05 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/league/flysystem@1.0.8",
+      "type": "library",
+      "name": "league/flysystem",
+      "version": "1.0.8",
+      "purl": "pkg:composer/league/flysystem@1.0.8",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":26},/"name/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":15},/"version/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":19,/"column_end/":25}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -284,6 +757,51 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#06 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/league/flysystem@1.0.8",
+      "type": "library",
+      "name": "league/flysystem",
+      "version": "1.0.8",
+      "purl": "pkg:composer/league/flysystem@1.0.8",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":26},/"name/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":15},/"version/":{/"file_name/":/"<rootdir>/fixtures/locks-insecure/package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":19,/"column_end/":25}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -292,6 +810,94 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#07 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/league/flysystem@1.0.8",
+      "type": "library",
+      "name": "league/flysystem",
+      "version": "1.0.8",
+      "purl": "pkg:composer/league/flysystem@1.0.8",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-html@0.0.1",
+      "type": "library",
+      "name": "ansi-html",
+      "version": "0.0.1",
+      "purl": "pkg:npm/ansi-html@0.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -300,7 +906,12 @@ open <rootdir>/path/to/my:project/package-lock.json: no such file or directory
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#08 - 1]
-No issues found
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1
+}
 
 ---
 
@@ -310,6 +921,12 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun_LockfileWithExplicitParseAs/#09 - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1
+}
 
 ---
 
@@ -318,6 +935,37 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun_LockfileWithExplicitParseAs/one_lockfile_with_local_path - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:golang/golang.org/x/net",
+      "type": "library",
+      "name": "golang.org/x/net",
+      "purl": "pkg:golang/golang.org/x/net",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Golang"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"<rootdir>/fixtures/locks-many/replace-local.mod/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":42}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -8035,6 +8683,51 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun_SubCommands/scan_with_a_flag - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/balanced-match@1.0.2",
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":31},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":20},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":24,/"column_end/":30}}"
+          }
+        ]
+      }
+    }
+  ]
+}
 
 ---
 
@@ -8044,6 +8737,27 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_SubCommands/with_no_subcommand - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -8052,6 +8766,27 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_SubCommands/with_scan_subcommand - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
