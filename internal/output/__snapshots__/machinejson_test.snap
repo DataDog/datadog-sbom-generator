@@ -25,15 +25,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -60,15 +51,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -110,15 +92,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -155,15 +128,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -190,15 +154,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -241,15 +196,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -284,15 +230,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -329,15 +266,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -373,15 +301,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -416,15 +335,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -490,22 +400,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -525,15 +419,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -564,15 +449,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -607,22 +483,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -670,22 +530,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -705,15 +549,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -741,15 +576,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -781,22 +607,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -897,15 +707,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -932,15 +733,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -982,15 +774,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1038,22 +821,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1073,15 +840,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1112,15 +870,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -1155,22 +904,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1218,22 +951,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1253,15 +970,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1292,15 +1000,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -1335,22 +1034,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1467,22 +1150,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "GHSA-123"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -1517,15 +1184,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1562,15 +1220,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -1605,15 +1254,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1652,15 +1292,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1711,19 +1342,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "aliases": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -1773,19 +1391,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "aliases": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -1815,15 +1420,6 @@
               "id": "OSV-1",
               "details": "This vulnerability allows for some very scary stuff to happen - seriously, you'd not believe it!"
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1836,15 +1432,6 @@
             {
               "modified": "0001-01-01T00:00:00Z",
               "id": "OSV-2"
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1880,15 +1467,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }
@@ -1939,15 +1517,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
@@ -1977,15 +1546,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         }

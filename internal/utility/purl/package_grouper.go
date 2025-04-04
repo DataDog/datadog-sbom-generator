@@ -41,7 +41,6 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 					Locations:       slices.Clone(pkg.Locations),
 					DepGroups:       slices.Clone(pkg.DepGroups),
 					Vulnerabilities: slices.Clone(pkg.Vulnerabilities),
-					Groups:          slices.Clone(pkg.Groups),
 					Metadata:        pkg.Metadata,
 				}
 				uniquePackages[packageURL.ToString()] = newPackageVuln

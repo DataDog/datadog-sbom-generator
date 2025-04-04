@@ -163,7 +163,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -192,9 +191,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -223,9 +219,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -253,14 +246,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Name:      "mine1",
 										Version:   "1.2.3",
 										Ecosystem: "npm",
-									},
-									Groups: []models.GroupInfo{
-										{
-											IDs: []string{"OSV-1"},
-										},
-										{
-											IDs: []string{"GHSA-123"},
-										},
 									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -296,7 +281,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "npm",
 									},
 									DepGroups: []string{"dev"},
-									Groups:    []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -325,7 +309,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -346,7 +329,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "npm",
 									},
 									DepGroups: []string{"dev"},
-									Groups:    []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -375,10 +357,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs:     []string{"OSV-1", "GHSA-123"},
-										Aliases: []string{"OSV-1", "GHSA-123"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -413,10 +391,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs:     []string{"OSV-1", "GHSA-123"},
-										Aliases: []string{"OSV-1", "GHSA-123"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -451,7 +425,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -493,7 +466,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -513,7 +485,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "3.2.5",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -549,7 +520,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -578,10 +548,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-1"}},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -601,7 +567,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.2",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -621,7 +586,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "3.2.5",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -635,10 +599,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Name:      "mine3",
 										Version:   "0.4.1",
 										Ecosystem: "npm",
-									},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-3"}},
-										{IDs: []string{"OSV-5"}},
 									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -674,10 +634,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "npm",
 									},
 									DepGroups: []string{"dev", "optional"},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-1"}},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -697,7 +653,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.2",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -718,7 +673,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "npm",
 									},
 									DepGroups: []string{"dev"},
-									Groups:    []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -734,10 +688,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "npm",
 									},
 									DepGroups: []string{"build"},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-3"}},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-3",
@@ -771,10 +721,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "Packagist",
 									},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-1"}},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -794,7 +740,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.2",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -815,7 +760,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "NuGet",
 									},
 									DepGroups: []string{"dev"},
-									Groups:    []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -831,10 +775,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "Packagist",
 									},
 									DepGroups: []string{"build"},
-									Groups: []models.GroupInfo{
-										{IDs: []string{"OSV-3"}},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-3",
@@ -868,14 +808,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "Packagist",
 									},
-									Groups: []models.GroupInfo{
-										{
-											IDs: []string{"OSV-1"},
-										},
-										{
-											IDs: []string{"OSV-5"},
-										},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -895,7 +827,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.2",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -916,7 +847,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "NuGet",
 									},
 									DepGroups: []string{"dev"},
-									Groups:    []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -932,12 +862,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Ecosystem: "Packagist",
 									},
 									DepGroups: []string{"build"},
-									Groups: []models.GroupInfo{
-										{
-											IDs: []string{"OSV-3"},
-										},
-										{IDs: []string{"OSV-5"}},
-									},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-3",
@@ -971,7 +895,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{ID: "OSV-1", Details: "This vulnerability allows for some very scary stuff to happen - seriously, you'd not believe it!"},
 									},
@@ -982,7 +905,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 										Version:   "0.10.2-rc",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{ID: "OSV-2"},
 									},
@@ -1021,7 +943,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1050,9 +971,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1081,9 +999,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1112,7 +1027,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1132,7 +1046,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "5.9.0",
 										Ecosystem: "npm",
 									},
-									Groups:          []models.GroupInfo{},
 									Vulnerabilities: models.Vulnerabilities{},
 								},
 							},
@@ -1155,7 +1068,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1175,7 +1087,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "3.2.5",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-2"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -1211,7 +1122,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{IDs: []string{"OSV-1"}}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1240,9 +1150,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
@@ -1262,9 +1169,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "3.2.5",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-2"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-2",
@@ -1300,9 +1204,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.2.3",
 										Ecosystem: "npm",
 									},
-									Groups: []models.GroupInfo{{
-										IDs: []string{"OSV-1"},
-									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
 											ID:       "OSV-1",
