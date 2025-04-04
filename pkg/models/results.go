@@ -34,19 +34,6 @@ type ExperimentalLicenseConfig struct {
 	Allowlist []License `json:"allowlist"`
 }
 
-// Flattened Vulnerability Information.
-// TODO: rename this to IssueFlattened or similar in the next major release as
-// it now contains license violations.
-type VulnerabilityFlattened struct {
-	Source            SourceInfo
-	Package           PackageInfo
-	DepGroups         []string
-	Vulnerability     Vulnerability
-	GroupInfo         GroupInfo
-	Licenses          []License
-	LicenseViolations []License
-}
-
 type SourceInfo struct {
 	Path string `json:"path"`
 }
