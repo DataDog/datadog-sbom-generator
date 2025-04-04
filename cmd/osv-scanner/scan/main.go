@@ -20,37 +20,14 @@ import (
 func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 	return &cli.Command{
 		Name:        "scan",
-		Usage:       "scans various mediums for dependencies and matches it against the OSV database",
-		Description: "scans various mediums for dependencies and matches it against the OSV database",
+		Usage:       "scans various package managers for dependencies and produce an SBOM",
+		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
-			&cli.StringSliceFlag{
-				Name:      "docker",
-				Aliases:   []string{"D"},
-				Usage:     "scan docker image with this name. Warning: Only run this on a trusted container image, as it runs the container image to retrieve the package versions",
-				TakesFile: false,
-			},
-			&cli.StringSliceFlag{
-				Name:      "lockfile",
-				Aliases:   []string{"L"},
-				Usage:     "scan package lockfile on this path",
-				TakesFile: true,
-			},
-			&cli.StringSliceFlag{
-				Name:      "sbom",
-				Aliases:   []string{"S"},
-				Usage:     "scan sbom file on this path",
-				TakesFile: true,
-			},
-			&cli.StringFlag{
-				Name:      "config",
-				Usage:     "set/override config file",
-				TakesFile: true,
-			},
 			&cli.StringFlag{
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "sets the output format; value can be: " + strings.Join(reporter.Format(), ", "),
-				Value:   "table",
+				Value:   "cyclonedx-1-5",
 				Action: func(context *cli.Context, s string) error {
 					if slices.Contains(reporter.Format(), s) {
 						return nil
@@ -59,29 +36,14 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 					return fmt.Errorf("unsupported output format \"%s\" - must be one of: %s", s, strings.Join(reporter.Format(), ", "))
 				},
 			},
-			&cli.BoolFlag{
-				Name:  "json",
-				Usage: "sets output to json (deprecated, use --format json instead)",
-			},
 			&cli.StringFlag{
 				Name:      "output",
 				Usage:     "saves the result to the given file path",
 				TakesFile: true,
 			},
 			&cli.BoolFlag{
-				Name:  "skip-git",
-				Usage: "skip scanning git repositories",
-				Value: false,
-			},
-			&cli.BoolFlag{
-				Name:    "recursive",
-				Aliases: []string{"r"},
-				Usage:   "check subdirectories",
-				Value:   false,
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-call-analysis",
-				Usage: "[Deprecated] attempt call analysis on code to detect only active vulnerabilities",
+				Name:  "not-recursive",
+				Usage: "do not check subdirectories",
 				Value: false,
 			},
 			&cli.BoolFlag{
@@ -89,69 +51,14 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Usage: "also scan files that would be ignored by .gitignore",
 				Value: false,
 			},
-			&cli.StringSliceFlag{
-				Name:  "call-analysis",
-				Usage: "attempt call analysis on code to detect only active vulnerabilities",
-			},
-			&cli.StringSliceFlag{
-				Name:  "no-call-analysis",
-				Usage: "disables call graph analysis",
-			},
 			&cli.StringFlag{
 				Name:  "verbosity",
 				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
-				Value: "info",
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-offline",
-				Usage: "checks for vulnerabilities using local databases that are already cached",
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-download-offline-databases",
-				Usage: "downloads vulnerability databases for offline comparison",
-			},
-			&cli.StringFlag{
-				Name:   "experimental-local-db-path",
-				Usage:  "sets the path that local databases should be stored",
-				Hidden: true,
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-all-packages",
-				Usage: "when json output is selected, prints all packages",
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-licenses-summary",
-				Usage: "report a license summary, implying the --experimental-all-packages flag",
-			},
-			&cli.StringSliceFlag{
-				Name:  "experimental-licenses",
-				Usage: "report on licenses based on an allowlist",
-			},
-			&cli.StringFlag{
-				Name:      "experimental-oci-image",
-				Usage:     "scan an exported *docker* container image archive (exported using `docker save` command) file",
-				TakesFile: true,
-				Hidden:    true,
-			},
-			&cli.BoolFlag{
-				Name:  "experimental-only-packages",
-				Usage: "only collects packages, does not scan for vulnerabilities",
-			},
-			&cli.BoolFlag{
-				Name:  "consider-scan-path-as-root",
-				Usage: "Transform package path root to be the scanning path, thus removing any information about the host",
-			},
-			&cli.BoolFlag{
-				Name:  "paths-relative-to-scan-dir",
-				Usage: "Same than --consider-scan-path-as-root but reports a path relative to the scan dir (removing the leading path separator)",
+				Value: "error",
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
 				Usage: fmt.Sprintf("Explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
-			},
-			&cli.BoolFlag{
-				Name:  "no-config",
-				Usage: "Disable osv-scanner config and always use a default configuration",
 			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
@@ -166,10 +73,6 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 
 func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, error) {
 	format := context.String("format")
-
-	if context.Bool("json") {
-		format = "json"
-	}
 
 	outputPath := context.String("output")
 
@@ -199,32 +102,10 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
-		LockfilePaths:          context.StringSlice("lockfile"),
-		SBOMPaths:              context.StringSlice("sbom"),
-		DockerContainerNames:   context.StringSlice("docker"),
-		Recursive:              context.Bool("recursive"),
-		SkipGit:                context.Bool("skip-git"),
-		NoIgnore:               context.Bool("no-ignore"),
-		ConfigOverridePath:     context.String("config"),
-		DirectoryPaths:         context.Args().Slice(),
-		ConsiderScanPathAsRoot: context.Bool("consider-scan-path-as-root"),
-		PathRelativeToScanDir:  context.Bool("paths-relative-to-scan-dir"),
-		EnableParsers:          context.StringSlice("enable-parsers"),
-		ExperimentalScannerActions: osvscanner.ExperimentalScannerActions{
-			LocalDBPath:       context.String("experimental-local-db-path"),
-			DownloadDatabases: context.Bool("experimental-download-offline-databases"),
-			CompareOffline:    context.Bool("experimental-offline"),
-			// License summary mode causes all
-			// packages to appear in the json as
-			// every package has a license - even
-			// if it's just the UNKNOWN license.
-			ShowAllPackages: context.Bool("experimental-all-packages") ||
-				context.Bool("experimental-licenses-summary"),
-			ScanLicensesSummary:   context.Bool("experimental-licenses-summary"),
-			ScanLicensesAllowlist: context.StringSlice("experimental-licenses"),
-			ScanOCIImage:          context.String("experimental-oci-image"),
-			OnlyPackages:          context.Bool("experimental-only-packages"),
-		},
+		Recursive:      !context.Bool("not-recursive"),
+		NoIgnore:       context.Bool("no-ignore"),
+		DirectoryPaths: context.Args().Slice(),
+		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)
 
 	if err != nil && !errors.Is(err, osvscanner.NoPackagesFoundErr) && !errors.Is(err, osvscanner.VulnerabilitiesFoundErr) {

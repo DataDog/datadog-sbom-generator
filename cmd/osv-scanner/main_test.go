@@ -170,18 +170,6 @@ func TestRun(t *testing.T) {
 			args: []string{"", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
-		// one specific supported sbom with vulns
-		{
-			name: "folder of supported sbom with vulns",
-			args: []string{"", "--config=./fixtures/osv-scanner-empty-config.toml", "./fixtures/sbom-insecure/"},
-			exit: 0,
-		},
-		// one specific supported sbom with vulns
-		{
-			name: "one specific supported sbom with vulns",
-			args: []string{"", "--config=./fixtures/osv-scanner-empty-config.toml", "--sbom", "./fixtures/sbom-insecure/alpine.cdx.xml"},
-			exit: 0,
-		},
 		// one specific unsupported lockfile
 		{
 			name: "",
@@ -200,34 +188,28 @@ func TestRun(t *testing.T) {
 			args: []string{"", "./fixtures/locks-many-with-invalid"},
 			exit: 0,
 		},
-		// only the files in the given directories are checked by default (no recursion)
+		// only the files in the given directories are checked when --not-recursive is passed
 		{
-			name: "only the files in the given directories are checked by default (no recursion)",
-			args: []string{"", "./fixtures/locks-one-with-nested"},
+			name: "only the files in the given directories are checked when --not-recursive is passed",
+			args: []string{"", "--not-recursive", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
-		// nested directories are checked when `--recursive` is passed
+		// nested directories are checked by default
 		{
-			name: "nested directories are checked when `--recursive` is passed",
-			args: []string{"", "--recursive", "./fixtures/locks-one-with-nested"},
+			name: "nested directories are checked by default",
+			args: []string{"", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// .gitignored files
 		{
 			name: "",
-			args: []string{"", "--recursive", "./fixtures/locks-gitignore"},
+			args: []string{"", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		// ignoring .gitignore
 		{
 			name: "",
-			args: []string{"", "--recursive", "--no-ignore", "./fixtures/locks-gitignore"},
-			exit: 0,
-		},
-		// output with json
-		{
-			name: "json output 1",
-			args: []string{"", "--json", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--no-ignore", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		{
@@ -272,169 +254,19 @@ func TestRun(t *testing.T) {
 	}
 }
 
-func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
-	t.Parallel()
-
-	tests := []cliTestCase{
-		// unsupported parse-as
-		{
-			name: "",
-			args: []string{"", "-L", "my-file:./fixtures/locks-many/composer.lock"},
-			exit: 127,
-		},
-		// empty is default
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				":" + filepath.FromSlash("./fixtures/locks-many/composer.lock"),
-			},
-			exit: 0,
-		},
-		// empty works as an escape (no fixture because it's not valid on Windows)
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				":" + filepath.FromSlash("./path/to/my:file"),
-			},
-			exit: 127,
-		},
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				":" + filepath.FromSlash("./path/to/my:project/package-lock.json"),
-			},
-			exit: 127,
-		},
-		// one lockfile with local path
-		{
-			name: "one lockfile with local path",
-			args: []string{"", "--lockfile=go.mod:./fixtures/locks-many/replace-local.mod"},
-			exit: 0,
-		},
-		// when an explicit parse-as is given, it's applied to that file
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				"package-lock.json:" + filepath.FromSlash("./fixtures/locks-insecure/my-package-lock.json"),
-				filepath.FromSlash("./fixtures/locks-insecure"),
-			},
-			exit: 0,
-		},
-		// multiple, + output order is deterministic
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L", "package-lock.json:" + filepath.FromSlash("./fixtures/locks-insecure/my-package-lock.json"),
-				"-L", "yarn.lock:" + filepath.FromSlash("./fixtures/locks-insecure/my-yarn.lock"),
-				filepath.FromSlash("./fixtures/locks-insecure"),
-			},
-			exit: 0,
-		},
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L", "yarn.lock:" + filepath.FromSlash("./fixtures/locks-insecure/my-yarn.lock"),
-				"-L", "package-lock.json:" + filepath.FromSlash("./fixtures/locks-insecure/my-package-lock.json"),
-				filepath.FromSlash("./fixtures/locks-insecure"),
-			},
-			exit: 0,
-		},
-		// files that error on parsing stop parsable files from being checked
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				"Cargo.lock:" + filepath.FromSlash("./fixtures/locks-insecure/my-package-lock.json"),
-				filepath.FromSlash("./fixtures/locks-insecure"),
-				filepath.FromSlash("./fixtures/locks-many"),
-			},
-			exit: 0,
-		},
-		// parse-as takes priority, even if it's wrong
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				"package-lock.json:" + filepath.FromSlash("./fixtures/locks-many/yarn.lock"),
-			},
-			exit: 0,
-		},
-		// "apk-installed" is supported
-		// TODO : Check why the osv.dev query is failing with a change in ecosystem, for now commenting it as we don't use that path
-		// {
-		//	name: "",
-		//	args: []string{
-		//		"",
-		//		"-L",
-		//		"apk-installed:" + filepath.FromSlash("./fixtures/locks-many/installed"),
-		//	},
-		//	exit: 0,
-		// },
-		// "dpkg-status" is supported
-		{
-			name: "",
-			args: []string{
-				"",
-				"-L",
-				"dpkg-status:" + filepath.FromSlash("./fixtures/locks-many/status"),
-			},
-			exit: 0,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			testCli(t, tt)
-		})
-	}
-}
-
-// TestRun_GithubActions tests common actions the github actions reusable workflow will run
-func TestRun_GithubActions(t *testing.T) {
-	t.Parallel()
-
-	tests := []cliTestCase{
-		{
-			name: "scanning osv-scanner custom format",
-			args: []string{"", "-L", "osv-scanner:./fixtures/locks-insecure/osv-scanner-flutter-deps.json"},
-			exit: 0,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			testCli(t, tt)
-		})
-	}
-}
-
 func TestRun_WithoutHostPathInformation(t *testing.T) {
 	t.Parallel()
 	tests := []locationTestCase{
 		// one specific supported lockfile
 		{
 			name:          "one specific supported lockfile (relative path)",
-			args:          []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "--paths-relative-to-scan-dir", "./fixtures/locks-many/yarn.lock"},
+			args:          []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many/yarn.lock"},
 			wantExitCode:  0,
 			wantFilePaths: []string{"package.json"},
 		},
 		{
 			name:         "Multiple lockfiles (relative path)",
-			args:         []string{"", "--experimental-only-packages", "--format=cyclonedx-1-5", "--paths-relative-to-scan-dir", "./fixtures/locks-many"},
+			args:         []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many"},
 			wantExitCode: 0,
 			wantFilePaths: []string{
 				"package.json",
@@ -470,10 +302,7 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"./fixtures/integration-test-locks",
 	}
 
@@ -488,10 +317,7 @@ func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"./fixtures/locks-empty",
 	}
 
@@ -506,10 +332,7 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 	t.Parallel()
 	args := []string{
 		"",
-		"-r",
-		"--experimental-only-packages",
 		"--format=cyclonedx-1-5",
-		"--consider-scan-path-as-root",
 		"--enable-parsers=pom.xml",
 		"./fixtures/integration-test-locks",
 	}
@@ -534,10 +357,7 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--consider-scan-path-as-root",
 				"./fixtures/integration-yarn/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -564,10 +384,7 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--consider-scan-path-as-root",
 				"./fixtures/integration-npm/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -592,10 +409,7 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 			t.Parallel()
 			args := []string{
 				"",
-				"-r",
-				"--experimental-only-packages",
 				"--format=cyclonedx-1-5",
-				"--paths-relative-to-scan-dir",
 				"./fixtures/encoding-integration-test-locks/" + tt.encoding,
 			}
 
@@ -710,7 +524,7 @@ func TestRun_SubCommands(t *testing.T) {
 		// scan with a flag
 		{
 			name: "scan with a flag",
-			args: []string{"", "scan", "--recursive", "./fixtures/locks-one-with-nested"},
+			args: []string{"", "scan", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// TODO: add tests for other future subcommands

@@ -19,33 +19,11 @@ import (
 )
 
 type ScannerActions struct {
-	LockfilePaths          []string
-	SBOMPaths              []string
-	DirectoryPaths         []string
-	GitCommits             []string
-	Recursive              bool
-	SkipGit                bool
-	NoIgnore               bool
-	Debug                  bool
-	DockerContainerNames   []string
-	ConfigOverridePath     string
-	ConsiderScanPathAsRoot bool
-	PathRelativeToScanDir  bool
-	EnableParsers          []string
-
-	ExperimentalScannerActions
-}
-
-type ExperimentalScannerActions struct {
-	CompareOffline        bool
-	DownloadDatabases     bool
-	ShowAllPackages       bool
-	ScanLicensesSummary   bool
-	OnlyPackages          bool
-	ScanLicensesAllowlist []string
-	ScanOCIImage          string
-
-	LocalDBPath string
+	DirectoryPaths []string
+	Recursive      bool
+	NoIgnore       bool
+	Debug          bool
+	EnableParsers  []string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
@@ -65,7 +43,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, compareOffline bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -116,7 +94,7 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, "", enabledParsers); extractor != nil {
-				pkgs, artifact, err := scanLockfile(r, path, "", compareOffline, enabledParsers)
+				pkgs, artifact, err := scanLockfile(r, path, "", enabledParsers)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
 				}
@@ -170,7 +148,7 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, parseAs string, _ bool, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
+func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
@@ -239,16 +217,6 @@ func scanLockfile(r reporter.Reporter, path string, parseAs string, _ bool, enab
 	return packages, parsedLockfile.Artifact, nil
 }
 
-func parseLockfilePath(lockfileElem string) (string, string) {
-	if !strings.Contains(lockfileElem, ":") {
-		lockfileElem = ":" + lockfileElem
-	}
-
-	splits := strings.SplitN(lockfileElem, ":", 2)
-
-	return splits[0], splits[1]
-}
-
 type scannedPackage struct {
 	PURL            string
 	Name            string
@@ -289,18 +257,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	if actions.CompareOffline {
-		actions.SkipGit = true
-
-		if len(actions.ScanLicensesAllowlist) > 0 || actions.ScanLicensesSummary {
-			return models.VulnerabilityResults{}, errors.New("cannot retrieve licenses locally")
-		}
-	}
-
-	if !actions.CompareOffline && actions.DownloadDatabases {
-		return models.VulnerabilityResults{}, errors.New("databases can only be downloaded when running in offline mode")
-	}
-
 	var scannedPackages []scannedPackage
 	var scannedArtifacts []models.ScannedArtifact
 
@@ -308,49 +264,31 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		os.Setenv("debug", "true")
 	}
 
-	for _, lockfileElem := range actions.LockfilePaths {
-		parseAs, lockfilePath := parseLockfilePath(lockfileElem)
-		lockfilePath, err := filepath.Abs(lockfilePath)
-		if err != nil {
-			r.Errorf("Failed to resolved path with error %s\n", err)
-			return models.VulnerabilityResults{}, err
-		}
-		pkgs, artifact, err := scanLockfile(r, lockfilePath, parseAs, actions.CompareOffline, enabledParsers)
-		if err != nil {
-			return models.VulnerabilityResults{}, err
-		}
-		scannedPackages = append(scannedPackages, pkgs...)
-		if artifact != nil {
-			scannedArtifacts = append(scannedArtifacts, *artifact)
-		}
-	}
-
 	for _, dir := range actions.DirectoryPaths {
 		r.Infof("Scanning dir %s\n", dir)
-		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, actions.CompareOffline, enabledParsers)
+		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
 
-		if actions.ConsiderScanPathAsRoot || actions.PathRelativeToScanDir {
-			for index, pkg := range pkgs {
-				pkgs[index].Source.ScanPath = dir
-				pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
-				pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
+		// Transforming any path into a relative path to the scanned directory path
+		for index, pkg := range pkgs {
+			pkgs[index].Source.ScanPath = dir
+			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
+			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 
-				if pkgs[index].NameLocation != nil {
-					pkgs[index].NameLocation.Filename = fileposition.ToRelativePath(dir, pkg.NameLocation.Filename)
-				}
-
-				if pkgs[index].VersionLocation != nil {
-					pkgs[index].VersionLocation.Filename = fileposition.ToRelativePath(dir, pkg.VersionLocation.Filename)
-				}
+			if pkgs[index].NameLocation != nil {
+				pkgs[index].NameLocation.Filename = fileposition.ToRelativePath(dir, pkg.NameLocation.Filename)
 			}
-			for index, artifact := range artifacts {
-				artifacts[index].Filename = fileposition.ToRelativePath(dir, artifact.Filename)
-				if artifact.DependsOn != nil {
-					artifacts[index].DependsOn.Filename = fileposition.ToRelativePath(dir, artifact.DependsOn.Filename)
-				}
+
+			if pkgs[index].VersionLocation != nil {
+				pkgs[index].VersionLocation.Filename = fileposition.ToRelativePath(dir, pkg.VersionLocation.Filename)
+			}
+		}
+		for index, artifact := range artifacts {
+			artifacts[index].Filename = fileposition.ToRelativePath(dir, artifact.Filename)
+			if artifact.DependsOn != nil {
+				artifacts[index].DependsOn.Filename = fileposition.ToRelativePath(dir, artifact.DependsOn.Filename)
 			}
 		}
 		scannedPackages = append(scannedPackages, pkgs...)
