@@ -206,7 +206,6 @@ func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParse
 			DepGroups:      pkgDetail.DepGroups,
 			Source: models.SourceInfo{
 				Path: path,
-				Type: "lockfile",
 			},
 			BlockLocation:   pkgDetail.BlockLocation,
 			VersionLocation: pkgDetail.VersionLocation,

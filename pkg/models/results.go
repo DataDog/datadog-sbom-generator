@@ -85,7 +85,6 @@ type VulnerabilityFlattened struct {
 
 type SourceInfo struct {
 	Path string `json:"path"`
-	Type string `json:"type"`
 }
 
 type Metadata struct {
@@ -94,7 +93,7 @@ type Metadata struct {
 }
 
 func (s SourceInfo) String() string {
-	return s.Type + ":" + s.Path
+	return s.Path
 }
 
 // Vulnerabilities grouped by sources

@@ -319,8 +319,7 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "results": [
     {
       "source": {
-        "path": "composer.lock",
-        "type": "lockfile"
+        "path": "composer.lock"
       },
       "packages": [
         {
