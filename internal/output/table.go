@@ -3,10 +3,7 @@ package output
 import (
 	"io"
 	"path/filepath"
-	"sort"
 	"strings"
-
-	"golang.org/x/exp/maps"
 
 	"github.com/datadog/datadog-sbom-generator/internal/utility/results"
 	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
@@ -35,7 +32,6 @@ func PrintTableResults(vulnResult *models.VulnerabilityResults, outputWriter io.
 
 	// Render the licenses if any.
 	outputLicenseTable := newTable(outputWriter, terminalWidth)
-	outputLicenseTable = licenseTableBuilder(outputLicenseTable, vulnResult)
 	if outputLicenseTable.Length() == 0 {
 		return
 	}
@@ -139,81 +135,4 @@ func tableBuilderInner(vulnResult *models.VulnerabilityResults, calledVulns bool
 	}
 
 	return allOutputRows
-}
-
-func licenseTableBuilder(outputTable table.Writer, vulnResult *models.VulnerabilityResults) table.Writer {
-	licenseConfig := vulnResult.ExperimentalAnalysisConfig.Licenses
-	if licenseConfig.Summary {
-		return licenseSummaryTableBuilder(outputTable, vulnResult)
-	} else if len(licenseConfig.Allowlist) > 0 {
-		return licenseViolationsTableBuilder(outputTable, vulnResult)
-	}
-
-	return outputTable
-}
-
-func licenseSummaryTableBuilder(outputTable table.Writer, vulnResult *models.VulnerabilityResults) table.Writer {
-	counts := make(map[models.License]int)
-	for _, pkgSource := range vulnResult.Results {
-		for _, pkg := range pkgSource.Packages {
-			for _, l := range pkg.Licenses {
-				counts[l] += 1
-			}
-		}
-	}
-	if len(counts) == 0 {
-		// No packages found.
-		return outputTable
-	}
-	licenses := maps.Keys(counts)
-	// Sort the license count in descending count order with the UNKNOWN
-	// license last.
-	sort.Slice(licenses, func(i, j int) bool {
-		if licenses[i] == "UNKNOWN" {
-			return false
-		}
-		if licenses[j] == "UNKNOWN" {
-			return true
-		}
-		if counts[licenses[i]] == counts[licenses[j]] {
-			return licenses[i] < licenses[j]
-		}
-
-		return counts[licenses[i]] > counts[licenses[j]]
-	})
-	outputTable.AppendHeader(table.Row{"License", "No. of package versions"})
-	for _, license := range licenses {
-		outputTable.AppendRow(table.Row{license, counts[license]})
-	}
-
-	return outputTable
-}
-
-func licenseViolationsTableBuilder(outputTable table.Writer, vulnResult *models.VulnerabilityResults) table.Writer {
-	outputTable.AppendHeader(table.Row{"License Violation", "Ecosystem", "Package", "Version", "Source"})
-	workingDir := mustGetWorkingDirectory()
-	for _, pkgSource := range vulnResult.Results {
-		for _, pkg := range pkgSource.Packages {
-			if len(pkg.LicenseViolations) == 0 {
-				continue
-			}
-			violations := make([]string, len(pkg.LicenseViolations))
-			for i, l := range pkg.LicenseViolations {
-				violations[i] = string(l)
-			}
-			path := pkgSource.Source.Path
-			if simplifiedPath, err := filepath.Rel(workingDir, pkgSource.Source.Path); err == nil {
-				path = simplifiedPath
-			}
-			outputTable.AppendRow(table.Row{
-				strings.Join(violations, ", "),
-				pkg.Package.Ecosystem,
-				pkg.Package.Name,
-				pkg.Package.Version,
-				path,
-			})
-		}
-	}
-
-	return outputTable
 }

@@ -1003,618 +1003,14 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 	}
 }
 
-func testOutputWithLicenseViolations(t *testing.T, run outputTestRunner) {
-	t.Helper()
-
-	experimentalAnalysisConfig := models.ExperimentalAnalysisConfig{
-		Licenses: models.ExperimentalLicenseConfig{Summary: false, Allowlist: []models.License{"ISC"}},
-	}
-
-	tests := []outputTestCase{
-		{
-			name: "no sources",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results:                    []models.PackageSource{},
-				},
-			},
-		},
-		{
-			name: "one source with no packages",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source:   models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with no packages",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source:   models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{},
-						},
-						{
-							Source:   models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{},
-						},
-						{
-							Source:   models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package, no licenses",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package and an unknown license",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"UNKNOWN"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package, no license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with a mixed count of packages, no license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "3.2.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine3",
-										Version:   "0.4.1",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.3.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package and one license violation",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package and one license violation (dev)",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									DepGroups:         []string{"dev"},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "two sources with packages, one license violation",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "5.9.0",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with a mixed count of packages, some license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "3.2.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{"Apache-2.0"},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine3",
-										Version:   "0.4.1",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.3.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with a mixed count of packages and groups, some license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									DepGroups:         []string{"dev", "optional"},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "3.2.5",
-										Ecosystem: "npm",
-									},
-									DepGroups:         []string{"dev", "optional"},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{"Apache-2.0"},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine3",
-										Version:   "0.4.1",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.3.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									DepGroups:         []string{"build"},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with a mixed count of packages across ecosystems, some license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "author1/mine1",
-										Version:   "1.2.3",
-										Ecosystem: "Packagist",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "3.2.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{"Apache-2.0"},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine3",
-										Version:   "0.4.1",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.3.5",
-										Ecosystem: "NuGet",
-									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "author1/mine1",
-										Version:   "1.2.3",
-										Ecosystem: "Packagist",
-									},
-									DepGroups:         []string{"dev"},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "one source with one package and multiple license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT", "Apache-2.0"},
-									LicenseViolations: []models.License{"MIT", "Apache-2.0"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "multiple sources with a mixed count of packages, some license violations",
-			args: outputTestCaseArgs{
-				vulnResult: &models.VulnerabilityResults{
-					Results: []models.PackageSource{
-						{
-							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT", "Apache-2.0"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/second/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine2",
-										Version:   "3.2.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"UNKNOWN"},
-									LicenseViolations: []models.License{"UNKNOWN"},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine3",
-										Version:   "0.4.1",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{},
-								},
-							},
-						},
-						{
-							Source: models.SourceInfo{Path: "path/to/my/third/lockfile"},
-							Packages: []models.PackageVulns{
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.3.5",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{},
-								},
-								{
-									Package: models.PackageInfo{
-										Name:      "mine1",
-										Version:   "1.2.3",
-										Ecosystem: "npm",
-									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			run(t, tt.args)
-		})
-	}
-}
-
 func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 	t.Helper()
-
-	experimentalAnalysisConfig := models.ExperimentalAnalysisConfig{
-		Licenses: models.ExperimentalLicenseConfig{Summary: false, Allowlist: []models.License{"ISC"}},
-	}
 
 	tests := []outputTestCase{
 		{
 			name: "one source with one package, one vulnerability, and one license violation",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1633,8 +1029,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
 								},
 							},
 						},
@@ -1646,7 +1040,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 			name: "one source with one package, one called vulnerability, and one license violation",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1667,8 +1060,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
 								},
 							},
 						},
@@ -1680,7 +1071,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 			name: "one source with one package, one uncalled vulnerability, and one license violation",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1701,8 +1091,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
 								},
 							},
 						},
@@ -1714,7 +1102,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 			name: "two sources with packages, one vulnerability, one license violation",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1733,8 +1120,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
 								},
 							},
 						},
@@ -1747,10 +1132,8 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "5.9.0",
 										Ecosystem: "npm",
 									},
-									Groups:            []models.GroupInfo{},
-									Vulnerabilities:   models.Vulnerabilities{},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
+									Groups:          []models.GroupInfo{},
+									Vulnerabilities: models.Vulnerabilities{},
 								},
 							},
 						},
@@ -1762,7 +1145,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 			name: "multiple sources with a mixed count of packages, some vulnerabilities and license violations",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1781,8 +1163,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
 								},
 							},
 						},
@@ -1803,8 +1183,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "low", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
 								},
 								{
 									Package: models.PackageInfo{
@@ -1812,9 +1190,7 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "0.4.1",
 										Ecosystem: "npm",
 									},
-									Vulnerabilities:   models.Vulnerabilities{},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
+									Vulnerabilities: models.Vulnerabilities{},
 								},
 							},
 						},
@@ -1827,9 +1203,7 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.3.5",
 										Ecosystem: "npm",
 									},
-									Vulnerabilities:   models.Vulnerabilities{},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
+									Vulnerabilities: models.Vulnerabilities{},
 								},
 								{
 									Package: models.PackageInfo{
@@ -1845,8 +1219,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{"Apache-2.0"},
 								},
 							},
 						},
@@ -1858,7 +1230,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 			name: "multiple sources with a mixed count of packages, some called vulnerabilities and license violations",
 			args: outputTestCaseArgs{
 				vulnResult: &models.VulnerabilityResults{
-					ExperimentalAnalysisConfig: experimentalAnalysisConfig,
 					Results: []models.PackageSource{
 						{
 							Source: models.SourceInfo{Path: "path/to/my/first/lockfile"},
@@ -1879,8 +1250,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
 								},
 							},
 						},
@@ -1903,8 +1272,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "low", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
 								},
 								{
 									Package: models.PackageInfo{
@@ -1912,9 +1279,7 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "0.4.1",
 										Ecosystem: "npm",
 									},
-									Vulnerabilities:   models.Vulnerabilities{},
-									Licenses:          []models.License{"ISC"},
-									LicenseViolations: []models.License{},
+									Vulnerabilities: models.Vulnerabilities{},
 								},
 							},
 						},
@@ -1927,9 +1292,7 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 										Version:   "1.3.5",
 										Ecosystem: "npm",
 									},
-									Vulnerabilities:   models.Vulnerabilities{},
-									Licenses:          []models.License{"MIT"},
-									LicenseViolations: []models.License{"MIT"},
+									Vulnerabilities: models.Vulnerabilities{},
 								},
 								{
 									Package: models.PackageInfo{
@@ -1947,8 +1310,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 											Severity: []models.Severity{{Type: "high", Score: "1"}},
 										},
 									},
-									Licenses:          []models.License{"Apache-2.0"},
-									LicenseViolations: []models.License{"Apache-2.0"},
 								},
 							},
 						},
