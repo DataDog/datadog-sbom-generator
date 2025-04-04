@@ -1,7 +1,6 @@
 package models
 
 import (
-	"slices"
 	"strings"
 )
 
@@ -33,41 +32,6 @@ type ExperimentalAnalysisConfig struct {
 type ExperimentalLicenseConfig struct {
 	Summary   bool      `json:"summary"`
 	Allowlist []License `json:"allowlist"`
-}
-
-// Flatten the grouped/nested vulnerability results into one flat array.
-func (vulns *VulnerabilityResults) Flatten() []VulnerabilityFlattened {
-	results := []VulnerabilityFlattened{}
-	for _, res := range vulns.Results {
-		for _, pkg := range res.Packages {
-			for _, v := range pkg.Vulnerabilities {
-				results = append(results, VulnerabilityFlattened{
-					Source:        res.Source,
-					Package:       pkg.Package,
-					DepGroups:     pkg.DepGroups,
-					Vulnerability: v,
-					GroupInfo:     getGroupInfoForVuln(pkg.Groups, v.ID),
-				})
-			}
-			if len(pkg.LicenseViolations) > 0 {
-				results = append(results, VulnerabilityFlattened{
-					Source:            res.Source,
-					Package:           pkg.Package,
-					DepGroups:         pkg.DepGroups,
-					Licenses:          pkg.Licenses,
-					LicenseViolations: pkg.LicenseViolations,
-				})
-			}
-		}
-	}
-
-	return results
-}
-
-func getGroupInfoForVuln(groups []GroupInfo, vulnID string) GroupInfo {
-	// groupIdx should never be -1 since vulnerabilities should always be in one group
-	groupIdx := slices.IndexFunc(groups, func(g GroupInfo) bool { return slices.Contains(g.IDs, vulnID) })
-	return groups[groupIdx]
 }
 
 // Flattened Vulnerability Information.
