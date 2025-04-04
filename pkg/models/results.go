@@ -1,9 +1,5 @@
 package models
 
-import (
-	"strings"
-)
-
 // Combined vulnerabilities found for the scanned packages
 type VulnerabilityResults struct {
 	Results                    []PackageSource            `json:"results"`
@@ -104,28 +100,6 @@ func (groupInfo *GroupInfo) IsCalled() bool {
 func (groupInfo *GroupInfo) IndexString() string {
 	// Assumes IDs is sorted
 	return strings.Join(groupInfo.IDs, ",")
-}
-
-// FixedVersions returns a map of fixed versions for each package, or a map of empty slices if no fixed versions are available
-func (v *Vulnerability) FixedVersions() map[Package][]string {
-	output := map[Package][]string{}
-	for _, a := range v.Affected {
-		packageKey := a.Package
-		packageKey.Purl = ""
-		for _, r := range a.Ranges {
-			for _, e := range r.Events {
-				if e.Fixed != "" {
-					output[packageKey] = append(output[packageKey], e.Fixed)
-					if strings.Contains(string(packageKey.Ecosystem), ":") {
-						packageKey.Ecosystem = Ecosystem(strings.Split(string(packageKey.Ecosystem), ":")[0])
-					}
-					output[packageKey] = append(output[packageKey], e.Fixed)
-				}
-			}
-		}
-	}
-
-	return output
 }
 
 type AnalysisInfo struct {
