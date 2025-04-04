@@ -319,7 +319,6 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "results": [
     {
       "source": {
-        "scan_path": "./fixtures/locks-many/composer.lock",
         "path": "composer.lock",
         "type": "lockfile"
       },

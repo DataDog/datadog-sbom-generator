@@ -273,7 +273,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 		// Transforming any path into a relative path to the scanned directory path
 		for index, pkg := range pkgs {
-			pkgs[index].Source.ScanPath = dir
 			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
 			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 

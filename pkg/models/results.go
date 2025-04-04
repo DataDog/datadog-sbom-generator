@@ -84,9 +84,8 @@ type VulnerabilityFlattened struct {
 }
 
 type SourceInfo struct {
-	ScanPath string `json:"scan_path,omitempty"`
-	Path     string `json:"path"`
-	Type     string `json:"type"`
+	Path string `json:"path"`
+	Type string `json:"type"`
 }
 
 type Metadata struct {
