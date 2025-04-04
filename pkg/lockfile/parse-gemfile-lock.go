@@ -73,7 +73,6 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Version:        version,
 			PackageManager: models.Bundler,
 			Ecosystem:      BundlerEcosystem,
-			CompareAs:      BundlerEcosystem,
 			Commit:         parser.currentGemCommit,
 		})
 
@@ -98,7 +97,6 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Version:        version,
 			PackageManager: models.Bundler,
 			Ecosystem:      BundlerEcosystem,
-			CompareAs:      BundlerEcosystem,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
 		})

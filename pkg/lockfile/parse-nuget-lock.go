@@ -40,7 +40,6 @@ func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[st
 			Version:        dependency.Resolved,
 			PackageManager: models.NuGet,
 			Ecosystem:      NuGetEcosystem,
-			CompareAs:      NuGetEcosystem,
 			IsDirect:       dependency.Type == "Direct",
 		}
 	}

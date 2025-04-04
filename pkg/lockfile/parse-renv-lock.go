@@ -48,7 +48,6 @@ func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        pkg.Version,
 			PackageManager: models.Renv,
 			Ecosystem:      CRANEcosystem,
-			CompareAs:      CRANEcosystem,
 		})
 	}
 

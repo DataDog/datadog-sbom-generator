@@ -13,7 +13,6 @@ type PackageDetails struct {
 	TargetVersions  []string              `json:"targetVersions,omitempty"`
 	Commit          string                `json:"commit,omitempty"`
 	Ecosystem       Ecosystem             `json:"ecosystem,omitempty"`
-	CompareAs       Ecosystem             `json:"compareAs,omitempty"`
 	DepGroups       []string              `json:"depGroups,omitempty"`
 	BlockLocation   models.FilePosition   `json:"blockLocation,omitempty"`
 	VersionLocation *models.FilePosition  `json:"versionLocation,omitempty"`

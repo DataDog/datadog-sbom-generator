@@ -41,7 +41,6 @@ func (e GradleVerificationMetadataExtractor) Extract(f DepFile) ([]PackageDetail
 			Version:        component.Version,
 			PackageManager: models.Gradle,
 			Ecosystem:      MavenEcosystem,
-			CompareAs:      MavenEcosystem,
 		})
 	}
 

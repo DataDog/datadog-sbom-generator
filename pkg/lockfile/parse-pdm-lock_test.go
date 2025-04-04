@@ -113,7 +113,6 @@ func TestParsePdmLock_SinglePackage(t *testing.T) {
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 		},
 	})
 }
@@ -130,14 +129,12 @@ func TestParsePdmLock_TwoPackages(t *testing.T) {
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 		},
 		{
 			Name:           "six",
 			Version:        "1.16.0",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 		},
 	})
 }
@@ -154,14 +151,12 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 		},
 		{
 			Name:           "pyroute2",
 			Version:        "0.7.11",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 		{
@@ -169,7 +164,6 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 			Version:        "1.1.0",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -187,14 +181,12 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 		},
 		{
 			Name:           "pyroute2",
 			Version:        "0.7.11",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 			DepGroups:      []string{"optional"},
 		},
 		{
@@ -202,7 +194,6 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 			Version:        "1.1.0",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 			DepGroups:      []string{"optional"},
 		},
 	})
@@ -220,7 +211,6 @@ func TestParsePdmLock_PackageWithGitDependency(t *testing.T) {
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
 			Ecosystem:      lockfile.PdmEcosystem,
-			CompareAs:      lockfile.PdmEcosystem,
 			Commit:         "65bab7582ce14c55cdeec2244c65ea23039c9e6f",
 		},
 	})

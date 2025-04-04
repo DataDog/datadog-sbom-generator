@@ -69,7 +69,6 @@ func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        version,
 			PackageManager: models.Hex,
 			Ecosystem:      MixEcosystem,
-			CompareAs:      MixEcosystem,
 			Commit:         commit,
 		})
 	}

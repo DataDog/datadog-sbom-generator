@@ -54,7 +54,6 @@ func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Commit:         lockPackage.Source.Commit,
 			PackageManager: models.Poetry,
 			Ecosystem:      PoetryEcosystem,
-			CompareAs:      PoetryEcosystem,
 		}
 		if lockPackage.Optional {
 			pkgDetails.DepGroups = append(pkgDetails.DepGroups, "optional")

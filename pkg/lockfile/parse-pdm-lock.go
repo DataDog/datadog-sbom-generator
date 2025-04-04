@@ -44,7 +44,6 @@ func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        pkg.Version,
 			PackageManager: models.Pdm,
 			Ecosystem:      PdmEcosystem,
-			CompareAs:      PdmEcosystem,
 		}
 
 		var optional = true

@@ -253,7 +253,6 @@ func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
 			TargetVersions: targetVersions,
 			PackageManager: models.Pnpm,
 			Ecosystem:      PnpmEcosystem,
-			CompareAs:      PnpmEcosystem,
 			Commit:         commit,
 			DepGroups:      depGroups,
 			IsDirect:       isDirect,

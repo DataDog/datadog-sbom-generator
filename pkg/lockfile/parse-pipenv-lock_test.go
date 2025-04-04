@@ -116,7 +116,6 @@ func TestParsePipenvLock_OnePackage(t *testing.T) {
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 	})
 }
@@ -162,7 +161,6 @@ func TestParsePipenvLock_OnePackage_MatcherFailed(t *testing.T) {
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 	})
 
@@ -189,7 +187,6 @@ func TestParsePipenvLock_OnePackageDev(t *testing.T) {
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -214,14 +211,12 @@ func TestParsePipenvLock_TwoPackages(t *testing.T) {
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -246,14 +241,12 @@ func TestParsePipenvLock_TwoPackagesAlt(t *testing.T) {
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 	})
 }
@@ -277,21 +270,18 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 		{
 			Name:           "pluggy",
 			Version:        "1.0.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 		{
 			Name:           "pluggy",
 			Version:        "1.0.0",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 		{
@@ -299,7 +289,6 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
 			Ecosystem:      lockfile.PipenvEcosystem,
-			CompareAs:      lockfile.PipenvEcosystem,
 		},
 	})
 }

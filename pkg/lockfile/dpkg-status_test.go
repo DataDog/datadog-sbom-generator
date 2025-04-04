@@ -56,14 +56,12 @@ func TestParseDpkgStatus_Malformed(t *testing.T) {
 			Name:           "bash",
 			Version:        "",
 			Ecosystem:      lockfile.DebianEcosystem,
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 		{
 			Name:           "util-linux",
 			Version:        "2.36.1-8+deb11u1",
 			Ecosystem:      lockfile.DebianEcosystem,
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 	})
@@ -83,7 +81,6 @@ func TestParseDpkgStatus_Single(t *testing.T) {
 			Name:           "sudo",
 			Version:        "1.8.27-1+deb10u1",
 			Ecosystem:      lockfile.DebianEcosystem,
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 	})
@@ -103,7 +100,6 @@ func TestParseDpkgStatus_Shuffled(t *testing.T) {
 			Name:           "glibc",
 			Version:        "2.31-13+deb11u5",
 			Ecosystem:      lockfile.DebianEcosystem,
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 	})
@@ -123,28 +119,24 @@ func TestParseDpkgStatus_Multiple(t *testing.T) {
 			Name:           "bash",
 			Version:        "5.1-2+deb11u1",
 			Ecosystem:      lockfile.DebianEcosystem + ":12",
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 		{
 			Name:           "util-linux",
 			Version:        "2.36.1-8+deb11u1",
 			Ecosystem:      lockfile.DebianEcosystem + ":12",
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 		{
 			Name:           "glibc",
 			Version:        "2.31-13+deb11u5",
 			Ecosystem:      lockfile.DebianEcosystem + ":12",
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 		{
 			Name:           "base-files",
 			Version:        "12.4+deb12u5",
 			Ecosystem:      lockfile.DebianEcosystem + ":12",
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 	})
@@ -164,7 +156,6 @@ func TestParseDpkgStatus_Source_Ver_Override(t *testing.T) {
 			Name:           "lvm2",
 			Version:        "2.02.176-4.1ubuntu3",
 			Ecosystem:      lockfile.DebianEcosystem,
-			CompareAs:      lockfile.DebianEcosystem,
 			PackageManager: models.Unknown,
 		},
 	})
