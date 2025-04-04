@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 // Combined vulnerabilities found for the scanned packages
 type VulnerabilityResults struct {
 	Results                    []PackageSource            `json:"results"`
@@ -69,10 +71,8 @@ type GroupInfo struct {
 	// IDs expected to be sorted in alphanumeric order
 	IDs []string `json:"ids"`
 	// Aliases include all aliases and IDs
-	Aliases []string `json:"aliases"`
-	// Map of Vulnerability IDs to AnalysisInfo
-	ExperimentalAnalysis map[string]AnalysisInfo `json:"experimentalAnalysis,omitempty"`
-	MaxSeverity          string                  `json:"max_severity"`
+	Aliases     []string `json:"aliases"`
+	MaxSeverity string   `json:"max_severity"`
 }
 
 // IsCalled returns true if any analysis performed determines that the vulnerability is being called
@@ -84,26 +84,12 @@ func (groupInfo *GroupInfo) IsCalled() bool {
 		return false
 	}
 
-	if len(groupInfo.ExperimentalAnalysis) == 0 {
-		return true
-	}
-
-	for _, analysis := range groupInfo.ExperimentalAnalysis {
-		if analysis.Called {
-			return true
-		}
-	}
-
 	return false
 }
 
 func (groupInfo *GroupInfo) IndexString() string {
 	// Assumes IDs is sorted
 	return strings.Join(groupInfo.IDs, ",")
-}
-
-type AnalysisInfo struct {
-	Called bool `json:"called"`
 }
 
 // Specific package information

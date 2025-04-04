@@ -849,11 +849,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ],
@@ -896,11 +891,6 @@
                 "OSV-2"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-2": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             }
           ],
@@ -963,11 +953,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ],
@@ -1188,11 +1173,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             }
           ],
@@ -1251,11 +1231,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ],
@@ -2220,11 +2195,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             },
             {
@@ -2232,11 +2202,6 @@
                 "OSV-5"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-5": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             }
           ]
@@ -2348,11 +2313,6 @@
                 "OSV-3"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-3": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             },
             {
@@ -2514,11 +2474,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             },
             {
@@ -2526,11 +2481,6 @@
                 "GHSA-123"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "GHSA-123": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ]
@@ -2581,11 +2531,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
               "max_severity": ""
             }
           ]
@@ -2636,11 +2581,6 @@
                 "OSV-1"
               ],
               "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ]
@@ -2812,11 +2752,6 @@
                 "OSV-1",
                 "GHSA-123"
               ],
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
               "max_severity": ""
             }
           ]

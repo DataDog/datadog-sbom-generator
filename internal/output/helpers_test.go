@@ -194,9 +194,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: true},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -228,9 +225,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: false},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -263,15 +257,9 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									Groups: []models.GroupInfo{
 										{
 											IDs: []string{"OSV-1"},
-											ExperimentalAnalysis: map[string]models.AnalysisInfo{
-												"OSV-1": {Called: true},
-											},
 										},
 										{
 											IDs: []string{"GHSA-123"},
-											ExperimentalAnalysis: map[string]models.AnalysisInfo{
-												"GHSA-123": {Called: false},
-											},
 										},
 									},
 									Vulnerabilities: models.Vulnerabilities{
@@ -428,9 +416,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									Groups: []models.GroupInfo{{
 										IDs:     []string{"OSV-1", "GHSA-123"},
 										Aliases: []string{"OSV-1", "GHSA-123"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: false},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -886,15 +871,9 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									Groups: []models.GroupInfo{
 										{
 											IDs: []string{"OSV-1"},
-											ExperimentalAnalysis: map[string]models.AnalysisInfo{
-												"OSV-1": {Called: false},
-											},
 										},
 										{
 											IDs: []string{"OSV-5"},
-											ExperimentalAnalysis: map[string]models.AnalysisInfo{
-												"OSV-5": {Called: true},
-											},
 										},
 									},
 									Vulnerabilities: models.Vulnerabilities{
@@ -956,9 +935,6 @@ func testOutputWithVulnerabilities(t *testing.T, run outputTestRunner) {
 									Groups: []models.GroupInfo{
 										{
 											IDs: []string{"OSV-3"},
-											ExperimentalAnalysis: map[string]models.AnalysisInfo{
-												"OSV-3": {Called: true},
-											},
 										},
 										{IDs: []string{"OSV-5"}},
 									},
@@ -1683,9 +1659,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: true},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -1720,9 +1693,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: false},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -1901,9 +1871,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: false},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -1928,9 +1895,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-2"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-2": {Called: true},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
@@ -1975,9 +1939,6 @@ func testOutputWithMixedIssues(t *testing.T, run outputTestRunner) {
 									},
 									Groups: []models.GroupInfo{{
 										IDs: []string{"OSV-1"},
-										ExperimentalAnalysis: map[string]models.AnalysisInfo{
-											"OSV-1": {Called: false},
-										},
 									}},
 									Vulnerabilities: models.Vulnerabilities{
 										{
