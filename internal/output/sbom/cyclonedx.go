@@ -15,8 +15,11 @@ import (
 
 type PackageProcessingHook = func(component *cyclonedx.Component, details models.PackageVulns)
 
-func buildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts []models.ScannedArtifact, pkgProcessingHook PackageProcessingHook) *cyclonedx.BOM {
+func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts []models.ScannedArtifact) *cyclonedx.BOM {
 	bom := cyclonedx.NewBOM()
+	bom.JSONSchema = cycloneDx15Schema
+	bom.SpecVersion = cyclonedx.SpecVersion1_5
+
 	components := make([]cyclonedx.Component, 0)
 	bomVulnerabilities := make([]cyclonedx.Vulnerability, 0)
 	vulnerabilities := make(map[string]cyclonedx.Vulnerability)
@@ -27,7 +30,7 @@ func buildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		artifact := findArtifact(packageDetail.Package.Name, packageDetail.Package.Version, artifacts)
 		createFileComponents(packageDetail, artifact, dependsOn)
 
-		pkgProcessingHook(&libraryComponent, packageDetail)
+		addLocations(&libraryComponent, packageDetail)
 		addVulnerabilities(vulnerabilities, packageDetail)
 
 		components = append(components, libraryComponent)
@@ -55,6 +58,30 @@ func buildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	bom.Vulnerabilities = &bomVulnerabilities
 
 	return bom
+}
+
+func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
+	occurrences := make([]cyclonedx.EvidenceOccurrence, 0)
+
+	for _, packageLocations := range details.Locations {
+		cleanedLocation := packageLocations.Clean()
+
+		if cleanedLocation == nil {
+			continue
+		}
+		jsonLocation, err := packageLocations.MarshalToJSONString()
+
+		if err != nil {
+			continue
+		}
+		occurrence := cyclonedx.EvidenceOccurrence{
+			Location: jsonLocation,
+		}
+		occurrences = append(occurrences, occurrence)
+	}
+	if len(occurrences) > 0 {
+		component.Evidence = &cyclonedx.Evidence{Occurrences: &occurrences}
+	}
 }
 
 func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
