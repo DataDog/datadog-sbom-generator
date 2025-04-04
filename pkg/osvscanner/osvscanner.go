@@ -43,7 +43,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -56,7 +56,7 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 	root := true
 
-	var scannedPackages []scannedPackage
+	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(path string, info os.DirEntry, err error) error {
@@ -148,7 +148,7 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
+func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) (lockfile.Packages, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
@@ -194,41 +194,13 @@ func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParse
 		output.Form(len(parsedLockfile.Packages), "package", "packages"),
 	)
 
-	packages := make([]scannedPackage, len(parsedLockfile.Packages))
-	for i, pkgDetail := range parsedLockfile.Packages {
-		packages[i] = scannedPackage{
-			Name:           pkgDetail.Name,
-			Version:        pkgDetail.Version,
-			Commit:         pkgDetail.Commit,
-			Ecosystem:      pkgDetail.Ecosystem,
-			PackageManager: pkgDetail.PackageManager,
-			IsDirect:       pkgDetail.IsDirect,
-			DepGroups:      pkgDetail.DepGroups,
-			Source: models.SourceInfo{
-				Path: path,
-			},
-			BlockLocation:   pkgDetail.BlockLocation,
-			VersionLocation: pkgDetail.VersionLocation,
-			NameLocation:    pkgDetail.NameLocation,
+	for i := range parsedLockfile.Packages {
+		parsedLockfile.Packages[i].Source = models.SourceInfo{
+			Path: path,
 		}
 	}
 
-	return packages, parsedLockfile.Artifact, nil
-}
-
-type scannedPackage struct {
-	PURL            string
-	Name            string
-	Ecosystem       lockfile.Ecosystem
-	PackageManager  models.PackageManager
-	IsDirect        bool
-	Commit          string
-	Version         string
-	Source          models.SourceInfo
-	DepGroups       []string
-	BlockLocation   models.FilePosition
-	VersionLocation *models.FilePosition
-	NameLocation    *models.FilePosition
+	return parsedLockfile.Packages, parsedLockfile.Artifact, nil
 }
 
 func initializeEnabledParsers(enabledParsers []string) map[string]bool {
@@ -256,7 +228,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	var scannedPackages []scannedPackage
+	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	if actions.Debug {

@@ -2,6 +2,9 @@
 [TestComposerMatcher_Match_OnePackage - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "brick/math",
     "version": "0.12.9",
     "blockLocation": {

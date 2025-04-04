@@ -2,6 +2,9 @@
 [TestGemspecFileMatcher_Match - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "base64",
     "version": "0.2.0",
     "blockLocation": {
@@ -18,6 +21,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "json",
     "version": "2.9.1",
     "blockLocation": {
@@ -34,6 +40,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "thor",
     "version": "1.3.2",
     "blockLocation": {
@@ -72,6 +81,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "timeout",
     "version": "0.4.3",
     "blockLocation": {
@@ -110,6 +122,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "useragent",
     "version": "0.16.11",
     "blockLocation": {
@@ -148,6 +163,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "websocket-driver",
     "version": "0.7.7",
     "depGroups": [
@@ -178,6 +196,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "websocket-extensions",
     "version": "0.1.5",
     "depGroups": [
@@ -219,6 +240,9 @@
     "packageManager": "Bundler"
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "zeitwerk",
     "version": "2.7.1",
     "depGroups": [
