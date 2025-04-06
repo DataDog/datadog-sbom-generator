@@ -13,10 +13,20 @@ const HEADER_CONTENT_TYPE_APPLICATION_JSON = "application/json"
 
 const DATADOG_HOSTNAME_DEFAULT = "api.datadoghq.com"
 
+type DatadogEnvVar string
+
+const (
+	DatadogEnvVarSite     DatadogEnvVar = "SITE"
+	DatadogEnvVarApiKey                 = "API_KEY"
+	DatadogEnvVarAppKey                 = "APP_KEY"
+	DatadogEnvVarHostname               = "HOSTNAME"
+	DatadogEnvVarJwtToken               = "JWT_TOKEN"
+)
+
 // getDatadogEnvVarValue should be used only for Datadog-specific environment variables
 // as it checks the given variable with both "DD_" and "DATADOG_" prefixes in that order.
 // ex. API_KEY would look for DD_API_KEY then DATADOG_API_KEY
-func getDatadogEnvVarValue(variable string) (string, bool) {
+func getDatadogEnvVarValue(variable DatadogEnvVar) (string, bool) {
 	prefixes := []string{"DD", "DATADOG"}
 	for _, prefix := range prefixes {
 		value, ok := getEnvVarValue(fmt.Sprintf("%s_%s", prefix, variable))
@@ -38,12 +48,12 @@ func getEnvVarValue(variable string) (string, bool) {
 func getDatadogHostname() string {
 	prefix := "https://"
 
-	hostname, ok := getDatadogEnvVarValue("HOSTNAME")
+	hostname, ok := getDatadogEnvVarValue(DatadogEnvVarHostname)
 	if ok {
 		return prefix + hostname
 	}
 
-	site, ok := getDatadogEnvVarValue("SITE")
+	site, ok := getDatadogEnvVarValue(DatadogEnvVarSite)
 	if ok {
 		return fmt.Sprintf("%sapi.%s", prefix, site)
 	}
@@ -59,7 +69,7 @@ type Header struct {
 // getDatadogAuthHeaders returns the headers needed to make authenticated requests to a Datadog API. If a JWT token is
 // available, it will be used, otherwise the API key and app key will be used.
 func getDatadogAuthHeaders() ([]Header, error) {
-	jwtToken, jwtTokenFound := getDatadogEnvVarValue("JWT_TOKEN")
+	jwtToken, jwtTokenFound := getDatadogEnvVarValue(DatadogEnvVarJwtToken)
 	if jwtTokenFound {
 		return []Header{
 			{Key: DATADOG_HEADER_JWT_TOKEN, Value: jwtToken},
@@ -68,14 +78,14 @@ func getDatadogAuthHeaders() ([]Header, error) {
 
 	missingKeys := make([]string, 0, 2)
 
-	apiKey, apiKeyFound := getDatadogEnvVarValue("API_KEY")
+	apiKey, apiKeyFound := getDatadogEnvVarValue(DatadogEnvVarApiKey)
 	if !apiKeyFound {
-		missingKeys = append(missingKeys, "API_KEY")
+		missingKeys = append(missingKeys, DatadogEnvVarApiKey)
 	}
 
-	appKey, appKeyFound := getDatadogEnvVarValue("APP_KEY")
+	appKey, appKeyFound := getDatadogEnvVarValue(DatadogEnvVarAppKey)
 	if !appKeyFound {
-		missingKeys = append(missingKeys, "APP_KEY")
+		missingKeys = append(missingKeys, DatadogEnvVarAppKey)
 	}
 
 	if len(missingKeys) > 0 {

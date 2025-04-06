@@ -8,12 +8,12 @@ import (
 )
 
 func Test_getDatadogEnvVarValue_noneSet(t *testing.T) {
-	datadogEnvVarsWithoutPrefix := []string{
-		"API_KEY",
-		"APP_KEY",
-		"JWT_TOKEN",
-		"SITE",
-		"HOSTNAME",
+	datadogEnvVarsWithoutPrefix := []DatadogEnvVar{
+		DatadogEnvVarSite,
+		DatadogEnvVarApiKey,
+		DatadogEnvVarAppKey,
+		DatadogEnvVarJwtToken,
+		DatadogEnvVarHostname,
 	}
 
 	for _, envVar := range datadogEnvVarsWithoutPrefix {
@@ -27,7 +27,7 @@ func Test_getDatadogEnvVarValue_noneSet(t *testing.T) {
 func Test_getDatadogEnvVarValue_canReadFromDatadogPrefix(t *testing.T) {
 	t.Setenv("DATADOG_API_KEY", "test-datadog-api-key")
 
-	value, found := getDatadogEnvVarValue("API_KEY")
+	value, found := getDatadogEnvVarValue(DatadogEnvVarApiKey)
 	assert.True(t, found)
 	assert.Equal(t, "test-datadog-api-key", value)
 }
@@ -36,7 +36,7 @@ func Test_getDatadogEnvVarValue_ddPrefixTakesPrecedence(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DATADOG_API_KEY", "test-datadog-api-key")
 
-	value, found := getDatadogEnvVarValue("API_KEY")
+	value, found := getDatadogEnvVarValue(DatadogEnvVarApiKey)
 	assert.True(t, found)
 	assert.Equal(t, "test-dd-api-key", value)
 }
