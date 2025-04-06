@@ -13,29 +13,29 @@ import (
 const resolveSymbolsPath = "api/v2/static-analysis-sca/vulnerabilities/resolve-vulnerable-symbols"
 
 type ResolveVulnerableSymbolsRequest struct {
-	ID    string   `jsonapi:"primary,resolve-vulnerable-symbols-request" json:"id"`
-	Purls []string `jsonapi:"attribute" json:"purls"`
+	ID    string   `json:"id" jsonapi:"primary,resolve-vulnerable-symbols-request"`
+	Purls []string `json:"purls" jsonapi:"attribute"`
 }
 
 type ResolveVulnerableSymbolsResponse struct {
-	ID      string           `jsonapi:"primary,resolve-vulnerable-symbols-response" json:"id"`
-	Results []SymbolsForPurl `jsonapi:"attribute" json:"results"`
+	ID      string           `json:"id" jsonapi:"primary,resolve-vulnerable-symbols-response"`
+	Results []SymbolsForPurl `json:"results" jsonapi:"attribute"`
 }
 
 type SymbolsForPurl struct {
-	Purl              string          `jsonapi:"attribute" json:"purl"`
-	VulnerableSymbols []SymbolDetails `jsonapi:"attribute" json:"vulnerable_symbols"`
+	Purl              string          `json:"purl" jsonapi:"attribute"`
+	VulnerableSymbols []SymbolDetails `json:"vulnerable_symbols" jsonapi:"attribute"`
 }
 
 type SymbolDetails struct {
-	AdvisoryId string   `jsonapi:"attribute" json:"advisory_id"`
-	Symbols    []Symbol `jsonapi:"attribute" json:"symbols"`
+	AdvisoryId string   `json:"advisory_id" jsonapi:"attribute"`
+	Symbols    []Symbol `json:"symbols" jsonapi:"attribute"`
 }
 
 type Symbol struct {
-	Type  string `jsonapi:"attribute" json:"type"`
-	Value string `jsonapi:"attribute" json:"value"`
-	Name  string `jsonapi:"attribute" json:"name"`
+	Type  string `json:"type" jsonapi:"attribute"`
+	Value string `json:"value" jsonapi:"attribute"`
+	Name  string `json:"name" jsonapi:"attribute"`
 }
 
 func PostResolveVulnerableSymbols(purls []string) (ResolveVulnerableSymbolsResponse, error) {
