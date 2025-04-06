@@ -95,10 +95,18 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 		if len(value) == 0 {
 			continue
 		}
-		properties = append(properties, cyclonedx.Property{
-			Name:  "osv-scanner:" + string(metadataType),
-			Value: value,
-		})
+		// TODO(daniel.strong) Remove this conditional when we support datadog-sbom-generator prefixes in all metadata keys.
+		if strings.HasPrefix(string(metadataType), string(models.ReachableSymbolLocationMetadata)) {
+			properties = append(properties, cyclonedx.Property{
+				Name:  "datadog-sbom-generator:" + string(metadataType),
+				Value: value,
+			})
+		} else {
+			properties = append(properties, cyclonedx.Property{
+				Name:  "osv-scanner:" + string(metadataType),
+				Value: value,
+			})
+		}
 	}
 
 	slices.SortFunc(properties, func(a, b cyclonedx.Property) int {
