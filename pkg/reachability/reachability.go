@@ -11,7 +11,12 @@ import (
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(purls []string, directoryPaths []string) models.ReachabilityAnalysis {
+func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enabled bool) models.ReachabilityAnalysis {
+	if !enabled {
+		log.Println("reachability analysis is disabled")
+		return models.ReachabilityAnalysis{}
+	}
+
 	log.Println("fetching symbols to perform a reachability analysis")
 	resp, err := http.PostResolveVulnerableSymbols(purls)
 	if err != nil {

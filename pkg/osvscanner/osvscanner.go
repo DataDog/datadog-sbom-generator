@@ -24,6 +24,7 @@ type ScannerActions struct {
 	DirectoryPaths []string
 	Recursive      bool
 	NoIgnore       bool
+	Reachability   bool
 	Debug          bool
 	EnableParsers  []string
 }
@@ -256,7 +257,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
-	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths)
+	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths, actions.Reachability)
 
 	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 
