@@ -236,12 +236,12 @@ func TestRun(t *testing.T) {
 		},
 		{
 			name: "verbosity level = error",
-			args: []string{"", "--verbosity", "error", "--format", "table", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--verbosity", "error", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		{
 			name: "verbosity level = info",
-			args: []string{"", "--verbosity", "info", "--format", "table", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--verbosity", "info", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 	}
