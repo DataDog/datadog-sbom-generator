@@ -1,7 +1,6 @@
 package reachability
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,11 +12,12 @@ import (
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
 func PerformReachabilityAnalysis(purls []string, directoryPaths []string) models.ReachabilityAnalysis {
-	fmt.Println("fetching symbols to perform a reachability analysis")
+	log.Println("fetching symbols to perform a reachability analysis")
 	resp, err := http.PostResolveVulnerableSymbols(purls)
 	if err != nil {
-		fmt.Printf("failed to fetch symbols for reachability analysis: %v\n", err)
-		fmt.Println("continuing without reachability information")
+		log.Printf("failed to fetch symbols for reachability analysis: %v\n", err)
+		log.Println("continuing without reachability information")
+
 		return models.ReachabilityAnalysis{}
 	}
 
@@ -51,6 +51,7 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string) models
 		})
 
 		if err != nil {
+			javaReachabilityDetector.Close()
 			log.Fatalf("error walking the path: %v\n", err)
 		}
 	}

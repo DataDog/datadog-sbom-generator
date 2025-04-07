@@ -17,8 +17,8 @@ type ReachabilityAnalysisResults struct {
 
 // ReachableVulnerability contains info for a vulnerability that was deemed reachable.
 type ReachableVulnerability struct {
-	// AdvisoryId is the vulnerability identifier that was analyzed.
-	AdvisoryId string `json:"advisory_id"`
+	// AdvisoryID is the vulnerability identifier that was analyzed.
+	AdvisoryID string `json:"advisory_id"`
 	// Locations where the vulnerability was deemed reachable, if any.
 	ReachableSymbolLocations ReachableSymbolLocations `json:"reachable_symbol_locations,omitempty"`
 }
@@ -48,7 +48,7 @@ type AdvisoriesToCheckPerLanguage map[string][]AdvisoryToCheck
 
 type AdvisoryToCheck struct {
 	Purl       string
-	AdvisoryId string
+	AdvisoryID string
 	Symbols    []Symbols
 }
 

@@ -3,6 +3,7 @@ package osvscanner
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"log"
 	"path/filepath"

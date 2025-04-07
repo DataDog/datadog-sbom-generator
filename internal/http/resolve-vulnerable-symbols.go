@@ -13,36 +13,36 @@ import (
 const resolveSymbolsPath = "api/v2/static-analysis-sca/vulnerabilities/resolve-vulnerable-symbols"
 
 type ResolveVulnerableSymbolsRequest struct {
-	ID    string   `json:"id" jsonapi:"primary,resolve-vulnerable-symbols-request"`
+	ID    string   `json:"id"    jsonapi:"primary,resolve-vulnerable-symbols-request"`
 	Purls []string `json:"purls" jsonapi:"attribute"`
 }
 
 type ResolveVulnerableSymbolsResponse struct {
-	ID      string           `json:"id" jsonapi:"primary,resolve-vulnerable-symbols-response"`
+	ID      string           `json:"id"      jsonapi:"primary,resolve-vulnerable-symbols-response"`
 	Results []SymbolsForPurl `json:"results" jsonapi:"attribute"`
 }
 
 type SymbolsForPurl struct {
-	Purl              string          `json:"purl" jsonapi:"attribute"`
+	Purl              string          `json:"purl"               jsonapi:"attribute"`
 	VulnerableSymbols []SymbolDetails `json:"vulnerable_symbols" jsonapi:"attribute"`
 }
 
 type SymbolDetails struct {
-	AdvisoryId string   `json:"advisory_id" jsonapi:"attribute"`
-	Symbols    []Symbol `json:"symbols" jsonapi:"attribute"`
+	AdvisoryID string   `json:"advisory_id" jsonapi:"attribute"`
+	Symbols    []Symbol `json:"symbols"     jsonapi:"attribute"`
 }
 
 type Symbol struct {
-	Type  string `json:"type" jsonapi:"attribute"`
+	Type  string `json:"type"  jsonapi:"attribute"`
 	Value string `json:"value" jsonapi:"attribute"`
-	Name  string `json:"name" jsonapi:"attribute"`
+	Name  string `json:"name"  jsonapi:"attribute"`
 }
 
 func PostResolveVulnerableSymbols(purls []string) (ResolveVulnerableSymbolsResponse, error) {
 	return postResolveVulnerableSymbols(purls, getDatadogHostname())
 }
 
-func postResolveVulnerableSymbols(purls []string, baseUrl string) (ResolveVulnerableSymbolsResponse, error) {
+func postResolveVulnerableSymbols(purls []string, baseURL string) (ResolveVulnerableSymbolsResponse, error) {
 	data := ResolveVulnerableSymbolsResponse{}
 
 	body, err := jsonapi.Marshal(&ResolveVulnerableSymbolsRequest{
@@ -53,7 +53,7 @@ func postResolveVulnerableSymbols(purls []string, baseUrl string) (ResolveVulner
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("%s/%s", baseUrl, resolveSymbolsPath), bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("%s/%s", baseURL, resolveSymbolsPath), bytes.NewBuffer(body))
 	if err != nil {
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] failed to create request: %w", err)
 	}
@@ -63,7 +63,7 @@ func postResolveVulnerableSymbols(purls []string, baseUrl string) (ResolveVulner
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] no auth headers retrieved: %w", err)
 	}
 
-	req.Header.Set(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_APPLICATION_JSON)
+	req.Header.Set(HeaderContentType, HeaderContentTypeApplicationJson)
 	for _, header := range authHeaders {
 		req.Header.Set(header.Key, header.Value)
 	}

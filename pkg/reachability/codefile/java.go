@@ -2,6 +2,7 @@ package codefile
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
@@ -80,7 +81,7 @@ func (r *ReachabilityJava) Detect(dir string, path string, detectionResults mode
 		for _, s := range advisoryToCheck.Symbols {
 			query := r.tsQueriesPerSymbolType[s.Type]
 			if query == nil {
-				fmt.Printf("No query found for symbol type %s\n", s.Type)
+				log.Printf("No query found for symbol type %s\n", s.Type)
 				continue
 			}
 
@@ -109,12 +110,12 @@ func (r *ReachabilityJava) Detect(dir string, path string, detectionResults mode
 						detectionResults[advisoryToCheck.Purl] = make(map[string]models.ReachableSymbolLocations)
 					}
 
-					if _, ok := detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryId]; !ok {
-						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryId] = make(models.ReachableSymbolLocations, 0)
+					if _, ok := detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID]; !ok {
+						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = make(models.ReachableSymbolLocations, 0)
 					}
 
-					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryId] = append(
-						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryId],
+					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = append(
+						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID],
 						models.ReachableSymbolLocation{
 							Symbol: matchedText,
 							PackageLocation: models.PackageLocation{
@@ -137,8 +138,9 @@ func (r *ReachabilityJava) Detect(dir string, path string, detectionResults mode
 func readFileContent(filePath string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Printf("Error reading file %s: %v", filePath, err)
+		log.Printf("Error reading file %s: %v", filePath, err)
 		return nil, err
 	}
+
 	return data, nil
 }

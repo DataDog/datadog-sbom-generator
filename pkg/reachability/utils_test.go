@@ -10,6 +10,8 @@ import (
 )
 
 func Test_getAdvisoriesToCheckPerLanguage_NoAdvisoriesToCheck(t *testing.T) {
+	t.Parallel()
+
 	resolveVulnerableSymbolsResponse := http.ResolveVulnerableSymbolsResponse{
 		ID:      "testing-123",
 		Results: []http.SymbolsForPurl{},
@@ -23,6 +25,8 @@ func Test_getAdvisoriesToCheckPerLanguage_NoAdvisoriesToCheck(t *testing.T) {
 }
 
 func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
+	t.Parallel()
+
 	resolveVulnerableSymbolsResponse := http.ResolveVulnerableSymbolsResponse{
 		ID: "testing-123",
 		Results: []http.SymbolsForPurl{
@@ -30,7 +34,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 				Purl: "pkg:maven/org.example/foo@1.2.3",
 				VulnerableSymbols: []http.SymbolDetails{
 					{
-						AdvisoryId: "CVE-2025-1234",
+						AdvisoryID: "CVE-2025-1234",
 						Symbols: []http.Symbol{
 							{
 								Type:  "class",
@@ -50,7 +54,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 				Purl: "pkg:maven/org.example/bar@9.8.7",
 				VulnerableSymbols: []http.SymbolDetails{
 					{
-						AdvisoryId: "CVE-2025-9876",
+						AdvisoryID: "CVE-2025-9876",
 						Symbols: []http.Symbol{
 							{
 								Type:  "class",
@@ -60,7 +64,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 						},
 					},
 					{
-						AdvisoryId: "CVE-2025-0000",
+						AdvisoryID: "CVE-2025-0000",
 						Symbols: []http.Symbol{
 							{
 								Type:  "class",
@@ -78,7 +82,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 		"java": {
 			{
 				Purl:       "pkg:maven/org.example/foo@1.2.3",
-				AdvisoryId: "CVE-2025-1234",
+				AdvisoryID: "CVE-2025-1234",
 				Symbols: []models.Symbols{
 					{
 						Type:  "class",
@@ -94,7 +98,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 			},
 			{
 				Purl:       "pkg:maven/org.example/bar@9.8.7",
-				AdvisoryId: "CVE-2025-9876",
+				AdvisoryID: "CVE-2025-9876",
 				Symbols: []models.Symbols{
 					{
 						Type:  "class",
@@ -105,7 +109,7 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 			},
 			{
 				Purl:       "pkg:maven/org.example/bar@9.8.7",
-				AdvisoryId: "CVE-2025-0000",
+				AdvisoryID: "CVE-2025-0000",
 				Symbols: []models.Symbols{
 					{
 						Type:  "class",
@@ -123,6 +127,8 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 }
 
 func Test_getPurlsToReachabilityAnalysisResults_Empty(t *testing.T) {
+	t.Parallel()
+
 	advisories := models.AdvisoriesToCheckPerLanguage{}
 	detections := models.DetectionResults{}
 
@@ -132,16 +138,18 @@ func Test_getPurlsToReachabilityAnalysisResults_Empty(t *testing.T) {
 }
 
 func Test_getPurlsToReachabilityAnalysisResults_MultipleAdvisoriesAndNoDetections(t *testing.T) {
+	t.Parallel()
+
 	advisories := models.AdvisoriesToCheckPerLanguage{
 		"java": {
 			{
 				Purl:       "pkg:maven/org.example/foo@1.2.3",
-				AdvisoryId: "CVE-2025-1234",
+				AdvisoryID: "CVE-2025-1234",
 				Symbols:    []models.Symbols{{}},
 			},
 			{
 				Purl:       "pkg:maven/org.example/foo@1.2.3",
-				AdvisoryId: "CVE-2025-9876",
+				AdvisoryID: "CVE-2025-9876",
 				Symbols:    []models.Symbols{{}},
 			},
 		},
@@ -164,21 +172,23 @@ func Test_getPurlsToReachabilityAnalysisResults_MultipleAdvisoriesAndNoDetection
 }
 
 func Test_getPurlsToReachabilityAnalysisResults_MultipleAdvisoriesWithDetections(t *testing.T) {
+	t.Parallel()
+
 	advisories := models.AdvisoriesToCheckPerLanguage{
 		"java": {
 			{
 				Purl:       "pkg:maven/org.example/foo@1.2.3",
-				AdvisoryId: "CVE-2025-1234",
+				AdvisoryID: "CVE-2025-1234",
 				Symbols:    []models.Symbols{{}},
 			},
 			{
 				Purl:       "pkg:maven/org.example/bar@9.8.7",
-				AdvisoryId: "CVE-2025-1234",
+				AdvisoryID: "CVE-2025-1234",
 				Symbols:    []models.Symbols{{}},
 			},
 			{
 				Purl:       "pkg:maven/org.example/bar@9.8.7",
-				AdvisoryId: "CVE-2025-9876",
+				AdvisoryID: "CVE-2025-9876",
 				Symbols:    []models.Symbols{{}},
 			},
 		},
@@ -222,7 +232,7 @@ func Test_getPurlsToReachabilityAnalysisResults_MultipleAdvisoriesWithDetections
 			},
 			ReachableVulnerabilities: []models.ReachableVulnerability{
 				{
-					AdvisoryId: "CVE-2025-1234",
+					AdvisoryID: "CVE-2025-1234",
 					ReachableSymbolLocations: []models.ReachableSymbolLocation{
 						{
 							Symbol: "Foo",
@@ -245,7 +255,7 @@ func Test_getPurlsToReachabilityAnalysisResults_MultipleAdvisoriesWithDetections
 			},
 			ReachableVulnerabilities: []models.ReachableVulnerability{
 				{
-					AdvisoryId: "CVE-2025-9876",
+					AdvisoryID: "CVE-2025-9876",
 					ReachableSymbolLocations: []models.ReachableSymbolLocation{
 						{
 							Symbol: "Bar",

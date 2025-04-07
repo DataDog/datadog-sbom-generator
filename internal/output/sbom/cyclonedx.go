@@ -187,25 +187,26 @@ func addVulnerabilities(vulnerabilities map[string]cyclonedx.Vulnerability, pack
 
 // addToUniqueAdvisoryAndPurls is used to continuously add unique advisory IDs and their affected PURLs
 func addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls map[string]map[string]struct{}, packageDetail models.PackageVulns) {
-	for _, advisoryId := range packageDetail.AdvisoriesForReachability {
-		if _, ok := uniqueAdvisoryIdsAndUniquePurls[advisoryId]; !ok {
-			uniqueAdvisoryIdsAndUniquePurls[advisoryId] = make(map[string]struct{})
+	for _, advisoryID := range packageDetail.AdvisoriesForReachability {
+		if _, ok := uniqueAdvisoryIdsAndUniquePurls[advisoryID]; !ok {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryID] = make(map[string]struct{})
 		}
 
-		if _, exists := packageDetail.Metadata[models.ReachableSymbolLocationMetadata.WithValue(advisoryId)]; exists {
-			uniqueAdvisoryIdsAndUniquePurls[advisoryId][packageDetail.Package.Purl] = struct{}{}
+		if _, exists := packageDetail.Metadata[models.ReachableSymbolLocationMetadata.WithValue(advisoryID)]; exists {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryID][packageDetail.Package.Purl] = struct{}{}
 		}
 	}
 }
 
 // combineReachableVulnerability converts a map of unique advisory IDs and their affected PURLs into a map of vulnerabilities
 func combineReachableVulnerability(vulnerabilities map[string]cyclonedx.Vulnerability, uniqueAdvisoriesToPurls map[string]map[string]struct{}) {
-	for advisoryId, purlsMap := range uniqueAdvisoriesToPurls {
+	for advisoryID, purlsMap := range uniqueAdvisoriesToPurls {
 		if len(purlsMap) == 0 {
-			vulnerabilities[advisoryId] = cyclonedx.Vulnerability{
-				ID:     advisoryId,
-				BOMRef: advisoryId,
+			vulnerabilities[advisoryID] = cyclonedx.Vulnerability{
+				ID:     advisoryID,
+				BOMRef: advisoryID,
 			}
+
 			continue
 		}
 
@@ -216,9 +217,9 @@ func combineReachableVulnerability(vulnerabilities map[string]cyclonedx.Vulnerab
 			})
 		}
 
-		vulnerabilities[advisoryId] = cyclonedx.Vulnerability{
-			ID:      advisoryId,
-			BOMRef:  advisoryId,
+		vulnerabilities[advisoryID] = cyclonedx.Vulnerability{
+			ID:      advisoryID,
+			BOMRef:  advisoryID,
 			Affects: &affects,
 		}
 	}

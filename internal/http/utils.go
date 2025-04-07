@@ -5,22 +5,22 @@ import (
 	"os"
 )
 
-const DATADOG_HEADER_APP_KEY = "dd-application-key"
-const DATADOG_HEADER_API_KEY = "dd-api-key"
-const DATADOG_HEADER_JWT_TOKEN = "dd-auth-jwt"
-const HEADER_CONTENT_TYPE = "Content-Type"
-const HEADER_CONTENT_TYPE_APPLICATION_JSON = "application/json"
+const DatadogHeaderAppKey = "dd-application-key"
+const DatadogHeaderApiKey = "dd-api-key"
+const DatadogHeaderJwtToken = "dd-auth-jwt"
+const HeaderContentType = "Content-Type"
+const HeaderContentTypeApplicationJson = "application/json"
 
-const DATADOG_HOSTNAME_DEFAULT = "api.datadoghq.com"
+const DatadogHostnameDefault = "api.datadoghq.com"
 
 type DatadogEnvVar string
 
 const (
 	DatadogEnvVarSite     DatadogEnvVar = "SITE"
-	DatadogEnvVarApiKey                 = "API_KEY"
-	DatadogEnvVarAppKey                 = "APP_KEY"
-	DatadogEnvVarHostname               = "HOSTNAME"
-	DatadogEnvVarJwtToken               = "JWT_TOKEN"
+	DatadogEnvVarAPIKey   DatadogEnvVar = "API_KEY"
+	DatadogEnvVarAppKey   DatadogEnvVar = "APP_KEY"
+	DatadogEnvVarHostname DatadogEnvVar = "HOSTNAME"
+	DatadogEnvVarJwtToken DatadogEnvVar = "JWT_TOKEN"
 )
 
 // getDatadogEnvVarValue should be used only for Datadog-specific environment variables
@@ -28,12 +28,14 @@ const (
 // ex. API_KEY would look for DD_API_KEY then DATADOG_API_KEY
 func getDatadogEnvVarValue(variable DatadogEnvVar) (string, bool) {
 	prefixes := []string{"DD", "DATADOG"}
+
 	for _, prefix := range prefixes {
 		value, ok := getEnvVarValue(fmt.Sprintf("%s_%s", prefix, variable))
 		if ok {
 			return value, ok
 		}
 	}
+
 	return "", false
 }
 
@@ -58,7 +60,7 @@ func getDatadogHostname() string {
 		return fmt.Sprintf("%sapi.%s", prefix, site)
 	}
 
-	return prefix + DATADOG_HOSTNAME_DEFAULT
+	return prefix + DatadogHostnameDefault
 }
 
 type Header struct {
@@ -72,15 +74,15 @@ func getDatadogAuthHeaders() ([]Header, error) {
 	jwtToken, jwtTokenFound := getDatadogEnvVarValue(DatadogEnvVarJwtToken)
 	if jwtTokenFound {
 		return []Header{
-			{Key: DATADOG_HEADER_JWT_TOKEN, Value: jwtToken},
+			{Key: DatadogHeaderJwtToken, Value: jwtToken},
 		}, nil
 	}
 
-	missingKeys := make([]string, 0, 2)
+	missingKeys := make([]DatadogEnvVar, 0, 2)
 
-	apiKey, apiKeyFound := getDatadogEnvVarValue(DatadogEnvVarApiKey)
+	apiKey, apiKeyFound := getDatadogEnvVarValue(DatadogEnvVarAPIKey)
 	if !apiKeyFound {
-		missingKeys = append(missingKeys, DatadogEnvVarApiKey)
+		missingKeys = append(missingKeys, DatadogEnvVarAPIKey)
 	}
 
 	appKey, appKeyFound := getDatadogEnvVarValue(DatadogEnvVarAppKey)
@@ -93,8 +95,7 @@ func getDatadogAuthHeaders() ([]Header, error) {
 	}
 
 	return []Header{
-		{Key: DATADOG_HEADER_API_KEY, Value: apiKey},
-		{Key: DATADOG_HEADER_APP_KEY, Value: appKey},
+		{Key: DatadogHeaderApiKey, Value: apiKey},
+		{Key: DatadogHeaderAppKey, Value: appKey},
 	}, nil
-
 }

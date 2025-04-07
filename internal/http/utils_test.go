@@ -1,3 +1,4 @@
+//nolint:paralleltest
 package http
 
 import (
@@ -10,7 +11,7 @@ import (
 func Test_getDatadogEnvVarValue_noneSet(t *testing.T) {
 	datadogEnvVarsWithoutPrefix := []DatadogEnvVar{
 		DatadogEnvVarSite,
-		DatadogEnvVarApiKey,
+		DatadogEnvVarAPIKey,
 		DatadogEnvVarAppKey,
 		DatadogEnvVarJwtToken,
 		DatadogEnvVarHostname,
@@ -27,7 +28,7 @@ func Test_getDatadogEnvVarValue_noneSet(t *testing.T) {
 func Test_getDatadogEnvVarValue_canReadFromDatadogPrefix(t *testing.T) {
 	t.Setenv("DATADOG_API_KEY", "test-datadog-api-key")
 
-	value, found := getDatadogEnvVarValue(DatadogEnvVarApiKey)
+	value, found := getDatadogEnvVarValue(DatadogEnvVarAPIKey)
 	assert.True(t, found)
 	assert.Equal(t, "test-datadog-api-key", value)
 }
@@ -36,7 +37,7 @@ func Test_getDatadogEnvVarValue_ddPrefixTakesPrecedence(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DATADOG_API_KEY", "test-datadog-api-key")
 
-	value, found := getDatadogEnvVarValue(DatadogEnvVarApiKey)
+	value, found := getDatadogEnvVarValue(DatadogEnvVarAPIKey)
 	assert.True(t, found)
 	assert.Equal(t, "test-dd-api-key", value)
 }
@@ -57,6 +58,8 @@ func Test_getDatadogHostname_usingSiteEnvVar(t *testing.T) {
 }
 
 func Test_getDatadogHostname_usingFallback(t *testing.T) {
+	t.Parallel()
+
 	value := getDatadogHostname()
 	assert.Equal(t, "https://api.datadoghq.com", value)
 }
@@ -72,7 +75,7 @@ func Test_getDatadogAuthHeaders_jwtTokenTakesPrecedence(t *testing.T) {
 	headers, err := getDatadogAuthHeaders()
 	assert.NoError(t, err)
 	assert.Len(t, headers, 1)
-	assert.Equal(t, DATADOG_HEADER_JWT_TOKEN, headers[0].Key)
+	assert.Equal(t, DatadogHeaderJwtToken, headers[0].Key)
 	assert.Equal(t, "test-jwt-token", headers[0].Value)
 }
 
@@ -83,8 +86,8 @@ func Test_getDatadogAuthHeaders_usesApiAndAppKey(t *testing.T) {
 	headers, err := getDatadogAuthHeaders()
 	assert.NoError(t, err)
 	assert.Len(t, headers, 2)
-	assert.Equal(t, DATADOG_HEADER_API_KEY, headers[0].Key)
+	assert.Equal(t, DatadogHeaderApiKey, headers[0].Key)
 	assert.Equal(t, "test-dd-api-key", headers[0].Value)
-	assert.Equal(t, DATADOG_HEADER_APP_KEY, headers[1].Key)
+	assert.Equal(t, DatadogHeaderAppKey, headers[1].Key)
 	assert.Equal(t, "test-dd-app-key", headers[1].Value)
 }

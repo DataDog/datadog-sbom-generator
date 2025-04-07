@@ -30,7 +30,7 @@ func getAdvisoriesToCheckPerLanguage(resp http.ResolveVulnerableSymbolsResponse)
 
 			output[language] = append(output[language], models.AdvisoryToCheck{
 				Purl:       result.Purl,
-				AdvisoryId: symbolDetails.AdvisoryId,
+				AdvisoryID: symbolDetails.AdvisoryID,
 				Symbols:    symbols,
 			})
 		}
@@ -60,16 +60,16 @@ func getPurlsToReachabilityAnalysisResults(
 			// Add the advisory ID to the list of advisories checked for this PURL
 			purlToReachabilityAnalysisResults[advisoryToCheck.Purl].AdvisoryIdsChecked = append(
 				purlToReachabilityAnalysisResults[advisoryToCheck.Purl].AdvisoryIdsChecked,
-				advisoryToCheck.AdvisoryId,
+				advisoryToCheck.AdvisoryID,
 			)
 
 			// Was anything reachable for this PURL?
 			if advisoryIdsToReachableVulns, purlHasReachableVulns := detectionResults[advisoryToCheck.Purl]; purlHasReachableVulns {
-				if reachableVulns, reachableVulnsExistForAdvisory := advisoryIdsToReachableVulns[advisoryToCheck.AdvisoryId]; reachableVulnsExistForAdvisory {
+				if reachableVulns, reachableVulnsExistForAdvisory := advisoryIdsToReachableVulns[advisoryToCheck.AdvisoryID]; reachableVulnsExistForAdvisory {
 					purlToReachabilityAnalysisResults[advisoryToCheck.Purl].ReachableVulnerabilities = append(
 						purlToReachabilityAnalysisResults[advisoryToCheck.Purl].ReachableVulnerabilities,
 						models.ReachableVulnerability{
-							AdvisoryId:               advisoryToCheck.AdvisoryId,
+							AdvisoryID:               advisoryToCheck.AdvisoryID,
 							ReachableSymbolLocations: reachableVulns,
 						},
 					)
