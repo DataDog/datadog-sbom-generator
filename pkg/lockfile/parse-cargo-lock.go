@@ -44,7 +44,6 @@ func (e CargoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        lockPackage.Version,
 			PackageManager: models.Crates,
 			Ecosystem:      CargoEcosystem,
-			CompareAs:      CargoEcosystem,
 		})
 	}
 

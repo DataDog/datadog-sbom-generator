@@ -311,7 +311,6 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		TargetVersions: dependency.TargetVersions,
 		PackageManager: models.Yarn,
 		Ecosystem:      YarnEcosystem,
-		CompareAs:      YarnEcosystem,
 		Commit:         tryExtractCommit(dependency.Resolution),
 	}
 }

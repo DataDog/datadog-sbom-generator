@@ -542,7 +542,6 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:            finalName,
 			Version:         resolvedVersion,
 			Ecosystem:       MavenEcosystem,
-			CompareAs:       MavenEcosystem,
 			BlockLocation:   blockLocation,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,

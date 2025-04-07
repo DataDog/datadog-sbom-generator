@@ -168,7 +168,6 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			Version:        finalVersion,
 			PackageManager: models.NPM,
 			Ecosystem:      NpmEcosystem,
-			CompareAs:      NpmEcosystem,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
 		})
@@ -284,7 +283,6 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				TargetVersions: targetVersions,
 				PackageManager: models.NPM,
 				Ecosystem:      NpmEcosystem,
-				CompareAs:      NpmEcosystem,
 				Commit:         commit,
 				DepGroups:      detail.depGroups(),
 			})

@@ -54,7 +54,6 @@ func TestParseRenvLock_OnePackage(t *testing.T) {
 			Version:        "0.1.0",
 			PackageManager: models.Renv,
 			Ecosystem:      lockfile.CRANEcosystem,
-			CompareAs:      lockfile.CRANEcosystem,
 		},
 	})
 }
@@ -74,14 +73,12 @@ func TestParseRenvLock_TwoPackages(t *testing.T) {
 			Version:        "1.0",
 			PackageManager: models.Renv,
 			Ecosystem:      lockfile.CRANEcosystem,
-			CompareAs:      lockfile.CRANEcosystem,
 		},
 		{
 			Name:           "mime",
 			Version:        "0.7",
 			PackageManager: models.Renv,
 			Ecosystem:      lockfile.CRANEcosystem,
-			CompareAs:      lockfile.CRANEcosystem,
 		},
 	})
 }
@@ -101,7 +98,6 @@ func TestParseRenvLock_WithMixedSources(t *testing.T) {
 			Version:        "1.0",
 			PackageManager: models.Renv,
 			Ecosystem:      lockfile.CRANEcosystem,
-			CompareAs:      lockfile.CRANEcosystem,
 		},
 	})
 }
@@ -122,7 +118,6 @@ func TestParseRenvLock_WithBioconductor(t *testing.T) {
 			Version:        "1.75.0-0",
 			PackageManager: models.Renv,
 			Ecosystem:      lockfile.CRANEcosystem,
-			CompareAs:      lockfile.CRANEcosystem,
 		},
 	})
 }

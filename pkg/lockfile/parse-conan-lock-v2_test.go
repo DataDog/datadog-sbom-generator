@@ -54,7 +54,6 @@ func TestParseConanLock_v2_OnePackage(t *testing.T) {
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 	})
@@ -75,7 +74,6 @@ func TestParseConanLock_v2_NoName(t *testing.T) {
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 	})
@@ -96,7 +94,6 @@ func TestParseConanLock_v2_TwoPackages(t *testing.T) {
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 		{
@@ -104,7 +101,6 @@ func TestParseConanLock_v2_TwoPackages(t *testing.T) {
 			Version:        "1.0.8",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 	})
@@ -125,7 +121,6 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			Version:        "1.2.13",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 		{
@@ -133,7 +128,6 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			Version:        "1.0.8",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 		{
@@ -141,7 +135,6 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			Version:        "2.12.1",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 		{
@@ -149,7 +142,6 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			Version:        "1.6.39",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 		{
@@ -157,7 +149,6 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 			Version:        "1.0.9",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"requires"},
 		},
 	})
@@ -178,7 +169,6 @@ func TestParseConanLock_v2_OnePackageDev(t *testing.T) {
 			Version:        "1.11.1",
 			PackageManager: models.Conan,
 			Ecosystem:      lockfile.ConanEcosystem,
-			CompareAs:      lockfile.ConanEcosystem,
 			DepGroups:      []string{"build-requires"},
 		},
 	})

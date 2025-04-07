@@ -128,7 +128,6 @@ func parseConanV1Lock(lockfile ConanLockFile) []PackageDetails {
 			Version:        reference.Version,
 			PackageManager: models.Conan,
 			Ecosystem:      ConanEcosystem,
-			CompareAs:      ConanEcosystem,
 		})
 	}
 
@@ -149,7 +148,6 @@ func parseConanRequires(packages *[]PackageDetails, requires []string, group str
 			Version:        reference.Version,
 			PackageManager: models.Conan,
 			Ecosystem:      ConanEcosystem,
-			CompareAs:      ConanEcosystem,
 			DepGroups:      []string{group},
 		})
 	}

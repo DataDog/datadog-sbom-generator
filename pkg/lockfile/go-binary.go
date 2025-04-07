@@ -57,7 +57,6 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		Name:           "stdlib",
 		Version:        strings.TrimPrefix(info.GoVersion, "go"),
 		Ecosystem:      GoEcosystem,
-		CompareAs:      GoEcosystem,
 		PackageManager: models.Golang,
 	})
 
@@ -69,7 +68,6 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           dep.Path,
 			Version:        strings.TrimPrefix(dep.Version, "v"),
 			Ecosystem:      GoEcosystem,
-			CompareAs:      GoEcosystem,
 			PackageManager: models.Golang,
 		})
 	}

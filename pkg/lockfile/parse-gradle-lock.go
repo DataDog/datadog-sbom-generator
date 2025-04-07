@@ -41,7 +41,6 @@ func parseToGradlePackageDetail(line string) (PackageDetails, error) {
 		PackageManager: models.Gradle,
 		DepGroups:      scopes,
 		Ecosystem:      MavenEcosystem,
-		CompareAs:      MavenEcosystem,
 	}, nil
 }
 

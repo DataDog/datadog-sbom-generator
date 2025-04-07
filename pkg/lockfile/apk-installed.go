@@ -39,7 +39,6 @@ func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 func parseApkPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
 		Ecosystem:      AlpineEcosystem,
-		CompareAs:      AlpineEcosystem,
 		PackageManager: models.Unknown,
 	}
 

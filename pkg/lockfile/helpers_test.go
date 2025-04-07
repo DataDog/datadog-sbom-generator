@@ -74,11 +74,10 @@ func innerExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lo
 
 	if !hasPackage(t, packages, pkg, ignoreLocations) {
 		t.Errorf(
-			"Expected packages to include %s@%s (%s, %s), but it did not",
+			"Expected packages to include %s@%s (%s), but it did not",
 			pkg.Name,
 			pkg.Version,
 			pkg.Ecosystem,
-			pkg.CompareAs,
 		)
 	}
 }

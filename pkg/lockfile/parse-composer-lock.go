@@ -53,7 +53,6 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
 			Ecosystem:      ComposerEcosystem,
-			CompareAs:      ComposerEcosystem,
 		})
 	}
 
@@ -64,7 +63,6 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
 			Ecosystem:      ComposerEcosystem,
-			CompareAs:      ComposerEcosystem,
 			DepGroups:      []string{"dev"},
 		})
 	}

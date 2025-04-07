@@ -111,7 +111,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:         version,
 			PackageManager:  models.Golang,
 			Ecosystem:       GoEcosystem,
-			CompareAs:       GoEcosystem,
 			BlockLocation:   blockLocation,
 			NameLocation:    nameLocation,
 			VersionLocation: versionLocation,
@@ -168,7 +167,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				Version:         version,
 				PackageManager:  models.Golang,
 				Ecosystem:       GoEcosystem,
-				CompareAs:       GoEcosystem,
 				BlockLocation:   blockLocation,
 				VersionLocation: versionLocation,
 				NameLocation:    nameLocation,
@@ -183,7 +181,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        parsedLockfile.Go.Version,
 			PackageManager: models.Golang,
 			Ecosystem:      GoEcosystem,
-			CompareAs:      GoEcosystem,
 			BlockLocation: models.FilePosition{
 				Filename: f.Path(),
 			},

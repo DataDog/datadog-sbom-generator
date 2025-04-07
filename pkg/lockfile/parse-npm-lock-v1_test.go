@@ -59,7 +59,6 @@ func TestParseNpmLock_v1_OnePackage(t *testing.T) {
 			Version:        "1.0.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 	})
@@ -84,7 +83,6 @@ func TestParseNpmLock_v1_OnePackageDev(t *testing.T) {
 			Version:        "1.0.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -109,7 +107,6 @@ func TestParseNpmLock_v1_TwoPackages(t *testing.T) {
 			Version:        "1.0.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -117,7 +114,6 @@ func TestParseNpmLock_v1_TwoPackages(t *testing.T) {
 			Version:        "5.5.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 	})
@@ -142,7 +138,6 @@ func TestParseNpmLock_v1_ScopedPackages(t *testing.T) {
 			Version:        "1.0.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -150,7 +145,6 @@ func TestParseNpmLock_v1_ScopedPackages(t *testing.T) {
 			Version:        "7.0.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 	})
@@ -175,7 +169,6 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 			Version:        "6.0.23",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -183,7 +176,6 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 			Version:        "7.0.16",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -191,7 +183,6 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 			Version:        "7.0.1",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -199,7 +190,6 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 			Version:        "6.1.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -207,7 +197,6 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 			Version:        "5.5.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 	})
@@ -236,7 +225,6 @@ func TestParseNpmLock_v1_NestedDependenciesDup(t *testing.T) {
 		Version:        "6.1.0",
 		PackageManager: models.NPM,
 		Ecosystem:      lockfile.NpmEcosystem,
-		CompareAs:      lockfile.NpmEcosystem,
 		DepGroups:      []string{"prod"},
 	})
 
@@ -245,7 +233,6 @@ func TestParseNpmLock_v1_NestedDependenciesDup(t *testing.T) {
 		Version:        "5.5.0",
 		PackageManager: models.NPM,
 		Ecosystem:      lockfile.NpmEcosystem,
-		CompareAs:      lockfile.NpmEcosystem,
 		DepGroups:      []string{"prod"},
 	})
 
@@ -254,7 +241,6 @@ func TestParseNpmLock_v1_NestedDependenciesDup(t *testing.T) {
 		Version:        "2.0.0",
 		PackageManager: models.NPM,
 		Ecosystem:      lockfile.NpmEcosystem,
-		CompareAs:      lockfile.NpmEcosystem,
 		DepGroups:      []string{"prod"},
 	})
 }
@@ -278,7 +264,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "3b1bb80b302c2e552685dc8a029797ec832ea7c9",
 			DepGroups:      []string{"prod"},
 		},
@@ -287,7 +272,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			DepGroups:      []string{"prod"},
 		},
@@ -296,7 +280,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "c5a7ba5e0ad98b8db1cb8ce105403dd4b768cced",
 			DepGroups:      []string{"prod"},
 		},
@@ -305,7 +288,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "af885e2e890b9ef0875edd2b117305119ee5bdc5",
 			DepGroups:      []string{"dev"},
 		},
@@ -314,7 +296,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "be5935f8d2595bcd97b05718ef1eeae08d812e10",
 			DepGroups:      []string{"dev"},
 		},
@@ -323,7 +304,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "d5ac0584ee9ae7bd9288220a39780f155b9ad4c8",
 			DepGroups:      []string{"prod"},
 		},
@@ -332,7 +312,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "82dcc8e914dabd9305ab9ae580709a7825e824f5",
 			DepGroups:      []string{"prod"},
 		},
@@ -341,7 +320,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "d5ac0584ee9ae7bd9288220a39780f155b9ad4c8",
 			DepGroups:      []string{"dev"},
 		},
@@ -350,7 +328,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "82ae8802978da40d7f1be5ad5943c9e550ab2c89",
 			DepGroups:      []string{"dev"},
 		},
@@ -359,7 +336,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "af885e2e890b9ef0875edd2b117305119ee5bdc5",
 			DepGroups:      []string{"dev"},
 		},
@@ -368,7 +344,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "af885e2e890b9ef0875edd2b117305119ee5bdc5",
 			DepGroups:      []string{"dev"},
 		},
@@ -377,7 +352,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "af885e2e890b9ef0875edd2b117305119ee5bdc5",
 			DepGroups:      []string{"dev"},
 		},
@@ -386,7 +360,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "7.0.1",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			DepGroups:      []string{"prod"},
 		},
@@ -395,7 +368,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "c2b377e7a254264fd4a1fe328e4e3cfc9e245570",
 			DepGroups:      []string{"prod"},
 		},
@@ -404,7 +376,6 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "280b560161b751ba226d50c7db1e0a14a78c2de0",
 			DepGroups:      []string{"dev"},
 		},
@@ -430,7 +401,6 @@ func TestParseNpmLock_v1_Files(t *testing.T) {
 			Version:        "1.3.1",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			DepGroups:      []string{"prod"},
 		},
@@ -439,7 +409,6 @@ func TestParseNpmLock_v1_Files(t *testing.T) {
 			Version:        "",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			DepGroups:      []string{"prod"},
 		},
@@ -465,7 +434,6 @@ func TestParseNpmLock_v1_Alias(t *testing.T) {
 			Version:        "7.0.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -473,7 +441,6 @@ func TestParseNpmLock_v1_Alias(t *testing.T) {
 			Version:        "4.2.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -481,7 +448,6 @@ func TestParseNpmLock_v1_Alias(t *testing.T) {
 			Version:        "5.1.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 	})
@@ -506,7 +472,6 @@ func TestParseNpmLock_v1_OptionalPackage(t *testing.T) {
 			Version:        "1.0.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"optional", "dev"},
 		},
 		{
@@ -514,7 +479,6 @@ func TestParseNpmLock_v1_OptionalPackage(t *testing.T) {
 			Version:        "5.5.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"optional", "prod"},
 		},
 	})
@@ -534,7 +498,6 @@ func TestParseNpmLock_v1_SamePackageDifferentGroups(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 		{
@@ -542,7 +505,6 @@ func TestParseNpmLock_v1_SamePackageDifferentGroups(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"prod"},
 		},
 		{
@@ -550,7 +512,6 @@ func TestParseNpmLock_v1_SamePackageDifferentGroups(t *testing.T) {
 			Version:        "5.5.2",
 			PackageManager: models.NPM,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			DepGroups:      []string{"dev", "optional", "prod"},
 		},
 	})

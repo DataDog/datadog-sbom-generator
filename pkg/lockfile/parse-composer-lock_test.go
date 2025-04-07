@@ -104,7 +104,6 @@ func TestParseComposerLock_OnePackage(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "4c115873c86ad5bd0ac6d962db70ca53bf8fb874",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 		},
 	})
 }
@@ -124,7 +123,6 @@ func TestParseComposerLock_OnePackageDev(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "4c115873c86ad5bd0ac6d962db70ca53bf8fb874",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -145,7 +143,6 @@ func TestParseComposerLock_TwoPackages(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "4c115873c86ad5bd0ac6d962db70ca53bf8fb874",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 		},
 		{
 			Name:           "theseer/tokenizer",
@@ -153,7 +150,6 @@ func TestParseComposerLock_TwoPackages(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "11336f6f84e16a720dae9d8e6ed5019efa85a0f9",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -174,7 +170,6 @@ func TestParseComposerLock_TwoPackagesAlt(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "4c115873c86ad5bd0ac6d962db70ca53bf8fb874",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 		},
 		{
 			Name:           "theseer/tokenizer",
@@ -182,7 +177,6 @@ func TestParseComposerLock_TwoPackagesAlt(t *testing.T) {
 			PackageManager: models.Composer,
 			Commit:         "11336f6f84e16a720dae9d8e6ed5019efa85a0f9",
 			Ecosystem:      lockfile.ComposerEcosystem,
-			CompareAs:      lockfile.ComposerEcosystem,
 		},
 	})
 }
