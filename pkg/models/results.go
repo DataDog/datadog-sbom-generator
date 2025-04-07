@@ -4,9 +4,8 @@ import "strings"
 
 // Combined vulnerabilities found for the scanned packages
 type VulnerabilityResults struct {
-	Results                    []PackageSource            `json:"results"`
-	Artifacts                  []ScannedArtifact          `json:"artifacts,omitempty"`
-	ExperimentalAnalysisConfig ExperimentalAnalysisConfig `json:"experimental_config"`
+	Results   []PackageSource   `json:"results"`
+	Artifacts []ScannedArtifact `json:"artifacts,omitempty"`
 }
 
 type ArtifactDetail struct {
@@ -19,17 +18,6 @@ type ArtifactDetail struct {
 type ScannedArtifact struct {
 	ArtifactDetail
 	DependsOn *ArtifactDetail
-}
-
-// ExperimentalAnalysisConfig is an experimental type intended to contain the
-// types of analysis performed on packages found by the scanner.
-type ExperimentalAnalysisConfig struct {
-	Licenses ExperimentalLicenseConfig `json:"licenses"`
-}
-
-type ExperimentalLicenseConfig struct {
-	Summary   bool      `json:"summary"`
-	Allowlist []License `json:"allowlist"`
 }
 
 type SourceInfo struct {
@@ -57,14 +45,12 @@ type License string
 // Vulnerabilities grouped by package
 // TODO: rename this to be Package as it now includes license information too.
 type PackageVulns struct {
-	Package           PackageInfo        `json:"package"`
-	DepGroups         []string           `json:"dependency_groups,omitempty"`
-	Locations         []PackageLocations `json:"locations,omitempty"`
-	Vulnerabilities   []Vulnerability    `json:"vulnerabilities,omitempty"`
-	Groups            []GroupInfo        `json:"groups,omitempty"`
-	Licenses          []License          `json:"licenses,omitempty"`
-	LicenseViolations []License          `json:"license_violations,omitempty"`
-	Metadata          PackageMetadata    `json:"metadata,omitempty"`
+	Package         PackageInfo        `json:"package"`
+	DepGroups       []string           `json:"dependency_groups,omitempty"`
+	Locations       []PackageLocations `json:"locations,omitempty"`
+	Vulnerabilities []Vulnerability    `json:"vulnerabilities,omitempty"`
+	Groups          []GroupInfo        `json:"groups,omitempty"`
+	Metadata        PackageMetadata    `json:"metadata,omitempty"`
 }
 
 type GroupInfo struct {

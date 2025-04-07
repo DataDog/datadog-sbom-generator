@@ -117,24 +117,10 @@ func createLibraryComponent(packageURL string, packageDetail models.PackageVulns
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 
-	fillLicenses(&component, packageDetail)
 	properties := buildProperties(packageDetail.Metadata)
 	component.Properties = &properties
 
 	return component
-}
-
-func fillLicenses(component *cyclonedx.Component, packageDetail models.PackageVulns) {
-	licenses := make(cyclonedx.Licenses, len(packageDetail.Licenses))
-
-	for index, license := range packageDetail.Licenses {
-		licenses[index] = cyclonedx.LicenseChoice{
-			License: &cyclonedx.License{
-				ID: string(license),
-			},
-		}
-	}
-	component.Licenses = &licenses
 }
 
 func addVulnerabilities(vulnerabilities map[string]cyclonedx.Vulnerability, packageDetail models.PackageVulns) {
