@@ -1,7 +1,5 @@
 package models
 
-import "strings"
-
 // Combined vulnerabilities found for the scanned packages
 type VulnerabilityResults struct {
 	Results   []PackageSource   `json:"results"`
@@ -49,33 +47,11 @@ type PackageVulns struct {
 	DepGroups       []string           `json:"dependency_groups,omitempty"`
 	Locations       []PackageLocations `json:"locations,omitempty"`
 	Vulnerabilities []Vulnerability    `json:"vulnerabilities,omitempty"`
-	Groups          []GroupInfo        `json:"groups,omitempty"`
 	Metadata        PackageMetadata    `json:"metadata,omitempty"`
 }
 
-type GroupInfo struct {
-	// IDs expected to be sorted in alphanumeric order
-	IDs []string `json:"ids"`
-	// Aliases include all aliases and IDs
-	Aliases     []string `json:"aliases"`
-	MaxSeverity string   `json:"max_severity"`
-}
-
-// IsCalled returns true if any analysis performed determines that the vulnerability is being called
-// Also returns true if no analysis is performed
-func (groupInfo *GroupInfo) IsCalled() bool {
-	if len(groupInfo.IDs) == 0 {
-		// This PackageVulns may be a license violation, not a
-		// vulnerability.
-		return false
-	}
-
-	return false
-}
-
-func (groupInfo *GroupInfo) IndexString() string {
-	// Assumes IDs is sorted
-	return strings.Join(groupInfo.IDs, ",")
+type AnalysisInfo struct {
+	Called bool `json:"called"`
 }
 
 // Specific package information

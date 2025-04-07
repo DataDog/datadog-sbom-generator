@@ -27,12 +27,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
 					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
-					},
 					DepGroups: []string{"build"},
 				},
 				{
@@ -44,12 +38,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
 					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
-					},
 				},
 				{
 					Package: models.PackageInfo{
@@ -59,12 +47,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
-					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
 					},
 				},
 				{
@@ -90,12 +72,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
 					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
-					},
 					DepGroups: []string{"test"},
 				},
 				{
@@ -120,12 +96,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 			},
 			Vulnerabilities: []models.Vulnerability{
 				{ID: "GHSA-456"},
-			},
-			Groups: []models.GroupInfo{
-				{
-					IDs:     []string{"GHSA-456"},
-					Aliases: []string{"GHSA-456"},
-				},
 			},
 			DepGroups: []string{"build", "test"},
 		},

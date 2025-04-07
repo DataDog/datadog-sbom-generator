@@ -495,6 +495,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/verbosity_level_=_error - 1]
++--------------------------+------+-----------+---------+---------+--------+
+| OSV URL                  | CVSS | ECOSYSTEM | PACKAGE | VERSION | SOURCE |
++--------------------------+------+-----------+---------+---------+--------+
+| Uncalled vulnerabilities |      |           |         |         |        |
++--------------------------+------+-----------+---------+---------+--------+
 
 ---
 
@@ -505,6 +510,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 [TestRun/verbosity_level_=_info - 1]
 Scanning dir ./fixtures/locks-many/composer.lock
 Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
++--------------------------+------+-----------+---------+---------+--------+
+| OSV URL                  | CVSS | ECOSYSTEM | PACKAGE | VERSION | SOURCE |
++--------------------------+------+-----------+---------+---------+--------+
+| Uncalled vulnerabilities |      |           |         |         |        |
++--------------------------+------+-----------+---------+---------+--------+
 
 ---
 

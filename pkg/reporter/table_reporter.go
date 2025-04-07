@@ -63,9 +63,9 @@ func (r *TableReporter) PrintResult(vulnResult *models.VulnerabilityResults) err
 	}
 
 	if r.markdown {
-		output.PrintMarkdownTableResults(vulnResult, r.stdout)
+		output.PrintMarkdownTableResults(r.stdout)
 	} else {
-		output.PrintTableResults(vulnResult, r.stdout, r.terminalWidth)
+		output.PrintTableResults(r.stdout, r.terminalWidth)
 	}
 
 	return nil
