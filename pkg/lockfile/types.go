@@ -7,6 +7,7 @@ import (
 )
 
 type PackageDetails struct {
+	Source          models.SourceInfo
 	Name            string                `json:"name"`
 	Version         string                `json:"version"`
 	TargetVersions  []string              `json:"targetVersions,omitempty"`

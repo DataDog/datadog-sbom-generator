@@ -2,6 +2,9 @@
 [TestPackageJSONMatcher_Match_NameConflict - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "aws-sdk-client-mock",
     "version": "",
     "targetVersions": [
@@ -47,6 +50,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "aws-sdk-client-mock-jest",
     "version": "",
     "targetVersions": [
@@ -96,6 +102,9 @@
 [TestPackageJSONMatcher_Match_OnePackage - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "lodash",
     "version": "",
     "targetVersions": [
@@ -146,6 +155,9 @@
 [TestPackageJSONMatcher_Match_Resolutions - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "fast-xml-parser",
     "version": "4.2.5",
     "targetVersions": [
@@ -166,6 +178,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "fast-xml-parser",
     "version": "4.4.0",
     "targetVersions": [
@@ -210,6 +225,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "@aws-sdk/core",
     "version": "3.535.0",
     "targetVersions": [
@@ -259,6 +277,9 @@
 [TestPackageJSONMatcher_Match_Target_Version - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "foo",
     "version": "1.5.3",
     "targetVersions": [
@@ -304,6 +325,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "bar",
     "version": "1.5.3",
     "targetVersions": [
@@ -349,6 +373,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "baz",
     "version": "1.5.3",
     "targetVersions": [
@@ -394,6 +421,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "boo",
     "version": "1.5.3",
     "targetVersions": [
@@ -439,6 +469,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "qux",
     "version": "1.5.3",
     "targetVersions": [
@@ -484,6 +517,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "asd",
     "version": "1.5.3",
     "targetVersions": [
@@ -529,6 +565,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "til",
     "version": "1.5.3",
     "targetVersions": [
@@ -574,6 +613,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "elf",
     "version": "1.5.3",
     "targetVersions": [
@@ -619,6 +661,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "two",
     "version": "1.5.3",
     "targetVersions": [
@@ -664,6 +709,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "thr",
     "version": "1.5.3",
     "targetVersions": [
@@ -709,6 +757,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "lat",
     "version": "1.5.3",
     "targetVersions": [
@@ -754,6 +805,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "dyl",
     "version": "1.5.3",
     "targetVersions": [
@@ -799,6 +853,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "kpg",
     "version": "1.5.3",
     "targetVersions": [
@@ -844,6 +901,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "abc",
     "version": "1.5.3",
     "targetVersions": [
@@ -889,6 +949,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "cde",
     "version": "1.5.3",
     "targetVersions": [
@@ -934,6 +997,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "dd",
     "version": "0.0.0-use.local",
     "targetVersions": [
@@ -954,6 +1020,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "dd2",
     "version": "0.0.0-use.local",
     "targetVersions": [
@@ -1004,6 +1073,9 @@
 [TestPackageJSONMatcher_Match_TransitiveDependencies - 1]
 [
   {
+    "Source": {
+      "path": ""
+    },
     "name": "commander",
     "version": "",
     "targetVersions": [
@@ -1024,6 +1096,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "debug",
     "version": "",
     "targetVersions": [
@@ -1069,6 +1144,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "jear",
     "version": "",
     "targetVersions": [
@@ -1113,6 +1191,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "shelljs",
     "version": "",
     "targetVersions": [
@@ -1132,6 +1213,9 @@
     "isDirect": true
   },
   {
+    "Source": {
+      "path": ""
+    },
     "name": "velocityjs",
     "version": "",
     "targetVersions": [
