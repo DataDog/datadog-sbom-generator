@@ -50,14 +50,3 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 }
 
 var _ Extractor = OSVScannerResultsExtractor{}
-
-// FromOSVScannerResults attempts to extract packages stored in the OSVScannerResults format
-func FromOSVScannerResults(pathToInstalled string) (Lockfile, error) {
-	packages, err := ExtractFromFile(pathToInstalled, OSVScannerResultsExtractor{})
-
-	return Lockfile{
-		FilePath: pathToInstalled,
-		ParsedAs: "osv-scanner",
-		Packages: packages,
-	}, err
-}

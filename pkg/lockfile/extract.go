@@ -18,15 +18,7 @@ func registerExtractor(name string, extractor Extractor) {
 	lockfileExtractors[name] = extractor
 }
 
-func FindExtractor(path, extractAs string, enabledParsers map[string]bool) (Extractor, string) {
-	if extractAs != "" {
-		if enabledParsers[extractAs] {
-			return lockfileExtractors[extractAs], extractAs
-		}
-
-		return nil, ""
-	}
-
+func FindExtractor(path string, enabledParsers map[string]bool) (Extractor, string) {
 	for name, extractor := range lockfileExtractors {
 		isEnabled := enabledParsers[name]
 		if isEnabled && extractor.ShouldExtract(path) {
@@ -53,14 +45,10 @@ func ListExtractors() []string {
 
 var ErrExtractorNotFound = errors.New("could not determine extractor")
 
-func ExtractDeps(f DepFile, extractAs string, enabledParsers map[string]bool) (Lockfile, error) {
-	extractor, extractedAs := FindExtractor(f.Path(), extractAs, enabledParsers)
+func ExtractDeps(f DepFile, enabledParsers map[string]bool) (Lockfile, error) {
+	extractor, extractedAs := FindExtractor(f.Path(), enabledParsers)
 
 	if extractor == nil {
-		if extractAs != "" {
-			return Lockfile{}, fmt.Errorf("%w, requested %s", ErrExtractorNotFound, extractAs)
-		}
-
 		return Lockfile{}, fmt.Errorf("%w for %s", ErrExtractorNotFound, f.Path())
 	}
 

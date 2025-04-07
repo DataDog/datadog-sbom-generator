@@ -2,7 +2,6 @@ package osvscanner
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -93,8 +92,8 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 		}
 
 		if !info.IsDir() {
-			if extractor, _ := lockfile.FindExtractor(path, "", enabledParsers); extractor != nil {
-				pkgs, artifact, err := scanLockfile(r, path, "", enabledParsers)
+			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
+				pkgs, artifact, err := scanLockfile(r, path, enabledParsers)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
 				}
@@ -148,48 +147,23 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) (lockfile.Packages, *models.ScannedArtifact, error) {
+func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bool) (lockfile.Packages, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
 	f, err := lockfile.OpenLocalDepFile(path)
 
 	if err == nil {
-		// special case for the APK and DPKG parsers because they have a very generic name while
-		// living at a specific location, so they are not included in the map of parsers
-		// used by lockfile.Parse to avoid false-positives when scanning projects
-		switch parseAs {
-		case "apk-installed":
-			parsedLockfile, err = lockfile.FromApkInstalled(path)
-		case "dpkg-status":
-			parsedLockfile, err = lockfile.FromDpkgStatus(path)
-		case "osv-scanner":
-			parsedLockfile, err = lockfile.FromOSVScannerResults(path)
-		default:
-			parsedLockfile, err = lockfile.ExtractDeps(f, parseAs, enabledParsers)
-			// We are disabling this as we don't want to go through deps.dev to detect packages
-			// if !compareOffline && (parseAs == "pom.xml" || filepath.Base(path) == "pom.xml") {
-			//	parsedLockfile, err = extractMavenDeps(f)
-			// } else {
-			//	parsedLockfile, err = lockfile.ExtractDeps(f, parseAs, enabledParsers)
-			// }
-		}
+		parsedLockfile, err = lockfile.ExtractDeps(f, enabledParsers)
 	}
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	parsedAsComment := ""
-
-	if parseAs != "" {
-		parsedAsComment = fmt.Sprintf("as a %s ", parseAs)
-	}
-
 	r.Infof(
-		"Scanned %s file %sand found %d %s\n",
+		"Scanned %s file and found %d %s\n",
 		path,
-		parsedAsComment,
 		len(parsedLockfile.Packages),
 		output.Form(len(parsedLockfile.Packages), "package", "packages"),
 	)

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"sort"
 	"strings"
 
 	"github.com/datadog/datadog-sbom-generator/pkg/models"
@@ -125,23 +124,3 @@ func alpineReleaseExtractor(opener DepFile) (string, error) {
 }
 
 var _ Extractor = ApkInstalledExtractor{}
-
-// FromApkInstalled attempts to parse the given file as an "apk-installed" lockfile
-// used by the Alpine Package Keeper (apk) to record installed packages.
-func FromApkInstalled(pathToInstalled string) (Lockfile, error) {
-	packages, err := ParseApkInstalled(pathToInstalled)
-
-	sort.Slice(packages, func(i, j int) bool {
-		if packages[i].Name == packages[j].Name {
-			return packages[i].Version < packages[j].Version
-		}
-
-		return packages[i].Name < packages[j].Name
-	})
-
-	return Lockfile{
-		FilePath: pathToInstalled,
-		ParsedAs: "apk-installed",
-		Packages: packages,
-	}, err
-}
