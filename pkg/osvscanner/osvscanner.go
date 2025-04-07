@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"log"
 	"path/filepath"
 	"strings"
 

@@ -3,13 +3,15 @@ package osvscanner
 import (
 	"testing"
 
+	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_getDirectPackagePurls(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []scannedPackage{
+	scannedPackages := []lockfile.PackageDetails{
 		{
 			PURL:     "pkg:maven/org.example/pkg1@1.0.0",
 			IsDirect: true,
@@ -76,7 +78,7 @@ func Test_packageHasRangedVersion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.includesRange, packageHasRangedVersion(scannedPackage{Version: tc.version}))
+			assert.Equal(t, tc.includesRange, packageHasRangedVersion(lockfile.PackageDetails{Version: tc.version}))
 		})
 	}
 }
@@ -84,7 +86,7 @@ func Test_packageHasRangedVersion(t *testing.T) {
 func Test_sanitizeScannedPackages_Empty(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []scannedPackage{}
+	scannedPackages := []lockfile.PackageDetails{}
 	sanitizedPackages, errors := sanitizeScannedPackages(scannedPackages)
 
 	assert.Len(t, sanitizedPackages, 0)
@@ -94,7 +96,7 @@ func Test_sanitizeScannedPackages_Empty(t *testing.T) {
 func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []scannedPackage{
+	scannedPackages := []lockfile.PackageDetails{
 		{Version: InvalidRangedVersion1},
 		{Version: InvalidRangedVersion2},
 		{Version: InvalidRangedVersion3},
