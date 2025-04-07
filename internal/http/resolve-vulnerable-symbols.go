@@ -63,7 +63,7 @@ func postResolveVulnerableSymbols(purls []string, baseURL string) (ResolveVulner
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] no auth headers retrieved: %w", err)
 	}
 
-	req.Header.Set(HeaderContentType, HeaderContentTypeApplicationJson)
+	req.Header.Set(HeaderContentType, HeaderContentTypeApplicationJSON)
 	for _, header := range authHeaders {
 		req.Header.Set(header.Key, header.Value)
 	}

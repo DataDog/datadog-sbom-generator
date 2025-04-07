@@ -6,10 +6,10 @@ import (
 )
 
 const DatadogHeaderAppKey = "dd-application-key"
-const DatadogHeaderApiKey = "dd-api-key"
-const DatadogHeaderJwtToken = "dd-auth-jwt"
+const DatadogHeaderAPIKey = "dd-api-key"    // #nosec G101
+const DatadogHeaderJwtToken = "dd-auth-jwt" // #nosec G101
 const HeaderContentType = "Content-Type"
-const HeaderContentTypeApplicationJson = "application/json"
+const HeaderContentTypeApplicationJSON = "application/json"
 
 const DatadogHostnameDefault = "api.datadoghq.com"
 
@@ -95,7 +95,7 @@ func getDatadogAuthHeaders() ([]Header, error) {
 	}
 
 	return []Header{
-		{Key: DatadogHeaderApiKey, Value: apiKey},
+		{Key: DatadogHeaderAPIKey, Value: apiKey},
 		{Key: DatadogHeaderAppKey, Value: appKey},
 	}, nil
 }

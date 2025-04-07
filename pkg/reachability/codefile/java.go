@@ -17,7 +17,7 @@ var tsQueryForJavaClass = `
 	type: (_) @class
 )`
 
-var symbolTypeToTsQuery = map[string]string{
+var symbolTypeToTSQuery = map[string]string{
 	"class": tsQueryForJavaClass,
 }
 
@@ -40,8 +40,8 @@ func NewJavaReachableDetector() (*ReachabilityJava, error) {
 	}
 
 	// Create each once query and place them in a map for quick access during parsing.
-	tsQueriesPerSymbolType := make(map[string]*treesitter.Query, len(symbolTypeToTsQuery))
-	for symbolType, tsQuery := range symbolTypeToTsQuery {
+	tsQueriesPerSymbolType := make(map[string]*treesitter.Query, len(symbolTypeToTSQuery))
+	for symbolType, tsQuery := range symbolTypeToTSQuery {
 		query, err := treesitter.NewQuery(tsLanguage, tsQuery)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create tree-sitter query for %s: %w", symbolType, err)

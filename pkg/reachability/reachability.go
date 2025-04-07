@@ -56,8 +56,8 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enable
 		})
 
 		if err != nil {
-			javaReachabilityDetector.Close()
-			log.Fatalf("error walking the path: %v\n", err)
+			log.Printf("error walking the path: %v\n", err)
+			return models.ReachabilityAnalysis{}
 		}
 	}
 

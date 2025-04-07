@@ -78,6 +78,7 @@ func Test_packageHasRangedVersion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			assert.Equal(t, tc.includesRange, packageHasRangedVersion(lockfile.PackageDetails{Version: tc.version}))
 		})
 	}
@@ -89,8 +90,8 @@ func Test_sanitizeScannedPackages_Empty(t *testing.T) {
 	scannedPackages := []lockfile.PackageDetails{}
 	sanitizedPackages, errors := sanitizeScannedPackages(scannedPackages)
 
-	assert.Len(t, sanitizedPackages, 0)
-	assert.Len(t, errors, 0)
+	assert.Empty(t, sanitizedPackages)
+	assert.Empty(t, errors)
 }
 
 func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
@@ -104,6 +105,6 @@ func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
 
 	sanitizedPackages, errors := sanitizeScannedPackages(scannedPackages)
 
-	assert.Len(t, sanitizedPackages, 0)
+	assert.Empty(t, sanitizedPackages)
 	assert.Len(t, errors, 3)
 }

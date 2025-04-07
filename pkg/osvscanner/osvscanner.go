@@ -282,12 +282,12 @@ func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockf
 			droppedReasons = append(droppedReasons, fmt.Sprintf("package %s has a ranged version %s", pkg.Name, pkg.Version))
 			continue
 		}
-		packageUrl, err := purl.FromNameVersionEcosystem(pkg.Name, pkg.Version, string(pkg.Ecosystem))
+		packageURL, err := purl.FromNameVersionEcosystem(pkg.Name, pkg.Version, string(pkg.Ecosystem))
 		if err != nil {
 			droppedReasons = append(droppedReasons, fmt.Sprintf("failed to create PURL for %s: %v", pkg.Name, err))
 			continue
 		}
-		pkg.PURL = packageUrl.ToString()
+		pkg.PURL = packageURL.ToString()
 
 		finalPackages = append(finalPackages, pkg)
 	}

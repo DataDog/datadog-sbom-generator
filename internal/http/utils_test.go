@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_getDatadogEnvVarValue_noneSet(t *testing.T) {
@@ -73,7 +74,7 @@ func Test_getDatadogAuthHeaders_jwtTokenTakesPrecedence(t *testing.T) {
 	t.Setenv("DD_JWT_TOKEN", "test-jwt-token")
 
 	headers, err := getDatadogAuthHeaders()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, headers, 1)
 	assert.Equal(t, DatadogHeaderJwtToken, headers[0].Key)
 	assert.Equal(t, "test-jwt-token", headers[0].Value)
@@ -84,9 +85,9 @@ func Test_getDatadogAuthHeaders_usesApiAndAppKey(t *testing.T) {
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
 
 	headers, err := getDatadogAuthHeaders()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, headers, 2)
-	assert.Equal(t, DatadogHeaderApiKey, headers[0].Key)
+	assert.Equal(t, DatadogHeaderAPIKey, headers[0].Key)
 	assert.Equal(t, "test-dd-api-key", headers[0].Value)
 	assert.Equal(t, DatadogHeaderAppKey, headers[1].Key)
 	assert.Equal(t, "test-dd-app-key", headers[1].Value)

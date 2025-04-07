@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_postResolveVulnerableSymbols_Failed(t *testing.T) {
@@ -71,7 +72,7 @@ func Test_postResolveVulnerableSymbols_Successful(t *testing.T) {
 	defer mockServer.Close()
 
 	resp, err := postResolveVulnerableSymbols([]string{}, mockServer.URL)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, resp.Results, 1)
 	assert.Equal(t, "pkg:maven/org.apache.logging.log4j/log4j-core@2.13.0", resp.Results[0].Purl)
 	assert.Len(t, resp.Results[0].VulnerableSymbols, 2)
