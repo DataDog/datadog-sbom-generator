@@ -16,9 +16,6 @@ jobs:
     permissions:
       contents: write # for goreleaser/goreleaser-action to create a GitHub release
     runs-on: ubuntu-latest
-    env:
-      # Required for buildx on docker 19.x
-      DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -30,24 +27,24 @@ jobs:
         with:
           go-version-file: .go-version
           check-latest: true
-      - uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
-      - uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3
       - name: Run GoReleaser
         id: run-goreleaser
-        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
-        with:
-          distribution: goreleaser
-          version: "~> v2"
-          args: release --clean
         env:
+          GORELEASER_CROSS_VERSION: v1.24-v2.7.0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm -e CGO_ENABLED=1 -e GITHUB_TOKEN=${{secrets.GITHUB_TOKEN}} \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v `pwd`:/go/src/osv-scanner \
+            -w /go/src/osv-scanner \
+            ghcr.io/goreleaser/goreleaser-cross:$GORELEASER_CROSS_VERSION --clean
       - name: Generate subject
         id: hash
         env:
           ARTIFACTS: "${{ steps.run-goreleaser.outputs.artifacts }}"
         run: |
           set -euo pipefail
-          checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
+          checksum_file=$(cat dist/artifacts.json | jq -r '.[] | select (.type=="Checksum") | .path')
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
   provenance:
     needs: [goreleaser]
