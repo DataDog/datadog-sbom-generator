@@ -16,7 +16,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -80,7 +79,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir2/lockfile.json",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -164,7 +162,6 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -182,7 +179,6 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{

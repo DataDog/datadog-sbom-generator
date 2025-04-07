@@ -206,7 +206,6 @@ func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParse
 			DepGroups:      pkgDetail.DepGroups,
 			Source: models.SourceInfo{
 				Path: path,
-				Type: "lockfile",
 			},
 			BlockLocation:   pkgDetail.BlockLocation,
 			VersionLocation: pkgDetail.VersionLocation,
@@ -273,7 +272,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 		// Transforming any path into a relative path to the scanned directory path
 		for index, pkg := range pkgs {
-			pkgs[index].Source.ScanPath = dir
 			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
 			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 

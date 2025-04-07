@@ -1,9 +1,6 @@
 package models
 
-import (
-	"slices"
-	"strings"
-)
+import "strings"
 
 // Combined vulnerabilities found for the scanned packages
 type VulnerabilityResults struct {
@@ -35,58 +32,8 @@ type ExperimentalLicenseConfig struct {
 	Allowlist []License `json:"allowlist"`
 }
 
-// Flatten the grouped/nested vulnerability results into one flat array.
-func (vulns *VulnerabilityResults) Flatten() []VulnerabilityFlattened {
-	results := []VulnerabilityFlattened{}
-	for _, res := range vulns.Results {
-		for _, pkg := range res.Packages {
-			for _, v := range pkg.Vulnerabilities {
-				results = append(results, VulnerabilityFlattened{
-					Source:        res.Source,
-					Package:       pkg.Package,
-					DepGroups:     pkg.DepGroups,
-					Vulnerability: v,
-					GroupInfo:     getGroupInfoForVuln(pkg.Groups, v.ID),
-				})
-			}
-			if len(pkg.LicenseViolations) > 0 {
-				results = append(results, VulnerabilityFlattened{
-					Source:            res.Source,
-					Package:           pkg.Package,
-					DepGroups:         pkg.DepGroups,
-					Licenses:          pkg.Licenses,
-					LicenseViolations: pkg.LicenseViolations,
-				})
-			}
-		}
-	}
-
-	return results
-}
-
-func getGroupInfoForVuln(groups []GroupInfo, vulnID string) GroupInfo {
-	// groupIdx should never be -1 since vulnerabilities should always be in one group
-	groupIdx := slices.IndexFunc(groups, func(g GroupInfo) bool { return slices.Contains(g.IDs, vulnID) })
-	return groups[groupIdx]
-}
-
-// Flattened Vulnerability Information.
-// TODO: rename this to IssueFlattened or similar in the next major release as
-// it now contains license violations.
-type VulnerabilityFlattened struct {
-	Source            SourceInfo
-	Package           PackageInfo
-	DepGroups         []string
-	Vulnerability     Vulnerability
-	GroupInfo         GroupInfo
-	Licenses          []License
-	LicenseViolations []License
-}
-
 type SourceInfo struct {
-	ScanPath string `json:"scan_path,omitempty"`
-	Path     string `json:"path"`
-	Type     string `json:"type"`
+	Path string `json:"path"`
 }
 
 type Metadata struct {
@@ -95,7 +42,7 @@ type Metadata struct {
 }
 
 func (s SourceInfo) String() string {
-	return s.Type + ":" + s.Path
+	return s.Path
 }
 
 // Vulnerabilities grouped by sources
@@ -124,10 +71,8 @@ type GroupInfo struct {
 	// IDs expected to be sorted in alphanumeric order
 	IDs []string `json:"ids"`
 	// Aliases include all aliases and IDs
-	Aliases []string `json:"aliases"`
-	// Map of Vulnerability IDs to AnalysisInfo
-	ExperimentalAnalysis map[string]AnalysisInfo `json:"experimentalAnalysis,omitempty"`
-	MaxSeverity          string                  `json:"max_severity"`
+	Aliases     []string `json:"aliases"`
+	MaxSeverity string   `json:"max_severity"`
 }
 
 // IsCalled returns true if any analysis performed determines that the vulnerability is being called
@@ -139,48 +84,12 @@ func (groupInfo *GroupInfo) IsCalled() bool {
 		return false
 	}
 
-	if len(groupInfo.ExperimentalAnalysis) == 0 {
-		return true
-	}
-
-	for _, analysis := range groupInfo.ExperimentalAnalysis {
-		if analysis.Called {
-			return true
-		}
-	}
-
 	return false
 }
 
 func (groupInfo *GroupInfo) IndexString() string {
 	// Assumes IDs is sorted
 	return strings.Join(groupInfo.IDs, ",")
-}
-
-// FixedVersions returns a map of fixed versions for each package, or a map of empty slices if no fixed versions are available
-func (v *Vulnerability) FixedVersions() map[Package][]string {
-	output := map[Package][]string{}
-	for _, a := range v.Affected {
-		packageKey := a.Package
-		packageKey.Purl = ""
-		for _, r := range a.Ranges {
-			for _, e := range r.Events {
-				if e.Fixed != "" {
-					output[packageKey] = append(output[packageKey], e.Fixed)
-					if strings.Contains(string(packageKey.Ecosystem), ":") {
-						packageKey.Ecosystem = Ecosystem(strings.Split(string(packageKey.Ecosystem), ":")[0])
-					}
-					output[packageKey] = append(output[packageKey], e.Fixed)
-				}
-			}
-		}
-	}
-
-	return output
-}
-
-type AnalysisInfo struct {
-	Called bool `json:"called"`
 }
 
 // Specific package information
