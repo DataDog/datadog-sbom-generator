@@ -1,4 +1,4 @@
-module github.com/datadog/datadog-sbom-generator
+module github.com/DataDog/datadog-sbom-generator
 
 go 1.22
 

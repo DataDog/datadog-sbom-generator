@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/CycloneDX/cyclonedx-go"
-	"github.com/datadog/datadog-sbom-generator/internal/output/sbom"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // This method creates a CycloneDX SBOM and returns it. Error being returned here are from components being filtered during PURL grouping

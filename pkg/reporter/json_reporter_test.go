@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestJSONReporter_Errorf(t *testing.T) {

@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/internal/output"
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {

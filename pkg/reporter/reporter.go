@@ -1,7 +1,7 @@
 package reporter
 
 import (
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // Reporter provides printing operations for vulnerability results and for runtime information (depending on the verbosity

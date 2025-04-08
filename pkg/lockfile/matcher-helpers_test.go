@@ -1,7 +1,7 @@
 package lockfile_test
 
 import (
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func MockAllMatchers() {

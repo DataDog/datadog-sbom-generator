@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var errCSVRecordNotEnoughFields = errors.New("not enough fields (expected at least four)")

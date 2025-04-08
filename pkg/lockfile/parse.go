@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"golang.org/x/exp/maps"
 )

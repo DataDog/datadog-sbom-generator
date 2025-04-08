@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/internal/http"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
-	"github.com/datadog/datadog-sbom-generator/pkg/reachability/codefile"
+	"github.com/DataDog/datadog-sbom-generator/internal/http"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.

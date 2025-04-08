@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/semantic"
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/semantic"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestParse(t *testing.T) {

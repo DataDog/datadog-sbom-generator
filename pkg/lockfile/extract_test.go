@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 type TestDepFile struct {

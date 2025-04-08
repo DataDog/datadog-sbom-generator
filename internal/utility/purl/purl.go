@@ -3,7 +3,7 @@ package purl
 import (
 	"fmt"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/package-url/packageurl-go"
 )

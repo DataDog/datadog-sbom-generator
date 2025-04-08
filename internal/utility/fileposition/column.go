@@ -1,7 +1,7 @@
 package fileposition
 
 import (
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 var wordRe = cachedregexp.MustCompile(`[^\s\r\n]+`)

@@ -8,14 +8,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/customgitignore"
-	"github.com/datadog/datadog-sbom-generator/internal/output"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
-	"github.com/datadog/datadog-sbom-generator/pkg/reachability"
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )

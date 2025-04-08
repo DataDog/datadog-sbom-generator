@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/semantic"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/semantic"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func expectedResult(t *testing.T, comparator string) int {

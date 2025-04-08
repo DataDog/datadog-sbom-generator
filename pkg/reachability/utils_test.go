@@ -3,8 +3,8 @@ package reachability
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/http"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/http"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -5,7 +5,7 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var shouldDebugInTOML bool

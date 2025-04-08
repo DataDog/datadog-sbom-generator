@@ -3,7 +3,7 @@ package reporter_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestParseVerbosityLevel_GivenValidLevels(t *testing.T) {

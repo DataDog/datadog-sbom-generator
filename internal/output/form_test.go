@@ -3,7 +3,7 @@ package output_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
 )
 
 func TestForm(t *testing.T) {
