@@ -24,18 +24,18 @@ datadog-sbom-scanner scan help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers :
 
- - Bundler (Ruby)
- - Nuget (.Net)
- - Composer (PHP)
- - Maven (Java)
- - Gradle (Java)
- - requirements.txt (Python)
- - pipenv (Python)
- - Poetry (Python)
- - NPM (Javascript / Typescript)
- - Yarn (Javascript / Typescript)
- - PNPM (Javascript / Typescript)
- - Go
+- Bundler (Ruby)
+- Nuget (.Net)
+- Composer (PHP)
+- Maven (Java)
+- Gradle (Java)
+- requirements.txt (Python)
+- pipenv (Python)
+- Poetry (Python)
+- NPM (Javascript / Typescript)
+- Yarn (Javascript / Typescript)
+- PNPM (Javascript / Typescript)
+- Go
 
 ## Limitations
 
@@ -47,12 +47,14 @@ We will detail here any known limitations by language.
 ### Python
 
 This tool only supports extracting packages from:
+
 - `requirements*.txt`
 - `Pipfile.lock`
 - `poetry.lock`
 - `pdm.lock`
 
 This tool only support enriching information from the following package manager declaration files :
+
 - `Pipfile`
 - `pyproject.toml`
 

@@ -61,6 +61,7 @@ Run the following command in the project directory :
 
 Our integration tests heavily use snapshot testing through [go-snaps](https://github.com/gkampitakis/go-snaps).
 To update the snapshot, you'll need to run
+
 ```bash
 UPDATE_SNAPS=true ./scripts/run_tests.sh
 ```
