@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// TODO(daniel.strong) unused; remove
 type PackageDetails struct {
 	Name      string
 	Version   string

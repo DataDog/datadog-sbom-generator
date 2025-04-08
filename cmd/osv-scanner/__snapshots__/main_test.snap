@@ -326,7 +326,8 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
           "package": {
             "name": "sentry/sdk",
             "version": "2.0.4",
-            "ecosystem": "Packagist"
+            "ecosystem": "Packagist",
+            "purl": "pkg:composer/sentry/sdk@2.0.4"
           },
           "metadata": {
             "package-manager": "Composer"

@@ -43,11 +43,12 @@ type License string
 // Vulnerabilities grouped by package
 // TODO: rename this to be Package as it now includes license information too.
 type PackageVulns struct {
-	Package         PackageInfo        `json:"package"`
-	DepGroups       []string           `json:"dependency_groups,omitempty"`
-	Locations       []PackageLocations `json:"locations,omitempty"`
-	Vulnerabilities []Vulnerability    `json:"vulnerabilities,omitempty"`
-	Metadata        PackageMetadata    `json:"metadata,omitempty"`
+	Package                   PackageInfo        `json:"package"`
+	DepGroups                 []string           `json:"dependency_groups,omitempty"`
+	Locations                 []PackageLocations `json:"locations,omitempty"`
+	Vulnerabilities           []Vulnerability    `json:"vulnerabilities,omitempty"`
+	Metadata                  PackageMetadata    `json:"metadata,omitempty"`
+	AdvisoriesForReachability []string           `json:"reachability_advisories,omitempty"`
 }
 
 type AnalysisInfo struct {
@@ -60,4 +61,5 @@ type PackageInfo struct {
 	Version   string `json:"version"`
 	Ecosystem string `json:"ecosystem"`
 	Commit    string `json:"commit,omitempty"`
+	Purl      string `json:"purl,omitempty"`
 }

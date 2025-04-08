@@ -9,3 +9,5 @@
 *.pprof
 .DS_Store
 *~
+# The contents of this path continuously get regenerated and excluding (in IntelliJ) doesn't help
+pkg/lockfile/fixtures/build-gradle/one-package-groovy-extended

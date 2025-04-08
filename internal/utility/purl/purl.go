@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/datadog/datadog-sbom-generator/pkg/models"
+
 	"github.com/package-url/packageurl-go"
 )
 
@@ -53,4 +54,12 @@ func From(packageInfo models.PackageInfo) (*packageurl.PackageURL, error) {
 	}
 
 	return packageurl.NewPackageURL(purlType, namespace, name, version, nil, ""), nil
+}
+
+func FromNameVersionEcosystem(name, version, ecosystem string) (*packageurl.PackageURL, error) {
+	return From(models.PackageInfo{
+		Name:      name,
+		Version:   version,
+		Ecosystem: ecosystem,
+	})
 }

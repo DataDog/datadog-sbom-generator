@@ -32,16 +32,18 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				} else {
 					packageVulns.Metadata = packageVulns.Metadata.Merge(pkg.Metadata)
 				}
+				packageVulns.AdvisoriesForReachability = append(packageVulns.AdvisoriesForReachability, pkg.AdvisoriesForReachability...)
 
 				uniquePackages[packageURL.ToString()] = packageVulns
 			} else {
 				// Entry does not exists yet, lets create it
 				newPackageVuln := models.PackageVulns{
-					Package:         pkg.Package,
-					Locations:       slices.Clone(pkg.Locations),
-					DepGroups:       slices.Clone(pkg.DepGroups),
-					Vulnerabilities: slices.Clone(pkg.Vulnerabilities),
-					Metadata:        pkg.Metadata,
+					Package:                   pkg.Package,
+					Locations:                 slices.Clone(pkg.Locations),
+					DepGroups:                 slices.Clone(pkg.DepGroups),
+					Vulnerabilities:           slices.Clone(pkg.Vulnerabilities),
+					Metadata:                  pkg.Metadata,
+					AdvisoriesForReachability: pkg.AdvisoriesForReachability,
 				}
 				uniquePackages[packageURL.ToString()] = newPackageVuln
 			}

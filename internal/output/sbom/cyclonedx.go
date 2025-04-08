@@ -23,6 +23,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	components := make([]cyclonedx.Component, 0)
 	bomVulnerabilities := make([]cyclonedx.Vulnerability, 0)
 	vulnerabilities := make(map[string]cyclonedx.Vulnerability)
+	uniqueAdvisoryIdsAndUniquePurls := make(map[string]map[string]struct{})
 
 	fileComponents, dependsOn := addFileDependencies(artifacts)
 	for packageURL, packageDetail := range uniquePackages {
@@ -32,6 +33,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 
 		addLocations(&libraryComponent, packageDetail)
 		addVulnerabilities(vulnerabilities, packageDetail)
+		addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls, packageDetail)
 
 		components = append(components, libraryComponent)
 	}
@@ -39,6 +41,8 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	slices.SortFunc(components, func(a, b cyclonedx.Component) int {
 		return strings.Compare(a.BOMRef, b.BOMRef)
 	})
+
+	combineReachableVulnerability(vulnerabilities, uniqueAdvisoryIdsAndUniquePurls)
 
 	for _, vulnerability := range vulnerabilities {
 		bomVulnerabilities = append(bomVulnerabilities, vulnerability)
@@ -91,10 +95,18 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 		if len(value) == 0 {
 			continue
 		}
-		properties = append(properties, cyclonedx.Property{
-			Name:  "osv-scanner:" + string(metadataType),
-			Value: value,
-		})
+		// TODO(daniel.strong) Remove this conditional when we support datadog-sbom-generator prefixes in all metadata keys.
+		if strings.HasPrefix(string(metadataType), string(models.ReachableSymbolLocationMetadata)) {
+			properties = append(properties, cyclonedx.Property{
+				Name:  "datadog-sbom-generator:" + string(metadataType),
+				Value: value,
+			})
+		} else {
+			properties = append(properties, cyclonedx.Property{
+				Name:  "osv-scanner:" + string(metadataType),
+				Value: value,
+			})
+		}
 	}
 
 	slices.SortFunc(properties, func(a, b cyclonedx.Property) int {
@@ -169,6 +181,46 @@ func addVulnerabilities(vulnerabilities map[string]cyclonedx.Vulnerability, pack
 			Ratings:     buildRatings(vulnerability),
 			Advisories:  buildAdvisories(vulnerability),
 			Credits:     buildCredits(vulnerability),
+		}
+	}
+}
+
+// addToUniqueAdvisoryAndPurls is used to continuously add unique advisory IDs and their affected PURLs
+func addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls map[string]map[string]struct{}, packageDetail models.PackageVulns) {
+	for _, advisoryID := range packageDetail.AdvisoriesForReachability {
+		if _, ok := uniqueAdvisoryIdsAndUniquePurls[advisoryID]; !ok {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryID] = make(map[string]struct{})
+		}
+
+		if _, exists := packageDetail.Metadata[models.ReachableSymbolLocationMetadata.WithValue(advisoryID)]; exists {
+			uniqueAdvisoryIdsAndUniquePurls[advisoryID][packageDetail.Package.Purl] = struct{}{}
+		}
+	}
+}
+
+// combineReachableVulnerability converts a map of unique advisory IDs and their affected PURLs into a map of vulnerabilities
+func combineReachableVulnerability(vulnerabilities map[string]cyclonedx.Vulnerability, uniqueAdvisoriesToPurls map[string]map[string]struct{}) {
+	for advisoryID, purlsMap := range uniqueAdvisoriesToPurls {
+		if len(purlsMap) == 0 {
+			vulnerabilities[advisoryID] = cyclonedx.Vulnerability{
+				ID:     advisoryID,
+				BOMRef: advisoryID,
+			}
+
+			continue
+		}
+
+		affects := make([]cyclonedx.Affects, 0, len(purlsMap))
+		for uniquePurl := range purlsMap {
+			affects = append(affects, cyclonedx.Affects{
+				Ref: uniquePurl,
+			})
+		}
+
+		vulnerabilities[advisoryID] = cyclonedx.Vulnerability{
+			ID:      advisoryID,
+			BOMRef:  advisoryID,
+			Affects: &affects,
 		}
 	}
 }

@@ -7,6 +7,7 @@ toolchain go1.22.11
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/CycloneDX/cyclonedx-go v0.9.0
+	github.com/DataDog/jsonapi v0.12.0
 	github.com/gkampitakis/go-snaps v0.5.6
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
@@ -14,6 +15,7 @@ require (
 	github.com/package-url/packageurl-go v0.1.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tree-sitter/go-tree-sitter v0.24.0
+	github.com/tree-sitter/tree-sitter-java v0.23.5
 	github.com/tree-sitter/tree-sitter-ruby v0.23.1
 	github.com/urfave/cli/v2 v2.27.3
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56

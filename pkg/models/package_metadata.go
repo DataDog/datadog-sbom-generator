@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type PackageMetadataType string
 
 const (
@@ -30,4 +32,16 @@ func (metadata PackageMetadata) Merge(other PackageMetadata) PackageMetadata {
 	}
 
 	return metadata
+}
+
+type packageMetadataTypeMulti string
+
+const (
+	ReachableSymbolLocationMetadata packageMetadataTypeMulti = "reachable-symbol-location"
+)
+
+// WithValue returns a PackageMetadataType by appending the given value to the key.
+// For example: ReachableSymbolLocationMetadata.WithValue("foo") -> "reachable-symbol-location:foo"
+func (key packageMetadataTypeMulti) WithValue(value string) PackageMetadataType {
+	return PackageMetadataType(fmt.Sprintf("%s:%s", key, value))
 }

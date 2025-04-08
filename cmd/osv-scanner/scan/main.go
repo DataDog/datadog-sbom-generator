@@ -51,6 +51,11 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Usage: "also scan files that would be ignored by .gitignore",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  "reachability",
+				Usage: "enable reachability analysis",
+				Value: false,
+			},
 			&cli.StringFlag{
 				Name:  "verbosity",
 				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
@@ -104,6 +109,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		Recursive:      !context.Bool("not-recursive"),
 		NoIgnore:       context.Bool("no-ignore"),
+		Reachability:   context.Bool("reachability"),
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)
