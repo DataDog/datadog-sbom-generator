@@ -2,4 +2,4 @@
 
 set -e
 
-go test ./... -coverpkg=./... -coverprofile coverage.out
+go test ./... -coverpkg=./... -covermode=atomic -coverprofile coverage.out
