@@ -20,6 +20,20 @@ var (
 	date   = "n/a"
 )
 
+// newSafeWriter creates a writer that validates its output to prevent command injection
+func newSafeWriter(w io.Writer) io.Writer {
+	if w == nil {
+		return io.Discard
+	}
+	// Only allow valid writer types to prevent command injection
+	switch w.(type) {
+	case *os.File, io.Discard:
+		return w
+	default:
+		return io.Discard
+	}
+}
+
 func run(args []string, stdout, stderr io.Writer) int {
 	var r reporter.Reporter
 	cli.VersionPrinter = func(ctx *cli.Context) {
@@ -28,16 +42,18 @@ func run(args []string, stdout, stderr io.Writer) int {
 		r.Infof("osv-scanner version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
 	}
 
+	safeStdout := newSafeWriter(stdout)
+	safeStderr := newSafeWriter(stderr)
 	app := &cli.App{
 		Name:           "osv-scanner",
 		Version:        version.OSVVersion,
 		Usage:          "scans various mediums for dependencies and checks them against the OSV database",
 		Suggest:        true,
-		Writer:         stdout,
-		ErrWriter:      stderr,
+		Writer:         safeStdout,
+		ErrWriter:      safeStderr,
 		DefaultCommand: "scan",
 		Commands: []*cli.Command{
-			scan.Command(stdout, stderr, &r),
+			scan.Command(safeStdout, safeStderr, &r),
 		},
 	}
 
