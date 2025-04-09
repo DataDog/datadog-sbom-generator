@@ -6,9 +6,16 @@ be installed on your systems and produce a CycloneDX SBOM out of it.
 
 If you're interested in this repository, you might be interested in [Setting up Software Composition Analysis in your repositories](https://docs.datadoghq.com/security/code_security/software_composition_analysis/setup_static/).
 
+## How to install
+
+1. Go to the [release page](https://github.com/DataDog/datadog-sbom-generator/releases)
+2. Select the version you want to use (or use the [latest version](https://github.com/DataDog/datadog-sbom-generator/releases/latest))
+3. Download the asset depending on your operating system and your CPU architecture
+4. Unzip the asset
+
 ## Running the scanner
 
-Scanning a repository folder is simple, just run:
+To scan a repository folder and generate a SBOM, you can use this command:
 
 ```bash
 datadog-sbom-scanner -o "/tmp/sbom.json" "/path/of/the/directory/to/scan"
@@ -24,18 +31,20 @@ datadog-sbom-scanner scan help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
-- Bundler (Ruby)
-- Nuget (.Net)
-- Composer (PHP)
-- Maven (Java)
-- Gradle (Java)
-- requirements.txt (Python)
-- pipenv (Python)
-- Poetry (Python)
-- NPM (Javascript / Typescript)
-- Yarn (Javascript / Typescript)
-- PNPM (Javascript / Typescript)
-- Go
+| Language                | Package Manager  |
+| ----------------------- | ---------------- |
+| Ruby                    | Bundler          |
+| .NET                    | Nuget            |
+| PHP                     | Composer         |
+| Java                    | Maven            |
+| Java                    | Gradle           |
+| Python                  | requirements.txt |
+| Python                  | pipenv           |
+| Python                  | Poetry           |
+| JavaScript / TypeScript | NPM              |
+| JavaScript / TypeScript | Yarn             |
+| JavaScript / TypeScript | PNPM             |
+| Go                      | Go               |
 
 ## Limitations
 
