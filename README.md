@@ -14,7 +14,7 @@ Scanning a repository folder is simple, just run:
 datadog-sbom-scanner -o "/tmp/sbom.json" "/path/of/the/directory/to/scan"
 ```
 
-If you want to know more about available options, you can run
+If you want to know more about available options, you can run the following:
 
 ```bash
 datadog-sbom-scanner scan help
@@ -22,7 +22,7 @@ datadog-sbom-scanner scan help
 
 ## Supported package managers
 
-This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers :
+This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
 - Bundler (Ruby)
 - Nuget (.Net)
@@ -53,7 +53,7 @@ This tool only supports extracting packages from:
 - `poetry.lock`
 - `pdm.lock`
 
-This tool only support enriching information from the following package manager declaration files :
+This tool only supports enriching information from the following package manager declaration files:
 
 - `Pipfile`
 - `pyproject.toml`
@@ -64,51 +64,51 @@ This tool only support enriching information from the following package manager 
 
 - This tool only supports extracting packages and locations from `pom.xml`.
 - It can only scan `pom.xml` files which are stored in the same repository.
-- If a pom file defines a parent which is either not stored in the repository or is an artifact located on an artifact registry, the scanner will try to download it from maven central, but if it is not present there, or cannot access it, it won't be able to resolve the version
+- If a pom file defines a parent that is not stored in the repository or is an artifact hosted by an artifact registry, the scanner will try to download it from Maven central. If the scanner cannot locate it there, or cannot access it, it won't be able to resolve the version.
 
 #### Gradle
 
-- This tool only supports extracting packages from `gradle.lockfile`
-- This tool only supports package information enrichment from `build.gradle` and `gradle/verification-metadata.xml` files
+- This tool only supports extracting packages from `gradle.lockfile`.
+- This tool only supports package information enrichment from `build.gradle` and `gradle/verification-metadata.xml` files.
 
-### Javascript / Typescript
+### Javascript and Typescript
 
 #### NPM
 
-- This tool only supports extracting packages from `package-lock.json`
-- This tool only supports package information enrichment from `package.json`
-- This tool does not support Workspaces
+- This tool only supports extracting packages from `package-lock.json`.
+- This tool only supports package information enrichment from `package.json`.
+- This tool does not support Workspaces.
 
 #### Yarn
 
-- This tool only supports extracting packages from `yarn.lock`
-- This tool only supports package information enrichment from `package.json`
-- This tool does not support Workspaces
+- This tool only supports extracting packages from `yarn.lock`.
+- This tool only supports package information enrichment from `package.json`.
+- This tool does not support Workspaces.
 
 #### PNPM
 
-- This tool only supports extracting packages from `pnpm-lock.yaml`
-- This tool only supports package information enrichment from `package.json`
-- This tool does not support Workspaces
+- This tool only supports extracting packages from `pnpm-lock.yaml`.
+- This tool only supports package information enrichment from `package.json`.
+- This tool does not support Workspaces.
 
 ### .Net
 
 #### Nuget
 
-- This tool only supports extracting packages from `packages.lock.json`
-- This tool only supports package information enrichment from `*.csproj`
+- This tool only supports extracting packages from `packages.lock.json`.
+- This tool only supports package information enrichment from `*.csproj`.
 - Inside a `.csproj` file:
-  - Templatization is not supported
-  - Including other csproj is not supported
+  - Templatization is not supported.
+  - Including other csproj is not supported.
 
 ### Ruby
 
 #### Bundler
 
-- This tool only supports extracting packages from `Gemfile.lock`
-- This tool only supports package information enrichment from `Gemfile` and `*.gemspec`
-- If the version of a package is defined in a variable, the location reported by the scanner will be the usage of the variable
-- Dependencies sourced from git repositories won't have any version reported
+- This tool only supports extracting packages from `Gemfile.lock`.
+- This tool only supports package information enrichment from `Gemfile` and `*.gemspec`.
+- If the version of a package is defined in a variable, the location reported by the scanner will be the usage of the variable.
+- Dependencies sourced from Git repositories won't have any version reported.
 
 ## License
 

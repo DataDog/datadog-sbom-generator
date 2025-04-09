@@ -49,24 +49,24 @@ Run the following command in the project directory:
 
 See [GoReleaser documentation](https://goreleaser.com/cmd/goreleaser_build/) for build options.
 
-You can reproduce the downloadable builds by checking out the specific tag and running `goreleaser build`, using the same Go version as the one used during the actual release (see goreleaser workflows)
+You can reproduce the downloadable builds by checking out the specific tag and running `goreleaser build`, using the same Go version as the one used during the actual release (see goreleaser workflows).
 
 ### Run tests
 
-Run the following command in the project directory :
+Run the following command in the project directory:
 
 ```bash
  ./scripts/run_tests.sh
 ```
 
 Our integration tests heavily use snapshot testing through [go-snaps](https://github.com/gkampitakis/go-snaps).
-To update the snapshot, you'll need to run
+To update the snapshot, you'll need to run the following:
 
 ```bash
 UPDATE_SNAPS=true ./scripts/run_tests.sh
 ```
 
-If you want to generate a coverage report, you can run :
+If you want to generate a coverage report, you can run:
 
 ```bash
 ./scripts/generate_coverage_report.sh
@@ -74,7 +74,7 @@ If you want to generate a coverage report, you can run :
 
 ### Linting
 
-To lint your code, run the following command :
+To lint your code, run the following command:
 
 ```bash
 ./scripts/run_lints.sh
@@ -82,10 +82,10 @@ To lint your code, run the following command :
 
 ### Updating LICENSE-3rdparty.csv
 
-Whenever you need to add or upgrade a dependency, you should update the file called `LICENSE-3rdparty.csv`
-(This file represents the different license and copyrights of dependencies used in this project)
+To add or upgrade a dependency, update the file named `LICENSE-3rdparty.csv`.
+This file represents the different license and copyrights of dependencies used in this project.
 
-To do it, please run the following command :
+To update the file, please run the following command :
 
 ```bash
 # Prerequisites
@@ -99,7 +99,7 @@ inv -e generate-licenses
 
 ## Releasing OSV-Scanner
 
-1. Tag the main branch commit with the version name you want (e.g v1.0.0)
-2. Wait for the Github workflow to run ([you can see it in the actions panel](https://github.com/DataDog/datadog-sbom-generator/actions/workflows/goreleaser.yml))
-3. Once done, you will see a new draft release for your version in the [release section](https://github.com/DataDog/datadog-sbom-generator/releases)
+1. Tag the main branch commit with the version name you want (e.g, v1.0.0).
+2. Wait for the Github workflow to run ([you can see it in the actions panel](https://github.com/DataDog/datadog-sbom-generator/actions/workflows/goreleaser.yml)).
+3. Once done, you will see a new draft release for your version in the [release section](https://github.com/DataDog/datadog-sbom-generator/releases).
 4. After testing it, you can finally publish it 🎉
