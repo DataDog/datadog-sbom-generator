@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )

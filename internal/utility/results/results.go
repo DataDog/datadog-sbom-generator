@@ -3,7 +3,7 @@ package results
 import (
 	"fmt"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // Number of characters to display a git commit

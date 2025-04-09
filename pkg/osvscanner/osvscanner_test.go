@@ -3,7 +3,7 @@ package osvscanner
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 
 	"github.com/stretchr/testify/assert"
 )

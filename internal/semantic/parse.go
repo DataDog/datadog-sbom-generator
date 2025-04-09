@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var ErrUnsupportedEcosystem = errors.New("unsupported ecosystem")

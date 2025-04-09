@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 type mavenVersionToken struct {

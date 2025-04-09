@@ -3,7 +3,7 @@ package output_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type outputTestCaseArgs struct {

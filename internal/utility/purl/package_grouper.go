@@ -3,7 +3,7 @@ package purl
 import (
 	"slices"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // Group takes a list of packages, and group them in a map using their PURL

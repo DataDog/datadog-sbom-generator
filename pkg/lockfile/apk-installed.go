@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 const AlpineEcosystem Ecosystem = "Alpine"

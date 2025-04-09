@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 	tree_sitter_java "github.com/tree-sitter/tree-sitter-java/bindings/go"

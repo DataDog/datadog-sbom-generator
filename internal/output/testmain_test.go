@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/testutility"
+	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
 )
 
 func TestMain(m *testing.M) {

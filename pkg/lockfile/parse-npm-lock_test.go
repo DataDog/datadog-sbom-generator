@@ -3,7 +3,7 @@ package lockfile_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestNpmLockExtractor_ShouldExtract(t *testing.T) {

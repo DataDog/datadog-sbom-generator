@@ -7,9 +7,9 @@ import (
 
 	"github.com/CycloneDX/cyclonedx-go"
 
-	"github.com/datadog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type CycloneDXReporter struct {

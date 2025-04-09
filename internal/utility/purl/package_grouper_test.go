@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {

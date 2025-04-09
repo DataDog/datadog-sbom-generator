@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/output"
-	"github.com/datadog/datadog-sbom-generator/internal/testutility"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
 )
 
 func TestPrintCycloneDX15Results_WithDependencies(t *testing.T) {

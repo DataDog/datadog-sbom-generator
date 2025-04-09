@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var format = []string{"json", "cyclonedx-1-4", "cyclonedx-1-5"}

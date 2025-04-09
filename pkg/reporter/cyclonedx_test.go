@@ -5,8 +5,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestCycloneDXReporter_Errorf(t *testing.T) {

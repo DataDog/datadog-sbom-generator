@@ -3,9 +3,9 @@ package lockfile_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestNodeModulesExtractor_Extract_npm_v2_InvalidJson(t *testing.T) {
