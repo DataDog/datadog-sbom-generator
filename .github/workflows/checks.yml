@@ -80,7 +80,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code
@@ -96,7 +96,7 @@ jobs:
         id: test
         uses: ./.github/workflows/test-action
         with:
-          upload_coverage: 'true'
+          upload_coverage: "true"
   coverage:
     permissions:
       contents: read # to fetch code (actions/checkout)
@@ -110,7 +110,7 @@ jobs:
       - name: download coverages
         uses: actions/download-artifact@v4
         with:
-          merge-multiple: 'true'
+          merge-multiple: "true"
       - name: download artifact (main.breakdown)
         id: download-main-breakdown
         uses: dawidd6/action-download-artifact@v6
@@ -140,7 +140,8 @@ jobs:
         with:
           name: main.breakdown
           path: main.breakdown # as specified via `breakdown-file-name`
-          if-no-files-found: error
+          if-no-files-found:
+            error
             # Post coverage report as comment (in 2 steps)
       - name: post coverage report
         if: ${{github.event_name == 'pull_request'}}
