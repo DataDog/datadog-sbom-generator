@@ -27,7 +27,7 @@ To build OSV-Scanner, you'll need the following:
 - [Go](https://golang.org/doc/install) 1.21 or later. You'll also need to set your `$GOPATH` and have `$GOPATH/bin` in your path.
 - [GoReleaser](https://goreleaser.com/). This is optional, and only needed if you want reproducible builds.
 
-You have two ways of producing a binary from the repository, using go build, or using GoReleaser.
+You can produce a binary from the repository using go build or GoReleaser.
 
 #### Build using only go
 
