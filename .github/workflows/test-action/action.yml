@@ -19,7 +19,7 @@ runs:
       run: mv coverage.out "${{matrix.os}}.cov"
     - name: Upload coverage
       # We are uploading coverage because it already exceed GH action output size limit
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # 4.6.2
       if: ${{inputs.upload_coverage == 'true'}}
       with:
         name: ${{matrix.os}}.cov

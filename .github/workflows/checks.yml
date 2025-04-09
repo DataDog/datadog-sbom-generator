@@ -108,12 +108,12 @@ jobs:
         with:
           persist-credentials: false
       - name: download coverages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # 4.2.1
         with:
           merge-multiple: "true"
       - name: download artifact (main.breakdown)
         id: download-main-breakdown
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         # TODO : Remove this once the repository is public as it should be able to access the artifact
         continue-on-error: true
         with:
@@ -122,7 +122,7 @@ jobs:
           name: main.breakdown
           if_no_artifact_found: warn
       - name: check test coverage
-        uses: vladopajic/go-test-coverage@v2
+        uses: vladopajic/go-test-coverage@e44e229d0edbb82c8b9d217f83ce14a878f95117 # 2.13.2
         id: go-test-coverage
         with:
           profile: ubuntu-latest.cov,macos-latest.cov,windows-latest.cov
@@ -135,7 +135,7 @@ jobs:
           # file coverage difference from main branch.
           diff-base-breakdown-file-name: ${{ steps.download-main-breakdown.outputs.found_artifact == 'true' && 'main.breakdown' || '' }}
       - name: upload artifact (main.breakdown)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # 4.6.2
         if: github.ref_name == 'main'
         with:
           name: main.breakdown
@@ -145,7 +145,7 @@ jobs:
             # Post coverage report as comment (in 2 steps)
       - name: post coverage report
         if: ${{github.event_name == 'pull_request'}}
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # 7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
