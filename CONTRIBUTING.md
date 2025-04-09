@@ -37,7 +37,7 @@ Run the following command in the project directory:
 ./scripts/build.sh
 ```
 
-It will produce a binary called `osv-scanner` in the project directory
+It will produce a binary called `osv-scanner` in the project directory.
 
 #### Build using goreleaser
 
