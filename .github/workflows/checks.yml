@@ -100,6 +100,7 @@ jobs:
   coverage:
     permissions:
       contents: read # to fetch code (actions/checkout)
+      pull-requests: write
     needs: [tests]
     runs-on: ubuntu-latest
     steps:
