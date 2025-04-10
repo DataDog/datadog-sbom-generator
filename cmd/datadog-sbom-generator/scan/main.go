@@ -10,7 +10,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/osvscanner"
+	"github.com/DataDog/datadog-sbom-generator/pkg/datadog-sbom-generator"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"golang.org/x/term"
 
@@ -108,7 +108,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		return r, err
 	}
 
-	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
+	vulnResult, err := datadog_sbom_generator.DoScan(datadog_sbom_generator.ScannerActions{
 		Recursive:      !context.Bool("not-recursive"),
 		NoIgnore:       context.Bool("no-ignore"),
 		Reachability:   context.Bool("reachability"),
@@ -116,7 +116,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)
 
-	if err != nil && !errors.Is(err, osvscanner.NoPackagesFoundErr) && !errors.Is(err, osvscanner.VulnerabilitiesFoundErr) {
+	if err != nil && !errors.Is(err, datadog_sbom_generator.NoPackagesFoundErr) && !errors.Is(err, datadog_sbom_generator.VulnerabilitiesFoundErr) {
 		return r, err
 	}
 

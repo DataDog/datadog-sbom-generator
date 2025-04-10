@@ -1,4 +1,4 @@
-package osvscanner
+package datadog_sbom_generator
 
 import (
 	"testing"
