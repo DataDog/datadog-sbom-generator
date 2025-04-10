@@ -5,8 +5,8 @@ before:
     - go mod tidy
 builds:
   - id: darwin-amd64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -21,10 +21,10 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
   - id: darwin-arm64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -39,10 +39,10 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
   - id: linux-amd64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -57,10 +57,10 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
   - id: linux-arm64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -75,10 +75,10 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
   - id: windows-amd64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -93,10 +93,10 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
   - id: windows-arm64
-    main: ./cmd/osv-scanner/
-    binary: osv-scanner
+    main: ./cmd/datadog-sbom-generator/
+    binary: datadog-sbom-generator
     env:
       - CGO_ENABLED=1
       - GO111MODULE=on
@@ -111,7 +111,7 @@ builds:
       - -trimpath
     ldflags:
       # prettier-ignore
-      - '-s -w -X github.com/DataDog/osv-scanner/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
+      - '-s -w -X github.com/DataDog/datadog-sbom-generator/internal/version.OSVVersion={{.Version}} -X main.commit={{.Commit}} -X main.date={{.CommitDate}}'
 archives:
   - formats: ["zip"]
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
