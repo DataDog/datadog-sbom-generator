@@ -6,9 +6,9 @@ import (
 	"os"
 	"slices"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/osvscanner"
+	"github.com/DataDog/datadog-sbom-generator/pkg/datadog-sbom-generator"
 
-	"github.com/DataDog/datadog-sbom-generator/cmd/osv-scanner/scan"
+	"github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/scan"
 	"github.com/DataDog/datadog-sbom-generator/internal/version"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
@@ -48,12 +48,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 			r = reporter.NewJSONReporter(stdout, stderr, reporter.InfoLevel)
 		}
 		switch {
-		case errors.Is(err, osvscanner.VulnerabilitiesFoundErr):
+		case errors.Is(err, datadog_sbom_generator.VulnerabilitiesFoundErr):
 			return 0
-		case errors.Is(err, osvscanner.NoPackagesFoundErr):
+		case errors.Is(err, datadog_sbom_generator.NoPackagesFoundErr):
 			r.Errorf("No package sources found, --help for usage information.\n")
 			return 0
-		case errors.Is(err, osvscanner.ErrAPIFailed):
+		case errors.Is(err, datadog_sbom_generator.ErrAPIFailed):
 			r.Errorf("%v\n", err)
 			return 129
 		}
