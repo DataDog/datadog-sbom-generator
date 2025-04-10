@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"golang.org/x/exp/maps"
 )
@@ -40,7 +40,6 @@ func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[st
 			Version:        dependency.Resolved,
 			PackageManager: models.NuGet,
 			Ecosystem:      NuGetEcosystem,
-			CompareAs:      NuGetEcosystem,
 			IsDirect:       dependency.Type == "Direct",
 		}
 	}

@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestPoetryLockExtractor_ShouldExtract(t *testing.T) {
@@ -116,7 +116,6 @@ func TestParsePoetryLock_OnePackage(t *testing.T) {
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 		},
 	})
 }
@@ -162,7 +161,6 @@ func TestParsePoetryLock_OnePackage_MatcherFailed(t *testing.T) {
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 		},
 	})
 
@@ -189,14 +187,12 @@ func TestParsePoetryLock_TwoPackages(t *testing.T) {
 			Version:        "1.22.0",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 		},
 		{
 			Name:           "protobuf",
 			Version:        "4.21.5",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 		},
 	})
 }
@@ -220,7 +216,6 @@ func TestParsePoetryLock_PackageWithMetadata(t *testing.T) {
 			Version:        "2.0.0",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 		},
 	})
 }
@@ -244,7 +239,6 @@ func TestParsePoetryLock_PackageWithGitSource(t *testing.T) {
 			Version:        "0.2.0",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 			Commit:         "cd66602cd29f61a2d2e7fb995fef1e61708c034d",
 		},
 	})
@@ -269,7 +263,6 @@ func TestParsePoetryLock_PackageWithLegacySource(t *testing.T) {
 			Version:        "1.4.4",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 			Commit:         "",
 		},
 	})
@@ -294,7 +287,6 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
 			Ecosystem:      lockfile.PoetryEcosystem,
-			CompareAs:      lockfile.PoetryEcosystem,
 			DepGroups:      []string{"optional"},
 		},
 	})

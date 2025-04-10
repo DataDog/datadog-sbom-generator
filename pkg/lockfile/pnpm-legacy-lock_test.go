@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestPnpmLockExtractor_ShouldExtract(t *testing.T) {
@@ -127,7 +127,6 @@ func TestParsePnpmLock_OnePackage(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.7.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -175,7 +174,6 @@ func TestParsePnpmLock_OnePackage_MatcherFailed(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.7.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -204,7 +202,6 @@ func TestParsePnpmLock_OnePackageV6Lockfile(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"8.7.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -230,7 +227,6 @@ func TestParsePnpmLock_OnePackageDev(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.7.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 			DepGroups:      []string{"dev"},
 		},
@@ -257,7 +253,6 @@ func TestParsePnpmLock_ScopedPackages(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.0.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -283,7 +278,6 @@ func TestParsePnpmLock_ScopedPackagesV6Lockfile(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.0.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -309,7 +303,6 @@ func TestParsePnpmLock_PeerDependencies(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.3.2"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -318,7 +311,6 @@ func TestParsePnpmLock_PeerDependencies(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.7.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -344,7 +336,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.12.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -353,7 +344,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.12.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -361,7 +351,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "5.13.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -369,7 +358,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "5.13.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -377,7 +365,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "5.13.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -385,7 +372,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "5.13.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -393,7 +379,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "3.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -402,7 +387,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.0.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -410,7 +394,6 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 			Version:        "3.21.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 	})
@@ -436,7 +419,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^2.1087.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -444,7 +426,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "1.5.1",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -452,7 +433,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "4.9.2",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -460,7 +440,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "1.1.1",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -468,14 +447,12 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "1.1.13",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "isarray",
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -483,7 +460,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "0.16.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -491,14 +467,12 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "1.3.2",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "querystring",
 			Version:        "0.2.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -506,7 +480,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "1.2.1",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -514,7 +487,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "0.10.3",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -522,7 +494,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "3.3.2",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -530,7 +501,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "0.4.19",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 		{
@@ -538,7 +508,6 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 			Version:        "9.0.7",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 	})
@@ -563,7 +532,6 @@ func TestParsePnpmLock_MultipleVersions(t *testing.T) {
 			Version:        "3.3.2",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -572,7 +540,6 @@ func TestParsePnpmLock_MultipleVersions(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^8.0.0"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -580,7 +547,6 @@ func TestParsePnpmLock_MultipleVersions(t *testing.T) {
 			Version:        "9.0.7",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			IsDirect:       false,
 		},
 	})
@@ -606,7 +572,6 @@ func TestParsePnpmLock_Tarball(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"https://gitlab.my-org.org/api/v4/projects/1/packages/npm/@my-org/my-package/-/@my-org/my-package-3.2.3.tgz"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "",
 			DepGroups:      []string{"dev"},
 			IsDirect:       true,
@@ -633,49 +598,42 @@ func TestParsePnpmLock_Exotic(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "@foo/bar",
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "foo",
 			Version:        "1.1.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "@foo/bar",
 			Version:        "1.1.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "foo",
 			Version:        "1.2.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "foo",
 			Version:        "1.3.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 		{
 			Name:           "foo",
 			Version:        "1.4.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 		},
 	})
 }
@@ -700,7 +658,6 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"ssh://git@bitbucket.org:my-org/my-bitbucket-package#main"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "6104ae42cd32c3d724036d3964678f197b2c9cdb",
 			IsDirect:       true,
 		},
@@ -710,7 +667,6 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"git@github.com:my-org/my-package.git"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "267087851ad5fac92a184749c27cd539e2fc862e",
 			IsDirect:       true,
 		},
@@ -719,7 +675,6 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "fbfc962ab51eb1d754749b68c064460221fbd689",
 			IsDirect:       false,
 		},
@@ -728,7 +683,6 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 			Version:        "0.0.1",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "d2dc42a9351d4d89ec48c525e34f612b6d77993f",
 			IsDirect:       false,
 		},
@@ -738,7 +692,6 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"github:my-org/mocks#main"},
 			Ecosystem:      lockfile.PnpmEcosystem,
-			CompareAs:      lockfile.PnpmEcosystem,
 			Commit:         "590f321b4eb3f692bb211bd74e22947639a6f79d",
 			IsDirect:       true,
 		},
@@ -765,7 +718,6 @@ func TestParsePnpmLock_Files(t *testing.T) {
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"projects/package-a.tgz"},
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			IsDirect:       true,
 		},
@@ -774,7 +726,6 @@ func TestParsePnpmLock_Files(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			IsDirect:       false,
 		},
@@ -783,7 +734,6 @@ func TestParsePnpmLock_Files(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			IsDirect:       false,
 		},
@@ -792,7 +742,6 @@ func TestParsePnpmLock_Files(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			IsDirect:       false,
 		},
@@ -801,7 +750,6 @@ func TestParsePnpmLock_Files(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      lockfile.NpmEcosystem,
-			CompareAs:      lockfile.NpmEcosystem,
 			Commit:         "",
 			IsDirect:       false,
 		},

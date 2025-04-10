@@ -67,5 +67,6 @@ func PURLToPackage(purl string) (PackageInfo, error) {
 		Name:      name,
 		Ecosystem: string(ecosystem),
 		Version:   parsedPURL.Version,
+		Purl:      purl,
 	}, nil
 }

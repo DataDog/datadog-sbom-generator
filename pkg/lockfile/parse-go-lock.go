@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"golang.org/x/exp/maps"
 
 	"golang.org/x/mod/module"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"golang.org/x/mod/modfile"
 )
@@ -111,7 +111,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:         version,
 			PackageManager:  models.Golang,
 			Ecosystem:       GoEcosystem,
-			CompareAs:       GoEcosystem,
 			BlockLocation:   blockLocation,
 			NameLocation:    nameLocation,
 			VersionLocation: versionLocation,
@@ -168,7 +167,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				Version:         version,
 				PackageManager:  models.Golang,
 				Ecosystem:       GoEcosystem,
-				CompareAs:       GoEcosystem,
 				BlockLocation:   blockLocation,
 				VersionLocation: versionLocation,
 				NameLocation:    nameLocation,
@@ -183,7 +181,6 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        parsedLockfile.Go.Version,
 			PackageManager: models.Golang,
 			Ecosystem:      GoEcosystem,
-			CompareAs:      GoEcosystem,
 			BlockLocation: models.FilePosition{
 				Filename: f.Path(),
 			},

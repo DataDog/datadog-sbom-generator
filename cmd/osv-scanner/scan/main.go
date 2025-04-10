@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/osvscanner"
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/osvscanner"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"golang.org/x/term"
 
 	"github.com/urfave/cli/v2"
@@ -50,6 +50,11 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			&cli.BoolFlag{
 				Name:  "no-ignore",
 				Usage: "also scan files that would be ignored by .gitignore",
+				Value: false,
+			},
+			&cli.BoolFlag{
+				Name:  "reachability",
+				Usage: "enable reachability analysis",
 				Value: false,
 			},
 			&cli.StringFlag{
@@ -106,6 +111,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	vulnResult, err := osvscanner.DoScan(osvscanner.ScannerActions{
 		Recursive:      !context.Bool("not-recursive"),
 		NoIgnore:       context.Bool("no-ignore"),
+		Reachability:   context.Bool("reachability"),
 		DirectoryPaths: context.Args().Slice(),
 		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)

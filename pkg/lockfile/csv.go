@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var errCSVRecordNotEnoughFields = errors.New("not enough fields (expected at least four)")
@@ -21,14 +21,9 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 	}
 
 	ecosystem := Ecosystem(lines[0])
-	compareAs := Ecosystem(lines[1])
 	name := lines[2]
 	version := lines[3]
 	commit := ""
-
-	if compareAs == "" {
-		compareAs = ecosystem
-	}
 
 	if ecosystem == "" {
 		if version == "" {
@@ -47,7 +42,6 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 		Name:           name,
 		Version:        version,
 		Ecosystem:      ecosystem,
-		CompareAs:      compareAs,
 		Commit:         commit,
 		PackageManager: models.Unknown,
 	}, nil

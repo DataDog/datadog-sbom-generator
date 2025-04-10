@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const BundlerEcosystem Ecosystem = "RubyGems"
@@ -73,7 +73,6 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Version:        version,
 			PackageManager: models.Bundler,
 			Ecosystem:      BundlerEcosystem,
-			CompareAs:      BundlerEcosystem,
 			Commit:         parser.currentGemCommit,
 		})
 
@@ -98,7 +97,6 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Version:        version,
 			PackageManager: models.Bundler,
 			Ecosystem:      BundlerEcosystem,
-			CompareAs:      BundlerEcosystem,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
 		})

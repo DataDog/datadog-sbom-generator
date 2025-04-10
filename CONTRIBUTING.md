@@ -23,7 +23,7 @@ This file will focus on giving you the keys to work on this project
 
 To build OSV-Scanner, you'll need the following:
 
-- [Python]() 3.10 or later with the [invoke package](https://www.pyinvoke.org/installing.html) installed
+- [Python](https://www.python.org/downloads/) 3.10 or later with the [invoke package](https://www.pyinvoke.org/installing.html) installed
 - [Go](https://golang.org/doc/install) 1.21 or later. You'll also need to set your `$GOPATH` and have `$GOPATH/bin` in your path.
 - [GoReleaser](https://goreleaser.com/). This is optional, and only needed if you want reproducible builds.
 

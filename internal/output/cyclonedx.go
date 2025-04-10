@@ -6,22 +6,21 @@ import (
 	"testing"
 
 	"github.com/CycloneDX/cyclonedx-go"
-	"github.com/datadog/datadog-sbom-generator/internal/output/sbom"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // This method creates a CycloneDX SBOM and returns it. Error being returned here are from components being filtered during PURL grouping
-func CreateCycloneDXBOM(vulnResult *models.VulnerabilityResults, cycloneDXVersion models.CycloneDXVersion) (*cyclonedx.BOM, error) {
-	bomCreator := sbom.SpecVersionToBomCreator[cycloneDXVersion]
+func CreateCycloneDXBOM(vulnResult *models.VulnerabilityResults) (*cyclonedx.BOM, error) {
 	resultsByPurl, errs := purl.Group(vulnResult.Results)
 
-	return bomCreator(resultsByPurl, vulnResult.Artifacts), errors.Join(errs...)
+	return sbom.BuildCycloneDXBom(resultsByPurl, vulnResult.Artifacts), errors.Join(errs...)
 }
 
 // PrintCycloneDXResults writes results to the provided writer in CycloneDX format
-func PrintCycloneDXResults(vulnResult *models.VulnerabilityResults, cycloneDXVersion models.CycloneDXVersion, outputWriter io.Writer) error {
-	bom, errs := CreateCycloneDXBOM(vulnResult, cycloneDXVersion)
+func PrintCycloneDXResults(vulnResult *models.VulnerabilityResults, outputWriter io.Writer) error {
+	bom, errs := CreateCycloneDXBOM(vulnResult)
 	encoder := cyclonedx.NewBOMEncoder(outputWriter, cyclonedx.BOMFileFormatJSON)
 	encoder.SetPretty(testing.Testing())
 

@@ -16,11 +16,11 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/filereader"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/filereader"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const MavenCentral = "https://repo.maven.apache.org/maven2"
@@ -542,7 +542,6 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:            finalName,
 			Version:         resolvedVersion,
 			Ecosystem:       MavenEcosystem,
-			CompareAs:       MavenEcosystem,
 			BlockLocation:   blockLocation,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,

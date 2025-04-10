@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"golang.org/x/exp/maps"
 )
@@ -60,7 +60,6 @@ func addPkgDetails(details map[string]PackageDetails, packages map[string]Pipenv
 				Version:        version,
 				PackageManager: models.Pipfile,
 				Ecosystem:      PipenvEcosystem,
-				CompareAs:      PipenvEcosystem,
 			}
 			if group != "" {
 				pkgDetails.DepGroups = append(pkgDetails.DepGroups, group)

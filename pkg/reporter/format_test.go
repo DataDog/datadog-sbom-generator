@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestNew(t *testing.T) {

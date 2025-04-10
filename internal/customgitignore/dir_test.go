@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/customgitignore"
+	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"

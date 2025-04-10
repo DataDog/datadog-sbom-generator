@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestPURLToPackage(t *testing.T) {
@@ -27,6 +27,7 @@ func TestPURLToPackage(t *testing.T) {
 				Name:      "memoffset",
 				Version:   "0.6.1",
 				Ecosystem: string(models.EcosystemCratesIO),
+				Purl:      "pkg:cargo/memoffset@0.6.1",
 			},
 		},
 		{
@@ -38,6 +39,7 @@ func TestPURLToPackage(t *testing.T) {
 				Name:      "github.com/gogo/protobuf",
 				Version:   "5.6.0",
 				Ecosystem: string(models.EcosystemGo),
+				Purl:      "pkg:golang/github.com/gogo/protobuf@5.6.0",
 			},
 		},
 		{
@@ -49,6 +51,7 @@ func TestPURLToPackage(t *testing.T) {
 				Name:      "org.hdrhistogram:HdrHistogram",
 				Version:   "2.1.12",
 				Ecosystem: string(models.EcosystemMaven),
+				Purl:      "pkg:maven/org.hdrhistogram/HdrHistogram@2.1.12",
 			},
 		},
 		{
@@ -60,6 +63,7 @@ func TestPURLToPackage(t *testing.T) {
 				Name:      "nginx",
 				Version:   "2.36.1-8+deb11u1",
 				Ecosystem: string(models.EcosystemDebian),
+				Purl:      "pkg:deb/debian/nginx@2.36.1-8+deb11u1",
 			},
 		},
 		{
@@ -71,6 +75,7 @@ func TestPURLToPackage(t *testing.T) {
 				Name:      "zlib",
 				Version:   "1.2.13-r0",
 				Ecosystem: string(models.EcosystemAlpine),
+				Purl:      "pkg:apk/alpine/zlib@1.2.13-r0?arch=x86_64upstream=zlib&distro=alpine-3.17.2",
 			},
 		},
 		{

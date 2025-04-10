@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-var format = []string{"table", "json", "cyclonedx-1-4", "cyclonedx-1-5"}
+var format = []string{"json", "cyclonedx-1-4", "cyclonedx-1-5"}
 
 func Format() []string {
 	return format
@@ -19,8 +19,6 @@ func New(format string, stdout, stderr io.Writer, level VerbosityLevel, terminal
 	switch format {
 	case "json":
 		return NewJSONReporter(stdout, stderr, level), nil
-	case "table":
-		return NewTableReporter(stdout, stderr, level, false, terminalWidth), nil
 	case "cyclonedx-1-4":
 		return NewCycloneDXReporter(stdout, stderr, models.CycloneDXVersion14, level), nil
 	case "cyclonedx-1-5":

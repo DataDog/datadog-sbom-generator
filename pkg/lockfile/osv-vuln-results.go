@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func ParseOSVScannerResults(pathToLockfile string) ([]PackageDetails, error) {
@@ -41,7 +41,6 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 					PackageManager: models.Unknown,
 					Ecosystem:      Ecosystem(pkg.Package.Ecosystem),
 					Version:        pkg.Package.Version,
-					CompareAs:      Ecosystem(pkg.Package.Ecosystem),
 				})
 			}
 		}
@@ -51,14 +50,3 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 }
 
 var _ Extractor = OSVScannerResultsExtractor{}
-
-// FromOSVScannerResults attempts to extract packages stored in the OSVScannerResults format
-func FromOSVScannerResults(pathToInstalled string) (Lockfile, error) {
-	packages, err := ExtractFromFile(pathToInstalled, OSVScannerResultsExtractor{})
-
-	return Lockfile{
-		FilePath: pathToInstalled,
-		ParsedAs: "osv-scanner",
-		Packages: packages,
-	}, err
-}

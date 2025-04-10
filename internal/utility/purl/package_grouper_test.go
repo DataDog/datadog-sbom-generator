@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
@@ -16,7 +16,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -27,12 +26,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
-					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
 					},
 					DepGroups: []string{"build"},
 				},
@@ -45,12 +38,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
 					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
-					},
 				},
 				{
 					Package: models.PackageInfo{
@@ -60,12 +47,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
-					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
 					},
 				},
 				{
@@ -80,7 +61,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir2/lockfile.json",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -91,12 +71,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
-					},
-					Groups: []models.GroupInfo{
-						{
-							IDs:     []string{"GHSA-456"},
-							Aliases: []string{"GHSA-456"},
-						},
 					},
 					DepGroups: []string{"test"},
 				},
@@ -122,12 +96,6 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 			},
 			Vulnerabilities: []models.Vulnerability{
 				{ID: "GHSA-456"},
-			},
-			Groups: []models.GroupInfo{
-				{
-					IDs:     []string{"GHSA-456"},
-					Aliases: []string{"GHSA-456"},
-				},
 			},
 			DepGroups: []string{"build", "test"},
 		},
@@ -164,7 +132,6 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/dir/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{
@@ -182,7 +149,6 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 		{
 			Source: models.SourceInfo{
 				Path: "/lockfile.xml",
-				Type: "",
 			},
 			Packages: []models.PackageVulns{
 				{

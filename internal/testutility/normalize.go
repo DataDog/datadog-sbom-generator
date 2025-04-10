@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 // Attempts to normalize any file paths in the given `output` so that they can

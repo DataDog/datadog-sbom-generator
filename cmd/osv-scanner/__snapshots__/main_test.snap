@@ -15,13 +15,13 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#01 - 1]
-osv-scanner version: 1.8.2
-commit: n/a
-built at: n/a
 
 ---
 
 [TestRun/#01 - 2]
+osv-scanner version: 1.8.2
+commit: n/a
+built at: n/a
 
 ---
 
@@ -161,7 +161,7 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#05 - 2]
-unsupported output format "unknown" - must be one of: table, json, cyclonedx-1-4, cyclonedx-1-5
+unsupported output format "unknown" - must be one of: json, cyclonedx-1-4, cyclonedx-1-5
 
 ---
 
@@ -319,16 +319,15 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "results": [
     {
       "source": {
-        "scan_path": "./fixtures/locks-many/composer.lock",
-        "path": "composer.lock",
-        "type": "lockfile"
+        "path": "composer.lock"
       },
       "packages": [
         {
           "package": {
             "name": "sentry/sdk",
             "version": "2.0.4",
-            "ecosystem": "Packagist"
+            "ecosystem": "Packagist",
+            "purl": "pkg:composer/sentry/sdk@2.0.4"
           },
           "metadata": {
             "package-manager": "Composer"
@@ -336,13 +335,7 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -503,6 +496,27 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/verbosity_level_=_error - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
@@ -511,12 +525,33 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/verbosity_level_=_info - 1]
-Scanning dir ./fixtures/locks-many/composer.lock
-Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    }
+  ]
+}
 
 ---
 
 [TestRun/verbosity_level_=_info - 2]
+Scanning dir ./fixtures/locks-many/composer.lock
+Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 
 ---
 

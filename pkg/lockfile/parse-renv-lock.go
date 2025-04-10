@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type RenvPackage struct {
@@ -48,7 +48,6 @@ func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        pkg.Version,
 			PackageManager: models.Renv,
 			Ecosystem:      CRANEcosystem,
-			CompareAs:      CRANEcosystem,
 		})
 	}
 

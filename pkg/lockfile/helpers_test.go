@@ -9,8 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/datadog/datadog-sbom-generator/internal/output"
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func expectErrContaining(t *testing.T, err error, str string) {
@@ -74,11 +74,10 @@ func innerExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lo
 
 	if !hasPackage(t, packages, pkg, ignoreLocations) {
 		t.Errorf(
-			"Expected packages to include %s@%s (%s, %s), but it did not",
+			"Expected packages to include %s@%s (%s), but it did not",
 			pkg.Name,
 			pkg.Version,
 			pkg.Ecosystem,
-			pkg.CompareAs,
 		)
 	}
 }

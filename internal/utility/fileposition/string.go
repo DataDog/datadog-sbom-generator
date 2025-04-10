@@ -4,9 +4,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func BytesToLines(data []byte) []string {

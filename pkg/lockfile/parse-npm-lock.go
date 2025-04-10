@@ -13,9 +13,9 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type NpmLockDependency struct {
@@ -168,7 +168,6 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			Version:        finalVersion,
 			PackageManager: models.NPM,
 			Ecosystem:      NpmEcosystem,
-			CompareAs:      NpmEcosystem,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
 		})
@@ -284,7 +283,6 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				TargetVersions: targetVersions,
 				PackageManager: models.NPM,
 				Ecosystem:      NpmEcosystem,
-				CompareAs:      NpmEcosystem,
 				Commit:         commit,
 				DepGroups:      detail.depGroups(),
 			})

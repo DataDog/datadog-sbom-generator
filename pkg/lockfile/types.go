@@ -3,16 +3,17 @@ package lockfile
 import (
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type PackageDetails struct {
+	Source          models.SourceInfo
 	Name            string                `json:"name"`
 	Version         string                `json:"version"`
 	TargetVersions  []string              `json:"targetVersions,omitempty"`
 	Commit          string                `json:"commit,omitempty"`
+	PURL            string                `json:"purl,omitempty"`
 	Ecosystem       Ecosystem             `json:"ecosystem,omitempty"`
-	CompareAs       Ecosystem             `json:"compareAs,omitempty"`
 	DepGroups       []string              `json:"depGroups,omitempty"`
 	BlockLocation   models.FilePosition   `json:"blockLocation,omitempty"`
 	VersionLocation *models.FilePosition  `json:"versionLocation,omitempty"`

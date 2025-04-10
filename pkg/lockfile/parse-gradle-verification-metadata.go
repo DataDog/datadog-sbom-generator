@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 type GradleVerificationMetadataFile struct {
@@ -41,7 +41,6 @@ func (e GradleVerificationMetadataExtractor) Extract(f DepFile) ([]PackageDetail
 			Version:        component.Version,
 			PackageManager: models.Gradle,
 			Ecosystem:      MavenEcosystem,
-			CompareAs:      MavenEcosystem,
 		})
 	}
 

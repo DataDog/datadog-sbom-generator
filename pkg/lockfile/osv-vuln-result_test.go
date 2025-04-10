@@ -4,9 +4,9 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestParseOSVScannerResults_FileDoesNotExist(t *testing.T) {
@@ -54,7 +54,6 @@ func TestParseOSVScannerResults_OnePackage(t *testing.T) {
 			Version:        "7.0.7",
 			PackageManager: models.Unknown,
 			Ecosystem:      lockfile.BundlerEcosystem,
-			CompareAs:      lockfile.BundlerEcosystem,
 		},
 	})
 }
@@ -91,21 +90,18 @@ func TestParseOSVScannerResults_MultiPackages(t *testing.T) {
 			Version:        "0.6.6",
 			PackageManager: models.Unknown,
 			Ecosystem:      lockfile.CargoEcosystem,
-			CompareAs:      lockfile.CargoEcosystem,
 		},
 		{
 			Name:           "memoffset",
 			Version:        "0.5.6",
 			PackageManager: models.Unknown,
 			Ecosystem:      lockfile.CargoEcosystem,
-			CompareAs:      lockfile.CargoEcosystem,
 		},
 		{
 			Name:           "smallvec",
 			Version:        "1.6.0",
 			PackageManager: models.Unknown,
 			Ecosystem:      lockfile.CargoEcosystem,
-			CompareAs:      lockfile.CargoEcosystem,
 		},
 	})
 }

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 const (
@@ -41,7 +41,6 @@ func parseToGradlePackageDetail(line string) (PackageDetails, error) {
 		PackageManager: models.Gradle,
 		DepGroups:      scopes,
 		Ecosystem:      MavenEcosystem,
-		CompareAs:      MavenEcosystem,
 	}, nil
 }
 

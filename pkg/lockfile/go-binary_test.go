@@ -3,9 +3,9 @@ package lockfile_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestGoBinaryExtractor_ShouldExtract(t *testing.T) {
@@ -87,7 +87,6 @@ func TestExtractGoBinary_NoPackages(t *testing.T) {
 			Name:           "stdlib",
 			Version:        "1.21.10",
 			Ecosystem:      lockfile.GoEcosystem,
-			CompareAs:      lockfile.GoEcosystem,
 			PackageManager: models.Golang,
 		},
 	})
@@ -111,14 +110,12 @@ func TestExtractGoBinary_OnePackage(t *testing.T) {
 			Name:           "stdlib",
 			Version:        "1.21.10",
 			Ecosystem:      lockfile.GoEcosystem,
-			CompareAs:      lockfile.GoEcosystem,
 			PackageManager: models.Golang,
 		},
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.4.0",
 			Ecosystem:      lockfile.GoEcosystem,
-			CompareAs:      lockfile.GoEcosystem,
 			PackageManager: models.Golang,
 		},
 	})

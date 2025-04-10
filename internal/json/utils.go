@@ -3,7 +3,7 @@ package json
 import (
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 /*
@@ -49,7 +49,9 @@ func ExtractPackageIndexes(pkgName, targetedVersion, content string) []int {
 	} else {
 		versionRegex = cachedregexp.QuoteMeta(targetedVersion)
 	}
-	pkgMatcher := cachedregexp.MustCompile(`"(?P<pkgName>` + pkgName + `)\"\s*:\s*\"(?P<version>` + versionRegex + `)"`)
+	pkgNameRegex := cachedregexp.QuoteMeta(pkgName)
+
+	pkgMatcher := cachedregexp.MustCompile(`"(?P<pkgName>` + pkgNameRegex + `)\"\s*:\s*\"(?P<version>` + versionRegex + `)"`)
 	result := pkgMatcher.FindAllStringSubmatchIndex(content, -1)
 
 	if len(result) == 0 || len(result[0]) < 6 {

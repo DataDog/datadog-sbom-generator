@@ -3,7 +3,7 @@ package purl
 import (
 	"slices"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // Group takes a list of packages, and group them in a map using their PURL
@@ -32,19 +32,18 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				} else {
 					packageVulns.Metadata = packageVulns.Metadata.Merge(pkg.Metadata)
 				}
+				packageVulns.AdvisoriesForReachability = append(packageVulns.AdvisoriesForReachability, pkg.AdvisoriesForReachability...)
 
 				uniquePackages[packageURL.ToString()] = packageVulns
 			} else {
 				// Entry does not exists yet, lets create it
 				newPackageVuln := models.PackageVulns{
-					Package:           pkg.Package,
-					Locations:         slices.Clone(pkg.Locations),
-					DepGroups:         slices.Clone(pkg.DepGroups),
-					Vulnerabilities:   slices.Clone(pkg.Vulnerabilities),
-					Groups:            slices.Clone(pkg.Groups),
-					Licenses:          slices.Clone(pkg.Licenses),
-					LicenseViolations: slices.Clone(pkg.LicenseViolations),
-					Metadata:          pkg.Metadata,
+					Package:                   pkg.Package,
+					Locations:                 slices.Clone(pkg.Locations),
+					DepGroups:                 slices.Clone(pkg.DepGroups),
+					Vulnerabilities:           slices.Clone(pkg.Vulnerabilities),
+					Metadata:                  pkg.Metadata,
+					AdvisoriesForReachability: pkg.AdvisoriesForReachability,
 				}
 				uniquePackages[packageURL.ToString()] = newPackageVuln
 			}

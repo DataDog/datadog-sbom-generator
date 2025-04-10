@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const YarnEcosystem = NpmEcosystem
@@ -311,7 +311,6 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		TargetVersions: dependency.TargetVersions,
 		PackageManager: models.Yarn,
 		Ecosystem:      YarnEcosystem,
-		CompareAs:      YarnEcosystem,
 		Commit:         tryExtractCommit(dependency.Resolution),
 	}
 }

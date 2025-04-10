@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func FromGo(packageInfo models.PackageInfo) (namespace string, name string, err error) {

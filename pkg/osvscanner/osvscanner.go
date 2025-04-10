@@ -3,17 +3,19 @@ package osvscanner
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/customgitignore"
-	"github.com/datadog/datadog-sbom-generator/internal/utility/fileposition"
-
-	"github.com/datadog/datadog-sbom-generator/internal/output"
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
-	"github.com/datadog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
@@ -22,6 +24,7 @@ type ScannerActions struct {
 	DirectoryPaths []string
 	Recursive      bool
 	NoIgnore       bool
+	Reachability   bool
 	Debug          bool
 	EnableParsers  []string
 }
@@ -43,7 +46,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]scannedPackage, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -56,7 +59,7 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 	root := true
 
-	var scannedPackages []scannedPackage
+	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(path string, info os.DirEntry, err error) error {
@@ -93,8 +96,8 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 		}
 
 		if !info.IsDir() {
-			if extractor, _ := lockfile.FindExtractor(path, "", enabledParsers); extractor != nil {
-				pkgs, artifact, err := scanLockfile(r, path, "", enabledParsers)
+			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
+				pkgs, artifact, err := scanLockfile(r, path, enabledParsers)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
 				}
@@ -148,88 +151,34 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, parseAs string, enabledParsers map[string]bool) ([]scannedPackage, *models.ScannedArtifact, error) {
+func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bool) (lockfile.Packages, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
 	f, err := lockfile.OpenLocalDepFile(path)
 
 	if err == nil {
-		// special case for the APK and DPKG parsers because they have a very generic name while
-		// living at a specific location, so they are not included in the map of parsers
-		// used by lockfile.Parse to avoid false-positives when scanning projects
-		switch parseAs {
-		case "apk-installed":
-			parsedLockfile, err = lockfile.FromApkInstalled(path)
-		case "dpkg-status":
-			parsedLockfile, err = lockfile.FromDpkgStatus(path)
-		case "osv-scanner":
-			parsedLockfile, err = lockfile.FromOSVScannerResults(path)
-		default:
-			parsedLockfile, err = lockfile.ExtractDeps(f, parseAs, enabledParsers)
-			// We are disabling this as we don't want to go through deps.dev to detect packages
-			// if !compareOffline && (parseAs == "pom.xml" || filepath.Base(path) == "pom.xml") {
-			//	parsedLockfile, err = extractMavenDeps(f)
-			// } else {
-			//	parsedLockfile, err = lockfile.ExtractDeps(f, parseAs, enabledParsers)
-			// }
-		}
+		parsedLockfile, err = lockfile.ExtractDeps(f, enabledParsers)
 	}
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	parsedAsComment := ""
-
-	if parseAs != "" {
-		parsedAsComment = fmt.Sprintf("as a %s ", parseAs)
-	}
-
 	r.Infof(
-		"Scanned %s file %sand found %d %s\n",
+		"Scanned %s file and found %d %s\n",
 		path,
-		parsedAsComment,
 		len(parsedLockfile.Packages),
 		output.Form(len(parsedLockfile.Packages), "package", "packages"),
 	)
 
-	packages := make([]scannedPackage, len(parsedLockfile.Packages))
-	for i, pkgDetail := range parsedLockfile.Packages {
-		packages[i] = scannedPackage{
-			Name:           pkgDetail.Name,
-			Version:        pkgDetail.Version,
-			Commit:         pkgDetail.Commit,
-			Ecosystem:      pkgDetail.Ecosystem,
-			PackageManager: pkgDetail.PackageManager,
-			IsDirect:       pkgDetail.IsDirect,
-			DepGroups:      pkgDetail.DepGroups,
-			Source: models.SourceInfo{
-				Path: path,
-				Type: "lockfile",
-			},
-			BlockLocation:   pkgDetail.BlockLocation,
-			VersionLocation: pkgDetail.VersionLocation,
-			NameLocation:    pkgDetail.NameLocation,
+	for i := range parsedLockfile.Packages {
+		parsedLockfile.Packages[i].Source = models.SourceInfo{
+			Path: path,
 		}
 	}
 
-	return packages, parsedLockfile.Artifact, nil
-}
-
-type scannedPackage struct {
-	PURL            string
-	Name            string
-	Ecosystem       lockfile.Ecosystem
-	PackageManager  models.PackageManager
-	IsDirect        bool
-	Commit          string
-	Version         string
-	Source          models.SourceInfo
-	DepGroups       []string
-	BlockLocation   models.FilePosition
-	VersionLocation *models.FilePosition
-	NameLocation    *models.FilePosition
+	return parsedLockfile.Packages, parsedLockfile.Artifact, nil
 }
 
 func initializeEnabledParsers(enabledParsers []string) map[string]bool {
@@ -257,7 +206,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	var scannedPackages []scannedPackage
+	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	if actions.Debug {
@@ -273,7 +222,6 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 		// Transforming any path into a relative path to the scanned directory path
 		for index, pkg := range pkgs {
-			pkgs[index].Source.ScanPath = dir
 			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
 			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 
@@ -299,7 +247,67 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		return models.VulnerabilityResults{}, NoPackagesFoundErr
 	}
 
-	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts)
+	scannedPackages, droppedReasons := sanitizeScannedPackages(scannedPackages)
+	if len(droppedReasons) > 0 {
+		log.Println("Note that some scanned packages were dropped:")
+		for _, reason := range droppedReasons {
+			log.Printf(" - %s\n", reason)
+		}
+	}
+
+	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
+
+	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths, actions.Reachability)
+
+	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 
 	return vulnerabilityResults, nil
+}
+
+// packageHasRangedVersion checks if the package version is a ranged version
+// which we do not support for now.
+func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
+	return strings.ContainsAny(scannedPackage.Version, ",><")
+}
+
+// sanitizeScannedPackages is used to sanitize scanned packages.
+// 1. filters our packages that have a ranged version
+// 2. creates a PURL for each package and drops the package if it cannot be created
+func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockfile.PackageDetails, []string) {
+	finalPackages := make([]lockfile.PackageDetails, 0, len(scannedPackages))
+	droppedReasons := make([]string, 0, len(scannedPackages))
+
+	for _, pkg := range scannedPackages {
+		if packageHasRangedVersion(pkg) {
+			droppedReasons = append(droppedReasons, fmt.Sprintf("package %s has a ranged version %s", pkg.Name, pkg.Version))
+			continue
+		}
+		packageURL, err := purl.FromNameVersionEcosystem(pkg.Name, pkg.Version, string(pkg.Ecosystem))
+		if err != nil {
+			droppedReasons = append(droppedReasons, fmt.Sprintf("failed to create PURL for %s: %v", pkg.Name, err))
+			continue
+		}
+		pkg.PURL = packageURL.ToString()
+
+		finalPackages = append(finalPackages, pkg)
+	}
+
+	return finalPackages, droppedReasons
+}
+
+// getDirectPackagePurls returns a list of PURLs for packages that are directly imported.
+func getDirectPackagePurls(scannedPackages []lockfile.PackageDetails) []string {
+	uniquePurls := make(map[string]struct{})
+	for _, scannedPackage := range scannedPackages {
+		if scannedPackage.IsDirect {
+			uniquePurls[scannedPackage.PURL] = struct{}{}
+		}
+	}
+
+	purls := make([]string, 0, len(uniquePurls))
+	for uniquePurl := range uniquePurls {
+		purls = append(purls, uniquePurl)
+	}
+
+	return purls
 }

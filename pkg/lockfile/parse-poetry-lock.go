@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/BurntSushi/toml"
 )
@@ -54,7 +54,6 @@ func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Commit:         lockPackage.Source.Commit,
 			PackageManager: models.Poetry,
 			Ecosystem:      PoetryEcosystem,
-			CompareAs:      PoetryEcosystem,
 		}
 		if lockPackage.Optional {
 			pkgDetails.DepGroups = append(pkgDetails.DepGroups, "optional")

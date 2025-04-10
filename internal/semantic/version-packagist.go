@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 func canonicalizePackagistVersion(v string) string {

@@ -3,9 +3,9 @@ package purl_test
 import (
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/utility/purl"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestComposerExtraction_shouldExtractPackages(t *testing.T) {

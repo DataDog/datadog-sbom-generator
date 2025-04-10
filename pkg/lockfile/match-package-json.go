@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	jsonUtils "github.com/datadog/datadog-sbom-generator/internal/json"
+	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 )
 
 const (

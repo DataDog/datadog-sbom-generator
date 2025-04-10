@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/internal/testutility"
+	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -102,6 +102,30 @@ func TestGemspecFileMatcher_Match(t *testing.T) {
 	}
 
 	err = gemspecFileMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutility.NewSnapshot().WithJSONNormalization().MatchJSON(t, packages)
+}
+
+func TestGemfileMatcher_Filter_Not_In_Lockfile(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/bundler/lockfile-not-synced/Gemfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "zeitwerk",
+			Version:        "2.6.0",
+			PackageManager: models.Bundler,
+		},
+	}
+
+	err = gemfileMatcher.Match(sourceFile, packages)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

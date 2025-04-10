@@ -1,855 +1,10 @@
 
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_a_mixed_count_of_packages,_no_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "3.2.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine3",
-            "version": "0.4.1",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.3.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_a_mixed_count_of_packages,_some_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "3.2.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "Apache-2.0"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine3",
-            "version": "0.4.1",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.3.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_a_mixed_count_of_packages,_some_license_violations#01 - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT",
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "3.2.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "UNKNOWN"
-          ],
-          "license_violations": [
-            "UNKNOWN"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine3",
-            "version": "0.4.1",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "Apache-2.0"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.3.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "Apache-2.0"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_a_mixed_count_of_packages_across_ecosystems,_some_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "author1/mine1",
-            "version": "1.2.3",
-            "ecosystem": "Packagist"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "3.2.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "Apache-2.0"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine3",
-            "version": "0.4.1",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.3.5",
-            "ecosystem": "NuGet"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        },
-        {
-          "package": {
-            "name": "author1/mine1",
-            "version": "1.2.3",
-            "ecosystem": "Packagist"
-          },
-          "dependency_groups": [
-            "dev"
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_a_mixed_count_of_packages_and_groups,_some_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "dependency_groups": [
-            "dev",
-            "optional"
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "3.2.5",
-            "ecosystem": "npm"
-          },
-          "dependency_groups": [
-            "dev",
-            "optional"
-          ],
-          "licenses": [
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "Apache-2.0"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine3",
-            "version": "0.4.1",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.3.5",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        },
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "dependency_groups": [
-            "build"
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/multiple_sources_with_no_packages - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": []
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": []
-    },
-    {
-      "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
-      },
-      "packages": []
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/no_sources - 1]
-{
-  "results": [],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_no_packages - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": []
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package,_no_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package,_no_licenses - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          }
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package_and_an_unknown_license - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "UNKNOWN"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package_and_multiple_license_violations - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT",
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "MIT",
-            "Apache-2.0"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package_and_one_license_violation - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/one_source_with_one_package_and_one_license_violation_(dev) - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "dependency_groups": [
-            "dev"
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
-[TestPrintJSONResults_WithLicenseViolations/two_sources_with_packages,_one_license_violation - 1]
-{
-  "results": [
-    {
-      "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine1",
-            "version": "1.2.3",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
-        }
-      ]
-    },
-    {
-      "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
-      },
-      "packages": [
-        {
-          "package": {
-            "name": "mine2",
-            "version": "5.9.0",
-            "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
-        }
-      ]
-    }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
-}
-
----
-
 [TestPrintJSONResults_WithMixedIssues/multiple_sources_with_a_mixed_count_of_packages,_some_called_vulnerabilities_and_license_violations - 1]
 {
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -870,34 +25,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -918,23 +52,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-2": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "ISC"
           ]
         },
         {
@@ -942,17 +59,13 @@
             "name": "mine3",
             "version": "0.4.1",
             "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
+          }
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
+        "path": "path/to/my/third/lockfile"
       },
       "packages": [
         {
@@ -960,13 +73,7 @@
             "name": "mine1",
             "version": "1.3.5",
             "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
+          }
         },
         {
           "package": {
@@ -986,39 +93,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "Apache-2.0"
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1028,8 +107,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1050,29 +128,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1093,18 +155,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "ISC"
           ]
         },
         {
@@ -1112,17 +162,13 @@
             "name": "mine3",
             "version": "0.4.1",
             "ecosystem": "npm"
-          },
-          "licenses": [
-            "ISC"
-          ]
+          }
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
+        "path": "path/to/my/third/lockfile"
       },
       "packages": [
         {
@@ -1130,13 +176,7 @@
             "name": "mine1",
             "version": "1.3.5",
             "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
+          }
         },
         {
           "package": {
@@ -1156,34 +196,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "Apache-2.0"
-          ],
-          "license_violations": [
-            "Apache-2.0"
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1193,8 +210,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1215,39 +231,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1257,8 +245,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1279,39 +266,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1321,8 +280,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1343,34 +301,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1380,8 +315,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1402,26 +336,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
-          ],
-          "licenses": [
-            "ISC"
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1429,25 +350,11 @@
             "name": "mine2",
             "version": "5.9.0",
             "ecosystem": "npm"
-          },
-          "licenses": [
-            "MIT"
-          ],
-          "license_violations": [
-            "MIT"
-          ]
+          }
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": [
-        "ISC"
-      ]
-    }
-  }
+  ]
 }
 
 ---
@@ -1457,8 +364,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1494,22 +400,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1530,23 +420,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1569,15 +449,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -1613,33 +484,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -1649,8 +498,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1682,22 +530,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1718,23 +550,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1754,15 +576,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -1795,33 +608,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -1831,8 +622,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1846,8 +636,7 @@
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1868,8 +657,7 @@
     },
     {
       "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
+        "path": "path/to/my/third/lockfile"
       },
       "packages": [
         {
@@ -1888,13 +676,7 @@
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -1904,8 +686,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -1926,23 +707,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -1963,15 +734,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -1985,8 +747,7 @@
     },
     {
       "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
+        "path": "path/to/my/third/lockfile"
       },
       "packages": [
         {
@@ -2014,26 +775,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2043,8 +789,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2076,22 +821,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -2112,23 +841,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -2151,15 +870,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -2195,33 +905,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2231,8 +919,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2264,32 +951,6 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-5": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -2310,23 +971,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -2349,15 +1000,6 @@
                   "score": "1"
                 }
               ]
-            }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
             }
           ]
         },
@@ -2393,38 +1035,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-3"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-3": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "OSV-5"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2434,45 +1049,30 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": []
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": []
     },
     {
       "source": {
-        "path": "path/to/my/third/lockfile",
-        "type": ""
+        "path": "path/to/my/third/lockfile"
       },
       "packages": []
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
 
 [TestPrintJSONResults_WithVulnerabilities/no_sources - 1]
 {
-  "results": [],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  "results": []
 }
 
 ---
@@ -2482,18 +1082,11 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": []
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2503,8 +1096,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2516,13 +1108,7 @@
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2532,8 +1118,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2565,43 +1150,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            },
-            {
-              "ids": [
-                "GHSA-123"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "GHSA-123": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2611,8 +1164,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2633,31 +1185,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": true
-                }
-              },
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2667,8 +1199,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2689,31 +1220,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2723,8 +1234,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2745,26 +1255,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2774,8 +1269,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2799,26 +1293,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2828,8 +1307,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2864,35 +1342,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "aliases": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "experimentalAnalysis": {
-                "OSV-1": {
-                  "called": false
-                }
-              },
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2902,8 +1356,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2938,30 +1391,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "aliases": [
-                "OSV-1",
-                "GHSA-123"
-              ],
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -2971,8 +1405,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -2987,15 +1420,6 @@
               "id": "OSV-1",
               "details": "This vulnerability allows for some very scary stuff to happen - seriously, you'd not believe it!"
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         },
         {
@@ -3009,26 +1433,11 @@
               "modified": "0001-01-01T00:00:00Z",
               "id": "OSV-2"
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-2"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -3038,8 +1447,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -3060,23 +1468,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -3088,13 +1486,7 @@
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---
@@ -3104,8 +1496,7 @@
   "results": [
     {
       "source": {
-        "path": "path/to/my/first/lockfile",
-        "type": ""
+        "path": "path/to/my/first/lockfile"
       },
       "packages": [
         {
@@ -3126,23 +1517,13 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     },
     {
       "source": {
-        "path": "path/to/my/second/lockfile",
-        "type": ""
+        "path": "path/to/my/second/lockfile"
       },
       "packages": [
         {
@@ -3166,26 +1547,11 @@
                 }
               ]
             }
-          ],
-          "groups": [
-            {
-              "ids": [
-                "OSV-1"
-              ],
-              "aliases": null,
-              "max_severity": ""
-            }
           ]
         }
       ]
     }
-  ],
-  "experimental_config": {
-    "licenses": {
-      "summary": false,
-      "allowlist": null
-    }
-  }
+  ]
 }
 
 ---

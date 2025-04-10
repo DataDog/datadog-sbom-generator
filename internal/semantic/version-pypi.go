@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 type PyPIVersion struct {

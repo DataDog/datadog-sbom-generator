@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestGradleLockExtractor_ShouldExtract(t *testing.T) {
@@ -145,7 +145,6 @@ func TestParseGradleLock_OnePackage(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 	})
 }
@@ -192,7 +191,6 @@ func TestParseGradleLock_OnePackage_MatcherFailed(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 	})
 
@@ -220,7 +218,6 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-configuration-processor",
@@ -228,7 +225,6 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			DepGroups:      []string{"annotationProcessor", "compileClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-devtools",
@@ -236,7 +232,6 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			DepGroups:      []string{"developmentOnly", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-aop",
@@ -244,7 +239,6 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-data-jpa",
@@ -252,7 +246,6 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 	})
 }
@@ -277,7 +270,6 @@ func TestParseGradleLock_WithInvalidLines(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-configuration-processor",
@@ -285,7 +277,6 @@ func TestParseGradleLock_WithInvalidLines(t *testing.T) {
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
 			Ecosystem:      lockfile.MavenEcosystem,
-			CompareAs:      lockfile.MavenEcosystem,
 		},
 	})
 }

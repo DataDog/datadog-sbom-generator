@@ -3,12 +3,11 @@ package lockfile
 import (
 	"bufio"
 	"fmt"
-	"sort"
 	"strings"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const DebianEcosystem Ecosystem = "Debian"
@@ -52,7 +51,6 @@ func parseSourceField(source string) (string, string) {
 func parseDpkgPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
 		Ecosystem:      DebianEcosystem,
-		CompareAs:      DebianEcosystem,
 		PackageManager: models.Unknown,
 	}
 
@@ -168,23 +166,3 @@ func getReleaseVersion(packages []PackageDetails) string {
 }
 
 var _ Extractor = DpkgStatusExtractor{}
-
-// FromDpkgStatus attempts to parse the given file as an "dpkg-status" lockfile
-// used by the Debian Package (dpkg) to record installed packages.
-func FromDpkgStatus(pathToStatus string) (Lockfile, error) {
-	packages, err := ParseDpkgStatus(pathToStatus)
-
-	sort.Slice(packages, func(i, j int) bool {
-		if packages[i].Name == packages[j].Name {
-			return packages[i].Version < packages[j].Version
-		}
-
-		return packages[i].Name < packages[j].Name
-	})
-
-	return Lockfile{
-		FilePath: pathToStatus,
-		ParsedAs: "dpkg-status",
-		Packages: packages,
-	}, err
-}

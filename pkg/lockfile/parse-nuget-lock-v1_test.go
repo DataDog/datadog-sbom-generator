@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,7 +58,6 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -78,7 +77,6 @@ func TestParseNuGetLock_v1_OneFramework_TwoPackages(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -86,7 +84,6 @@ func TestParseNuGetLock_v1_OneFramework_TwoPackages(t *testing.T) {
 			Version:        "0.13.0-beta4",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -106,7 +103,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -114,7 +110,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 			Version:        "0.13.0-beta4",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -122,7 +117,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 			Version:        "2.15.0",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -142,7 +136,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_DifferentPackages(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 		{
@@ -150,7 +143,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_DifferentPackages(t *testing.T) {
 			Version:        "0.13.0-beta4",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -170,7 +162,6 @@ func TestParseNuGetLock_v1_TwoFrameworks_DuplicatePackages(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -214,7 +205,6 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage_MatchedFailed(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 		},
 	})
@@ -239,7 +229,6 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Version:        "17.12.0",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 			DepGroups:      []string{string(lockfile.DepGroupDev)},
 			BlockLocation: models.FilePosition{
@@ -263,7 +252,6 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Version:        "6.0.5",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 			DepGroups:      []string{string(lockfile.DepGroupDev)},
 			BlockLocation: models.FilePosition{
@@ -287,7 +275,6 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			Version:        "0.13.0-beta4",
 			PackageManager: models.NuGet,
 			Ecosystem:      lockfile.NuGetEcosystem,
-			CompareAs:      lockfile.NuGetEcosystem,
 			IsDirect:       true,
 			DepGroups:      []string{string(lockfile.DepGroupProd)},
 			BlockLocation: models.FilePosition{

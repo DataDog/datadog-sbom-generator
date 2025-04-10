@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func TestRequirementsTxtExtractor_ShouldExtract(t *testing.T) {
@@ -117,7 +117,6 @@ func TestParseRequirementsTxt_OneRequirementUnconstrained(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -153,7 +152,6 @@ func TestParseRequirementsTxt_OneRequirementConstrained(t *testing.T) {
 			Version:        "2.2.24",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 15},
@@ -194,7 +192,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "2.5.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 15},
@@ -217,7 +214,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "4.9.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 22},
@@ -240,7 +236,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "1.17.19",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 15},
@@ -264,7 +259,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "1.20.19",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 1, End: 18},
@@ -287,7 +281,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "2020.12.5",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 18},
 				Column:   models.Position{Start: 1, End: 19},
@@ -310,7 +303,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "4.0.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 1, End: 15},
@@ -333,7 +325,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "0.17.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 22, End: 22},
 				Column:   models.Position{Start: 1, End: 15},
@@ -357,7 +348,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "7.1.2",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 13},
@@ -380,7 +370,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "3.2.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 26, End: 26},
 				Column:   models.Position{Start: 1, End: 28},
@@ -404,7 +393,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "2.4.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 28, End: 28},
 				Column:   models.Position{Start: 1, End: 21},
@@ -428,7 +416,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "1.4.7",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 30, End: 30},
 				Column:   models.Position{Start: 1, End: 19},
@@ -452,7 +439,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "1.11.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 32, End: 32},
 				Column:   models.Position{Start: 1, End: 24},
@@ -476,7 +462,6 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 			Version:        "2.2.24",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 34, End: 34},
 				Column:   models.Position{Start: 1, End: 15},
@@ -517,7 +502,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -536,7 +520,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 11},
@@ -555,7 +538,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "0.23.4",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 15},
@@ -579,7 +561,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "1.16.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 14},
@@ -603,7 +584,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "0.20.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 21},
@@ -627,7 +607,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 8},
@@ -646,7 +625,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 9},
@@ -665,7 +643,6 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -702,7 +679,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 7},
@@ -721,7 +697,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 11},
@@ -740,7 +715,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 15},
@@ -759,7 +733,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "0.6.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 70},
@@ -783,7 +756,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "4.1.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 52},
@@ -807,7 +779,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 1, End: 77},
@@ -826,7 +797,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "1.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 73},
@@ -850,7 +820,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 23, End: 23},
 				Column:   models.Position{Start: 1, End: 9},
@@ -869,7 +838,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 6},
@@ -888,7 +856,6 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 			Version:        "2.2.24",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 15},
@@ -929,7 +896,6 @@ func TestParseRequirementsTxt_WithAddedSupport(t *testing.T) {
 			Version:        "20.3.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 23},
@@ -969,7 +935,6 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 			Version:        "5.4.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 22},
@@ -992,7 +957,6 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 14},
@@ -1016,7 +980,6 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 			Version:        "20.3.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 1, End: 23},
@@ -1058,7 +1021,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -1077,7 +1039,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 11},
@@ -1096,7 +1057,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "0.23.4",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 15},
@@ -1120,7 +1080,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "1.16.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 14},
@@ -1144,7 +1103,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "0.20.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 21},
@@ -1168,7 +1126,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 8},
@@ -1187,7 +1144,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1206,7 +1162,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1225,7 +1180,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 16},
@@ -1249,7 +1203,6 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 			Version:        "2.2.24",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 15},
@@ -1300,7 +1253,6 @@ func TestParseRequirementsTxt_WithURLROption(t *testing.T) {
 			Commit:         "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 16},
@@ -1343,7 +1295,6 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 			Version:        "0.1.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 14},
@@ -1367,7 +1318,6 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 			Version:        "0.23.4",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 15},
@@ -1391,7 +1341,6 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 16},
@@ -1415,7 +1364,6 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 16},
@@ -1456,7 +1404,6 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 			Version:        "0.23.4",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 15},
@@ -1480,7 +1427,6 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 16},
@@ -1523,7 +1469,6 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 			Version:        "1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 20},
@@ -1547,7 +1492,6 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 			Version:        "2",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 20},
@@ -1571,7 +1515,6 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 			Version:        "3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 20},
@@ -1612,7 +1555,6 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 			Version:        "1.26.121",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 95},
@@ -1636,7 +1578,6 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 13},
@@ -1660,7 +1601,6 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 			Version:        "1.2",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 6, End: 8},
 				Column:   models.Position{Start: 1, End: 81},
@@ -1684,7 +1624,6 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 			Version:        "1.2",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 50},
@@ -1725,7 +1664,6 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 2, End: 6},
 				Column:   models.Position{Start: 1, End: 6},
@@ -1749,7 +1687,6 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 			Version:        "4.5\\\\",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 13},
@@ -1773,7 +1710,6 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 			Version:        "7.8.9",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 14},
 				Column:   models.Position{Start: 1, End: 13},
@@ -1797,7 +1733,6 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 			Version:        "10.11.12",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 17, End: 17},
 				Column:   models.Position{Start: 1, End: 17},
@@ -1838,7 +1773,6 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 26},
@@ -1858,7 +1792,6 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 67},
@@ -1878,7 +1811,6 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 			Version:        "5.4",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 41},
@@ -1920,7 +1852,6 @@ func TestParseRequirementsTxt_GitUrlPackages(t *testing.T) {
 			Version:        "",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 52},
@@ -1960,7 +1891,6 @@ func TestParseRequirementsTxt_WhlUrlPackages(t *testing.T) {
 			Version:        "2.2.1",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 161},
@@ -2004,7 +1934,6 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 			Version:        "2024.8.30",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 19},
@@ -2027,7 +1956,6 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 			Version:        "3.4.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 26},
@@ -2050,7 +1978,6 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 			Version:        "3.10",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 1, End: 11},
@@ -2073,7 +2000,6 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 			Version:        "2.32.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 17},
@@ -2097,7 +2023,6 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 			Version:        "2.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 1, End: 15},
@@ -2139,7 +2064,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "2024.8.30",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 19},
@@ -2163,7 +2087,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "3.4.0",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 26},
@@ -2188,7 +2111,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "3.10",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 1, End: 11},
@@ -2213,7 +2135,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "2.32.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 18},
 				Column:   models.Position{Start: 1, End: 17},
@@ -2238,7 +2159,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "2.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 1, End: 15},
@@ -2262,7 +2182,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "1.2.3",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 22, End: 22},
 				Column:   models.Position{Start: 1, End: 17},
@@ -2287,7 +2206,6 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 			Version:        "4.5.6",
 			PackageManager: models.Requirements,
 			Ecosystem:      lockfile.PipEcosystem,
-			CompareAs:      lockfile.PipEcosystem,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 18},

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/datadog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/BurntSushi/toml"
 )
@@ -44,7 +44,6 @@ func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        pkg.Version,
 			PackageManager: models.Pdm,
 			Ecosystem:      PdmEcosystem,
-			CompareAs:      PdmEcosystem,
 		}
 
 		var optional = true
