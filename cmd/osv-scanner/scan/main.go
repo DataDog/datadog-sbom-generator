@@ -38,6 +38,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:      "output",
+				Aliases:   []string{"o"},
 				Usage:     "saves the result to the given file path",
 				TakesFile: true,
 			},
@@ -57,9 +58,10 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 				Value: false,
 			},
 			&cli.StringFlag{
-				Name:  "verbosity",
-				Usage: "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
-				Value: "error",
+				Name:    "verbosity",
+				Aliases: []string{"v"},
+				Usage:   "specify the level of information that should be provided during runtime; value can be: " + strings.Join(reporter.VerbosityLevels(), ", "),
+				Value:   "error",
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
