@@ -63,74 +63,6 @@ func (matcher GemspecFileMatcher) Match(sourceFile DepFile, packages []PackageDe
 	return nil
 }
 
-func setPositionInMetadata(metadata gemspecMetadata, callNode *Node, dependencyNameNode *Node, requirementNodes []*Node) (gemspecMetadata, error) {
-	setLine := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
-		var err error
-		if dst.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
-			return err
-		}
-		if dst.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	setCol := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
-		var err error
-		if dst.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
-			return err
-		}
-		if dst.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	// block
-	startPos := callNode.TSNode.StartPosition()
-	endPos := callNode.TSNode.EndPosition()
-	if err := setLine(&metadata.blockLine, startPos, endPos); err != nil {
-		return metadata, err
-	}
-	if err := setCol(&metadata.blockColumn, startPos, endPos); err != nil {
-		return metadata, err
-	}
-
-	// name
-	startPos = dependencyNameNode.TSNode.StartPosition()
-	endPos = dependencyNameNode.TSNode.EndPosition()
-	if err := setLine(&metadata.nameLine, startPos, endPos); err != nil {
-		return metadata, err
-	}
-	if err := setCol(&metadata.nameColumn, startPos, endPos); err != nil {
-		return metadata, err
-	}
-
-	if len(requirementNodes) > 0 {
-		// version
-		var err error
-		startPos = requirementNodes[0].TSNode.StartPosition()
-		endPos = requirementNodes[len(requirementNodes)-1].TSNode.EndPosition()
-		metadata.versionLine = &models.Position{}
-		if err := setLine(metadata.versionLine, startPos, endPos); err != nil {
-			return metadata, err
-		}
-
-		// We are not using the setCol method because the start needs to be shifted by 3
-		metadata.versionColumn = &models.Position{}
-		if metadata.versionColumn.Start, err = converter.SafeUIntToInt(requirementNodes[0].TSNode.StartPosition().Column + 3); err != nil {
-			return metadata, err
-		}
-		if metadata.versionColumn.End, err = converter.SafeUIntToInt(requirementNodes[len(requirementNodes)-1].TSNode.EndPosition().Column + 1); err != nil {
-			return metadata, err
-		}
-	}
-
-	return metadata, nil
-}
-
 func (matcher GemspecFileMatcher) findGemspecs(node *Node) ([]gemspecMetadata, error) {
 	// Matches method calls to add_dependency, add_runtime_dependency and add_development_dependency
 	// extracting the gem dependency name and gem dependency requirements
@@ -183,7 +115,8 @@ func (matcher GemspecFileMatcher) findGemspecs(node *Node) ([]gemspecMetadata, e
 			name:  dependencyName,
 			isDev: methodName == "add_development_dependency",
 		}
-		if metadata, err = setPositionInMetadata(metadata, callNode, dependencyNameNode, requirementNodes); err != nil {
+		metadata, err = setPositionInMetadata(metadata, callNode, dependencyNameNode, requirementNodes)
+		if err != nil {
 			return err
 		}
 
@@ -223,4 +156,57 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile,
 			pkg.DepGroups = []string{string(DepGroupDev)}
 		}
 	}
+}
+
+func setPositionInMetadata(metadata gemspecMetadata, callNode *Node, dependencyNameNode *Node, requirementNodes []*Node) (gemspecMetadata, error) {
+	setPos := func(dstLine *models.Position, dstColumn *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
+		var err error
+		if dstLine.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
+			return err
+		}
+		if dstLine.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
+			return err
+		}
+		if dstColumn.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
+			return err
+		}
+		if dstColumn.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// block
+	startPos := callNode.TSNode.StartPosition()
+	endPos := callNode.TSNode.EndPosition()
+	if err := setPos(&metadata.blockLine, &metadata.blockColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	// name
+	startPos = dependencyNameNode.TSNode.StartPosition()
+	endPos = dependencyNameNode.TSNode.EndPosition()
+	if err := setPos(&metadata.nameLine, &metadata.nameColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	if len(requirementNodes) > 0 {
+		// version
+		var err error
+		startPos = requirementNodes[0].TSNode.StartPosition()
+		endPos = requirementNodes[len(requirementNodes)-1].TSNode.EndPosition()
+		metadata.versionLine = &models.Position{}
+		metadata.versionColumn = &models.Position{}
+		if err := setPos(metadata.versionLine, metadata.versionColumn, startPos, endPos); err != nil {
+			return metadata, err
+		}
+
+		// We need to override the column start because it needs to be shifted by 3 and not 1
+		if metadata.versionColumn.Start, err = converter.SafeUIntToInt(requirementNodes[0].TSNode.StartPosition().Column + 3); err != nil {
+			return metadata, err
+		}
+	}
+
+	return metadata, nil
 }

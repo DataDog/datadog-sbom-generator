@@ -68,68 +68,6 @@ func (matcher GemfileMatcher) Match(sourceFile DepFile, packages []PackageDetail
 	return nil
 }
 
-func setPosition(metadata gemMetadata, callNode *Node, dependencyNameNode *Node, requirementsNode *Node) (gemMetadata, error) {
-	setLine := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
-		var err error
-		if dst.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
-			return err
-		}
-		if dst.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	setCol := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
-		var err error
-		if dst.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
-			return err
-		}
-		if dst.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	// block
-	startPos := callNode.TSNode.StartPosition()
-	endPos := callNode.TSNode.EndPosition()
-	if err := setLine(&metadata.blockLine, startPos, endPos); err != nil {
-		return metadata, err
-	}
-	if err := setCol(&metadata.blockColumn, startPos, endPos); err != nil {
-		return metadata, err
-	}
-
-	// name
-	startPos = dependencyNameNode.TSNode.StartPosition()
-	endPos = dependencyNameNode.TSNode.EndPosition()
-	if err := setLine(&metadata.nameLine, startPos, endPos); err != nil {
-		return metadata, err
-	}
-	if err := setCol(&metadata.nameColumn, startPos, endPos); err != nil {
-		return metadata, err
-	}
-
-	if requirementsNode != nil {
-		// version
-		startPos = requirementsNode.TSNode.StartPosition()
-		endPos = requirementsNode.TSNode.EndPosition()
-		metadata.versionLine = &models.Position{}
-		metadata.versionColumn = &models.Position{}
-		if err := setLine(metadata.versionLine, startPos, endPos); err != nil {
-			return metadata, err
-		}
-		if err := setCol(metadata.versionColumn, startPos, endPos); err != nil {
-			return metadata, err
-		}
-	}
-
-	return metadata, nil
-}
-
 func findGems(node *Node) ([]gemMetadata, error) {
 	// Matches method calls to `gem`
 	// extracting the gem dependency name and gem dependency requirement
@@ -175,7 +113,8 @@ func findGems(node *Node) ([]gemMetadata, error) {
 			groups: groups,
 		}
 
-		if metadata, err = setPosition(metadata, callNode, dependencyNameNode, requirementNode); err != nil {
+		metadata, err = setPosition(metadata, callNode, dependencyNameNode, requirementNode)
+		if err != nil {
 			return err
 		}
 
@@ -310,4 +249,51 @@ func enrichPackagesWithLocation(sourceFile DepFile, gems []gemMetadata, packages
 			pkg.DepGroups = gem.groups
 		}
 	}
+}
+
+func setPosition(metadata gemMetadata, callNode *Node, dependencyNameNode *Node, requirementsNode *Node) (gemMetadata, error) {
+	setPos := func(dstLine *models.Position, dstColumn *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
+		var err error
+		if dstLine.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
+			return err
+		}
+		if dstLine.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
+			return err
+		}
+		if dstColumn.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
+			return err
+		}
+		if dstColumn.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// block
+	startPos := callNode.TSNode.StartPosition()
+	endPos := callNode.TSNode.EndPosition()
+	if err := setPos(&metadata.blockLine, &metadata.blockColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	// name
+	startPos = dependencyNameNode.TSNode.StartPosition()
+	endPos = dependencyNameNode.TSNode.EndPosition()
+	if err := setPos(&metadata.nameLine, &metadata.nameColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	if requirementsNode != nil {
+		// version
+		startPos = requirementsNode.TSNode.StartPosition()
+		endPos = requirementsNode.TSNode.EndPosition()
+		metadata.versionLine = &models.Position{}
+		metadata.versionColumn = &models.Position{}
+		if err := setPos(metadata.versionLine, metadata.versionColumn, startPos, endPos); err != nil {
+			return metadata, err
+		}
+	}
+
+	return metadata, nil
 }
