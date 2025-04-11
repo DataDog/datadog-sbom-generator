@@ -1,10 +1,11 @@
 package lockfile
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-	"golang.org/x/exp/maps"
+	"maps"
 )
 
 // TODO : THIS FILE SHOULD BE MOVED TO ITS OWN INTERNAL PACKAGE ONCE WE CUT ORIGINAL REPO LINKS
@@ -116,7 +117,7 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		for _, group := range deps.DepGroups {
 			newDepGroups[group] = true
 		}
-		deps.DepGroups = maps.Keys(newDepGroups)
+		deps.DepGroups = slices.AppendSeq(make([]string, 0), maps.Keys(newDepGroups))
 		propagateDepGroups(deps, visitedMap)
 	}
 }

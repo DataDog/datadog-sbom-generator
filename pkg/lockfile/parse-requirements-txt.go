@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
-	"golang.org/x/exp/maps"
+	"maps"
 )
 
 const PipEcosystem Ecosystem = "PyPI"
@@ -441,7 +442,7 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
-	return maps.Values(packages), nil
+	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(packages)), nil
 }
 
 var _ Extractor = RequirementsTxtExtractor{}

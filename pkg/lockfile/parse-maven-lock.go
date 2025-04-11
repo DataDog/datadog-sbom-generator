@@ -12,9 +12,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
-	"golang.org/x/exp/maps"
+	"maps"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/filereader"
 
@@ -584,7 +585,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		details[finalName] = pkgDetails
 	}
 
-	return maps.Values(details), nil
+	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(details)), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f DepFile) (*models.ScannedArtifact, error) {

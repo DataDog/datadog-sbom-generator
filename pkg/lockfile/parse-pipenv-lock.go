@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"golang.org/x/exp/maps"
+	"maps"
 )
 
 type PipenvPackage struct {
@@ -43,7 +44,7 @@ func (e PipenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	addPkgDetails(details, parsedLockfile.Packages, "")
 	addPkgDetails(details, parsedLockfile.PackagesDev, "dev")
 
-	return maps.Values(details), nil
+	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(details)), nil
 }
 
 func addPkgDetails(details map[string]PackageDetails, packages map[string]PipenvPackage, group string) {
