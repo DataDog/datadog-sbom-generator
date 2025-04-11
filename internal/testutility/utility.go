@@ -71,7 +71,7 @@ func ValueIfOnWindows(win, or string) string {
 func CreateTestDir(t *testing.T) string {
 	t.Helper()
 
-	p, err := os.MkdirTemp("", "osv-scanner-test-*")
+	p, err := os.MkdirTemp("", "datadog-sbom-generator-test-*")
 	if err != nil {
 		t.Fatalf("could not create test directory: %v", err)
 	}

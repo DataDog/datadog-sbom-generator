@@ -19,7 +19,7 @@ COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 COPY ./ ./
-RUN go build -o osv-scanner ./cmd/osv-scanner/
+RUN go build -o datadog-sbom-generator ./cmd/datadog-sbom-generator/
 
 FROM alpine:3.20@sha256:0a4eaa0eecf5f8c050e5bba433f58c052be7587ee8af3e8b3910ef9ab5fbe9f5
 
@@ -27,6 +27,6 @@ RUN apk --no-cache add ca-certificates git && \
   git config --global --add safe.directory '*'
 
 WORKDIR /root/
-COPY --from=builder /src/osv-scanner .
+COPY --from=builder /src/datadog-sbom-generator .
 
-ENTRYPOINT ["/root/osv-scanner"]
+ENTRYPOINT ["/root/datadog-sbom-generator"]

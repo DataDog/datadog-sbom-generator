@@ -121,4 +121,4 @@ This tool only supports enriching information from the following package manager
 
 ## License
 
-The Datadog version of OSV-Scanner is licensed under the [Apache License, Version 2.0](LICENSE).
+The Datadog version of datadog-sbom-generator is licensed under the [Apache License, Version 2.0](LICENSE).

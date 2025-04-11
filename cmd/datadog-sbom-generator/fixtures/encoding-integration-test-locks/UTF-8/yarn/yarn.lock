@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"osv-scanner@workspace:.":
+"datadog-sbom-generator@workspace:.":
   version: 0.0.0-use.local
-  resolution: "osv-scanner@workspace:."
+  resolution: "datadog-sbom-generator@workspace:."
   dependencies:
     balanced-match: "npm:^1.0.0"
     supports-color: "npm:10.0.0"

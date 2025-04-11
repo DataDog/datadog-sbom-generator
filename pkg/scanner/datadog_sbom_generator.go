@@ -1,4 +1,4 @@
-package datadog_sbom_generator
+package scanner
 
 import (
 	"errors"
@@ -198,7 +198,7 @@ func initializeEnabledParsers(enabledParsers []string) map[string]bool {
 	return result
 }
 
-// Perform osv scanner action, with optional reporter to output information
+// DoScan Perform datadog-sbom-generator scan action, with optional reporter to output information
 func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityResults, error) {
 	enabledParsers := initializeEnabledParsers(actions.EnableParsers)
 

@@ -21,7 +21,7 @@ This file will focus on giving you the keys to work on this project
 
 ### Build
 
-To build OSV-Scanner, you'll need the following:
+To build datadog-sbom-generator, you'll need the following:
 
 - [Python](https://www.python.org/downloads/) 3.10 or later with the [invoke package](https://www.pyinvoke.org/installing.html) installed
 - [Go](https://golang.org/doc/install) 1.21 or later. You'll also need to set your `$GOPATH` and have `$GOPATH/bin` in your path.
@@ -37,7 +37,7 @@ Run the following command in the project directory:
 ./scripts/build.sh
 ```
 
-It will produce a binary called `osv-scanner` in the project directory.
+It will produce a binary called `datadog-sbom-generator` in the project directory.
 
 #### Build using goreleaser
 
@@ -97,7 +97,7 @@ go install -x github.com/go-enry/go-license-detector/v4/cmd/license-detector@lat
 inv -e generate-licenses
 ```
 
-## Releasing OSV-Scanner
+## Releasing datadog-sbom-generator
 
 1. Tag the main branch commit with the version name you want (e.g, v1.0.0).
 2. Wait for the Github workflow to run ([you can see it in the actions panel](https://github.com/DataDog/datadog-sbom-generator/actions/workflows/goreleaser.yml)).
