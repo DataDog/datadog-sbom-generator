@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"maps"
+
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"gopkg.in/yaml.v3"
-	"maps"
 )
 
 type PnpmLockPackageResolution struct {
