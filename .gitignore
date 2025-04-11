@@ -2,7 +2,7 @@
 .vscode/
 .idea/
 /dist/
-/osv-scanner
+/datadog-sbom-generator
 /coverage.out
 /coverage.html
 *.tar

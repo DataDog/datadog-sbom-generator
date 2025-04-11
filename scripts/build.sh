@@ -2,4 +2,4 @@
 
 set -e
 
-go build ./cmd/osv-scanner/
+go build ./cmd/datadog-sbom-generator/
