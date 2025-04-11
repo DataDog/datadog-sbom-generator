@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
+
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -64,10 +66,10 @@ func (r *ReachabilityJava) Close() {
 	}
 }
 
-func (r *ReachabilityJava) Detect(dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) {
+func (r *ReachabilityJava) Detect(dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
 	fileContent, err := readFileContent(path)
 	if err != nil {
-		return
+		return err
 	}
 
 	tree := r.tsParser.Parse(fileContent, nil)
@@ -114,22 +116,38 @@ func (r *ReachabilityJava) Detect(dir string, path string, detectionResults mode
 						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = make(models.ReachableSymbolLocations, 0)
 					}
 
+					packageLocation := models.PackageLocation{
+						Filename: fileposition.ToRelativePath(dir, path),
+					}
+					packageLocation.LineStart, err = converter.SafeUIntToInt(startPosition.Row + 1)
+					if err != nil {
+						return err
+					}
+					packageLocation.LineEnd, err = converter.SafeUIntToInt(endPosition.Row + 1)
+					if err != nil {
+						return err
+					}
+					packageLocation.ColumnStart, err = converter.SafeUIntToInt(startPosition.Column + 1)
+					if err != nil {
+						return err
+					}
+					packageLocation.ColumnEnd, err = converter.SafeUIntToInt(endPosition.Column + 1)
+					if err != nil {
+						return err
+					}
+
 					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = append(
 						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID],
 						models.ReachableSymbolLocation{
-							Symbol: matchedText,
-							PackageLocation: models.PackageLocation{
-								Filename:    fileposition.ToRelativePath(dir, path),
-								LineStart:   int(startPosition.Row) + 1,
-								LineEnd:     int(endPosition.Row) + 1,
-								ColumnStart: int(startPosition.Column) + 1,
-								ColumnEnd:   int(endPosition.Column) + 1,
-							},
+							Symbol:          matchedText,
+							PackageLocation: packageLocation,
 						})
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
 // readFileContent is a thin wrapper over os.ReadFile that reads the content of a file

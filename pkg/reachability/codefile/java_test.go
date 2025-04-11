@@ -27,8 +27,9 @@ func Test_Detect_NoAdvisories(t *testing.T) {
 	advisoriesToCheck := make([]models.AdvisoryToCheck, 0)
 	detectionResults := models.DetectionResults{}
 
-	detector.Detect("", "testdata/vulnerable-class.java", detectionResults, advisoriesToCheck)
+	err = detector.Detect("", "testdata/vulnerable-class.java", detectionResults, advisoriesToCheck)
 
+	require.NoError(t, err)
 	assert.Empty(t, detectionResults)
 }
 
@@ -53,7 +54,9 @@ func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	}
 
 	detectionResults := models.DetectionResults{}
-	detector.Detect(".", "testdata/CVE-2025-1234/explicit-import/class.java", detectionResults, advisoriesToCheck)
+	err = detector.Detect(".", "testdata/CVE-2025-1234/explicit-import/class.java", detectionResults, advisoriesToCheck)
+
+	require.NoError(t, err)
 	assert.Len(t, detectionResults, 1)
 	advisories, ok := detectionResults["pkg:maven/org.example/Greeter@1.2.3"]
 	assert.True(t, ok)
@@ -69,7 +72,9 @@ func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	assert.Equal(t, 36, reachableSymbols[0].ColumnEnd)
 
 	detectionResults = models.DetectionResults{}
-	detector.Detect(".", "testdata/CVE-2025-1234/wildcard-import/class.java", detectionResults, advisoriesToCheck)
+	err = detector.Detect(".", "testdata/CVE-2025-1234/wildcard-import/class.java", detectionResults, advisoriesToCheck)
+
+	require.NoError(t, err)
 	assert.Len(t, detectionResults, 1)
 	advisories, ok = detectionResults["pkg:maven/org.example/Greeter@1.2.3"]
 	assert.True(t, ok)
@@ -85,7 +90,9 @@ func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	assert.Equal(t, 36, reachableSymbols[0].ColumnEnd)
 
 	detectionResults = models.DetectionResults{}
-	detector.Detect(".", "testdata/CVE-2025-1234/fully-qualified-name/class.java", detectionResults, advisoriesToCheck)
+	err = detector.Detect(".", "testdata/CVE-2025-1234/fully-qualified-name/class.java", detectionResults, advisoriesToCheck)
+
+	require.NoError(t, err)
 	assert.Len(t, detectionResults, 1)
 	advisories, ok = detectionResults["pkg:maven/org.example/Greeter@1.2.3"]
 	assert.True(t, ok)
