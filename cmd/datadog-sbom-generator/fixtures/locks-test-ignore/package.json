@@ -1,0 +1,6 @@
+{
+  "name": "datadog-sbom-generator",
+  "dependencies": {
+    "ansi-html": "0.0.1"
+  }
+}

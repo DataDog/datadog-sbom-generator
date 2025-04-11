@@ -1,10 +1,10 @@
 {
-  "name": "osv-scanner",
+  "name": "datadog-sbom-generator",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "osv-scanner",
+      "name": "datadog-sbom-generator",
       "dependencies": {
         "debug": "^0.7",
         "jear": "^0.1.4"

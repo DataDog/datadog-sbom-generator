@@ -264,10 +264,10 @@ buildDependencyTree leverage yarn lockfile format to build the subtree of a pack
 `rootPkgRegistry` is the registry used to download this dependency (defaults to npm)
 `dependencies` is the representation of the yarn lockfile, where the key is either package name, registry and target version
 or package name and target version and the value is the package definition in Yarn format
-`packagesIndex` is an index of all package in osv-scanner format where the key is the package name and the package version
+`packagesIndex` is an index of all package in datadog-sbom-generator format where the key is the package name and the package version
 
 This methods build the dependency tree by looking at the yarn dependencies definition and matching every transitive dependency
-with the index to get a pointer to the osv-scanner formatted child package
+with the index to get a pointer to the datadog-sbom-generator formatted child package
 */
 func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry string, dependencies map[string]YarnPackage, packagesIndex map[string]*PackageDetails) []*PackageDetails {
 	results := make([]*PackageDetails, 0)

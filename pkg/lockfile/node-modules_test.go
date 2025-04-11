@@ -11,7 +11,7 @@ import (
 func createTestDir(t *testing.T) (string, func()) {
 	t.Helper()
 
-	p, err := os.MkdirTemp("", "osv-scanner-test-*")
+	p, err := os.MkdirTemp("", "datadog-sbom-generator-test-*")
 	if err != nil {
 		t.Fatalf("could not create test directory: %v", err)
 	}

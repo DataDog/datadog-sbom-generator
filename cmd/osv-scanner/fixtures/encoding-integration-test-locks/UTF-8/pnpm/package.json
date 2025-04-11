@@ -1,6 +1,0 @@
-{
-  "name": "osv-scanner",
-  "dependencies": {
-    "acorn": "^8.7.0"
-  }
-}

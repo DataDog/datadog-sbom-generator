@@ -1,0 +1,9 @@
+{
+  "name": "datadog-sbom-generator",
+  "dependencies": {
+    "wrappy": "1"
+  },
+  "devDependencies": {
+    "ms": "2.1.3"
+  }
+}

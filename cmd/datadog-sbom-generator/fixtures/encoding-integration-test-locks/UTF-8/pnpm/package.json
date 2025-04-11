@@ -1,0 +1,6 @@
+{
+  "name": "datadog-sbom-generator",
+  "dependencies": {
+    "acorn": "^8.7.0"
+  }
+}

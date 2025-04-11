@@ -1,0 +1,6 @@
+{
+  "name": "datadog-sbom-generator",
+  "dependencies": {
+    "balanced-match-2": "^1.0.0"
+  }
+}
