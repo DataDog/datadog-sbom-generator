@@ -6,7 +6,7 @@ import (
 	"os"
 	"slices"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/datadog-sbom-generator"
+	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
 
 	"github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/scan"
 	"github.com/DataDog/datadog-sbom-generator/internal/version"
@@ -25,11 +25,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	cli.VersionPrinter = func(ctx *cli.Context) {
 		// Use the app Writer and ErrWriter since they will be the writers to keep parallel tests consistent
 		r = reporter.NewJSONReporter(ctx.App.Writer, ctx.App.ErrWriter, reporter.InfoLevel)
-		r.Infof("osv-scanner version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
+		r.Infof("datadog-sbom-generator version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
 	}
 
 	app := &cli.App{
-		Name:           "osv-scanner",
+		Name:           "datadog-sbom-generator",
 		Version:        version.OSVVersion,
 		Usage:          "scans various mediums for dependencies and checks them against the OSV database",
 		Suggest:        true,
@@ -48,12 +48,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 			r = reporter.NewJSONReporter(stdout, stderr, reporter.InfoLevel)
 		}
 		switch {
-		case errors.Is(err, datadog_sbom_generator.VulnerabilitiesFoundErr):
+		case errors.Is(err, scanner.VulnerabilitiesFoundErr):
 			return 0
-		case errors.Is(err, datadog_sbom_generator.NoPackagesFoundErr):
+		case errors.Is(err, scanner.NoPackagesFoundErr):
 			r.Errorf("No package sources found, --help for usage information.\n")
 			return 0
-		case errors.Is(err, datadog_sbom_generator.ErrAPIFailed):
+		case errors.Is(err, scanner.ErrAPIFailed):
 			r.Errorf("%v\n", err)
 			return 129
 		}
@@ -69,7 +69,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-// Gets all valid commands and global options for OSV-Scanner.
+// Gets all valid commands and global options for datadog-sbom-generator.
 func getAllCommands(commands []*cli.Command) []string {
 	// Adding all subcommands
 	allCommands := make([]string, 0)
@@ -110,7 +110,7 @@ func insertDefaultCommand(args []string, commands []*cli.Command, defaultCommand
 		return argsTmp
 	} else if _, err := os.Stat(args[1]); err == nil {
 		r := reporter.NewJSONReporter(stdout, stderr, reporter.InfoLevel)
-		r.Warnf("Warning: `%[1]s` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `%[1]s` is assumed to be a subcommand here. If you intended for `%[1]s` to be an argument to `%[1]s`, you must specify `%[1]s %[1]s` in your command line.\n", args[1])
+		r.Warnf("Warning: `%[1]s` exists as both a subcommand of datadog-sbom-generator and as a file on the filesystem. `%[1]s` is assumed to be a subcommand here. If you intended for `%[1]s` to be an argument to `%[1]s`, you must specify `%[1]s %[1]s` in your command line.\n", args[1])
 	}
 
 	return args

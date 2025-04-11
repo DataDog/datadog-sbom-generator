@@ -22,6 +22,6 @@ RUN apk add --no-cache \
 # Allow git to run on mounted directories
 RUN git config --global --add safe.directory '*'
 
-COPY osv-scanner ./
+COPY datadog-sbom-generator ./
 
-ENTRYPOINT ["/osv-scanner"]
+ENTRYPOINT ["/datadog-sbom-generator"]

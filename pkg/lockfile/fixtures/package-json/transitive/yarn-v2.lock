@@ -33,9 +33,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"osv-scanner@workspace:.":
+"datadog-sbom-generator@workspace:.":
   version: 0.0.0-use.local
-  resolution: "osv-scanner@workspace:."
+  resolution: "datadog-sbom-generator@workspace:."
   dependencies:
     debug: ^0.7
     jear: ^0.1.4

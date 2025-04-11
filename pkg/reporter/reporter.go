@@ -25,9 +25,9 @@ type Reporter interface {
 	HasErrored() bool
 	// Warnf prints text indicating potential issues or something that should be brought to the attention of users.
 	Warnf(format string, a ...any)
-	// Infof prints text providing general information about what OSV-Scanner is doing during its runtime.
+	// Infof prints text providing general information about what datadog-sbom-generator is doing during its runtime.
 	Infof(format string, a ...any)
-	// Verbosef prints text providing additional information about the inner workings of OSV-Scanner to the user.
+	// Verbosef prints text providing additional information about the inner workings of datadog-sbom-generator to the user.
 	Verbosef(format string, a ...any)
 	// PrintResult prints the models.VulnerabilityResults per the logic of the
 	// actual reporter

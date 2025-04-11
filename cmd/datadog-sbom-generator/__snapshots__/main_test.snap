@@ -19,7 +19,7 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#01 - 2]
-osv-scanner version: 1.8.2
+datadog-sbom-generator version: 1.8.2
 commit: n/a
 built at: n/a
 
@@ -576,7 +576,7 @@ Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 ---
 
 [TestRun_InsertDefaultCommand - 6]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
+Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 
@@ -8371,7 +8371,7 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_SubCommands/scan_with_a_flag - 2]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
+Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 
@@ -8430,7 +8430,7 @@ Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the 
 ---
 
 [TestRun_SubCommands/with_scan_subcommand - 2]
-Warning: `scan` exists as both a subcommand of OSV-Scanner and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
+Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a file on the filesystem. `scan` is assumed to be a subcommand here. If you intended for `scan` to be an argument to `scan`, you must specify `scan scan` in your command line.
 
 ---
 
@@ -12811,6 +12811,19 @@ No package sources found, --help for usage information.
       }
     },
     {
+      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "type": "library",
+      "name": "datadog-sbom-generator",
+      "version": "0.0.0-use.local",
+      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:npm/debug@1.0.0",
       "type": "library",
       "name": "debug",
@@ -12958,19 +12971,6 @@ No package sources found, --help for usage information.
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "type": "library",
-      "name": "osv-scanner",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
     },
     {
       "bom-ref": "pkg:npm/supports-color@10.0.0",
@@ -17637,6 +17637,19 @@ No package sources found, --help for usage information.
       }
     },
     {
+      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "type": "library",
+      "name": "datadog-sbom-generator",
+      "version": "0.0.0-use.local",
+      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:npm/debug@2.6.9",
       "type": "library",
       "name": "debug",
@@ -17763,19 +17776,6 @@ No package sources found, --help for usage information.
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "type": "library",
-      "name": "osv-scanner",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
     },
     {
       "bom-ref": "pkg:npm/supports-color@10.0.0",
@@ -22442,6 +22442,19 @@ No package sources found, --help for usage information.
       }
     },
     {
+      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "type": "library",
+      "name": "datadog-sbom-generator",
+      "version": "0.0.0-use.local",
+      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:npm/debug@2.6.9",
       "type": "library",
       "name": "debug",
@@ -22568,19 +22581,6 @@ No package sources found, --help for usage information.
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "type": "library",
-      "name": "osv-scanner",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/osv-scanner@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
     },
     {
       "bom-ref": "pkg:npm/supports-color@10.0.0",
