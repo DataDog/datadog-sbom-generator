@@ -143,16 +143,38 @@ jobs:
           path: main.breakdown # as specified via `breakdown-file-name`
           if-no-files-found:
             error
-            # Post coverage report as comment (in 2 steps)
+      # Post coverage report as comment (update existing or create new)
       - name: post coverage report
         if: ${{github.event_name == 'pull_request'}}
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # 7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.issues.createComment({
+            const botCommentIdentifier = "## Go test coverage report";
+            const coverageReport = `${botCommentIdentifier}\n\n${{fromJSON(steps.go-test-coverage.outputs.report)}}`;
+
+            // Try to find an existing comment from the bot
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `${{fromJSON(steps.go-test-coverage.outputs.report)}}`
-            })
+              repo: context.repo.repo
+            });
+
+            const botComment = comments.find(comment => comment.body.includes(botCommentIdentifier));
+
+            // Update existing comment or create a new one
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: coverageReport
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: coverageReport
+              });
+            }
