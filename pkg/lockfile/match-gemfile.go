@@ -3,6 +3,10 @@ package lockfile
 import (
 	"path/filepath"
 
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -64,6 +68,68 @@ func (matcher GemfileMatcher) Match(sourceFile DepFile, packages []PackageDetail
 	return nil
 }
 
+func setPosition(metadata gemMetadata, callNode *Node, dependencyNameNode *Node, requirementsNode *Node) (gemMetadata, error) {
+	setLine := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
+		var err error
+		if dst.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
+			return err
+		}
+		if dst.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	setCol := func(dst *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
+		var err error
+		if dst.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
+			return err
+		}
+		if dst.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// block
+	startPos := callNode.TSNode.StartPosition()
+	endPos := callNode.TSNode.EndPosition()
+	if err := setLine(&metadata.blockLine, startPos, endPos); err != nil {
+		return metadata, err
+	}
+	if err := setCol(&metadata.blockColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	// name
+	startPos = dependencyNameNode.TSNode.StartPosition()
+	endPos = dependencyNameNode.TSNode.EndPosition()
+	if err := setLine(&metadata.nameLine, startPos, endPos); err != nil {
+		return metadata, err
+	}
+	if err := setCol(&metadata.nameColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	if requirementsNode != nil {
+		// version
+		startPos = requirementsNode.TSNode.StartPosition()
+		endPos = requirementsNode.TSNode.EndPosition()
+		metadata.versionLine = &models.Position{}
+		metadata.versionColumn = &models.Position{}
+		if err := setLine(metadata.versionLine, startPos, endPos); err != nil {
+			return metadata, err
+		}
+		if err := setCol(metadata.versionColumn, startPos, endPos); err != nil {
+			return metadata, err
+		}
+	}
+
+	return metadata, nil
+}
+
 func findGems(node *Node) ([]gemMetadata, error) {
 	// Matches method calls to `gem`
 	// extracting the gem dependency name and gem dependency requirement
@@ -105,17 +171,12 @@ func findGems(node *Node) ([]gemMetadata, error) {
 		}
 
 		metadata := gemMetadata{
-			name:        dependencyName,
-			groups:      groups,
-			blockLine:   models.Position{Start: int(callNode.TSNode.StartPosition().Row) + 1, End: int(callNode.TSNode.EndPosition().Row) + 1},
-			blockColumn: models.Position{Start: int(callNode.TSNode.StartPosition().Column) + 1, End: int(callNode.TSNode.EndPosition().Column) + 1},
-			nameLine:    models.Position{Start: int(dependencyNameNode.TSNode.StartPosition().Row) + 1, End: int(dependencyNameNode.TSNode.EndPosition().Row) + 1},
-			nameColumn:  models.Position{Start: int(dependencyNameNode.TSNode.StartPosition().Column) + 1, End: int(dependencyNameNode.TSNode.EndPosition().Column) + 1},
+			name:   dependencyName,
+			groups: groups,
 		}
 
-		if requirementNode != nil {
-			metadata.versionLine = &models.Position{Start: int(requirementNode.TSNode.StartPosition().Row) + 1, End: int(requirementNode.TSNode.EndPosition().Row) + 1}
-			metadata.versionColumn = &models.Position{Start: int(requirementNode.TSNode.StartPosition().Column) + 1, End: int(requirementNode.TSNode.EndPosition().Column) + 1}
+		if metadata, err = setPosition(metadata, callNode, dependencyNameNode, requirementNode); err != nil {
+			return err
 		}
 
 		gems = append(gems, metadata)
