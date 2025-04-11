@@ -141,8 +141,7 @@ jobs:
         with:
           name: main.breakdown
           path: main.breakdown # as specified via `breakdown-file-name`
-          if-no-files-found:
-            error
+          if-no-files-found: error
       # Post coverage report as comment (update existing or create new)
       - name: post coverage report
         if: ${{github.event_name == 'pull_request'}}
