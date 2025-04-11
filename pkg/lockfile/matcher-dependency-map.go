@@ -4,8 +4,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"maps"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 // TODO : THIS FILE SHOULD BE MOVED TO ITS OWN INTERNAL PACKAGE ONCE WE CUT ORIGINAL REPO LINKS

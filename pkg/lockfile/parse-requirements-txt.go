@@ -10,8 +10,9 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"maps"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
 const PipEcosystem Ecosystem = "PyPI"

@@ -10,8 +10,9 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"maps"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 
 	"golang.org/x/mod/module"
 
