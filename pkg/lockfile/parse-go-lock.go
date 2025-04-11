@@ -5,12 +5,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
-	"golang.org/x/exp/maps"
+	"maps"
 
 	"golang.org/x/mod/module"
 
@@ -188,7 +189,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 	}
 
-	return maps.Values(deduplicatePackages(packages)), nil
+	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(deduplicatePackages(packages))), nil
 }
 
 var _ Extractor = GoLockExtractor{}
