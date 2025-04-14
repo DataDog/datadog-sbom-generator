@@ -27,6 +27,12 @@ type ScannerActions struct {
 	Reachability   bool
 	Debug          bool
 	EnableParsers  []string
+	DDEnvVars      DDEnvVars
+}
+
+type DDEnvVars struct {
+	BaseURL  string
+	JwtToken string
 }
 
 // NoPackagesFoundErr for when no packages are found during a scan.
@@ -257,7 +263,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
-	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths, actions.Reachability)
+	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(purlsForDirectPackages, actions.DirectoryPaths, actions.Reachability, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
 
 	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 

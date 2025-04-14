@@ -38,11 +38,11 @@ type Symbol struct {
 	Name  string `json:"name"  jsonapi:"attribute"`
 }
 
-func PostResolveVulnerableSymbols(purls []string) (ResolveVulnerableSymbolsResponse, error) {
-	return postResolveVulnerableSymbols(purls, getDatadogHostname())
+func PostResolveVulnerableSymbols(purls []string, ddBaseURL string, ddJwtToken string) (ResolveVulnerableSymbolsResponse, error) {
+	return postResolveVulnerableSymbols(purls, getDatadogBaseURL(ddBaseURL), ddJwtToken)
 }
 
-func postResolveVulnerableSymbols(purls []string, baseURL string) (ResolveVulnerableSymbolsResponse, error) {
+func postResolveVulnerableSymbols(purls []string, baseURL string, ddJwtToken string) (ResolveVulnerableSymbolsResponse, error) {
 	data := ResolveVulnerableSymbolsResponse{}
 
 	body, err := jsonapi.Marshal(&ResolveVulnerableSymbolsRequest{
@@ -58,7 +58,7 @@ func postResolveVulnerableSymbols(purls []string, baseURL string) (ResolveVulner
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] failed to create request: %w", err)
 	}
 
-	authHeaders, err := getDatadogAuthHeaders()
+	authHeaders, err := getDatadogAuthHeaders(ddJwtToken)
 	if err != nil {
 		return data, fmt.Errorf("[PostResolveVulnerableSymbols] no auth headers retrieved: %w", err)
 	}

@@ -45,9 +45,15 @@ func getEnvVarValue(variable string) (string, bool) {
 	return value, value != ""
 }
 
-// getDatadogHostname returns the hostname to use for Datadog API requests. It first checks
-// the HOSTNAME environment variable, then the SITE environment variable.
-func getDatadogHostname() string {
+// getDatadogBaseURL returns a base URL to use for Datadog API requests.
+// It first checks if a base URL override was given otherwise it builds a URL
+// using either the DD_HOSTNAME or the DD_SITE environment variable,
+// and finally defaults to the Datadog API hostname.
+func getDatadogBaseURL(ddBaseURL string) string {
+	if ddBaseURL != "" {
+		return ddBaseURL
+	}
+
 	prefix := "https://"
 
 	hostname, ok := getDatadogEnvVarValue(DatadogEnvVarHostname)
@@ -68,9 +74,17 @@ type Header struct {
 	Value string
 }
 
-// getDatadogAuthHeaders returns the headers needed to make authenticated requests to a Datadog API. If a JWT token is
-// available, it will be used, otherwise the API key and app key will be used.
-func getDatadogAuthHeaders() ([]Header, error) {
+// getDatadogAuthHeaders returns the headers needed to make authenticated requests to a Datadog API.
+// It first checks if a jwt override was given,
+// then checks for the DD_JWT_TOKEN environment variable,
+// and finally defaults to the Datadog API and app key environment variables.
+func getDatadogAuthHeaders(ddJwtToken string) ([]Header, error) {
+	if ddJwtToken != "" {
+		return []Header{
+			{Key: DatadogHeaderJwtToken, Value: ddJwtToken},
+		}, nil
+	}
+
 	jwtToken, jwtTokenFound := getDatadogEnvVarValue(DatadogEnvVarJwtToken)
 	if jwtTokenFound {
 		return []Header{
