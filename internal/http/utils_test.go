@@ -86,7 +86,7 @@ func Test_getDatadogAuthHeaders_noneFoundIsError(t *testing.T) {
 func Test_getDatadogAuthHeaders_jwtTokenOverrideTakesPrecedence(t *testing.T) {
 	t.Setenv("DD_JWT_TOKEN", "test-jwt-token")
 
-	ddJwtToken := "test-jwt-token-override"
+	ddJwtToken := "test-jwt-token-override" // #nosec G101
 	headers, err := getDatadogAuthHeaders(ddJwtToken)
 	require.NoError(t, err)
 	assert.Len(t, headers, 1)
