@@ -16,7 +16,8 @@ func Test_postResolveVulnerableSymbols_Failed(t *testing.T) {
 	mockServer := createMockServer(http.StatusForbidden, "{}")
 	defer mockServer.Close()
 
-	_, err := postResolveVulnerableSymbols([]string{}, mockServer.URL)
+	ddJwtToken := ""
+	_, err := postResolveVulnerableSymbols([]string{}, mockServer.URL, ddJwtToken)
 	assert.Error(t, err)
 }
 
@@ -71,7 +72,8 @@ func Test_postResolveVulnerableSymbols_Successful(t *testing.T) {
 	}`)
 	defer mockServer.Close()
 
-	resp, err := postResolveVulnerableSymbols([]string{}, mockServer.URL)
+	ddJwtToken := ""
+	resp, err := postResolveVulnerableSymbols([]string{}, mockServer.URL, ddJwtToken)
 	require.NoError(t, err)
 	assert.Len(t, resp.Results, 1)
 	assert.Equal(t, "pkg:maven/org.apache.logging.log4j/log4j-core@2.13.0", resp.Results[0].Purl)

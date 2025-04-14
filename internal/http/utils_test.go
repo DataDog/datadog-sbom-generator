@@ -43,37 +43,62 @@ func Test_getDatadogEnvVarValue_ddPrefixTakesPrecedence(t *testing.T) {
 	assert.Equal(t, "test-dd-api-key", value)
 }
 
-func Test_getDatadogHostname_hostnameTakesPrecendence(t *testing.T) {
+func Test_getDatadogBaseURL_ddBaseURLOverrideTakesPrecendence(t *testing.T) {
 	t.Setenv("DD_HOSTNAME", "foo.bar.baz")
 	t.Setenv("DD_SITE", "datadoghq.eu")
 
-	value := getDatadogHostname()
+	ddBaseURL := "https://plip.plop"
+	value := getDatadogBaseURL(ddBaseURL)
+	assert.Equal(t, "https://plip.plop", value)
+}
+
+func Test_getDatadogBaseURL_hostnameTakesPrecendence(t *testing.T) {
+	t.Setenv("DD_HOSTNAME", "foo.bar.baz")
+	t.Setenv("DD_SITE", "datadoghq.eu")
+
+	ddBaseURL := ""
+	value := getDatadogBaseURL(ddBaseURL)
 	assert.Equal(t, "https://foo.bar.baz", value)
 }
 
-func Test_getDatadogHostname_usingSiteEnvVar(t *testing.T) {
+func Test_getDatadogBaseURL_usingSiteEnvVar(t *testing.T) {
 	t.Setenv("DD_SITE", "datadoghq.eu")
 
-	value := getDatadogHostname()
+	ddBaseURL := ""
+	value := getDatadogBaseURL(ddBaseURL)
 	assert.Equal(t, "https://api.datadoghq.eu", value)
 }
 
-func Test_getDatadogHostname_usingFallback(t *testing.T) {
+func Test_getDatadogBaseURL_usingFallback(t *testing.T) {
 	t.Parallel()
 
-	value := getDatadogHostname()
+	ddBaseURL := ""
+	value := getDatadogBaseURL(ddBaseURL)
 	assert.Equal(t, "https://api.datadoghq.com", value)
 }
 
 func Test_getDatadogAuthHeaders_noneFoundIsError(t *testing.T) {
-	_, err := getDatadogAuthHeaders()
+	ddJwtToken := ""
+	_, err := getDatadogAuthHeaders(ddJwtToken)
 	assert.Error(t, err)
+}
+
+func Test_getDatadogAuthHeaders_jwtTokenOverrideTakesPrecedence(t *testing.T) {
+	t.Setenv("DD_JWT_TOKEN", "test-jwt-token")
+
+	ddJwtToken := "test-jwt-token-override"
+	headers, err := getDatadogAuthHeaders(ddJwtToken)
+	require.NoError(t, err)
+	assert.Len(t, headers, 1)
+	assert.Equal(t, DatadogHeaderJwtToken, headers[0].Key)
+	assert.Equal(t, "test-jwt-token-override", headers[0].Value)
 }
 
 func Test_getDatadogAuthHeaders_jwtTokenTakesPrecedence(t *testing.T) {
 	t.Setenv("DD_JWT_TOKEN", "test-jwt-token")
 
-	headers, err := getDatadogAuthHeaders()
+	ddJwtToken := ""
+	headers, err := getDatadogAuthHeaders(ddJwtToken)
 	require.NoError(t, err)
 	assert.Len(t, headers, 1)
 	assert.Equal(t, DatadogHeaderJwtToken, headers[0].Key)
@@ -84,7 +109,8 @@ func Test_getDatadogAuthHeaders_usesApiAndAppKey(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
 
-	headers, err := getDatadogAuthHeaders()
+	ddJwtToken := ""
+	headers, err := getDatadogAuthHeaders(ddJwtToken)
 	require.NoError(t, err)
 	assert.Len(t, headers, 2)
 	assert.Equal(t, DatadogHeaderAPIKey, headers[0].Key)
