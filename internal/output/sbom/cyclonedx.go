@@ -52,7 +52,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		return strings.Compare(a.ID, b.ID)
 	})
 
-	dependencies := slices.AppendSeq(make([]cyclonedx.Dependency, 0), maps.Values(dependsOn))
+	dependencies := slices.Collect(maps.Values(dependsOn))
 	slices.SortFunc(dependencies, func(a, b cyclonedx.Dependency) int {
 		return strings.Compare(a.Ref, b.Ref)
 	})

@@ -58,7 +58,7 @@ func parseNuGetLock(lockfile NuGetLockfile) ([]PackageDetails, error) {
 		maps.Copy(details, parseNuGetLockDependencies(dependencies))
 	}
 
-	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(details)), nil
+	return slices.Collect(maps.Values(details)), nil
 }
 
 type NuGetLockExtractor struct {

@@ -585,7 +585,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		details[finalName] = pkgDetails
 	}
 
-	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(details)), nil
+	return slices.Collect(maps.Values(details)), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f DepFile) (*models.ScannedArtifact, error) {

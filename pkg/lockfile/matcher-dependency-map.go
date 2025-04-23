@@ -118,7 +118,7 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		for _, group := range deps.DepGroups {
 			newDepGroups[group] = true
 		}
-		deps.DepGroups = slices.AppendSeq(make([]string, 0), maps.Keys(newDepGroups))
+		deps.DepGroups = slices.Collect(maps.Keys(newDepGroups))
 		propagateDepGroups(deps, visitedMap)
 	}
 }

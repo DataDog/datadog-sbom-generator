@@ -70,7 +70,7 @@ func (ps Packages) Ecosystems() []Ecosystem {
 		ecosystems[pkg.Ecosystem] = struct{}{}
 	}
 
-	slicedEcosystems := slices.AppendSeq(make([]Ecosystem, 0), maps.Keys(ecosystems))
+	slicedEcosystems := slices.Collect(maps.Keys(ecosystems))
 
 	sort.Slice(slicedEcosystems, func(i, j int) bool {
 		return slicedEcosystems[i] < slicedEcosystems[j]

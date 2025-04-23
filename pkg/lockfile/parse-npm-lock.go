@@ -328,7 +328,7 @@ func (e NpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 	parsedLockfile.SourceFile = f.Path()
 
-	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(parseNpmLock(*parsedLockfile, lines))), nil
+	return slices.Collect(maps.Values(parseNpmLock(*parsedLockfile, lines))), nil
 }
 
 var NpmExtractor = NpmLockExtractor{

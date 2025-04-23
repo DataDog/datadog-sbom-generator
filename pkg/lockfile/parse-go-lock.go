@@ -190,7 +190,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 	}
 
-	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(deduplicatePackages(packages))), nil
+	return slices.Collect(maps.Values(deduplicatePackages(packages))), nil
 }
 
 var _ Extractor = GoLockExtractor{}

@@ -94,7 +94,7 @@ func mergeSlices(fromSlices ...[]string) []string {
 		}
 	}
 
-	return slices.AppendSeq(make([]string, 0), maps.Keys(result))
+	return slices.Collect(maps.Keys(result))
 }
 
 func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]PackageDetails) map[string]PackageDetails {
@@ -214,7 +214,7 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 		packages = extractTransitiveDeps(lockfile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages)
 	}
 
-	return slices.AppendSeq(make([]PackageDetails, 0), maps.Values(packages))
+	return slices.Collect(maps.Values(packages))
 }
 
 func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
