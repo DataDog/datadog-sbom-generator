@@ -6,14 +6,6 @@ import (
 	"strings"
 )
 
-// TODO(daniel.strong) unused; remove
-type PackageDetails struct {
-	Name      string
-	Version   string
-	Ecosystem string
-	Locations []PackageLocations
-}
-
 type PackageLocation struct {
 	Filename    string `json:"file_name"`
 	LineStart   int    `json:"line_start"`
