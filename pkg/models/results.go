@@ -43,12 +43,11 @@ type License string
 // Vulnerabilities grouped by package
 // TODO: rename this to be Package as it now includes license information too.
 type PackageVulns struct {
-	Package                   PackageInfo        `json:"package"`
-	DepGroups                 []string           `json:"dependency_groups,omitempty"`
-	Locations                 []PackageLocations `json:"locations,omitempty"`
-	Vulnerabilities           []Vulnerability    `json:"vulnerabilities,omitempty"`
-	Metadata                  PackageMetadata    `json:"metadata,omitempty"`
-	AdvisoriesForReachability []string           `json:"reachability_advisories,omitempty"`
+	Package                   PackageDetails  `json:"package"`
+	DepGroups                 []string        `json:"dependency_groups,omitempty"`
+	Vulnerabilities           []Vulnerability `json:"vulnerabilities,omitempty"`
+	Metadata                  PackageMetadata `json:"metadata,omitempty"`
+	AdvisoriesForReachability []string        `json:"reachability_advisories,omitempty"`
 }
 
 type AnalysisInfo struct {
@@ -62,4 +61,36 @@ type PackageInfo struct {
 	Ecosystem string `json:"ecosystem"`
 	Commit    string `json:"commit,omitempty"`
 	Purl      string `json:"purl,omitempty"`
+}
+
+func (details PackageVulns) ExtractPackageLocations() PackageLocations {
+	packageLocations := PackageLocations{
+		Block: PackageLocation{
+			Filename:    details.Package.BlockLocation.Filename,
+			LineStart:   details.Package.BlockLocation.Line.Start,
+			LineEnd:     details.Package.BlockLocation.Line.End,
+			ColumnStart: details.Package.BlockLocation.Column.Start,
+			ColumnEnd:   details.Package.BlockLocation.Column.End,
+		},
+	}
+	if details.Package.NameLocation != nil {
+		packageLocations.Name = &PackageLocation{
+			Filename:    details.Package.NameLocation.Filename,
+			LineStart:   details.Package.NameLocation.Line.Start,
+			LineEnd:     details.Package.NameLocation.Line.End,
+			ColumnStart: details.Package.NameLocation.Column.Start,
+			ColumnEnd:   details.Package.NameLocation.Column.End,
+		}
+	}
+	if details.Package.VersionLocation != nil {
+		packageLocations.Version = &PackageLocation{
+			Filename:    details.Package.VersionLocation.Filename,
+			LineStart:   details.Package.VersionLocation.Line.Start,
+			LineEnd:     details.Package.VersionLocation.Line.End,
+			ColumnStart: details.Package.VersionLocation.Column.Start,
+			ColumnEnd:   details.Package.VersionLocation.Column.End,
+		}
+	}
+
+	return packageLocations
 }

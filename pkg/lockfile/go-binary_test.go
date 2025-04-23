@@ -82,7 +82,7 @@ func TestExtractGoBinary_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "stdlib",
 			Version:        "1.21.10",
@@ -105,7 +105,7 @@ func TestExtractGoBinary_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "stdlib",
 			Version:        "1.21.10",

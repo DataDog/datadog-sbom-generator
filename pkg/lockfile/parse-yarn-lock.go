@@ -26,6 +26,7 @@ type YarnPackage struct {
 	Version        string
 	TargetVersions []string
 	Resolution     string
+	Location       models.FilePosition
 	Dependencies   []YarnDependency
 }
 
@@ -33,7 +34,7 @@ func shouldSkipYarnLine(line string) bool {
 	return line == "" || strings.HasPrefix(line, "#")
 }
 
-func parseYarnPackageGroup(group []string) YarnPackage {
+func parseYarnPackageGroup(group []string, line int, filename string) YarnPackage {
 	name, targetVersions := extractYarnPackageNameAndTargetVersions(group[0])
 
 	return YarnPackage{
@@ -42,16 +43,29 @@ func parseYarnPackageGroup(group []string) YarnPackage {
 		TargetVersions: targetVersions,
 		Resolution:     determineYarnPackageResolution(group),
 		Dependencies:   determineYarnPackageDependencies(group),
+		Location: models.FilePosition{
+			Filename: filename,
+			Line: models.Position{
+				Start: line - len(group),
+				End:   line,
+			},
+			Column: models.Position{
+				Start: 1,
+				End:   len(group[len(group)-1]),
+			},
+		},
 	}
 }
 
-func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
+func groupYarnPackageLines(scanner *bufio.Scanner, filename string) []YarnPackage {
 	var groups []YarnPackage
 	var group []string
 
 	var line string
+	lineCount := 0
 	for scanner.Scan() {
 		line = scanner.Text()
+		lineCount += 1
 
 		if shouldSkipYarnLine(line) {
 			continue
@@ -60,7 +74,7 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 		// represents the lineStart of a new dependency
 		if !strings.HasPrefix(line, " ") {
 			if len(group) > 0 {
-				groups = append(groups, parseYarnPackageGroup(group))
+				groups = append(groups, parseYarnPackageGroup(group, lineCount, filename))
 			}
 			group = make([]string, 0)
 		}
@@ -69,7 +83,7 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 	}
 
 	if len(group) > 0 {
-		groups = append(groups, parseYarnPackageGroup(group))
+		groups = append(groups, parseYarnPackageGroup(group, lineCount, filename))
 	}
 
 	return groups
@@ -269,13 +283,13 @@ or package name and target version and the value is the package definition in Ya
 This methods build the dependency tree by looking at the yarn dependencies definition and matching every transitive dependency
 with the index to get a pointer to the datadog-sbom-generator formatted child package
 */
-func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry string, dependencies map[string]YarnPackage, packagesIndex map[string]*PackageDetails) []*PackageDetails {
-	results := make([]*PackageDetails, 0)
+func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry string, dependencies map[string]YarnPackage, packagesIndex map[string]*models.PackageDetails) []*models.PackageDetails {
+	results := make([]*models.PackageDetails, 0)
 	pkg, ok := dependencies[rootPkgName+"@"+rootPkgTargetVersion]
 	if !ok {
 		pkg, ok = dependencies[rootPkgName+"@"+rootPkgRegistry+":"+rootPkgTargetVersion]
 		if !ok {
-			return []*PackageDetails{}
+			return []*models.PackageDetails{}
 		}
 	}
 
@@ -296,7 +310,7 @@ func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry stri
 	return results
 }
 
-func parseYarnPackage(dependency YarnPackage) PackageDetails {
+func parseYarnPackage(dependency YarnPackage) models.PackageDetails {
 	if dependency.Version == "" {
 		_, _ = fmt.Fprintf(
 			os.Stderr,
@@ -305,13 +319,14 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		)
 	}
 
-	return PackageDetails{
-		Name:           dependency.Name,
-		Version:        dependency.Version,
-		TargetVersions: dependency.TargetVersions,
-		PackageManager: models.Yarn,
-		Ecosystem:      YarnEcosystem,
-		Commit:         tryExtractCommit(dependency.Resolution),
+	return models.PackageDetails{
+		Name:                  dependency.Name,
+		Version:               dependency.Version,
+		TargetVersions:        dependency.TargetVersions,
+		PackageManager:        models.Yarn,
+		Ecosystem:             models.EcosystemNPM,
+		LockfileBlockLocation: dependency.Location,
+		Commit:                tryExtractCommit(dependency.Resolution),
 	}
 }
 
@@ -327,8 +342,8 @@ func indexByTargetVersion(packages []YarnPackage) map[string]YarnPackage {
 	return index
 }
 
-func indexByNameAndVersions(packages []PackageDetails) map[string]*PackageDetails {
-	result := make(map[string]*PackageDetails)
+func indexByNameAndVersions(packages []models.PackageDetails) map[string]*models.PackageDetails {
+	result := make(map[string]*models.PackageDetails)
 	for index, pkg := range packages {
 		result[pkg.Name+"@"+pkg.Version] = &packages[index]
 	}
@@ -344,20 +359,20 @@ func (e YarnLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "yarn.lock"
 }
 
-func (e YarnLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e YarnLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 
-	yarnPackages := groupYarnPackageLines(scanner)
+	yarnPackages := groupYarnPackageLines(scanner, f.Path())
 	yarnPackageIndex := indexByTargetVersion(yarnPackages)
 
 	// Use this index to build all subtrees (trees from each package)
 	// Then use all this in the matcher to know is-dev / is-direct and propagate it everywhere
 
 	if err := scanner.Err(); err != nil {
-		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
-	packages := make([]PackageDetails, 0, len(yarnPackages))
+	packages := make([]models.PackageDetails, 0, len(yarnPackages))
 
 	for _, yarnPackage := range yarnPackages {
 		if yarnPackage.Name == "__metadata" {
@@ -383,6 +398,6 @@ func init() {
 	registerExtractor("yarn.lock", YarnExtractor)
 }
 
-func ParseYarnLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseYarnLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, YarnExtractor)
 }

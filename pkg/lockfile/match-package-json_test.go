@@ -60,7 +60,7 @@ func TestPackageJSONMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "lodash",
 			PackageManager: models.NPM,
@@ -84,7 +84,7 @@ func TestPackageJSONMatcher_Match_TransitiveDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "commander",
 			PackageManager: models.NPM,
@@ -128,7 +128,7 @@ func TestPackageJSONMatcher_Match_NameConflict(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "aws-sdk-client-mock",
 			PackageManager: models.NPM,
@@ -157,7 +157,7 @@ func TestPackageJSONMatcher_Match_Resolutions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "fast-xml-parser",
 			Version:        "4.2.5",
@@ -194,7 +194,7 @@ func TestPackageJSONMatcher_Match_Target_Version(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "foo",
 			Version:        "1.5.3",

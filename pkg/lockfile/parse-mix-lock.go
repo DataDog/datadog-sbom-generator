@@ -12,20 +12,18 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const MixEcosystem Ecosystem = "Hex"
-
 type MixLockExtractor struct{}
 
 func (e MixLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "mix.lock"
 }
 
-func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e MixLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	re := cachedregexp.MustCompile(`^ +"(\w+)": \{.+,$`)
 
 	scanner := bufio.NewScanner(f)
 
-	var packages []PackageDetails
+	var packages []models.PackageDetails
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -64,17 +62,17 @@ func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			version = ""
 		}
 
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Hex,
-			Ecosystem:      MixEcosystem,
+			Ecosystem:      models.EcosystemHex,
 			Commit:         commit,
 		})
 	}
 
 	if err := scanner.Err(); err != nil {
-		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
 	return packages, nil
@@ -87,6 +85,6 @@ func init() {
 	registerExtractor("mix.lock", MixLockExtractor{})
 }
 
-func ParseMixLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseMixLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, MixLockExtractor{})
 }

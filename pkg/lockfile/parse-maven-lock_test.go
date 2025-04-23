@@ -70,7 +70,7 @@ func TestParseMavenLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseMavenLock(filepath.FromSlash("fixtures/maven/does-not-exist"))
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMavenLock_Invalid(t *testing.T) {
@@ -79,7 +79,7 @@ func TestParseMavenLock_Invalid(t *testing.T) {
 	packages, err := lockfile.ParseMavenLock(filepath.FromSlash("fixtures/maven/not-pom.txt"))
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMavenLock_InvalidSyntax(t *testing.T) {
@@ -88,7 +88,7 @@ func TestParseMavenLock_InvalidSyntax(t *testing.T) {
 	packages, err := lockfile.ParseMavenLock(filepath.FromSlash("fixtures/maven/invalid-syntax.xml"))
 
 	expectErrContaining(t, err, "XML syntax error")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMavenLock_NoPackages(t *testing.T) {
@@ -99,7 +99,7 @@ func TestParseMavenLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMavenLock_ShouldRemoveComments(t *testing.T) {
@@ -115,7 +115,7 @@ func TestParseMavenLock_ShouldRemoveComments(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
@@ -154,7 +154,7 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
@@ -237,7 +237,7 @@ func TestParseMavenLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
@@ -276,7 +276,7 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.activemq:activemq-amqp",
 			Version:        "5.16.5",
@@ -311,7 +311,7 @@ func TestParseMavenLock_OnePackageWithMultipleVersionVariable(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0-SNAPSHOT",
@@ -350,7 +350,7 @@ func TestParseMavenLock_TwoPackageWithMixedVersionDefinition(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.3.0",
@@ -411,7 +411,7 @@ func TestParseMavenLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
@@ -472,7 +472,7 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
@@ -533,7 +533,7 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
@@ -617,7 +617,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
@@ -767,7 +767,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
@@ -895,7 +895,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
@@ -1023,7 +1023,7 @@ func TestMavenLock_WithParent_Child_Project(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "1.0-CHILD-SNAPSHOT",
@@ -1064,7 +1064,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
@@ -1315,7 +1315,7 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "abc:xyz",
 			Version:        "1.2.3",
@@ -1378,7 +1378,7 @@ func TestParseMavenLock_WithUnusedDependencyManagementDependencies(t *testing.T)
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
@@ -1419,7 +1419,7 @@ func TestParseMavenLock_WithOverriddenDependencyVersions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "junit:junit",
 			Version:        "4.12",
@@ -1460,7 +1460,7 @@ func TestParseMavenLock_WithProjectVersionProperty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "dev.foo:bar",
 			Version:        "1.0-SNAPSHOT",
@@ -1521,7 +1521,7 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 	packages, err := lockfile.ParseMavenLock(path)
 	require.NoError(t, err)
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
@@ -1605,7 +1605,7 @@ func TestParseMavenLock_NoVersion(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "",
@@ -1625,7 +1625,7 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	packages, err := lockfile.ParseMavenLock(path)
 	require.NoError(t, err)
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-test",
 			Version:        "3.4.0",

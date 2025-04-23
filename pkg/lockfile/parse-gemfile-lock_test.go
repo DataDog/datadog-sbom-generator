@@ -66,7 +66,7 @@ func TestParseGemfileLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseGemfileLock("fixtures/bundler/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGemfileLock_NoSpecSection(t *testing.T) {
@@ -77,7 +77,7 @@ func TestParseGemfileLock_NoSpecSection(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGemfileLock_NoGemSection(t *testing.T) {
@@ -88,7 +88,7 @@ func TestParseGemfileLock_NoGemSection(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGemfileLock_NoGems(t *testing.T) {
@@ -99,7 +99,7 @@ func TestParseGemfileLock_NoGems(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGemfileLock_OneGem(t *testing.T) {
@@ -110,7 +110,7 @@ func TestParseGemfileLock_OneGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "ast",
 			Version:        "2.4.2",
@@ -129,7 +129,7 @@ func TestParseGemfileLock_SomeGems(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "coderay",
 			Version:        "1.1.3",
@@ -160,7 +160,7 @@ func TestParseGemfileLock_MultipleGems(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "bundler-audit",
 			Version:        "0.9.0.1",
@@ -211,7 +211,7 @@ func TestParseGemfileLock_Rails(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "actioncable",
 			Version:        "7.0.2.2",
@@ -500,7 +500,7 @@ func TestParseGemfileLock_Rubocop(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "ast",
 			Version:        "2.4.2",
@@ -573,7 +573,7 @@ func TestParseGemfileLock_HasLocalGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "backbone-on-rails",
 			Version:        "1.2.0.0",
@@ -766,7 +766,7 @@ func TestParseGemfileLock_HasGitGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "hanami-controller",
 			Version:        "2.0.0.alpha1",
@@ -814,7 +814,7 @@ func TestParseGemfileLock_PlatformSpecificDependencyIsParsed(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zeitwerk",
 			Version:        "2.6.0",

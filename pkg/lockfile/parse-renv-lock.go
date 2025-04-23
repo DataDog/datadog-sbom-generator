@@ -26,16 +26,16 @@ func (e RenvLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "renv.lock"
 }
 
-func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e RenvLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *RenvLockfile
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
+	packages := make([]models.PackageDetails, 0, len(parsedLockfile.Packages))
 
 	for _, pkg := range parsedLockfile.Packages {
 		// currently we only support CRAN
@@ -43,11 +43,11 @@ func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			continue
 		}
 
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           pkg.Package,
 			Version:        pkg.Version,
 			PackageManager: models.Renv,
-			Ecosystem:      CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		})
 	}
 
@@ -61,6 +61,6 @@ func init() {
 	registerExtractor("renv.lock", RenvLockExtractor{})
 }
 
-func ParseRenvLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseRenvLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, RenvLockExtractor{})
 }

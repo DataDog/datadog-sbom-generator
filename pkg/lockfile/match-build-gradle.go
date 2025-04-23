@@ -34,7 +34,7 @@ func (m BuildGradleMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 	return sourcefile, err
 }
 
-func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []models.PackageDetails) error {
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err

@@ -73,7 +73,7 @@ func TestParsePoetryLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParsePoetryLock("fixtures/poetry/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePoetryLock_InvalidToml(t *testing.T) {
@@ -82,7 +82,7 @@ func TestParsePoetryLock_InvalidToml(t *testing.T) {
 	packages, err := lockfile.ParsePoetryLock("fixtures/poetry/not-toml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePoetryLock_NoPackages(t *testing.T) {
@@ -94,7 +94,7 @@ func TestParsePoetryLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePoetryLock_OnePackage(t *testing.T) {
@@ -110,7 +110,7 @@ func TestParsePoetryLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",
@@ -155,7 +155,7 @@ func TestParsePoetryLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",
@@ -181,7 +181,7 @@ func TestParsePoetryLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "proto-plus",
 			Version:        "1.22.0",
@@ -210,7 +210,7 @@ func TestParsePoetryLock_PackageWithMetadata(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "emoji",
 			Version:        "2.0.0",
@@ -233,7 +233,7 @@ func TestParsePoetryLock_PackageWithGitSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "ike",
 			Version:        "0.2.0",
@@ -257,7 +257,7 @@ func TestParsePoetryLock_PackageWithLegacySource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "appdirs",
 			Version:        "1.4.4",
@@ -281,7 +281,7 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",

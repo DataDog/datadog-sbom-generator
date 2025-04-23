@@ -46,7 +46,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]models.PackageDetails, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -59,7 +59,7 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 	root := true
 
-	var scannedPackages []lockfile.PackageDetails
+	var scannedPackages []models.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(path string, info os.DirEntry, err error) error {
@@ -206,7 +206,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	var scannedPackages []lockfile.PackageDetails
+	var scannedPackages []models.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	if actions.Debug {
@@ -266,15 +266,15 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 // packageHasRangedVersion checks if the package version is a ranged version
 // which we do not support for now.
-func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
+func packageHasRangedVersion(scannedPackage models.PackageDetails) bool {
 	return strings.ContainsAny(scannedPackage.Version, ",><")
 }
 
 // sanitizeScannedPackages is used to sanitize scanned packages.
 // 1. filters our packages that have a ranged version
 // 2. creates a PURL for each package and drops the package if it cannot be created
-func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockfile.PackageDetails, []string) {
-	finalPackages := make([]lockfile.PackageDetails, 0, len(scannedPackages))
+func sanitizeScannedPackages(scannedPackages []models.PackageDetails) ([]models.PackageDetails, []string) {
+	finalPackages := make([]models.PackageDetails, 0, len(scannedPackages))
 	droppedReasons := make([]string, 0, len(scannedPackages))
 
 	for _, pkg := range scannedPackages {
@@ -296,7 +296,7 @@ func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockf
 }
 
 // getDirectPackagePurls returns a list of PURLs for packages that are directly imported.
-func getDirectPackagePurls(scannedPackages []lockfile.PackageDetails) []string {
+func getDirectPackagePurls(scannedPackages []models.PackageDetails) []string {
 	uniquePurls := make(map[string]struct{})
 	for _, scannedPackage := range scannedPackages {
 		if scannedPackage.IsDirect {

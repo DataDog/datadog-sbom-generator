@@ -15,7 +15,7 @@ func TestParseConanLock_v1_revisions_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseConanLock("fixtures/conan/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseConanLock_v1_revisions_InvalidJson(t *testing.T) {
@@ -24,7 +24,7 @@ func TestParseConanLock_v1_revisions_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParseConanLock("fixtures/conan/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseConanLock_v1_revisions_NoPackages(t *testing.T) {
@@ -36,7 +36,7 @@ func TestParseConanLock_v1_revisions_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseConanLock_v1_revisions_OnePackage(t *testing.T) {
@@ -48,7 +48,7 @@ func TestParseConanLock_v1_revisions_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -67,7 +67,7 @@ func TestParseConanLock_v1_revisions_NoName(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -86,7 +86,7 @@ func TestParseConanLock_v1_revisions_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -111,7 +111,7 @@ func TestParseConanLock_v1_revisions_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.13",
@@ -154,7 +154,7 @@ func TestParseConanLock_v1_revisions_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "ninja",
 			Version:        "1.11.1",

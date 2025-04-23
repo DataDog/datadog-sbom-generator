@@ -57,7 +57,7 @@ func TestPyprojectTomlMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,
@@ -68,7 +68,7 @@ func TestPyprojectTomlMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,
@@ -100,7 +100,7 @@ func TestPyprojectTomlMatcher_Match_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,
@@ -111,7 +111,7 @@ func TestPyprojectTomlMatcher_Match_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,
@@ -144,7 +144,7 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,
@@ -163,7 +163,7 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "numpy",
 			PackageManager: models.Poetry,

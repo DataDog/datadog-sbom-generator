@@ -14,7 +14,7 @@ func (m PipfileMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 	return lockfile.Open("Pipfile")
 }
 
-func (m PipfileMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+func (m PipfileMatcher) Match(sourcefile DepFile, packages []models.PackageDetails) error {
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err

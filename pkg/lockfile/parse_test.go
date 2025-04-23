@@ -190,7 +190,7 @@ func TestLockfile_String(t *testing.T) {
 	}, "\n")
 
 	lockf := lockfile.Lockfile{
-		Packages: []lockfile.PackageDetails{
+		Packages: []models.PackageDetails{
 			{
 				Name:           "addr2line",
 				Version:        "0.15.2",

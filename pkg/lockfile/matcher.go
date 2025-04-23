@@ -1,11 +1,13 @@
 package lockfile
 
+import "github.com/DataDog/datadog-sbom-generator/pkg/models"
+
 type Matcher interface {
 	GetSourceFile(lockfile DepFile) (DepFile, error)
-	Match(sourceFile DepFile, packages []PackageDetails) error
+	Match(sourceFile DepFile, packages []models.PackageDetails) error
 }
 
-func matchWithFile(lockfile DepFile, packages []PackageDetails, matcher Matcher) error {
+func matchWithFile(lockfile DepFile, packages []models.PackageDetails, matcher Matcher) error {
 	sourceFile, err := matcher.GetSourceFile(lockfile)
 	if err != nil {
 		return err

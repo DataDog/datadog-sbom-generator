@@ -34,7 +34,7 @@ func (e GoBinaryExtractor) ShouldExtract(path string) bool {
 	return true
 }
 
-func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e GoBinaryExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var readerAt io.ReaderAt
 	if fileWithReaderAt, ok := f.(io.ReaderAt); ok {
 		readerAt = fileWithReaderAt
@@ -42,21 +42,21 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		buf := bytes.NewBuffer([]byte{})
 		_, err := io.Copy(buf, f)
 		if err != nil {
-			return []PackageDetails{}, err
+			return []models.PackageDetails{}, err
 		}
 		readerAt = bytes.NewReader(buf.Bytes())
 	}
 
 	info, err := buildinfo.Read(readerAt)
 	if err != nil {
-		return []PackageDetails{}, ErrIncompatibleFileFormat
+		return []models.PackageDetails{}, ErrIncompatibleFileFormat
 	}
 
-	pkgs := make([]PackageDetails, 0, len(info.Deps)+1)
-	pkgs = append(pkgs, PackageDetails{
+	pkgs := make([]models.PackageDetails, 0, len(info.Deps)+1)
+	pkgs = append(pkgs, models.PackageDetails{
 		Name:           "stdlib",
 		Version:        strings.TrimPrefix(info.GoVersion, "go"),
-		Ecosystem:      GoEcosystem,
+		Ecosystem:      models.EcosystemGo,
 		PackageManager: models.Golang,
 	})
 
@@ -64,10 +64,10 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		if dep.Replace != nil { // Use the replaced dep if it has been replaced
 			dep = dep.Replace
 		}
-		pkgs = append(pkgs, PackageDetails{
+		pkgs = append(pkgs, models.PackageDetails{
 			Name:           dep.Path,
 			Version:        strings.TrimPrefix(dep.Version, "v"),
-			Ecosystem:      GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			PackageManager: models.Golang,
 		})
 	}

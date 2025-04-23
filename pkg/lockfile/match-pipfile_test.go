@@ -57,7 +57,7 @@ func TestPipfileMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "markupsafe",
 			PackageManager: models.Requirements,
@@ -68,7 +68,7 @@ func TestPipfileMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markupsafe",
 			PackageManager: models.Requirements,
@@ -100,7 +100,7 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "asgiref",
 			PackageManager: models.Requirements,
@@ -127,7 +127,7 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "asgiref",
 			PackageManager: models.Requirements,

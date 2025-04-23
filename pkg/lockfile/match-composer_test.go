@@ -60,7 +60,7 @@ func TestComposerMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "brick/math",
 			Version:        "0.12.9",

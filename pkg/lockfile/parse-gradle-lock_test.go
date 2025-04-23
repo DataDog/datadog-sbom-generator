@@ -98,7 +98,7 @@ func TestParseGradleLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseGradleLock("fixtures/gradle-lockfile/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleLock_OnlyComments(t *testing.T) {
@@ -110,7 +110,7 @@ func TestParseGradleLock_OnlyComments(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleLock_EmptyStatement(t *testing.T) {
@@ -122,7 +122,7 @@ func TestParseGradleLock_EmptyStatement(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleLock_OnePackage(t *testing.T) {
@@ -138,7 +138,7 @@ func TestParseGradleLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -184,7 +184,7 @@ func TestParseGradleLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -211,7 +211,7 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.boot:spring-boot-autoconfigure",
 			Version:        "2.7.4",
@@ -263,7 +263,7 @@ func TestParseGradleLock_WithInvalidLines(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.boot:spring-boot-autoconfigure",
 			Version:        "2.7.4",

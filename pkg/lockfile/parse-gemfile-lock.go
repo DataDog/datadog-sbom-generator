@@ -12,8 +12,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const BundlerEcosystem Ecosystem = "RubyGems"
-
 const (
 	lockfileSectionBUNDLED      = "BUNDLED WITH"
 	lockfileSectionDEPENDENCIES = "DEPENDENCIES"
@@ -37,7 +35,7 @@ const (
 
 type gemfileLockfileParser struct {
 	state          parserState
-	dependencies   []PackageDetails
+	dependencies   []models.PackageDetails
 	bundlerVersion string
 	rubyVersion    string
 
@@ -68,11 +66,11 @@ func (parser *gemfileLockfileParser) isSourceSection(line string) bool {
 
 func (parser *gemfileLockfileParser) addDependency(name string, version string) {
 	if !parser.isInDepSection {
-		parser.dependencies = append(parser.dependencies, PackageDetails{
+		parser.dependencies = append(parser.dependencies, models.PackageDetails{
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Bundler,
-			Ecosystem:      BundlerEcosystem,
+			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 		})
 
@@ -92,11 +90,11 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 	}
 
 	if !found {
-		parser.dependencies = append(parser.dependencies, PackageDetails{
+		parser.dependencies = append(parser.dependencies, models.PackageDetails{
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Bundler,
-			Ecosystem:      BundlerEcosystem,
+			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
 		})
@@ -214,7 +212,7 @@ func (e GemfileLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "Gemfile.lock"
 }
 
-func (e GemfileLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e GemfileLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parser gemfileLockfileParser
 
 	scanner := bufio.NewScanner(f)
@@ -224,7 +222,7 @@ func (e GemfileLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
 	return parser.dependencies, nil
@@ -242,6 +240,6 @@ func init() {
 	registerExtractor("Gemfile.lock", GemfileExtractor)
 }
 
-func ParseGemfileLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseGemfileLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, GemfileExtractor)
 }

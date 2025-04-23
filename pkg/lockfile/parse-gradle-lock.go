@@ -21,10 +21,10 @@ func isGradleLockFileDepLine(line string) bool {
 	return !ret
 }
 
-func parseToGradlePackageDetail(line string) (PackageDetails, error) {
+func parseToGradlePackageDetail(line string) (models.PackageDetails, error) {
 	parts := strings.SplitN(line, ":", 3)
 	if len(parts) < 3 {
-		return PackageDetails{}, fmt.Errorf("invalid line in gradle lockfile: %s", line)
+		return models.PackageDetails{}, fmt.Errorf("invalid line in gradle lockfile: %s", line)
 	}
 
 	var scopes []string
@@ -35,12 +35,12 @@ func parseToGradlePackageDetail(line string) (PackageDetails, error) {
 		scopes = strings.Split(scopesStr, ",")
 	}
 
-	return PackageDetails{
+	return models.PackageDetails{
 		Name:           fmt.Sprintf("%s:%s", group, artifact),
 		Version:        version,
 		PackageManager: models.Gradle,
 		DepGroups:      scopes,
-		Ecosystem:      MavenEcosystem,
+		Ecosystem:      models.EcosystemMaven,
 	}, nil
 }
 
@@ -60,8 +60,8 @@ func (e GradleLockExtractor) ShouldExtract(path string) bool {
 	return false
 }
 
-func (e GradleLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
-	pkgs := make([]PackageDetails, 0)
+func (e GradleLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
+	pkgs := make([]models.PackageDetails, 0)
 	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
@@ -79,7 +79,7 @@ func (e GradleLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return []PackageDetails{}, fmt.Errorf("failed to read: %w", err)
+		return []models.PackageDetails{}, fmt.Errorf("failed to read: %w", err)
 	}
 
 	return pkgs, nil
@@ -94,6 +94,6 @@ func init() {
 	registerExtractor("gradle.lockfile", GradleExtractor)
 }
 
-func ParseGradleLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseGradleLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, GradleExtractor)
 }

@@ -54,7 +54,7 @@ type PnpmLockfile struct {
 }
 
 type PnpmDirectDependency struct {
-	Pkg PackageDetails
+	Pkg models.PackageDetails
 	Dep PnpmLockDependency
 }
 
@@ -95,7 +95,7 @@ func mergeSlices(slices ...[]string) []string {
 	return maps.Keys(result)
 }
 
-func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]PackageDetails) map[string]PackageDetails {
+func addDependencyToPackageDetails(dependency models.PackageDetails, deps map[string]models.PackageDetails) map[string]models.PackageDetails {
 	key := dependency.Name + "@" + dependency.Version
 
 	if dep, exists := deps[key]; exists {
@@ -117,7 +117,7 @@ func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]Pa
 	return deps
 }
 
-func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, targetedKey string, deps map[string]PackageDetails) map[string]PackageDetails {
+func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, targetedKey string, deps map[string]models.PackageDetails) map[string]models.PackageDetails {
 	// Need to look at dependencies
 	visitedSnapshots := make(map[string]bool)
 	snapshotQueue := make([]string, 0)
@@ -139,11 +139,11 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 		}
 
 		for depName, depVersion := range snapshot.Dependencies {
-			transitiveDep := PackageDetails{
+			transitiveDep := models.PackageDetails{
 				Name:           depName,
 				Version:        getCleanedVersion(lockfile, depName, depVersion),
 				Commit:         getCommitFromVersion(depVersion),
-				Ecosystem:      PnpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 				DepGroups:      root.Pkg.DepGroups,
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
@@ -154,11 +154,11 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 		}
 
 		for depName, depVersion := range snapshot.OptionalDependencies {
-			transitiveDep := PackageDetails{
+			transitiveDep := models.PackageDetails{
 				Name:           depName,
 				Version:        getCleanedVersion(lockfile, depName, depVersion),
 				Commit:         getCommitFromVersion(depVersion),
-				Ecosystem:      PnpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 				DepGroups:      root.Pkg.DepGroups,
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
@@ -175,12 +175,12 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string) []PnpmDirectDependency {
 	for dependencyName, dependency := range dependencies {
 		roots = append(roots, PnpmDirectDependency{
-			Pkg: PackageDetails{
+			Pkg: models.PackageDetails{
 				Name:           dependencyName,
 				Version:        getCleanedVersion(lockfile, dependencyName, dependency.Version),
 				Commit:         getCommitFromVersion(dependency.Version),
 				TargetVersions: []string{dependency.Specifier},
-				Ecosystem:      PnpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 				DepGroups:      []string{depGroup},
 				PackageManager: models.Pnpm,
 				IsDirect:       true,
@@ -192,7 +192,7 @@ func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependen
 	return roots
 }
 
-func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
+func parsePnpmLock(lockfile PnpmLockfile) []models.PackageDetails {
 	// First create the deps tree
 	// To do so, first look at the packages list, for each package, look into the importers
 	// If present in the importers => its direct and we know its scope
@@ -206,7 +206,7 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.DevDependencies, "dev")
 	}
 
-	packages := make(map[string]PackageDetails)
+	packages := make(map[string]models.PackageDetails)
 	for _, direct := range directDependencies {
 		packages = addDependencyToPackageDetails(direct.Pkg, packages)
 		packages = extractTransitiveDeps(lockfile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages)
@@ -215,13 +215,13 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 	return maps.Values(packages)
 }
 
-func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e PnpmLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *PnpmLockfile
 
 	err := yaml.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil && !errors.Is(err, io.EOF) {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
 	// this will happen if the file is empty
@@ -234,7 +234,7 @@ func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	if lockfileVersion < 7.0 {
 		file, err := f.Open(f.Path())
 		if err != nil {
-			return []PackageDetails{}, err
+			return []models.PackageDetails{}, err
 		}
 		defer file.Close()
 
@@ -253,6 +253,6 @@ func init() {
 	registerExtractor("pnpm-lock.yaml", PnpmExtractor)
 }
 
-func ParsePnpmLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParsePnpmLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, PnpmExtractor)
 }

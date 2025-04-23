@@ -27,23 +27,23 @@ func (e CargoLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "Cargo.lock"
 }
 
-func (e CargoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e CargoLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *CargoLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
+	packages := make([]models.PackageDetails, 0, len(parsedLockfile.Packages))
 
 	for _, lockPackage := range parsedLockfile.Packages {
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           lockPackage.Name,
 			Version:        lockPackage.Version,
 			PackageManager: models.Crates,
-			Ecosystem:      CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		})
 	}
 
@@ -57,6 +57,6 @@ func init() {
 	registerExtractor("Cargo.lock", CargoLockExtractor{})
 }
 
-func ParseCargoLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseCargoLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, CargoLockExtractor{})
 }

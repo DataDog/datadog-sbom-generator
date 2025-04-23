@@ -73,7 +73,7 @@ func TestParseRequirementsTxt_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseRequirementsTxt("fixtures/pip/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRequirementsTxt_Empty(t *testing.T) {
@@ -84,7 +84,7 @@ func TestParseRequirementsTxt_Empty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRequirementsTxt_CommentsOnly(t *testing.T) {
@@ -95,7 +95,7 @@ func TestParseRequirementsTxt_CommentsOnly(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRequirementsTxt_OneRequirementUnconstrained(t *testing.T) {
@@ -111,7 +111,7 @@ func TestParseRequirementsTxt_OneRequirementUnconstrained(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "flask",
 			Version:        "",
@@ -146,7 +146,7 @@ func TestParseRequirementsTxt_OneRequirementConstrained(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "django",
 			Version:        "2.2.24",
@@ -186,7 +186,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "astroid",
 			Version:        "2.5.1",
@@ -496,7 +496,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "flask",
 			Version:        "",
@@ -673,7 +673,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "pytest",
 			Version:        "",
@@ -890,7 +890,7 @@ func TestParseRequirementsTxt_WithAddedSupport(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "twisted",
 			Version:        "20.3.0",
@@ -929,7 +929,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "zope-interface",
 			Version:        "5.4.0",
@@ -1015,7 +1015,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "flask",
 			Version:        "",
@@ -1230,7 +1230,7 @@ func TestParseRequirementsTxt_WithBadROption(t *testing.T) {
 	packages, err := lockfile.ParseRequirementsTxt("fixtures/pip/with-bad-r-option.txt")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRequirementsTxt_WithURLROption(t *testing.T) {
@@ -1246,7 +1246,7 @@ func TestParseRequirementsTxt_WithURLROption(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "requests",
 			Version:        "1.2.3",
@@ -1289,7 +1289,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "django",
 			Version:        "0.1.0",
@@ -1398,7 +1398,7 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "pandas",
 			Version:        "0.23.4",
@@ -1463,7 +1463,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "cyclic-r-complex",
 			Version:        "1",
@@ -1549,7 +1549,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "boto3",
 			Version:        "1.26.121",
@@ -1658,7 +1658,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "foo",
 			Version:        "1.2.3",
@@ -1767,7 +1767,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "aa",
 			Version:        "",
@@ -1846,7 +1846,7 @@ func TestParseRequirementsTxt_GitUrlPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "pyroxy",
 			Version:        "",
@@ -1885,7 +1885,7 @@ func TestParseRequirementsTxt_WhlUrlPackages(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "pandas",
 			Version:        "2.2.1",
@@ -1928,7 +1928,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 	}
 
 	// certify, charset-normalizer, idna, requests, urllib3
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "certifi",
 			Version:        "2024.8.30",
@@ -2057,7 +2057,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		// indirect, because comment specifies it's a dependency of requests
 		{
 			Name:           "certifi",

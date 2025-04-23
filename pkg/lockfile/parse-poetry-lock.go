@@ -36,24 +36,24 @@ func (e PoetryLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "poetry.lock"
 }
 
-func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e PoetryLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *PoetryLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
+	packages := make([]models.PackageDetails, 0, len(parsedLockfile.Packages))
 
 	for _, lockPackage := range parsedLockfile.Packages {
-		pkgDetails := PackageDetails{
+		pkgDetails := models.PackageDetails{
 			Name:           lockPackage.Name,
 			Version:        lockPackage.Version,
 			Commit:         lockPackage.Source.Commit,
 			PackageManager: models.Poetry,
-			Ecosystem:      PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		}
 		if lockPackage.Optional {
 			pkgDetails.DepGroups = append(pkgDetails.DepGroups, "optional")
@@ -73,6 +73,6 @@ func init() {
 	registerExtractor("poetry.lock", PoetryExtractor)
 }
 
-func ParsePoetryLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParsePoetryLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, PoetryExtractor)
 }

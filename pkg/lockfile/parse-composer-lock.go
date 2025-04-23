@@ -31,38 +31,38 @@ func (e ComposerLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "composer.lock"
 }
 
-func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e ComposerLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *ComposerLock
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
 	packages := make(
-		[]PackageDetails,
+		[]models.PackageDetails,
 		0,
 		// len cannot return negative numbers, but the types can't reflect that
 		uint64(len(parsedLockfile.Packages))+uint64(len(parsedLockfile.PackagesDev)),
 	)
 
 	for _, composerPackage := range parsedLockfile.Packages {
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           composerPackage.Name,
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
-			Ecosystem:      ComposerEcosystem,
+			Ecosystem:      models.EcosystemPackagist,
 		})
 	}
 
 	for _, composerPackage := range parsedLockfile.PackagesDev {
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           composerPackage.Name,
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
-			Ecosystem:      ComposerEcosystem,
+			Ecosystem:      models.EcosystemPackagist,
 			DepGroups:      []string{"dev"},
 		})
 	}
@@ -79,6 +79,6 @@ func init() {
 	registerExtractor("composer.lock", ComposerExtractor)
 }
 
-func ParseComposerLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseComposerLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, ComposerExtractor)
 }

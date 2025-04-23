@@ -8,17 +8,6 @@ import (
 
 const gemfileFilename = "Gemfile"
 
-// Source: https://www.bundler.cn/guides/groups.html
-var knownBundlerDevelopmentGroups = map[string]struct{}{
-	"dev":         {},
-	"development": {},
-	"test":        {},
-	"ci":          {},
-	"cucumber":    {},
-	"linting":     {},
-	"rubocop":     {},
-}
-
 type gemMetadata struct {
 	name          string
 	groups        []string
@@ -40,7 +29,7 @@ func (matcher GemfileMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 	return file, err
 }
 
-func (matcher GemfileMatcher) Match(sourceFile DepFile, packages []PackageDetails) error {
+func (matcher GemfileMatcher) Match(sourceFile DepFile, packages []models.PackageDetails) error {
 	packagesByName := indexPackages(packages)
 
 	treeResult, err := ParseFile(sourceFile, Ruby)
@@ -210,8 +199,8 @@ func findGroupsInPairs(node *Node) ([]string, error) {
 	return groups, nil
 }
 
-func indexPackages(packages []PackageDetails) map[string]*PackageDetails {
-	result := make(map[string]*PackageDetails)
+func indexPackages(packages []models.PackageDetails) map[string]*models.PackageDetails {
+	result := make(map[string]*models.PackageDetails)
 	for index, pkg := range packages {
 		result[pkg.Name] = &packages[index]
 	}
@@ -219,7 +208,7 @@ func indexPackages(packages []PackageDetails) map[string]*PackageDetails {
 	return result
 }
 
-func enrichPackagesWithLocation(sourceFile DepFile, gems []gemMetadata, packagesByName map[string]*PackageDetails) {
+func enrichPackagesWithLocation(sourceFile DepFile, gems []gemMetadata, packagesByName map[string]*models.PackageDetails) {
 	for _, gem := range gems {
 		pkg, ok := packagesByName[gem.name]
 		// If packages exist in the Gemfile but not in the Gemfile.lock, we skip the package as we treat the lockfile as

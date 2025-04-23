@@ -41,7 +41,7 @@ func (matcher GemspecFileMatcher) GetSourceFile(lockfile DepFile) (DepFile, erro
 	return nil, nil
 }
 
-func (matcher GemspecFileMatcher) Match(sourceFile DepFile, packages []PackageDetails) error {
+func (matcher GemspecFileMatcher) Match(sourceFile DepFile, packages []models.PackageDetails) error {
 	packagesByName := indexPackages(packages)
 
 	treeResult, err := ParseFile(sourceFile, Ruby)
@@ -132,7 +132,7 @@ func (matcher GemspecFileMatcher) findGemspecs(node *Node) ([]gemspecMetadata, e
 	return gems, nil
 }
 
-func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile, gems []gemspecMetadata, packagesByName map[string]*PackageDetails) {
+func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile, gems []gemspecMetadata, packagesByName map[string]*models.PackageDetails) {
 	for _, gem := range gems {
 		pkg := packagesByName[gem.name]
 
@@ -154,7 +154,7 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile,
 			}
 		}
 		if gem.isDev {
-			pkg.DepGroups = []string{string(DepGroupDev)}
+			pkg.DepGroups = []string{string(models.DepGroupDev)}
 		}
 	}
 }

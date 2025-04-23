@@ -27,7 +27,7 @@ func TestParseNpmLock_v2_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseNpmLock(path)
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNpmLock_v2_InvalidJson(t *testing.T) {
@@ -41,7 +41,7 @@ func TestParseNpmLock_v2_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParseNpmLock(path)
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNpmLock_v2_NoPackages(t *testing.T) {
@@ -57,7 +57,7 @@ func TestParseNpmLock_v2_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNpmLock_v2_OnePackage(t *testing.T) {
@@ -73,7 +73,7 @@ func TestParseNpmLock_v2_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -120,7 +120,7 @@ func TestParseNpmLock_v2_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -148,7 +148,7 @@ func TestParseNpmLock_v2_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -173,7 +173,7 @@ func TestParseNpmLock_v2_LinkDependency(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -198,7 +198,7 @@ func TestParseNpmLock_v2_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -231,7 +231,7 @@ func TestParseNpmLock_v2_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -262,7 +262,7 @@ func TestParseNpmLock_v2_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "postcss",
 			Version:        "6.0.23",
@@ -314,7 +314,7 @@ func TestParseNpmLock_v2_NestedDependenciesDup(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "supports-color",
 			Version:        "6.1.0",
@@ -345,7 +345,7 @@ func TestParseNpmLock_v2_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@segment/analytics.js-integration-facebook-pixel",
 			Version:        "2.4.1",
@@ -487,7 +487,7 @@ func TestParseNpmLock_v2_Files(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "etag",
 			Version:        "1.8.0",
@@ -529,7 +529,7 @@ func TestParseNpmLock_v2_Alias(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@babel/code-frame",
 			Version:        "7.0.0",
@@ -570,7 +570,7 @@ func TestParseNpmLock_v2_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -597,7 +597,7 @@ func TestParseNpmLock_v2_SamePackageDifferentGroups(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "eslint",
 			Version:        "1.2.3",

@@ -7,7 +7,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-func ParseOSVScannerResults(pathToLockfile string) ([]PackageDetails, error) {
+func ParseOSVScannerResults(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, OSVScannerResultsExtractor{})
 }
 
@@ -18,7 +18,7 @@ func (e OSVScannerResultsExtractor) ShouldExtract(path string) bool {
 	return false
 }
 
-func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	parsedResults := models.VulnerabilityResults{}
 	err := json.NewDecoder(f).Decode(&parsedResults)
 
@@ -26,20 +26,20 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 		return nil, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	packages := []PackageDetails{}
+	packages := []models.PackageDetails{}
 	for _, res := range parsedResults.Results {
 		for _, pkg := range res.Packages {
 			if pkg.Package.Commit != "" { // Prioritize results
-				packages = append(packages, PackageDetails{
+				packages = append(packages, models.PackageDetails{
 					Commit:         pkg.Package.Commit,
 					Name:           pkg.Package.Name,
 					PackageManager: models.Unknown,
 				})
 			} else {
-				packages = append(packages, PackageDetails{
+				packages = append(packages, models.PackageDetails{
 					Name:           pkg.Package.Name,
 					PackageManager: models.Unknown,
-					Ecosystem:      Ecosystem(pkg.Package.Ecosystem),
+					Ecosystem:      pkg.Package.Ecosystem,
 					Version:        pkg.Package.Version,
 				})
 			}

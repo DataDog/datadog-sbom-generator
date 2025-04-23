@@ -98,7 +98,7 @@ func TestParseGradleVerificationMetadata_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseGradleVerificationMetadata("fixtures/gradle-verification-metadata/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleVerificationMetadata_InvalidXml(t *testing.T) {
@@ -107,7 +107,7 @@ func TestParseGradleVerificationMetadata_InvalidXml(t *testing.T) {
 	packages, err := lockfile.ParseGradleVerificationMetadata("fixtures/gradle-verification-metadata/not-xml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleVerificationMetadata_NoPackages(t *testing.T) {
@@ -119,7 +119,7 @@ func TestParseGradleVerificationMetadata_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGradleVerificationMetadata_OnePackage(t *testing.T) {
@@ -131,7 +131,7 @@ func TestParseGradleVerificationMetadata_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.pdfbox:pdfbox",
 			Version:        "2.0.17",
@@ -176,7 +176,7 @@ func TestParseGradleVerificationMetadata_OnePackage_MatcherFailed(t *testing.T) 
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.pdfbox:pdfbox",
 			Version:        "2.0.17",
@@ -198,7 +198,7 @@ func TestParseGradleVerificationMetadata_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.apache.pdfbox:pdfbox",
 			Version:        "2.0.17",
@@ -223,7 +223,7 @@ func TestParseGradleVerificationMetadata_MultipleVersions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "androidx.activity:activity",
 			Version:        "1.2.1",
@@ -344,7 +344,7 @@ func TestParseGradleVerificationMetadata_Complex(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "com.google:google",
 			Version:        "1",

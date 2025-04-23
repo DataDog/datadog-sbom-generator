@@ -2,6 +2,7 @@ package lockfile
 
 import (
 	"encoding/json"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"io"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
@@ -82,7 +83,7 @@ To work around this limitation, we are pre-filling the structure with all the fi
   - The line offset to be able to compute the line of any found dependencies in the file
   - And a list of pointer to the original PackageDetails extracted by the parser to be able to modify them with the json section content
 */
-func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []models.PackageDetails) error {
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err
@@ -115,7 +116,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 			},
 		},
 	}
-	packagesPtr := make([]*PackageDetails, len(packages))
+	packagesPtr := make([]*models.PackageDetails, len(packages))
 	for index := range packages {
 		packagesPtr[index] = &packages[index]
 	}

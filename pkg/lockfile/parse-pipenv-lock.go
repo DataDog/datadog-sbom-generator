@@ -29,16 +29,16 @@ func (e PipenvLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "Pipfile.lock"
 }
 
-func (e PipenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e PipenvLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *PipenvLock
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	details := make(map[string]PackageDetails)
+	details := make(map[string]models.PackageDetails)
 
 	addPkgDetails(details, parsedLockfile.Packages, "")
 	addPkgDetails(details, parsedLockfile.PackagesDev, "dev")
@@ -46,7 +46,7 @@ func (e PipenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	return maps.Values(details), nil
 }
 
-func addPkgDetails(details map[string]PackageDetails, packages map[string]PipenvPackage, group string) {
+func addPkgDetails(details map[string]models.PackageDetails, packages map[string]PipenvPackage, group string) {
 	for name, pipenvPackage := range packages {
 		if pipenvPackage.Version == "" {
 			continue
@@ -55,11 +55,11 @@ func addPkgDetails(details map[string]PackageDetails, packages map[string]Pipenv
 		version := pipenvPackage.Version[2:]
 
 		if _, ok := details[name+"@"+version]; !ok {
-			pkgDetails := PackageDetails{
+			pkgDetails := models.PackageDetails{
 				Name:           name,
 				Version:        version,
 				PackageManager: models.Pipfile,
-				Ecosystem:      PipenvEcosystem,
+				Ecosystem:      models.EcosystemPyPI,
 			}
 			if group != "" {
 				pkgDetails.DepGroups = append(pkgDetails.DepGroups, group)
@@ -78,6 +78,6 @@ func init() {
 	registerExtractor("Pipfile.lock", PipenvExtractor)
 }
 
-func ParsePipenvLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParsePipenvLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, PipenvExtractor)
 }

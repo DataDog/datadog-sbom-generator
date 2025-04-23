@@ -59,7 +59,7 @@ func TestGemfileMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "RedCloth",
 			Version:        "4.2.9",
@@ -71,7 +71,7 @@ func TestGemfileMatcher_Match_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "RedCloth",
 			Version:        "4.2.9",
@@ -103,7 +103,7 @@ func TestGemfileMatcher_Match_Groups(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "base64",
 			Version:        "0.2.0",

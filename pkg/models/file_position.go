@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type Position struct {
 	Start int `json:"start"`
 	End   int `json:"end"`
@@ -37,4 +39,8 @@ func (p *FilePosition) GetNestedDependencies() map[string]*FilePosition {
 
 func (p *FilePosition) IsStartSet() bool {
 	return p.Line.Start != 0 && p.Column.Start != 0
+}
+
+func (p *FilePosition) ToString() string {
+	return fmt.Sprintf("%s:%d:%d:%d:%d", p.Filename, p.Line.Start, p.Line.End, p.Column.Start, p.Column.End)
 }

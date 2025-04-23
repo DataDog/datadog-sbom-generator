@@ -66,7 +66,7 @@ func TestParseCargoLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseCargoLock("fixtures/cargo/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseCargoLock_InvalidToml(t *testing.T) {
@@ -75,7 +75,7 @@ func TestParseCargoLock_InvalidToml(t *testing.T) {
 	packages, err := lockfile.ParseCargoLock("fixtures/cargo/not-toml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseCargoLock_NoPackages(t *testing.T) {
@@ -87,7 +87,7 @@ func TestParseCargoLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseCargoLock_OnePackage(t *testing.T) {
@@ -99,7 +99,7 @@ func TestParseCargoLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "addr2line",
 			Version:        "0.15.2",
@@ -118,7 +118,7 @@ func TestParseCargoLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "addr2line",
 			Version:        "0.15.2",
@@ -143,7 +143,7 @@ func TestParseCargoLock_TwoPackagesWithLocal(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "addr2line",
 			Version:        "0.15.2",
@@ -168,7 +168,7 @@ func TestParseCargoLock_PackageWithBuildString(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "wasi",
 			Version:        "0.10.2+wasi-snapshot-preview1",

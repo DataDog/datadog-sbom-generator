@@ -14,7 +14,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_InvalidJson(t *testing.T) {
 	packages, err := testParsingNodeModules(t, "fixtures/npm/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestNodeModulesExtractor_Extract_npm_v1_NoPackages(t *testing.T) {
@@ -25,7 +25,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestNodeModulesExtractor_Extract_npm_v1_OnePackage(t *testing.T) {
@@ -36,7 +36,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -55,7 +55,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -74,7 +74,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -100,7 +100,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -126,7 +126,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "postcss",
 			Version:        "6.0.23",
@@ -178,7 +178,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependenciesDup(t *testing.T)
 		t.Errorf("Expected to get 39 packages, but got %d", len(packages))
 	}
 
-	expectPackage(t, packages, lockfile.PackageDetails{
+	expectPackage(t, packages, models.PackageDetails{
 		Name:           "supports-color",
 		Version:        "6.1.0",
 		PackageManager: models.NPM,
@@ -186,7 +186,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependenciesDup(t *testing.T)
 		DepGroups:      []string{"prod"},
 	})
 
-	expectPackage(t, packages, lockfile.PackageDetails{
+	expectPackage(t, packages, models.PackageDetails{
 		Name:           "supports-color",
 		Version:        "5.5.0",
 		PackageManager: models.NPM,
@@ -194,7 +194,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependenciesDup(t *testing.T)
 		DepGroups:      []string{"prod"},
 	})
 
-	expectPackage(t, packages, lockfile.PackageDetails{
+	expectPackage(t, packages, models.PackageDetails{
 		Name:           "supports-color",
 		Version:        "2.0.0",
 		PackageManager: models.NPM,
@@ -211,7 +211,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "@segment/analytics.js-integration-facebook-pixel",
 			Version:        "",
@@ -343,7 +343,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_Files(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "lodash",
 			Version:        "1.3.1",
@@ -371,7 +371,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_Alias(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@babel/code-frame",
 			Version:        "7.0.0",
@@ -404,7 +404,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",

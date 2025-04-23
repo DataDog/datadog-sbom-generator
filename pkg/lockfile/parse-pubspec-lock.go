@@ -73,27 +73,27 @@ func (e PubspecLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "pubspec.lock"
 }
 
-func (e PubspecLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e PubspecLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *PubspecLockfile
 
 	err := yaml.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil && !errors.Is(err, io.EOF) {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 	if parsedLockfile == nil {
-		return []PackageDetails{}, nil
+		return []models.PackageDetails{}, nil
 	}
 
-	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
+	packages := make([]models.PackageDetails, 0, len(parsedLockfile.Packages))
 
 	for name, pkg := range parsedLockfile.Packages {
-		pkgDetails := PackageDetails{
+		pkgDetails := models.PackageDetails{
 			Name:           name,
 			Version:        pkg.Version,
 			Commit:         pkg.Description.Ref,
 			PackageManager: models.Pub,
-			Ecosystem:      PubEcosystem,
+			Ecosystem:      models.EcosystemPub,
 		}
 		for _, str := range strings.Split(pkg.Dependency, " ") {
 			if str == "dev" {
@@ -114,6 +114,6 @@ func init() {
 	registerExtractor("pubspec.lock", PubspecLockExtractor{})
 }
 
-func ParsePubspecLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParsePubspecLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, PubspecLockExtractor{})
 }

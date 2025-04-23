@@ -80,7 +80,7 @@ func TestParsePdmLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePdmLock_InvalidToml(t *testing.T) {
@@ -89,7 +89,7 @@ func TestParsePdmLock_InvalidToml(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/not-toml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePdmLock_NoPackages(t *testing.T) {
@@ -98,7 +98,7 @@ func TestParsePdmLock_NoPackages(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/empty.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePdmLock_SinglePackage(t *testing.T) {
@@ -107,7 +107,7 @@ func TestParsePdmLock_SinglePackage(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/single-package.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -123,7 +123,7 @@ func TestParsePdmLock_TwoPackages(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/two-packages.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -145,7 +145,7 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/dev-dependency.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -175,7 +175,7 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/optional-dependency.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -205,7 +205,7 @@ func TestParsePdmLock_PackageWithGitDependency(t *testing.T) {
 	packages, err := lockfile.ParsePdmLock("fixtures/pdm/git-dependency.toml")
 
 	expectNilErr(t, err)
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",

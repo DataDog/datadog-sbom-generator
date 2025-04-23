@@ -145,7 +145,7 @@ func isValidPackageName(name string) bool {
 // todo: expand this to support more things, e.g.
 //
 //	https://pip.pypa.io/en/stable/reference/requirements-file-format/#example
-func parseLine(path string, line string, lineNumber int, lineOffset int, columnStart int, columnEnd int) PackageDetails {
+func parseLine(path string, line string, lineNumber int, lineOffset int, columnStart int, columnEnd int) models.PackageDetails {
 	// Remove environment markers
 	// pre https://pip.pypa.io/en/stable/reference/requirement-specifiers/#overview
 	line = strings.Split(line, ";")[0]
@@ -204,14 +204,14 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 		versionLocation.Filename = path
 	}
 
-	return PackageDetails{
+	return models.PackageDetails{
 		Name:            normalizedRequirementName(name),
 		Version:         version,
 		BlockLocation:   blockLocation,
 		NameLocation:    nameLocation,
 		VersionLocation: versionLocation,
 		PackageManager:  models.Requirements,
-		Ecosystem:       PipEcosystem,
+		Ecosystem:       models.EcosystemPyPI,
 		IsDirect:        true,
 	}
 }
@@ -289,12 +289,12 @@ func (e RequirementsTxtExtractor) ShouldExtract(path string) bool {
 	return strings.Contains(baseFilepath, "requirements") && strings.HasSuffix(baseFilepath, ".txt")
 }
 
-func (e RequirementsTxtExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e RequirementsTxtExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	return parseRequirementsTxt(f, map[string]struct{}{})
 }
 
-func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]PackageDetails, error) {
-	packages := map[string]PackageDetails{}
+func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]models.PackageDetails, error) {
+	packages := map[string]models.PackageDetails{}
 
 	group := strings.TrimSuffix(filepath.Base(f.Path()), filepath.Ext(f.Path()))
 	hasGroup := func(groups []string) bool {
@@ -316,7 +316,7 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 
 	// This is used to store the last package details parsed,
 	// so we can update it with information parsed from the comments following it
-	lastPkg := PackageDetails{}
+	lastPkg := models.PackageDetails{}
 	lastPkgKey := ""
 
 	commentParser := &CommentParser{}
@@ -403,7 +403,7 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 				return nil
 			}()
 			if err != nil {
-				return []PackageDetails{}, err
+				return []models.PackageDetails{}, err
 			}
 
 			continue
@@ -438,7 +438,7 @@ func parseRequirementsTxt(f DepFile, requiredAlready map[string]struct{}) ([]Pac
 	}
 
 	if err := scanner.Err(); err != nil {
-		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
 	return maps.Values(packages), nil
@@ -451,6 +451,6 @@ func init() {
 	registerExtractor("requirements.txt", RequirementsTxtExtractor{})
 }
 
-func ParseRequirementsTxt(pathToLockfile string) ([]PackageDetails, error) {
+func ParseRequirementsTxt(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, RequirementsTxtExtractor{})
 }

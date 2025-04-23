@@ -15,7 +15,7 @@ func TestParseOSVScannerResults_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseOSVScannerResults("fixtures/osvscannerresults/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseOSVScannerResults_InvalidJSON(t *testing.T) {
@@ -24,7 +24,7 @@ func TestParseOSVScannerResults_InvalidJSON(t *testing.T) {
 	packages, err := lockfile.ParseOSVScannerResults("fixtures/osvscannerresults/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseOSVScannerResults_NoPackages(t *testing.T) {
@@ -36,7 +36,7 @@ func TestParseOSVScannerResults_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseOSVScannerResults_OnePackage(t *testing.T) {
@@ -48,7 +48,7 @@ func TestParseOSVScannerResults_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "activesupport",
 			Version:        "7.0.7",
@@ -67,7 +67,7 @@ func TestParseOSVScannerResults_OnePackageCommit(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Commit:         "9a6bd55c9d0722cb101fe85a3b22d89e4ff4fe52",
 			PackageManager: models.Unknown,
@@ -84,7 +84,7 @@ func TestParseOSVScannerResults_MultiPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "crossbeam-utils",
 			Version:        "0.6.6",

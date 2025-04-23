@@ -165,8 +165,8 @@ func getVersionInfo(name string, maps ...map[string]PnpmLegacyLockDependency) (s
 	return "", "", false
 }
 
-func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
-	packages := make([]PackageDetails, 0, len(lockfile.Packages))
+func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []models.PackageDetails {
+	packages := make([]models.PackageDetails, 0, len(lockfile.Packages))
 
 	for s, pkg := range lockfile.Packages {
 		name, version := extractPnpmPackageNameAndVersion(s)
@@ -247,12 +247,12 @@ func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
 			targetVersions = []string{targetVersion}
 		}
 
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           name,
 			Version:        version,
 			TargetVersions: targetVersions,
 			PackageManager: models.Pnpm,
-			Ecosystem:      PnpmEcosystem,
+			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      depGroups,
 			IsDirect:       isDirect,
@@ -270,13 +270,13 @@ func (e PnpmLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "pnpm-lock.yaml"
 }
 
-func (e PnpmLockExtractor) extractLegacyPnpm(f DepFile) ([]PackageDetails, error) {
+func (e PnpmLockExtractor) extractLegacyPnpm(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *PnpmLegacyLockfile
 
 	err := yaml.NewDecoder(f).Decode(&parsedLockfile)
 
 	if err != nil && !errors.Is(err, io.EOF) {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
 	// this will happen if the file is empty

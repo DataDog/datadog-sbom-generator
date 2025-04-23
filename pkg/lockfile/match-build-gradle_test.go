@@ -126,7 +126,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -138,7 +138,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -170,7 +170,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -182,7 +182,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -214,7 +214,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -226,7 +226,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -258,7 +258,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -270,7 +270,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -302,7 +302,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
@@ -315,7 +315,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",

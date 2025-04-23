@@ -115,7 +115,7 @@ func (m NugetCsprojMatcher) unmarshalProjectFile(content []byte) (map[string]Pac
 	return packageReferenceByInclude, nil
 }
 
-func (m NugetCsprojMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+func (m NugetCsprojMatcher) Match(sourcefile DepFile, packages []models.PackageDetails) error {
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err
@@ -136,9 +136,9 @@ func (m NugetCsprojMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 
 		if (packageReference.PrivateAssetsAttr != nil && strings.Contains(*packageReference.PrivateAssetsAttr, "all")) ||
 			(packageReference.PrivateAssets != nil && strings.Contains(*packageReference.PrivateAssets, "all")) {
-			packages[key].DepGroups = []string{string(DepGroupDev)}
+			packages[key].DepGroups = []string{string(models.DepGroupDev)}
 		} else {
-			packages[key].DepGroups = []string{string(DepGroupProd)}
+			packages[key].DepGroups = []string{string(models.DepGroupProd)}
 		}
 
 		block := lines[packageReference.Line.Start-1 : packageReference.Line.End]

@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 // TODO(daniel.strong): lots of unused values in this file, remove them
 
 type Ecosystem string
@@ -31,33 +33,6 @@ const (
 	EcosystemSwiftURL      Ecosystem = "SwiftURL"
 )
 
-var Ecosystems = []Ecosystem{
-	EcosystemGo,
-	EcosystemNPM,
-	EcosystemOSSFuzz,
-	EcosystemPyPI,
-	EcosystemRubyGems,
-	EcosystemCratesIO,
-	EcosystemPackagist,
-	EcosystemMaven,
-	EcosystemNuGet,
-	EcosystemLinux,
-	EcosystemDebian,
-	EcosystemAlpine,
-	EcosystemHex,
-	EcosystemAndroid,
-	EcosystemGitHubActions,
-	EcosystemPub,
-	EcosystemConanCenter,
-	EcosystemRockyLinux,
-	EcosystemAlmaLinux,
-	EcosystemBitnami,
-	EcosystemPhotonOS,
-	EcosystemCRAN,
-	EcosystemBioconductor,
-	EcosystemSwiftURL,
-}
-
 type SeverityType string
 
 const (
@@ -68,38 +43,105 @@ const (
 
 type RangeType string
 
-const (
-	RangeSemVer    RangeType = "SEMVER"
-	RangeEcosystem RangeType = "ECOSYSTEM"
-	RangeGit       RangeType = "GIT"
-)
-
 type ReferenceType string
 
 const (
-	ReferenceAdvisory   ReferenceType = "ADVISORY"
-	ReferenceArticle    ReferenceType = "ARTICLE"
-	ReferenceDetection  ReferenceType = "DETECTION"
-	ReferenceDiscussion ReferenceType = "DISCUSSION"
-	ReferenceReport     ReferenceType = "REPORT"
-	ReferenceFix        ReferenceType = "FIX"
-	ReferenceIntroduced ReferenceType = "INTRODUCED"
-	ReferencePackage    ReferenceType = "PACKAGE"
-	ReferenceEvidence   ReferenceType = "EVIDENCE"
-	ReferenceWeb        ReferenceType = "WEB"
+	ReferenceAdvisory ReferenceType = "ADVISORY"
 )
 
-type CreditType string
+type DepGroup string
 
 const (
-	CreditFinder               CreditType = "FINDER"
-	CreditReporter             CreditType = "REPORTER"
-	CreditAnalyst              CreditType = "ANALYST"
-	CreditCoordinator          CreditType = "COORDINATOR"
-	CreditRemediationDeveloper CreditType = "REMEDIATION_DEVELOPER" //nolint:gosec
-	CreditRemediationReviewer  CreditType = "REMEDIATION_REVIEWER"  //nolint:gosec
-	CreditRemediationVerifier  CreditType = "REMEDIATION_VERIFIER"  //nolint:gosec
-	CreditTool                 CreditType = "TOOL"
-	CreditSponsor              CreditType = "SPONSOR"
-	CreditOther                CreditType = "OTHER"
+	DepGroupProd     DepGroup = "prod"
+	DepGroupDev      DepGroup = "dev"
+	DepGroupOptional DepGroup = "optional"
 )
+
+// IsDevGroup returns if any string in groups indicates the development dependency group for the specified ecosystem.
+func (sys Ecosystem) IsDevGroup(groups []string) bool {
+	switch sys {
+	case EcosystemNPM:
+		return sys.isNpmDevGroup(groups)
+	case EcosystemPackagist, EcosystemPyPI, EcosystemPub, EcosystemNuGet:
+		return sys.isDevGroup(groups, string(DepGroupDev))
+	case EcosystemConanCenter:
+		return sys.isDevGroup(groups, "build-requires")
+	case EcosystemMaven:
+		return sys.isMavenDevGroup(groups)
+	case EcosystemGo:
+		return isBundlerDevGroup(groups)
+	}
+
+	return false
+}
+
+// isMavenDevGroup defines whether the dependency is only present in tests for the maven ecosystem or not (Maven and Gradle).
+func (sys Ecosystem) isMavenDevGroup(groups []string) bool {
+	if len(groups) == 0 {
+		return false
+	}
+
+	for _, g := range groups {
+		if !strings.HasPrefix(g, "test") {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (sys Ecosystem) isNpmDevGroup(groups []string) bool {
+	containsDev := false
+
+	if len(groups) == 0 {
+		return false
+	}
+	for _, g := range groups {
+		if g != string(DepGroupDev) && g != string(DepGroupOptional) {
+			return false
+		} else if g == string(DepGroupDev) {
+			containsDev = true
+		}
+	}
+
+	return containsDev
+}
+
+// Source: https://www.bundler.cn/guides/groups.html
+var knownBundlerDevelopmentGroups = map[string]struct{}{
+	"dev":         {},
+	"development": {},
+	"test":        {},
+	"ci":          {},
+	"cucumber":    {},
+	"linting":     {},
+	"rubocop":     {},
+}
+
+func isBundlerDevGroup(groups []string) bool {
+	if len(groups) == 0 {
+		return false
+	}
+
+	for _, group := range groups {
+		if _, isDevGroup := knownBundlerDevelopmentGroups[group]; !isDevGroup {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (sys Ecosystem) isDevGroup(groups []string, devGroupName string) bool {
+	if len(groups) == 0 {
+		return false
+	}
+
+	for _, g := range groups {
+		if g != devGroupName {
+			return false
+		}
+	}
+
+	return true
+}

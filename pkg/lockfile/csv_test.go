@@ -51,7 +51,7 @@ func TestFromCSVRows(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "-",
 				ParsedAs: "csv-row",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -92,7 +92,7 @@ func TestFromCSVRows(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "-",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -121,7 +121,7 @@ func TestFromCSVRows(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "-",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "Yarp.ReverseProxy",
 						Version:        "",
@@ -293,7 +293,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/multiple-rows.csv",
 				ParsedAs: "csv-file",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "4.9.0",
@@ -336,7 +336,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/with-extra-columns.csv",
 				ParsedAs: "csv-file",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -373,7 +373,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/one-row.csv",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -392,7 +392,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/two-rows.csv",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -417,7 +417,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/with-headers.csv",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
@@ -449,7 +449,7 @@ func TestFromCSVFile(t *testing.T) {
 			want: lockfile.Lockfile{
 				FilePath: "fixtures/csv/commits.csv",
 				ParsedAs: "-",
-				Packages: []lockfile.PackageDetails{
+				Packages: []models.PackageDetails{
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "4.9.0",

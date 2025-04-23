@@ -34,6 +34,14 @@ func (metadata PackageMetadata) Merge(other PackageMetadata) PackageMetadata {
 	return metadata
 }
 
+func (metadata PackageMetadata) ToString() string {
+	result := ""
+	for key, value := range metadata {
+		result += fmt.Sprintf("%s:%s$", key, value)
+	}
+	return result
+}
+
 type packageMetadataTypeMulti string
 
 const (

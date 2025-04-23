@@ -66,7 +66,7 @@ func TestParseComposerLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseComposerLock("fixtures/composer/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseComposerLock_InvalidJson(t *testing.T) {
@@ -75,7 +75,7 @@ func TestParseComposerLock_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParseComposerLock("fixtures/composer/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseComposerLock_NoPackages(t *testing.T) {
@@ -86,7 +86,7 @@ func TestParseComposerLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseComposerLock_OnePackage(t *testing.T) {
@@ -97,7 +97,7 @@ func TestParseComposerLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "sentry/sdk",
 			Version:        "2.0.4",
@@ -116,7 +116,7 @@ func TestParseComposerLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "sentry/sdk",
 			Version:        "2.0.4",
@@ -136,7 +136,7 @@ func TestParseComposerLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "sentry/sdk",
 			Version:        "2.0.4",
@@ -163,7 +163,7 @@ func TestParseComposerLock_TwoPackagesAlt(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "sentry/sdk",
 			Version:        "2.0.4",

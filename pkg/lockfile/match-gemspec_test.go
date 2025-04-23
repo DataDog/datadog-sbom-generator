@@ -58,7 +58,7 @@ func TestGemspecFileMatcher_Match(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "base64",
 			Version:        "0.2.0",
@@ -117,7 +117,7 @@ func TestGemfileMatcher_Filter_Not_In_Lockfile(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "zeitwerk",
 			Version:        "2.6.0",

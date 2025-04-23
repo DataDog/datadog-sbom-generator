@@ -7,8 +7,6 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"golang.org/x/exp/maps"
-
 	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -21,23 +19,28 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	bom.SpecVersion = cyclonedx.SpecVersion1_5
 
 	components := make([]cyclonedx.Component, 0)
+	dependencies := make([]cyclonedx.Dependency, 0)
 	bomVulnerabilities := make([]cyclonedx.Vulnerability, 0)
 	vulnerabilities := make(map[string]cyclonedx.Vulnerability)
 	uniqueAdvisoryIdsAndUniquePurls := make(map[string]map[string]struct{})
 
-	fileComponents, dependsOn := addFileDependencies(artifacts)
-	for packageURL, packageDetail := range uniquePackages {
-		libraryComponent := createLibraryComponent(packageURL, packageDetail)
-		artifact := findArtifact(packageDetail.Package.Name, packageDetail.Package.Version, artifacts)
-		createFileComponents(packageDetail, artifact, dependsOn)
+	// fileComponents, dependsOn := addFileDependencies(artifacts)
+	for groupKey, packageDetail := range uniquePackages {
+		libraryComponent := createLibraryComponent(groupKey, packageDetail)
+		//artifact := findArtifact(packageDetail.Package.Name, packageDetail.Package.Version, artifacts)
+		//createFileComponents(packageDetail, artifact, dependsOn)
+		deps := createDependencies(groupKey, packageDetail)
 
 		addLocations(&libraryComponent, packageDetail)
 		addVulnerabilities(vulnerabilities, packageDetail)
 		addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls, packageDetail)
 
 		components = append(components, libraryComponent)
+		if len(*deps.Dependencies) > 0 {
+			dependencies = append(dependencies, deps)
+		}
 	}
-	components = append(components, maps.Values(fileComponents)...)
+	//components = append(components, maps.Values(fileComponents)...)
 	slices.SortFunc(components, func(a, b cyclonedx.Component) int {
 		return strings.Compare(a.BOMRef, b.BOMRef)
 	})
@@ -52,7 +55,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		return strings.Compare(a.ID, b.ID)
 	})
 
-	dependencies := maps.Values(dependsOn)
+	//dependencies = append(dependencies, maps.Values(dependsOn)...)
 	slices.SortFunc(dependencies, func(a, b cyclonedx.Dependency) int {
 		return strings.Compare(a.Ref, b.Ref)
 	})
@@ -64,25 +67,42 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 	return bom
 }
 
+func createDependencies(groupKey string, packageDetail models.PackageVulns) cyclonedx.Dependency {
+	depRefs := make([]string, len(packageDetail.Package.Dependencies))
+	for i, dep := range packageDetail.Package.Dependencies {
+		if dep.PURL == "" {
+			purl, err := purl.FromNameVersionEcosystem(dep.Name, dep.Version, string(dep.Ecosystem))
+			if err != nil {
+				continue
+			}
+			dep.PURL = purl.String()
+		}
+		depRefs[i] = purl.BuildGroupKey(*dep)
+	}
+
+	return cyclonedx.Dependency{
+		Ref:          groupKey,
+		Dependencies: &depRefs,
+	}
+}
+
 func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 	occurrences := make([]cyclonedx.EvidenceOccurrence, 0)
+	packageLocations := details.ExtractPackageLocations()
+	cleanedLocation := packageLocations.Clean()
 
-	for _, packageLocations := range details.Locations {
-		cleanedLocation := packageLocations.Clean()
-
-		if cleanedLocation == nil {
-			continue
-		}
-		jsonLocation, err := packageLocations.MarshalToJSONString()
-
-		if err != nil {
-			continue
-		}
-		occurrence := cyclonedx.EvidenceOccurrence{
-			Location: jsonLocation,
-		}
-		occurrences = append(occurrences, occurrence)
+	if cleanedLocation == nil {
+		return
 	}
+	jsonLocation, err := cleanedLocation.MarshalToJSONString()
+
+	if err != nil {
+		return
+	}
+	occurrence := cyclonedx.EvidenceOccurrence{
+		Location: jsonLocation,
+	}
+	occurrences = append(occurrences, occurrence)
 	if len(occurrences) > 0 {
 		component.Evidence = &cyclonedx.Evidence{Occurrences: &occurrences}
 	}
@@ -127,32 +147,32 @@ func findArtifact(name string, version string, artifacts []models.ScannedArtifac
 }
 
 func createFileComponents(packageDetail models.PackageVulns, artifact *models.ScannedArtifact, dependsOn map[string]cyclonedx.Dependency) {
-	for _, location := range packageDetail.Locations {
-		if artifact != nil {
-			// The current component is a repository artifact, meaning it is an internal dependency, we should report a dependsOn on the location
-			if dependency, ok := dependsOn[location.Block.Filename]; !ok {
-				dependencies := make([]string, 1)
-				dependencies[0] = artifact.Filename
-				dependsOn[location.Block.Filename] = cyclonedx.Dependency{
-					Ref:          location.Block.Filename,
-					Dependencies: &dependencies,
-				}
-			} else {
-				dependencies := append(*dependency.Dependencies, artifact.Filename)
-				slices.Sort(dependencies)
-				dependency.Dependencies = &dependencies
-				dependsOn[location.Block.Filename] = dependency
-			}
+	if artifact == nil {
+		return
+	}
+	location := packageDetail.ExtractPackageLocations()
+	// The current component is a repository artifact, meaning it is an internal dependency, we should report a dependsOn on the location
+	if dependency, ok := dependsOn[location.Block.Filename]; !ok {
+		dependencies := make([]string, 1)
+		dependencies[0] = artifact.Filename
+		dependsOn[location.Block.Filename] = cyclonedx.Dependency{
+			Ref:          location.Block.Filename,
+			Dependencies: &dependencies,
 		}
+	} else {
+		dependencies := append(*dependency.Dependencies, artifact.Filename)
+		slices.Sort(dependencies)
+		dependency.Dependencies = &dependencies
+		dependsOn[location.Block.Filename] = dependency
 	}
 }
 
-func createLibraryComponent(packageURL string, packageDetail models.PackageVulns) cyclonedx.Component {
+func createLibraryComponent(groupKey string, packageDetail models.PackageVulns) cyclonedx.Component {
 	component := cyclonedx.Component{}
 
 	component.Type = libraryComponentType
-	component.BOMRef = packageURL
-	component.PackageURL = packageURL
+	component.BOMRef = groupKey
+	component.PackageURL = packageDetail.Package.PURL
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 
@@ -193,7 +213,7 @@ func addToUniqueAdvisoryAndPurls(uniqueAdvisoryIdsAndUniquePurls map[string]map[
 		}
 
 		if _, exists := packageDetail.Metadata[models.ReachableSymbolLocationMetadata.WithValue(advisoryID)]; exists {
-			uniqueAdvisoryIdsAndUniquePurls[advisoryID][packageDetail.Package.Purl] = struct{}{}
+			uniqueAdvisoryIdsAndUniquePurls[advisoryID][packageDetail.Package.PURL] = struct{}{}
 		}
 	}
 }
@@ -242,7 +262,7 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 		component := cyclonedx.Component{}
 		properties := make([]cyclonedx.Property, 1)
 		component.Name = artifact.Filename
-		component.BOMRef = artifact.Filename
+		component.BOMRef = "FILE#" + artifact.Filename
 		component.Type = fileComponentType
 		properties[0] = cyclonedx.Property{
 			Name:  "osv-scanner:package",
@@ -253,14 +273,14 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 
 		// Computing parent dependency
 		if artifact.DependsOn != nil {
-			if dependency, ok := dependsOn[artifact.Filename]; ok {
+			if dependency, ok := dependsOn["FILE#"+artifact.Filename]; ok {
 				dependencies := append(*dependency.Dependencies, artifact.DependsOn.Filename)
 				slices.Sort(dependencies)
 
 				dependency.Dependencies = &dependencies
-				dependsOn[artifact.Filename] = dependency
+				dependsOn["FILE#"+artifact.Filename] = dependency
 			} else {
-				dependsOn[artifact.Filename] = cyclonedx.Dependency{
+				dependsOn["FILE#"+artifact.Filename] = cyclonedx.Dependency{
 					Ref: component.BOMRef,
 					Dependencies: &[]string{
 						artifact.DependsOn.Filename,

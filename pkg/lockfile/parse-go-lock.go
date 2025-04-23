@@ -22,8 +22,8 @@ import (
 const GoEcosystem Ecosystem = "Go"
 const unknownVersion = "v0.0.0-unresolved-version"
 
-func deduplicatePackages(packages map[string]PackageDetails) map[string]PackageDetails {
-	details := map[string]PackageDetails{}
+func deduplicatePackages(packages map[string]models.PackageDetails) map[string]models.PackageDetails {
+	details := map[string]models.PackageDetails{}
 
 	for _, detail := range packages {
 		details[detail.Name+"@"+detail.Version] = detail
@@ -78,7 +78,7 @@ func (e GoLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "go.mod"
 }
 
-func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e GoLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *modfile.File
 
 	b, err := io.ReadAll(f)
@@ -89,10 +89,10 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	packages := map[string]PackageDetails{}
+	packages := map[string]models.PackageDetails{}
 
 	for _, require := range parsedLockfile.Require {
 		var start = require.Syntax.Start
@@ -106,11 +106,11 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 
 		blockLocation, nameLocation, versionLocation := extractLocations(block, start, end, f.Path(), name, version)
-		packages[require.Mod.Path+"@"+require.Mod.Version] = PackageDetails{
+		packages[require.Mod.Path+"@"+require.Mod.Version] = models.PackageDetails{
 			Name:            name,
 			Version:         version,
 			PackageManager:  models.Golang,
-			Ecosystem:       GoEcosystem,
+			Ecosystem:       models.EcosystemGo,
 			BlockLocation:   blockLocation,
 			NameLocation:    nameLocation,
 			VersionLocation: versionLocation,
@@ -162,11 +162,11 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				nameLocation = nil
 			}
 
-			packages[replacement] = PackageDetails{
+			packages[replacement] = models.PackageDetails{
 				Name:            name,
 				Version:         version,
 				PackageManager:  models.Golang,
-				Ecosystem:       GoEcosystem,
+				Ecosystem:       models.EcosystemGo,
 				BlockLocation:   blockLocation,
 				VersionLocation: versionLocation,
 				NameLocation:    nameLocation,
@@ -176,11 +176,11 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 
 	if parsedLockfile.Go != nil && parsedLockfile.Go.Version != "" {
-		packages["stdlib"] = PackageDetails{
+		packages["stdlib"] = models.PackageDetails{
 			Name:           "stdlib",
 			Version:        parsedLockfile.Go.Version,
 			PackageManager: models.Golang,
-			Ecosystem:      GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
 				Filename: f.Path(),
 			},
@@ -198,7 +198,7 @@ func init() {
 	registerExtractor("go.mod", GoLockExtractor{})
 }
 
-func ParseGoLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseGoLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, GoLockExtractor{})
 }
 

@@ -2,6 +2,7 @@ package lockfile
 
 import (
 	"encoding/json"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"io"
 	"path/filepath"
 
@@ -70,7 +71,7 @@ To work around this limitation, we are pre-filling the structure with all the fi
   - The line offset to be able to compute the line of any found dependencies in the file
   - And a list of pointer to the original PackageDetails extracted by the parser to be able to modify them with the json section content
 */
-func (matcher ComposerMatcher) Match(sourceFile DepFile, packages []PackageDetails) error {
+func (matcher ComposerMatcher) Match(sourceFile DepFile, packages []models.PackageDetails) error {
 	content, err := io.ReadAll(sourceFile)
 	if err != nil {
 		return err
@@ -85,7 +86,7 @@ func (matcher ComposerMatcher) Match(sourceFile DepFile, packages []PackageDetai
 				RootType:   typeRequire,
 				FilePath:   sourceFile.Path(),
 				LineOffset: requireLineOffset,
-				Packages:   make([]*PackageDetails, len(packages)),
+				Packages:   make([]*models.PackageDetails, len(packages)),
 			},
 		},
 		RequireDev: ComposerMatcherDependencyMap{
@@ -93,7 +94,7 @@ func (matcher ComposerMatcher) Match(sourceFile DepFile, packages []PackageDetai
 				RootType:   typeRequireDev,
 				FilePath:   sourceFile.Path(),
 				LineOffset: requireDevLineOffset,
-				Packages:   make([]*PackageDetails, len(packages)),
+				Packages:   make([]*models.PackageDetails, len(packages)),
 			},
 		},
 	}

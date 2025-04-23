@@ -1,6 +1,7 @@
 package lockfile_test
 
 import (
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"os"
 	"path/filepath"
 	"testing"
@@ -49,7 +50,7 @@ func copyFile(t *testing.T, from, to string) string {
 	return to
 }
 
-func testParsingNodeModules(t *testing.T, fixture string) ([]lockfile.PackageDetails, error) {
+func testParsingNodeModules(t *testing.T, fixture string) ([]models.PackageDetails, error) {
 	t.Helper()
 
 	testDir, cleanupTestDir := createTestDirWithNodeModulesDir(t)

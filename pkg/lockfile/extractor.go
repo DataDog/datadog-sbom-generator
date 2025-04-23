@@ -37,7 +37,7 @@ type NestedDepFile interface {
 type Extractor interface {
 	// ShouldExtract checks if the Extractor should be used for the given path.
 	ShouldExtract(path string) bool
-	Extract(f DepFile) ([]PackageDetails, error)
+	Extract(f DepFile) ([]models.PackageDetails, error)
 }
 
 type WithMatcher struct {
@@ -95,18 +95,18 @@ func OpenLocalDepFile(path string) (NestedDepFile, error) {
 var _ DepFile = LocalFile{}
 var _ NestedDepFile = LocalFile{}
 
-func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetails, error) {
+func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]models.PackageDetails, error) {
 	f, err := OpenLocalDepFile(pathToLockfile)
 
 	if err != nil {
-		return []PackageDetails{}, err
+		return []models.PackageDetails{}, err
 	}
 
 	defer f.Close()
 
 	packages, err := extractor.Extract(f)
 	if err != nil {
-		return []PackageDetails{}, err
+		return []models.PackageDetails{}, err
 	}
 
 	// Match extracted packages with source file to enrich their details

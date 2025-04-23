@@ -58,7 +58,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	packages := []lockfile.PackageDetails{
+	packages := []models.PackageDetails{
 		{
 			Name:           "Downloader",
 			PackageManager: models.NuGet,
@@ -85,7 +85,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 	basePath := "fixtures/nuget/"
 	sourceFilePath := filepath.FromSlash(filepath.Join(dir, basePath+"project.csproj"))
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Downloader",
 			PackageManager: models.NuGet,

@@ -15,7 +15,7 @@ func TestParseDpkgStatus_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseDpkgStatus("fixtures/dpkg/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseDpkgStatus_Empty(t *testing.T) {
@@ -27,7 +27,7 @@ func TestParseDpkgStatus_Empty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseDpkgStatus_NotAStatus(t *testing.T) {
@@ -39,7 +39,7 @@ func TestParseDpkgStatus_NotAStatus(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseDpkgStatus_Malformed(t *testing.T) {
@@ -51,7 +51,7 @@ func TestParseDpkgStatus_Malformed(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "bash",
 			Version:        "",
@@ -76,7 +76,7 @@ func TestParseDpkgStatus_Single(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "sudo",
 			Version:        "1.8.27-1+deb10u1",
@@ -95,7 +95,7 @@ func TestParseDpkgStatus_Shuffled(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "glibc",
 			Version:        "2.31-13+deb11u5",
@@ -114,7 +114,7 @@ func TestParseDpkgStatus_Multiple(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "bash",
 			Version:        "5.1-2+deb11u1",
@@ -151,7 +151,7 @@ func TestParseDpkgStatus_Source_Ver_Override(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "lvm2",
 			Version:        "2.02.176-4.1ubuntu3",

@@ -1,12 +1,13 @@
 package purl
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-// Group takes a list of packages, and group them in a map using their PURL
+// Group takes a list of packages, and group them in a map using a custom key (PURL + block location)
 // as key It is a way to have only one instance of each package, even if some has
 // been detected multiple times. If the function fails to create a PURL from a
 // package, it generates an error, continue to group the other packages and
@@ -17,38 +18,35 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 
 	for _, packageSource := range packageSources {
 		for _, pkg := range packageSource.Packages {
-			packageURL, err := From(pkg.Package)
-			if err != nil {
-				errors = append(errors, err)
-				continue
-			}
-			packageVulns, packageExists := uniquePackages[packageURL.ToString()]
+			groupKey := BuildGroupKey(pkg.Package)
+			packageVulns, packageExists := uniquePackages[groupKey]
 			if packageExists {
 				// Entry already exists, we need to merge slices which are not expected to be the exact same
 				packageVulns.DepGroups = append(packageVulns.DepGroups, pkg.DepGroups...)
-				packageVulns.Locations = append(packageVulns.Locations, pkg.Locations...)
 				if packageVulns.Metadata == nil {
 					packageVulns.Metadata = pkg.Metadata
 				} else {
 					packageVulns.Metadata = packageVulns.Metadata.Merge(pkg.Metadata)
 				}
 				packageVulns.AdvisoriesForReachability = append(packageVulns.AdvisoriesForReachability, pkg.AdvisoriesForReachability...)
-
-				uniquePackages[packageURL.ToString()] = packageVulns
+				uniquePackages[groupKey] = packageVulns
 			} else {
 				// Entry does not exists yet, lets create it
 				newPackageVuln := models.PackageVulns{
 					Package:                   pkg.Package,
-					Locations:                 slices.Clone(pkg.Locations),
 					DepGroups:                 slices.Clone(pkg.DepGroups),
 					Vulnerabilities:           slices.Clone(pkg.Vulnerabilities),
 					Metadata:                  pkg.Metadata,
 					AdvisoriesForReachability: pkg.AdvisoriesForReachability,
 				}
-				uniquePackages[packageURL.ToString()] = newPackageVuln
+				uniquePackages[groupKey] = newPackageVuln
 			}
 		}
 	}
 
 	return uniquePackages, errors
+}
+
+func BuildGroupKey(pkg models.PackageDetails) string {
+	return fmt.Sprintf("DEPENDENCY#%s#%s", pkg.PURL, pkg.Source.Path)
 }

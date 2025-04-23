@@ -15,19 +15,19 @@ var errCSVRecordNotEnoughFields = errors.New("not enough fields (expected at lea
 var errCSVRecordMissingPackageField = errors.New("field 3 is empty (must be the name of a package)")
 var errCSVRecordMissingCommitField = errors.New("field 4 is empty (must be a commit)")
 
-func fromCSVRecord(lines []string) (PackageDetails, error) {
+func fromCSVRecord(lines []string) (models.PackageDetails, error) {
 	if len(lines) < 4 {
-		return PackageDetails{}, errCSVRecordNotEnoughFields
+		return models.PackageDetails{}, errCSVRecordNotEnoughFields
 	}
 
-	ecosystem := Ecosystem(lines[0])
+	ecosystem := models.Ecosystem(lines[0])
 	name := lines[2]
 	version := lines[3]
 	commit := ""
 
 	if ecosystem == "" {
 		if version == "" {
-			return PackageDetails{}, errCSVRecordMissingCommitField
+			return models.PackageDetails{}, errCSVRecordMissingCommitField
 		}
 
 		commit = version
@@ -35,10 +35,10 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 	}
 
 	if name == "" {
-		return PackageDetails{}, errCSVRecordMissingPackageField
+		return models.PackageDetails{}, errCSVRecordMissingPackageField
 	}
 
-	return PackageDetails{
+	return models.PackageDetails{
 		Name:           name,
 		Version:        version,
 		Ecosystem:      ecosystem,
@@ -47,8 +47,8 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 	}, nil
 }
 
-func fromCSV(reader io.Reader) ([]PackageDetails, error) {
-	var packages []PackageDetails
+func fromCSV(reader io.Reader) ([]models.PackageDetails, error) {
+	var packages []models.PackageDetails
 
 	i := 0
 	r := csv.NewReader(reader)
@@ -89,7 +89,7 @@ func (e CSVExtractor) ShouldExtract(_ string) bool {
 	return false
 }
 
-func (e CSVExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e CSVExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	return fromCSV(f)
 }
 

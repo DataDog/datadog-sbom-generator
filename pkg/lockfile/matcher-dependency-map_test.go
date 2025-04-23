@@ -10,30 +10,30 @@ import (
 func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 	t.Parallel()
 
-	circularDep := PackageDetails{
+	circularDep := models.PackageDetails{
 		Name:    "circular-dep",
 		Version: "1.0.0",
 	}
-	dependency := PackageDetails{
+	dependency := models.PackageDetails{
 		Name:    "Foobar",
 		Version: "1.2.3",
-		Dependencies: []*PackageDetails{
+		Dependencies: []*models.PackageDetails{
 			{
 				Name:    "Bar",
 				Version: "2.1.3",
-				Dependencies: []*PackageDetails{
+				Dependencies: []*models.PackageDetails{
 					&circularDep,
 				},
 			},
 		},
 	}
-	circularDep.Dependencies = []*PackageDetails{&dependency}
+	circularDep.Dependencies = []*models.PackageDetails{&dependency}
 
 	type fields struct {
 		LineOffset int
 	}
 	type args struct {
-		pkg      *PackageDetails
+		pkg      *models.PackageDetails
 		content  string
 		indexes  []int
 		depGroup string
@@ -44,7 +44,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 		isCircular bool
 		fields     fields
 		args       args
-		expected   *PackageDetails
+		expected   *models.PackageDetails
 	}{
 		{
 			name: "Updating position with line offset to 0",
@@ -52,7 +52,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 0,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				},
@@ -61,7 +61,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				`,
 				indexes: []int{11, 29, 12, 18, 22, 28},
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:     "Foobar",
 				Version:  "1.2.3",
 				IsDirect: true,
@@ -106,7 +106,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 1,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				},
@@ -115,7 +115,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				`,
 				indexes: []int{13, 31, 14, 20, 24, 30},
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:     "Foobar",
 				Version:  "1.2.3",
 				IsDirect: true,
@@ -170,7 +170,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 1,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				},
@@ -181,7 +181,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				}`,
 				indexes: []int{},
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:     "Foobar",
 				Version:  "1.2.3",
 				IsDirect: true,
@@ -193,7 +193,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 1,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				},
@@ -201,7 +201,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				indexes:  []int{},
 				depGroup: "",
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:     "Foobar",
 				Version:  "1.2.3",
 				IsDirect: true,
@@ -213,7 +213,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 1,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				},
@@ -221,7 +221,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				indexes:  []int{},
 				depGroup: "prod",
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
@@ -234,10 +234,10 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				LineOffset: 1,
 			},
 			args: args{
-				pkg: &PackageDetails{
+				pkg: &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
-					Dependencies: []*PackageDetails{
+					Dependencies: []*models.PackageDetails{
 						{
 							Name:    "Bar",
 							Version: "2.1.3",
@@ -248,12 +248,12 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				indexes:  []int{},
 				depGroup: "prod",
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
 				DepGroups: []string{"prod"},
-				Dependencies: []*PackageDetails{
+				Dependencies: []*models.PackageDetails{
 					{
 						Name:      "Bar",
 						Version:   "2.1.3",
@@ -274,22 +274,22 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				indexes:  []int{},
 				depGroup: "prod",
 			},
-			expected: &PackageDetails{
+			expected: &models.PackageDetails{
 				Name:      "Foobar",
 				Version:   "1.2.3",
 				IsDirect:  true,
 				DepGroups: []string{"prod"},
-				Dependencies: []*PackageDetails{
+				Dependencies: []*models.PackageDetails{
 					{
 						Name:      "Bar",
 						Version:   "2.1.3",
 						DepGroups: []string{"prod"},
-						Dependencies: []*PackageDetails{
+						Dependencies: []*models.PackageDetails{
 							{
 								Name:      "circular-dep",
 								Version:   "1.0.0",
 								DepGroups: []string{"prod"},
-								Dependencies: []*PackageDetails{
+								Dependencies: []*models.PackageDetails{
 									{
 										Name:      "Foobar",
 										Version:   "1.2.3",
@@ -312,12 +312,12 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 				RootType:   0,
 				FilePath:   "file-path",
 				LineOffset: tt.fields.LineOffset,
-				Packages:   []*PackageDetails{},
+				Packages:   []*models.PackageDetails{},
 			}
 			if tt.args.pkg != nil {
 				depMap.Packages = append(depMap.Packages, tt.args.pkg)
 			} else {
-				depMap.Packages = append(depMap.Packages, &PackageDetails{
+				depMap.Packages = append(depMap.Packages, &models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				})
@@ -334,7 +334,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 			} else if tt.expected != nil {
 				assert.EqualExportedValues(t, *tt.expected, *depMap.Packages[0])
 			} else {
-				assert.EqualExportedValues(t, PackageDetails{
+				assert.EqualExportedValues(t, models.PackageDetails{
 					Name:    "Foobar",
 					Version: "1.2.3",
 				}, *depMap.Packages[0])

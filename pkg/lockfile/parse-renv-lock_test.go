@@ -15,7 +15,7 @@ func TestParseRenvLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseRenvLock("fixtures/renv/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRenvLock_InvalidJson(t *testing.T) {
@@ -24,7 +24,7 @@ func TestParseRenvLock_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParseRenvLock("fixtures/renv/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRenvLock_NoPackages(t *testing.T) {
@@ -36,7 +36,7 @@ func TestParseRenvLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseRenvLock_OnePackage(t *testing.T) {
@@ -48,7 +48,7 @@ func TestParseRenvLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "morning",
 			Version:        "0.1.0",
@@ -67,7 +67,7 @@ func TestParseRenvLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markdown",
 			Version:        "1.0",
@@ -92,7 +92,7 @@ func TestParseRenvLock_WithMixedSources(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markdown",
 			Version:        "1.0",
@@ -112,7 +112,7 @@ func TestParseRenvLock_WithBioconductor(t *testing.T) {
 	}
 
 	// currently Bioconductor is not supported
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "BH",
 			Version:        "1.75.0-0",
@@ -131,5 +131,5 @@ func TestParseRenvLock_WithoutRepository(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }

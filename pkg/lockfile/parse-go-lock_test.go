@@ -68,7 +68,7 @@ func TestParseGoLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseGoLock("fixtures/go/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGoLock_Invalid(t *testing.T) {
@@ -77,7 +77,7 @@ func TestParseGoLock_Invalid(t *testing.T) {
 	packages, err := lockfile.ParseGoLock("fixtures/go/not-go-mod.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGoLock_NoPackages(t *testing.T) {
@@ -89,7 +89,7 @@ func TestParseGoLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseGoLock_WithPathMajor(t *testing.T) {
@@ -105,7 +105,7 @@ func TestParseGoLock_WithPathMajor(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/elastic/go-elasticsearch/v8",
 			Version:        "8",
@@ -156,7 +156,7 @@ func TestParseGoLock_WithoutSupportedVersioning(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/elastic/go-elasticsearch",
 			Version:        "",
@@ -202,7 +202,7 @@ func TestParseGoLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.0.0",
@@ -241,7 +241,7 @@ func TestParseGoLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.0.0",
@@ -314,7 +314,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.0.0",
@@ -453,7 +453,7 @@ func TestParseGoLock_Replacements_One(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "example.com/fork/net",
 			Version:        "1.4.5",
@@ -492,7 +492,7 @@ func TestParseGoLock_Replacements_Mixed(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "example.com/fork/net",
 			Version:        "1.4.5",
@@ -553,7 +553,7 @@ func TestParseGoLock_Replacements_Local(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.0.0",
@@ -604,7 +604,7 @@ func TestParseGoLock_Replacements_Different(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "example.com/fork/foe",
 			Version:        "1.4.5",
@@ -665,7 +665,7 @@ func TestParseGoLock_Replacements_NotRequired(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "golang.org/x/net",
 			Version:        "0.5.6",
@@ -726,7 +726,7 @@ func TestParseGoLock_Replacements_NoVersion(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "example.com/fork/net",
 			Version:        "1.4.5",

@@ -71,7 +71,7 @@ type NpmLockfile struct {
 
 const NpmEcosystem Ecosystem = "npm"
 
-type npmPackageDetailsMap map[string]PackageDetails
+type npmPackageDetailsMap map[string]models.PackageDetails
 
 // mergeNpmDepsGroups handles merging the dependency groups of packages within the
 // NPM ecosystem, since they can appear multiple times in the same dependency tree
@@ -79,7 +79,7 @@ type npmPackageDetailsMap map[string]PackageDetails
 // the merge happens almost as you'd expect, except that if either given packages
 // belong to no groups, then that is the result since it indicates the package
 // is implicitly a production dependency.
-func mergeNpmDepsGroups(a, b PackageDetails) []string {
+func mergeNpmDepsGroups(a, b models.PackageDetails) []string {
 	// if either group includes no groups, then the package is in the "production" group
 	if len(a.DepGroups) == 0 || len(b.DepGroups) == 0 {
 		return nil
@@ -94,7 +94,7 @@ func mergeNpmDepsGroups(a, b PackageDetails) []string {
 	return slices.Compact(combined)
 }
 
-func (pdm npmPackageDetailsMap) add(key string, details PackageDetails) {
+func (pdm npmPackageDetailsMap) add(key string, details models.PackageDetails) {
 	existing, ok := pdm[key]
 
 	if ok {
@@ -118,7 +118,7 @@ func (dep *NpmLockDependency) depGroups() []string {
 	return groups
 }
 
-func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[string]PackageDetails {
+func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[string]models.PackageDetails {
 	details := npmPackageDetailsMap{}
 
 	keys := reflect.ValueOf(dependencies).MapKeys()
@@ -163,11 +163,11 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			}
 		}
 
-		details.add(name+"@"+version, PackageDetails{
+		details.add(name+"@"+version, models.PackageDetails{
 			Name:           name,
 			Version:        finalVersion,
 			PackageManager: models.NPM,
-			Ecosystem:      NpmEcosystem,
+			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
 		})
@@ -210,7 +210,7 @@ func (pkg NpmLockPackage) depGroups() []string {
 	return groups
 }
 
-func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
+func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]models.PackageDetails {
 	details := npmPackageDetailsMap{}
 
 	keys := reflect.ValueOf(packages).MapKeys()
@@ -277,12 +277,12 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 		}
 
 		if !detail.Link {
-			details.add(finalName+"@"+finalVersion, PackageDetails{
+			details.add(finalName+"@"+finalVersion, models.PackageDetails{
 				Name:           finalName,
 				Version:        detail.Version,
 				TargetVersions: targetVersions,
 				PackageManager: models.NPM,
-				Ecosystem:      NpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 				Commit:         commit,
 				DepGroups:      detail.depGroups(),
 			})
@@ -292,7 +292,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 	return details
 }
 
-func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]PackageDetails {
+func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]models.PackageDetails {
 	if lockfile.Packages != nil {
 		fileposition.InJSON("packages", lockfile.Packages, lines, 0)
 
@@ -312,19 +312,19 @@ func (e NpmLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "package-lock.json"
 }
 
-func (e NpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e NpmLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *NpmLockfile
 
 	contentBytes, err := io.ReadAll(f)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not read from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not read from %s: %w", f.Path(), err)
 	}
 	contentString := string(contentBytes)
 	lines := strings.Split(contentString, "\n")
 	decoder := json.NewDecoder(strings.NewReader(contentString))
 
 	if err := decoder.Decode(&parsedLockfile); err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 	parsedLockfile.SourceFile = f.Path()
 
@@ -340,6 +340,6 @@ func init() {
 	registerExtractor("package-lock.json", NpmExtractor)
 }
 
-func ParseNpmLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseNpmLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, NpmExtractor)
 }

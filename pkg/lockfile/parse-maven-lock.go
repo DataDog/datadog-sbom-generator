@@ -506,15 +506,15 @@ func (e MavenLockExtractor) decodeMavenFile(f DepFile, depth int, visitedPath ma
 	return e.mergeLockfiles(parsedLockfile, parentLockfile), nil
 }
 
-func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e MavenLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	visitedPath := make(map[string]bool)
 	visitedPath[f.Path()] = true
 	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	details := map[string]PackageDetails{}
+	details := map[string]models.PackageDetails{}
 
 	for _, lockPackage := range parsedLockfile.Dependencies.Dependencies {
 		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile)
@@ -538,10 +538,10 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			versionPosition.Filename = lockPackage.SourceFile
 		}
 
-		pkgDetails := PackageDetails{
+		pkgDetails := models.PackageDetails{
 			Name:            finalName,
 			Version:         resolvedVersion,
-			Ecosystem:       MavenEcosystem,
+			Ecosystem:       models.EcosystemMaven,
 			BlockLocation:   blockLocation,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,
@@ -626,6 +626,6 @@ func init() {
 	registerExtractor("pom.xml", MavenLockExtractor{})
 }
 
-func ParseMavenLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseMavenLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, MavenLockExtractor{})
 }

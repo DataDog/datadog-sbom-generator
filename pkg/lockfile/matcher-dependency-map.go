@@ -25,7 +25,7 @@ type MatcherDependencyMap struct {
 	RootType   int
 	FilePath   string
 	LineOffset int
-	Packages   []*PackageDetails
+	Packages   []*models.PackageDetails
 }
 
 /*
@@ -40,7 +40,7 @@ content is the full file content as string
 indexes is a [6]int array representing block, name and version location offsets (as defined by ExtractPackageIndexes)
 depGroup represent the new dependency group to add
 */
-func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, content string, indexes []int, depGroup string) {
+func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *models.PackageDetails, content string, indexes []int, depGroup string) {
 	if pkg == nil {
 		return
 	}
@@ -51,11 +51,11 @@ func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, co
 	}
 	if len(depGroup) > 0 {
 		pkg.DepGroups = append(pkg.DepGroups, depGroup)
-		propagateDepGroups(pkg, make(map[*PackageDetails]struct{}))
+		propagateDepGroups(pkg, make(map[*models.PackageDetails]struct{}))
 	}
 }
 
-func (depMap *MatcherDependencyMap) updatePackageDetailLocation(pkg *PackageDetails, content string, indexes []int) {
+func (depMap *MatcherDependencyMap) updatePackageDetailLocation(pkg *models.PackageDetails, content string, indexes []int) {
 	lineStart := depMap.LineOffset + strings.Count(content[:indexes[0]], "\n")
 	lineStartIndex := strings.LastIndex(content[:indexes[0]], "\n")
 	lineEnd := depMap.LineOffset + strings.Count(content[:indexes[1]], "\n")
@@ -102,7 +102,7 @@ func (depMap *MatcherDependencyMap) updatePackageDetailLocation(pkg *PackageDeta
 propagateDepGroups traverse the tree of dependency from the top level parent
 and to merge child dependency group with its parent to have a complete array of all dependency groups found.
 */
-func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]struct{}) {
+func propagateDepGroups(root *models.PackageDetails, visitedMap map[*models.PackageDetails]struct{}) {
 	if _, visited := visitedMap[root]; visited {
 		return
 	}

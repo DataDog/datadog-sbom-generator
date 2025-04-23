@@ -73,7 +73,7 @@ func TestParsePnpmLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParsePnpmLock("fixtures/pnpm/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePnpmLock_InvalidYaml(t *testing.T) {
@@ -82,7 +82,7 @@ func TestParsePnpmLock_InvalidYaml(t *testing.T) {
 	packages, err := lockfile.ParsePnpmLock("fixtures/pnpm/not-yaml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePnpmLock_Empty(t *testing.T) {
@@ -93,7 +93,7 @@ func TestParsePnpmLock_Empty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePnpmLock_NoPackages(t *testing.T) {
@@ -104,7 +104,7 @@ func TestParsePnpmLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePnpmLock_OnePackage(t *testing.T) {
@@ -120,7 +120,7 @@ func TestParsePnpmLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "acorn",
 			Version:        "8.7.0",
@@ -167,7 +167,7 @@ func TestParsePnpmLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "acorn",
 			Version:        "8.7.0",
@@ -195,7 +195,7 @@ func TestParsePnpmLock_OnePackageV6Lockfile(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "acorn",
 			Version:        "8.7.0",
@@ -220,7 +220,7 @@ func TestParsePnpmLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "acorn",
 			Version:        "8.7.0",
@@ -246,7 +246,7 @@ func TestParsePnpmLock_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@typescript-eslint/types",
 			Version:        "5.13.0",
@@ -271,7 +271,7 @@ func TestParsePnpmLock_ScopedPackagesV6Lockfile(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@typescript-eslint/types",
 			Version:        "5.57.1",
@@ -296,7 +296,7 @@ func TestParsePnpmLock_PeerDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "acorn-jsx",
 			Version:        "5.3.2",
@@ -329,7 +329,7 @@ func TestParsePnpmLock_PeerDependenciesAdvanced(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@typescript-eslint/eslint-plugin",
 			Version:        "5.13.0",
@@ -412,7 +412,7 @@ func TestParsePnpmLock_MultiplePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "aws-sdk",
 			Version:        "2.1087.0",
@@ -526,7 +526,7 @@ func TestParsePnpmLock_MultipleVersions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "uuid",
 			Version:        "3.3.2",
@@ -565,7 +565,7 @@ func TestParsePnpmLock_Tarball(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "@my-org/my-package",
 			Version:        "3.2.3",
@@ -592,7 +592,7 @@ func TestParsePnpmLock_Exotic(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "foo",
 			Version:        "1.0.0",
@@ -651,7 +651,7 @@ func TestParsePnpmLock_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "my-bitbucket-package",
 			Version:        "1.0.0",
@@ -711,7 +711,7 @@ func TestParsePnpmLock_Files(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	expectPackagesWithoutLocations(t, packages, []models.PackageDetails{
 		{
 			Name:           "my-file-package",
 			Version:        "0.0.0",

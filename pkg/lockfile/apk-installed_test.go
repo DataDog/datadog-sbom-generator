@@ -15,7 +15,7 @@ func TestParseApkInstalled_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseApkInstalled("fixtures/apk/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseApkInstalled_Empty(t *testing.T) {
@@ -27,7 +27,7 @@ func TestParseApkInstalled_Empty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseApkInstalled_NotAnInstalled(t *testing.T) {
@@ -39,7 +39,7 @@ func TestParseApkInstalled_NotAnInstalled(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseApkInstalled_Malformed(t *testing.T) {
@@ -51,7 +51,7 @@ func TestParseApkInstalled_Malformed(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "busybox",
 			Version:        "",
@@ -71,7 +71,7 @@ func TestParseApkInstalled_Single(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "apk-tools",
 			Version:        "2.12.10-r1",
@@ -91,7 +91,7 @@ func TestParseApkInstalled_Shuffled(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "apk-tools",
 			Version:        "2.12.10-r1",
@@ -111,7 +111,7 @@ func TestParseApkInstalled_Multiple(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "alpine-baselayout-data",
 			Version:        "3.4.0-r0",

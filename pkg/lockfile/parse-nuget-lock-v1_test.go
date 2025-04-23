@@ -21,7 +21,7 @@ func TestParseNuGetLock_v1_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseNuGetLock("fixtures/nuget/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNuGetLock_v1_InvalidJson(t *testing.T) {
@@ -30,7 +30,7 @@ func TestParseNuGetLock_v1_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParseNuGetLock("fixtures/nuget/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNuGetLock_v1_NoPackages(t *testing.T) {
@@ -41,7 +41,7 @@ func TestParseNuGetLock_v1_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseNuGetLock_v1_OneFramework_OnePackage(t *testing.T) {
@@ -52,7 +52,7 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -71,7 +71,7 @@ func TestParseNuGetLock_v1_OneFramework_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -97,7 +97,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -130,7 +130,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_DifferentPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -156,7 +156,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_DuplicatePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -199,7 +199,7 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage_MatchedFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -223,7 +223,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "Microsoft.TestPlatform.TestHost",
 			Version:        "17.12.0",

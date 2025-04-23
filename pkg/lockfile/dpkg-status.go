@@ -10,8 +10,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const DebianEcosystem Ecosystem = "Debian"
-
 func groupDpkgPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -48,9 +46,9 @@ func parseSourceField(source string) (string, string) {
 	return strings.TrimSpace(source), ""
 }
 
-func parseDpkgPackageGroup(group []string) PackageDetails {
-	var pkg = PackageDetails{
-		Ecosystem:      DebianEcosystem,
+func parseDpkgPackageGroup(group []string) models.PackageDetails {
+	var pkg = models.PackageDetails{
+		Ecosystem:      models.EcosystemDebian,
 		PackageManager: models.Unknown,
 	}
 
@@ -64,13 +62,13 @@ func parseDpkgPackageGroup(group []string) PackageDetails {
 			tokens := strings.Fields(status)
 			// Status field is malformed. Expected: "Status: Want Flag Status"
 			if len(tokens) != 3 {
-				return PackageDetails{}
+				return models.PackageDetails{}
 			}
 			// Status field has correct number of fields but package is not installed or has only config files left
 			// various other field values indicate partial install/uninstall (e.g. failure of some pre/post install scripts)
 			// since it's not clear if failure has left package active on system, cautiously add it to queries to osv.dev
 			if tokens[2] == "not-installed" || tokens[2] == "config-files" {
-				return PackageDetails{}
+				return models.PackageDetails{}
 			}
 
 		case strings.HasPrefix(line, "Source:"):
@@ -102,7 +100,7 @@ func parseDpkgPackageGroup(group []string) PackageDetails {
 	return pkg
 }
 
-func ParseDpkgStatus(pathToLockfile string) ([]PackageDetails, error) {
+func ParseDpkgStatus(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, DpkgStatusExtractor{})
 }
 
@@ -112,11 +110,11 @@ func (e DpkgStatusExtractor) ShouldExtract(path string) bool {
 	return path == "/var/lib/dpkg/status"
 }
 
-func (e DpkgStatusExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e DpkgStatusExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 	packageGroups := groupDpkgPackageLines(scanner)
 
-	packages := make([]PackageDetails, 0, len(packageGroups))
+	packages := make([]models.PackageDetails, 0, len(packageGroups))
 
 	for _, group := range packageGroups {
 		pkg := parseDpkgPackageGroup(group)
@@ -137,7 +135,7 @@ func (e DpkgStatusExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	debianReleaseVersion := getReleaseVersion(packages)
 	if debianReleaseVersion != "" {
 		for i := range packages {
-			packages[i].Ecosystem = Ecosystem(string(packages[i].Ecosystem) + ":" + debianReleaseVersion)
+			packages[i].Ecosystem = models.Ecosystem(string(packages[i].Ecosystem) + ":" + debianReleaseVersion)
 		}
 	}
 
@@ -148,7 +146,7 @@ func (e DpkgStatusExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	return packages, nil
 }
 
-func getReleaseVersion(packages []PackageDetails) string {
+func getReleaseVersion(packages []models.PackageDetails) string {
 	for _, pkg := range packages {
 		if pkg.Name != "base-files" {
 			continue

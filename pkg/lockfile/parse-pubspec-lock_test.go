@@ -66,7 +66,7 @@ func TestParsePubspecLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParsePubspecLock("fixtures/pub/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePubspecLock_InvalidYaml(t *testing.T) {
@@ -75,7 +75,7 @@ func TestParsePubspecLock_InvalidYaml(t *testing.T) {
 	packages, err := lockfile.ParsePubspecLock("fixtures/pub/not-yaml.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePubspecLock_Empty(t *testing.T) {
@@ -87,7 +87,7 @@ func TestParsePubspecLock_Empty(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePubspecLock_NoPackages(t *testing.T) {
@@ -99,7 +99,7 @@ func TestParsePubspecLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePubspecLock_OnePackage(t *testing.T) {
@@ -111,7 +111,7 @@ func TestParsePubspecLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "back_button_interceptor",
 			Version:        "6.0.1",
@@ -130,7 +130,7 @@ func TestParsePubspecLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "build_runner",
 			Version:        "2.2.1",
@@ -150,7 +150,7 @@ func TestParsePubspecLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "shelf",
 			Version:        "1.3.2",
@@ -175,7 +175,7 @@ func TestParsePubspecLock_MixedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "back_button_interceptor",
 			Version:        "6.0.1",
@@ -213,7 +213,7 @@ func TestParsePubspecLock_PackageWithGitSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "flutter_rust_bridge",
 			Version:        "1.32.0",
@@ -261,7 +261,7 @@ func TestParsePubspecLock_PackageWithSdkSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "flutter_web_plugins",
 			Version:        "0.0.0",
@@ -281,7 +281,7 @@ func TestParsePubspecLock_PackageWithPathSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "maa_core",
 			Version:        "0.0.1",

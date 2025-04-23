@@ -3,6 +3,7 @@ package lockfile_test
 import (
 	"errors"
 	"fmt"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"strings"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
 func expectErrContaining(t *testing.T, err error, str string) {
@@ -37,7 +37,7 @@ func expectErrIs(t *testing.T, err error, expected error) {
 	}
 }
 
-func packageToString(pkg lockfile.PackageDetails) string {
+func packageToString(pkg models.PackageDetails) string {
 	commit := pkg.Commit
 
 	if commit == "" {
@@ -53,7 +53,7 @@ func packageToString(pkg lockfile.PackageDetails) string {
 	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t)", pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect)
 }
 
-func hasPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.PackageDetails, ignoreLocations bool) bool {
+func hasPackage(t *testing.T, packages []models.PackageDetails, pkg models.PackageDetails, ignoreLocations bool) bool {
 	t.Helper()
 
 	for _, details := range packages {
@@ -61,7 +61,7 @@ func hasPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.P
 		if ignoreLocations {
 			ignore = []string{"BlockLocation", "NameLocation", "VersionLocation"}
 		}
-		if cmp.Equal(details, pkg, cmpopts.IgnoreFields(lockfile.PackageDetails{}, ignore...)) {
+		if cmp.Equal(details, pkg, cmpopts.IgnoreFields(models.PackageDetails{}, ignore...)) {
 			return true
 		}
 	}
@@ -69,7 +69,7 @@ func hasPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.P
 	return false
 }
 
-func innerExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.PackageDetails, ignoreLocations bool) {
+func innerExpectPackage(t *testing.T, packages []models.PackageDetails, pkg models.PackageDetails, ignoreLocations bool) {
 	t.Helper()
 
 	if !hasPackage(t, packages, pkg, ignoreLocations) {
@@ -82,15 +82,15 @@ func innerExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lo
 	}
 }
 
-func expectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.PackageDetails) {
+func expectPackage(t *testing.T, packages []models.PackageDetails, pkg models.PackageDetails) {
 	t.Helper()
 
 	innerExpectPackage(t, packages, pkg, false)
 }
 
-func findMissingPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails, ignoreLocations bool) []lockfile.PackageDetails {
+func findMissingPackages(t *testing.T, actualPackages []models.PackageDetails, expectedPackages []models.PackageDetails, ignoreLocations bool) []models.PackageDetails {
 	t.Helper()
-	var missingPackages []lockfile.PackageDetails
+	var missingPackages []models.PackageDetails
 
 	for _, pkg := range actualPackages {
 		if !hasPackage(t, expectedPackages, pkg, ignoreLocations) {
@@ -101,7 +101,7 @@ func findMissingPackages(t *testing.T, actualPackages []lockfile.PackageDetails,
 	return missingPackages
 }
 
-func innerExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails, ignoreLocations bool) {
+func innerExpectPackages(t *testing.T, actualPackages []models.PackageDetails, expectedPackages []models.PackageDetails, ignoreLocations bool) {
 	t.Helper()
 
 	if len(expectedPackages) != len(actualPackages) {
@@ -129,13 +129,13 @@ func innerExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails,
 	}
 }
 
-func expectPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails) {
+func expectPackages(t *testing.T, actualPackages []models.PackageDetails, expectedPackages []models.PackageDetails) {
 	t.Helper()
 
 	innerExpectPackages(t, actualPackages, expectedPackages, false)
 }
 
-func expectPackagesWithoutLocations(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails) {
+func expectPackagesWithoutLocations(t *testing.T, actualPackages []models.PackageDetails, expectedPackages []models.PackageDetails) {
 	t.Helper()
 
 	innerExpectPackages(t, actualPackages, expectedPackages, true)

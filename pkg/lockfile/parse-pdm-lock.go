@@ -21,29 +21,27 @@ type PdmLockFile struct {
 	Packages []PdmLockPackage `toml:"package"`
 }
 
-const PdmEcosystem = PipEcosystem
-
 type PdmLockExtractor struct{}
 
 func (p PdmLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "pdm.lock"
 }
 
-func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (p PdmLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockFile *PdmLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockFile)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
-	packages := make([]PackageDetails, 0, len(parsedLockFile.Packages))
+	packages := make([]models.PackageDetails, 0, len(parsedLockFile.Packages))
 
 	for _, pkg := range parsedLockFile.Packages {
-		details := PackageDetails{
+		details := models.PackageDetails{
 			Name:           pkg.Name,
 			Version:        pkg.Version,
 			PackageManager: models.Pdm,
-			Ecosystem:      PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		}
 
 		var optional = true
@@ -76,6 +74,6 @@ func init() {
 	registerExtractor("pdm.lock", PdmLockExtractor{})
 }
 
-func ParsePdmLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParsePdmLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, PdmLockExtractor{})
 }

@@ -46,9 +46,6 @@ type ConanLockFile struct {
 	PythonRequires []string `json:"python_requires,omitempty"`
 }
 
-// TODO this is tentative and subject to change depending on the OSV schema
-const ConanEcosystem Ecosystem = "ConanCenter"
-
 func parseConanRenference(ref string) ConanReference {
 	// very flexible format name/version[@username[/channel]][#rrev][:pkgid[#prev]][%timestamp]
 	var reference ConanReference
@@ -100,9 +97,9 @@ func parseConanRenference(ref string) ConanReference {
 	return reference
 }
 
-func parseConanV1Lock(lockfile ConanLockFile) []PackageDetails {
+func parseConanV1Lock(lockfile ConanLockFile) []models.PackageDetails {
 	var reference ConanReference
-	packages := make([]PackageDetails, 0, len(lockfile.GraphLock.Nodes))
+	packages := make([]models.PackageDetails, 0, len(lockfile.GraphLock.Nodes))
 
 	for _, node := range lockfile.GraphLock.Nodes {
 		if node.Path != "" {
@@ -123,18 +120,18 @@ func parseConanV1Lock(lockfile ConanLockFile) []PackageDetails {
 		if reference.Name == "" {
 			continue
 		}
-		packages = append(packages, PackageDetails{
+		packages = append(packages, models.PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: models.Conan,
-			Ecosystem:      ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		})
 	}
 
 	return packages
 }
 
-func parseConanRequires(packages *[]PackageDetails, requires []string, group string) {
+func parseConanRequires(packages *[]models.PackageDetails, requires []string, group string) {
 	for _, ref := range requires {
 		reference := parseConanRenference(ref)
 		// skip entries with no name, they are most likely consumer's conanfiles
@@ -143,19 +140,19 @@ func parseConanRequires(packages *[]PackageDetails, requires []string, group str
 			continue
 		}
 
-		*packages = append(*packages, PackageDetails{
+		*packages = append(*packages, models.PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: models.Conan,
-			Ecosystem:      ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 			DepGroups:      []string{group},
 		})
 	}
 }
 
-func parseConanV2Lock(lockfile ConanLockFile) []PackageDetails {
+func parseConanV2Lock(lockfile ConanLockFile) []models.PackageDetails {
 	packages := make(
-		[]PackageDetails,
+		[]models.PackageDetails,
 		0,
 		uint64(len(lockfile.Requires))+uint64(len(lockfile.BuildRequires))+uint64(len(lockfile.PythonRequires)),
 	)
@@ -167,7 +164,7 @@ func parseConanV2Lock(lockfile ConanLockFile) []PackageDetails {
 	return packages
 }
 
-func parseConanLock(lockfile ConanLockFile) []PackageDetails {
+func parseConanLock(lockfile ConanLockFile) []models.PackageDetails {
 	if lockfile.GraphLock.Nodes != nil {
 		return parseConanV1Lock(lockfile)
 	}
@@ -181,12 +178,12 @@ func (e ConanLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == "conan.lock"
 }
 
-func (e ConanLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e ConanLockExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	var parsedLockfile *ConanLockFile
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []models.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
 	return parseConanLock(*parsedLockfile), nil
@@ -199,6 +196,6 @@ func init() {
 	registerExtractor("conan.lock", ConanLockExtractor{})
 }
 
-func ParseConanLock(pathToLockfile string) ([]PackageDetails, error) {
+func ParseConanLock(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, ConanLockExtractor{})
 }

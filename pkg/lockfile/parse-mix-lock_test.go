@@ -66,7 +66,7 @@ func TestParseMixLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParseMixLock("fixtures/mix/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMixLock_NoPackages(t *testing.T) {
@@ -78,7 +78,7 @@ func TestParseMixLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParseMixLock_OnePackage(t *testing.T) {
@@ -90,7 +90,7 @@ func TestParseMixLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "plug",
 			Version:        "1.11.1",
@@ -110,7 +110,7 @@ func TestParseMixLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "plug",
 			Version:        "1.11.1",
@@ -137,7 +137,7 @@ func TestParseMixLock_Many(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "backoff",
 			Version:        "1.1.6",
@@ -297,7 +297,7 @@ func TestParseMixLock_GitPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "foe",
 			Version:        "",

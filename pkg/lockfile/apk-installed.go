@@ -9,8 +9,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const AlpineEcosystem Ecosystem = "Alpine"
-
 func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -35,9 +33,9 @@ func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 	return groups
 }
 
-func parseApkPackageGroup(group []string) PackageDetails {
-	var pkg = PackageDetails{
-		Ecosystem:      AlpineEcosystem,
+func parseApkPackageGroup(group []string) models.PackageDetails {
+	var pkg = models.PackageDetails{
+		Ecosystem:      models.EcosystemAlpine,
 		PackageManager: models.Unknown,
 	}
 
@@ -56,7 +54,7 @@ func parseApkPackageGroup(group []string) PackageDetails {
 	return pkg
 }
 
-func ParseApkInstalled(pathToLockfile string) ([]PackageDetails, error) {
+func ParseApkInstalled(pathToLockfile string) ([]models.PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, ApkInstalledExtractor{})
 }
 
@@ -66,12 +64,12 @@ func (e ApkInstalledExtractor) ShouldExtract(path string) bool {
 	return path == "/lib/apk/db/installed"
 }
 
-func (e ApkInstalledExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e ApkInstalledExtractor) Extract(f DepFile) ([]models.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 
 	packageGroups := groupApkPackageLines(scanner)
 
-	packages := make([]PackageDetails, 0, len(packageGroups))
+	packages := make([]models.PackageDetails, 0, len(packageGroups))
 
 	for _, group := range packageGroups {
 		pkg := parseApkPackageGroup(group)
@@ -86,7 +84,7 @@ func (e ApkInstalledExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	alpineVersion, alpineVerErr := alpineReleaseExtractor(f)
 	if alpineVerErr == nil { // TODO: Log error? We might not be on a alpine system
 		for i := range packages {
-			packages[i].Ecosystem = Ecosystem(string(packages[i].Ecosystem) + ":" + alpineVersion)
+			packages[i].Ecosystem = models.Ecosystem(string(packages[i].Ecosystem) + ":" + alpineVersion)
 		}
 	}
 

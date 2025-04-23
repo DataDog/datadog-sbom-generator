@@ -73,7 +73,7 @@ func TestParsePipenvLock_FileDoesNotExist(t *testing.T) {
 	packages, err := lockfile.ParsePipenvLock("fixtures/pipenv/does-not-exist")
 
 	expectErrIs(t, err, fs.ErrNotExist)
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePipenvLock_InvalidJson(t *testing.T) {
@@ -82,7 +82,7 @@ func TestParsePipenvLock_InvalidJson(t *testing.T) {
 	packages, err := lockfile.ParsePipenvLock("fixtures/pipenv/not-json.txt")
 
 	expectErrContaining(t, err, "could not extract from")
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePipenvLock_NoPackages(t *testing.T) {
@@ -94,7 +94,7 @@ func TestParsePipenvLock_NoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
 
 func TestParsePipenvLock_OnePackage(t *testing.T) {
@@ -110,7 +110,7 @@ func TestParsePipenvLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -155,7 +155,7 @@ func TestParsePipenvLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -181,7 +181,7 @@ func TestParsePipenvLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -205,7 +205,7 @@ func TestParsePipenvLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -235,7 +235,7 @@ func TestParsePipenvLock_TwoPackagesAlt(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -264,7 +264,7 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{
+	expectPackages(t, packages, []models.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -302,5 +302,5 @@ func TestParsePipenvLock_PackageWithoutVersion(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	expectPackages(t, packages, []lockfile.PackageDetails{})
+	expectPackages(t, packages, []models.PackageDetails{})
 }
