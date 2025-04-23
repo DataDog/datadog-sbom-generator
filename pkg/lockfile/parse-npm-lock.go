@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
+	"maps"
+	"slices"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 
@@ -328,7 +328,7 @@ func (e NpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	}
 	parsedLockfile.SourceFile = f.Path()
 
-	return maps.Values(parseNpmLock(*parsedLockfile, lines)), nil
+	return slices.Collect(maps.Values(parseNpmLock(*parsedLockfile, lines))), nil
 }
 
 var NpmExtractor = NpmLockExtractor{

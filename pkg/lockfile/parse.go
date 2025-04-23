@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"golang.org/x/exp/maps"
+	"maps"
 )
 
 func FindParser(pathToLockfile string, parseAs string) (PackageDetailsParser, string) {
@@ -69,7 +70,7 @@ func (ps Packages) Ecosystems() []Ecosystem {
 		ecosystems[pkg.Ecosystem] = struct{}{}
 	}
 
-	slicedEcosystems := maps.Keys(ecosystems)
+	slicedEcosystems := slices.Collect(maps.Keys(ecosystems))
 
 	sort.Slice(slicedEcosystems, func(i, j int) bool {
 		return slicedEcosystems[i] < slicedEcosystems[j]

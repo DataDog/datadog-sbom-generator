@@ -7,7 +7,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"golang.org/x/exp/maps"
+	"maps"
 
 	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -37,7 +37,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 
 		components = append(components, libraryComponent)
 	}
-	components = append(components, maps.Values(fileComponents)...)
+	components = slices.AppendSeq(components, maps.Values(fileComponents))
 	slices.SortFunc(components, func(a, b cyclonedx.Component) int {
 		return strings.Compare(a.BOMRef, b.BOMRef)
 	})
@@ -52,7 +52,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		return strings.Compare(a.ID, b.ID)
 	})
 
-	dependencies := maps.Values(dependsOn)
+	dependencies := slices.Collect(maps.Values(dependsOn))
 	slices.SortFunc(dependencies, func(a, b cyclonedx.Dependency) int {
 		return strings.Compare(a.Ref, b.Ref)
 	})

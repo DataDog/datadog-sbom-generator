@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 
+	"maps"
+
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
@@ -84,15 +86,15 @@ func getCommitFromVersion(version string) string {
 	return ""
 }
 
-func mergeSlices(slices ...[]string) []string {
+func mergeSlices(fromSlices ...[]string) []string {
 	result := make(map[string]bool)
-	for _, slice := range slices {
+	for _, slice := range fromSlices {
 		for _, item := range slice {
 			result[item] = true
 		}
 	}
 
-	return maps.Keys(result)
+	return slices.Collect(maps.Keys(result))
 }
 
 func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]PackageDetails) map[string]PackageDetails {
@@ -212,7 +214,7 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 		packages = extractTransitiveDeps(lockfile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages)
 	}
 
-	return maps.Values(packages)
+	return slices.Collect(maps.Values(packages))
 }
 
 func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

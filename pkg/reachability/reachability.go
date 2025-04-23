@@ -47,12 +47,12 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enable
 
 			switch filepath.Ext(d.Name()) {
 			case ".java":
-				javaReachabilityDetector.Detect(dir, path, detectionResults, advisoriesToCheckPerLanguage["java"])
+				err = javaReachabilityDetector.Detect(dir, path, detectionResults, advisoriesToCheckPerLanguage["java"])
 			default:
 				return nil
 			}
 
-			return nil
+			return err
 		})
 
 		if err != nil {

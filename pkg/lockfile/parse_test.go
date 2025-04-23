@@ -250,7 +250,7 @@ func TestPackages_Ecosystems(t *testing.T) {
 		ps   lockfile.Packages
 		want []lockfile.Ecosystem
 	}{
-		{name: "", ps: lockfile.Packages{}, want: []lockfile.Ecosystem{}},
+		{name: "", ps: lockfile.Packages{}},
 		{
 			name: "",
 			ps: lockfile.Packages{

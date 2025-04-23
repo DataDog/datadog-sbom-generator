@@ -5,6 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -108,17 +112,12 @@ func (matcher GemspecFileMatcher) findGemspecs(node *Node) ([]gemspecMetadata, e
 		requirementNodes := match.FindByName("gem_requirements")
 
 		metadata := gemspecMetadata{
-			name:        dependencyName,
-			isDev:       methodName == "add_development_dependency",
-			blockLine:   models.Position{Start: int(callNode.TSNode.StartPosition().Row) + 1, End: int(callNode.TSNode.EndPosition().Row) + 1},
-			blockColumn: models.Position{Start: int(callNode.TSNode.StartPosition().Column) + 1, End: int(callNode.TSNode.EndPosition().Column) + 1},
-			nameLine:    models.Position{Start: int(dependencyNameNode.TSNode.StartPosition().Row) + 1, End: int(dependencyNameNode.TSNode.EndPosition().Row) + 1},
-			nameColumn:  models.Position{Start: int(dependencyNameNode.TSNode.StartPosition().Column) + 1, End: int(dependencyNameNode.TSNode.EndPosition().Column) + 1},
+			name:  dependencyName,
+			isDev: methodName == "add_development_dependency",
 		}
-
-		if len(requirementNodes) > 0 {
-			metadata.versionLine = &models.Position{Start: int(requirementNodes[0].TSNode.StartPosition().Row) + 1, End: int(requirementNodes[len(requirementNodes)-1].TSNode.EndPosition().Row) + 1}
-			metadata.versionColumn = &models.Position{Start: int(requirementNodes[0].TSNode.StartPosition().Column) + 3, End: int(requirementNodes[len(requirementNodes)-1].TSNode.EndPosition().Column) + 1}
+		metadata, err = setPositionInMetadata(metadata, callNode, dependencyNameNode, requirementNodes)
+		if err != nil {
+			return err
 		}
 
 		gems = append(gems, metadata)
@@ -157,4 +156,57 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile,
 			pkg.DepGroups = []string{string(DepGroupDev)}
 		}
 	}
+}
+
+func setPositionInMetadata(metadata gemspecMetadata, callNode *Node, dependencyNameNode *Node, requirementNodes []*Node) (gemspecMetadata, error) {
+	setPos := func(dstLine *models.Position, dstColumn *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
+		var err error
+		if dstLine.Start, err = converter.SafeUIntToInt(start.Row + 1); err != nil {
+			return err
+		}
+		if dstLine.End, err = converter.SafeUIntToInt(end.Row + 1); err != nil {
+			return err
+		}
+		if dstColumn.Start, err = converter.SafeUIntToInt(start.Column + 1); err != nil {
+			return err
+		}
+		if dstColumn.End, err = converter.SafeUIntToInt(end.Column + 1); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// block
+	startPos := callNode.TSNode.StartPosition()
+	endPos := callNode.TSNode.EndPosition()
+	if err := setPos(&metadata.blockLine, &metadata.blockColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	// name
+	startPos = dependencyNameNode.TSNode.StartPosition()
+	endPos = dependencyNameNode.TSNode.EndPosition()
+	if err := setPos(&metadata.nameLine, &metadata.nameColumn, startPos, endPos); err != nil {
+		return metadata, err
+	}
+
+	if len(requirementNodes) > 0 {
+		// version
+		var err error
+		startPos = requirementNodes[0].TSNode.StartPosition()
+		endPos = requirementNodes[len(requirementNodes)-1].TSNode.EndPosition()
+		metadata.versionLine = &models.Position{}
+		metadata.versionColumn = &models.Position{}
+		if err := setPos(metadata.versionLine, metadata.versionColumn, startPos, endPos); err != nil {
+			return metadata, err
+		}
+
+		// We need to override the column start because it needs to be shifted by 3 and not 1
+		if metadata.versionColumn.Start, err = converter.SafeUIntToInt(requirementNodes[0].TSNode.StartPosition().Column + 3); err != nil {
+			return metadata, err
+		}
+	}
+
+	return metadata, nil
 }
