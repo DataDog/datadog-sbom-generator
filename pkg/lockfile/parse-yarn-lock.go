@@ -13,8 +13,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const YarnEcosystem = NpmEcosystem
-
 type YarnDependency struct {
 	Name     string
 	Version  string
@@ -310,7 +308,7 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		Version:        dependency.Version,
 		TargetVersions: dependency.TargetVersions,
 		PackageManager: models.Yarn,
-		Ecosystem:      YarnEcosystem,
+		Ecosystem:      models.EcosystemNPM,
 		Commit:         tryExtractCommit(dependency.Resolution),
 	}
 }

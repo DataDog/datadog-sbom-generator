@@ -19,8 +19,6 @@ type CargoLockFile struct {
 	Packages []CargoLockPackage `toml:"package"`
 }
 
-const CargoEcosystem Ecosystem = "crates.io"
-
 type CargoLockExtractor struct{}
 
 func (e CargoLockExtractor) ShouldExtract(path string) bool {
@@ -43,7 +41,7 @@ func (e CargoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           lockPackage.Name,
 			Version:        lockPackage.Version,
 			PackageManager: models.Crates,
-			Ecosystem:      CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		})
 	}
 

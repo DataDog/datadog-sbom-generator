@@ -40,7 +40,7 @@ func parseToGradlePackageDetail(line string) (PackageDetails, error) {
 		Version:        version,
 		PackageManager: models.Gradle,
 		DepGroups:      scopes,
-		Ecosystem:      MavenEcosystem,
+		Ecosystem:      models.EcosystemMaven,
 	}, nil
 }
 

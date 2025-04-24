@@ -20,8 +20,6 @@ type PipenvLock struct {
 	PackagesDev map[string]PipenvPackage `json:"develop"`
 }
 
-const PipenvEcosystem = PipEcosystem
-
 type PipenvLockExtractor struct {
 	WithMatcher
 }
@@ -60,7 +58,7 @@ func addPkgDetails(details map[string]PackageDetails, packages map[string]Pipenv
 				Name:           name,
 				Version:        version,
 				PackageManager: models.Pipfile,
-				Ecosystem:      PipenvEcosystem,
+				Ecosystem:      models.EcosystemPyPI,
 			}
 			if group != "" {
 				pkgDetails.DepGroups = append(pkgDetails.DepGroups, group)

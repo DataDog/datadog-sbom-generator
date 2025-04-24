@@ -56,7 +56,7 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	pkgs = append(pkgs, PackageDetails{
 		Name:           "stdlib",
 		Version:        strings.TrimPrefix(info.GoVersion, "go"),
-		Ecosystem:      GoEcosystem,
+		Ecosystem:      models.EcosystemGo,
 		PackageManager: models.Golang,
 	})
 
@@ -67,7 +67,7 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		pkgs = append(pkgs, PackageDetails{
 			Name:           dep.Path,
 			Version:        strings.TrimPrefix(dep.Version, "v"),
-			Ecosystem:      GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			PackageManager: models.Golang,
 		})
 	}

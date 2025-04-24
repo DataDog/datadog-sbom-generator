@@ -195,31 +195,31 @@ func TestLockfile_String(t *testing.T) {
 				Name:           "addr2line",
 				Version:        "0.15.2",
 				PackageManager: models.Crates,
-				Ecosystem:      lockfile.CargoEcosystem,
+				Ecosystem:      models.EcosystemCratesIO,
 			},
 			{
 				Name:           "@typescript-eslint/types",
 				Version:        "5.13.0",
 				PackageManager: models.Pnpm,
-				Ecosystem:      lockfile.PnpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 			},
 			{
 				Name:           "wasi",
 				Version:        "0.10.2+wasi-snapshot-preview1",
 				PackageManager: models.Crates,
-				Ecosystem:      lockfile.CargoEcosystem,
+				Ecosystem:      models.EcosystemCratesIO,
 			},
 			{
 				Name:           "sentry/sdk",
 				Version:        "2.0.4",
 				PackageManager: models.Composer,
-				Ecosystem:      lockfile.ComposerEcosystem,
+				Ecosystem:      models.EcosystemPackagist,
 			},
 			{
 				Name:           "no-version",
 				Version:        "",
 				PackageManager: models.Crates,
-				Ecosystem:      lockfile.CargoEcosystem,
+				Ecosystem:      models.EcosystemCratesIO,
 			},
 			{
 				Name:           "no-ecosystem",
@@ -248,7 +248,7 @@ func TestPackages_Ecosystems(t *testing.T) {
 	tests := []struct {
 		name string
 		ps   lockfile.Packages
-		want []lockfile.Ecosystem
+		want []models.Ecosystem
 	}{
 		{name: "", ps: lockfile.Packages{}},
 		{
@@ -257,11 +257,11 @@ func TestPackages_Ecosystems(t *testing.T) {
 				{
 					Name:      "addr2line",
 					Version:   "0.15.2",
-					Ecosystem: lockfile.CargoEcosystem,
+					Ecosystem: models.EcosystemCratesIO,
 				},
 			},
-			want: []lockfile.Ecosystem{
-				lockfile.CargoEcosystem,
+			want: []models.Ecosystem{
+				models.EcosystemCratesIO,
 			},
 		},
 		{
@@ -270,16 +270,16 @@ func TestPackages_Ecosystems(t *testing.T) {
 				{
 					Name:      "addr2line",
 					Version:   "0.15.2",
-					Ecosystem: lockfile.CargoEcosystem,
+					Ecosystem: models.EcosystemCratesIO,
 				},
 				{
 					Name:      "wasi",
 					Version:   "0.10.2+wasi-snapshot-preview1",
-					Ecosystem: lockfile.CargoEcosystem,
+					Ecosystem: models.EcosystemCratesIO,
 				},
 			},
-			want: []lockfile.Ecosystem{
-				lockfile.CargoEcosystem,
+			want: []models.Ecosystem{
+				models.EcosystemCratesIO,
 			},
 		},
 		{
@@ -288,28 +288,28 @@ func TestPackages_Ecosystems(t *testing.T) {
 				{
 					Name:      "addr2line",
 					Version:   "0.15.2",
-					Ecosystem: lockfile.CargoEcosystem,
+					Ecosystem: models.EcosystemCratesIO,
 				},
 				{
 					Name:      "@typescript-eslint/types",
 					Version:   "5.13.0",
-					Ecosystem: lockfile.PnpmEcosystem,
+					Ecosystem: models.EcosystemNPM,
 				},
 				{
 					Name:      "wasi",
 					Version:   "0.10.2+wasi-snapshot-preview1",
-					Ecosystem: lockfile.CargoEcosystem,
+					Ecosystem: models.EcosystemCratesIO,
 				},
 				{
 					Name:      "sentry/sdk",
 					Version:   "2.0.4",
-					Ecosystem: lockfile.ComposerEcosystem,
+					Ecosystem: models.EcosystemPackagist,
 				},
 			},
-			want: []lockfile.Ecosystem{
-				lockfile.ComposerEcosystem,
-				lockfile.CargoEcosystem,
-				lockfile.PnpmEcosystem,
+			want: []models.Ecosystem{
+				models.EcosystemPackagist,
+				models.EcosystemCratesIO,
+				models.EcosystemNPM,
 			},
 		},
 	}

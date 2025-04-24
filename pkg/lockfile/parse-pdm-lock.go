@@ -21,8 +21,6 @@ type PdmLockFile struct {
 	Packages []PdmLockPackage `toml:"package"`
 }
 
-const PdmEcosystem = PipEcosystem
-
 type PdmLockExtractor struct{}
 
 func (p PdmLockExtractor) ShouldExtract(path string) bool {
@@ -43,7 +41,7 @@ func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           pkg.Name,
 			Version:        pkg.Version,
 			PackageManager: models.Pdm,
-			Ecosystem:      PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		}
 
 		var optional = true

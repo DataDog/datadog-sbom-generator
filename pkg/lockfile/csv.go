@@ -20,7 +20,7 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 		return PackageDetails{}, errCSVRecordNotEnoughFields
 	}
 
-	ecosystem := Ecosystem(lines[0])
+	ecosystem := models.Ecosystem(lines[0])
 	name := lines[2]
 	version := lines[3]
 	commit := ""

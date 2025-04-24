@@ -1,6 +1,7 @@
 package lockfile_test
 
 import (
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"os"
 	"strings"
 	"testing"
@@ -46,7 +47,7 @@ func TestKnownEcosystems(t *testing.T) {
 		t.Errorf("Expected to know about %d ecosystems, but knew about %d", expectedCount, knownCount)
 	}
 
-	uniq := make(map[lockfile.Ecosystem]int)
+	uniq := make(map[models.Ecosystem]int)
 
 	for _, ecosystem := range ecosystems {
 		uniq[ecosystem]++

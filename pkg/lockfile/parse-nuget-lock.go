@@ -25,8 +25,7 @@ type NuGetLockfile struct {
 }
 
 const (
-	NuGetEcosystem        Ecosystem = "NuGet"
-	projectDependencyType string    = "Project"
+	projectDependencyType string = "Project"
 )
 
 func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[string]PackageDetails {
@@ -40,7 +39,7 @@ func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[st
 			Name:           name,
 			Version:        dependency.Resolved,
 			PackageManager: models.NuGet,
-			Ecosystem:      NuGetEcosystem,
+			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       dependency.Type == "Direct",
 		}
 	}

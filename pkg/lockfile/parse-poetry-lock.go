@@ -26,8 +26,6 @@ type PoetryLockFile struct {
 	Packages []*PoetryLockPackage `toml:"package"`
 }
 
-const PoetryEcosystem = PipEcosystem
-
 type PoetryLockExtractor struct {
 	WithMatcher
 }
@@ -53,7 +51,7 @@ func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        lockPackage.Version,
 			Commit:         lockPackage.Source.Commit,
 			PackageManager: models.Poetry,
-			Ecosystem:      PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		}
 		if lockPackage.Optional {
 			pkgDetails.DepGroups = append(pkgDetails.DepGroups, "optional")

@@ -53,7 +53,7 @@ func TestParseConanLock_v1_revisions_OnePackage(t *testing.T) {
 			Name:           "zlib",
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 	})
 }
@@ -72,7 +72,7 @@ func TestParseConanLock_v1_revisions_NoName(t *testing.T) {
 			Name:           "zlib",
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 	})
 }
@@ -91,13 +91,13 @@ func TestParseConanLock_v1_revisions_TwoPackages(t *testing.T) {
 			Name:           "zlib",
 			Version:        "1.2.11",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 		{
 			Name:           "bzip2",
 			Version:        "1.0.8",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 	})
 }
@@ -116,31 +116,31 @@ func TestParseConanLock_v1_revisions_NestedDependencies(t *testing.T) {
 			Name:           "zlib",
 			Version:        "1.2.13",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 		{
 			Name:           "bzip2",
 			Version:        "1.0.8",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 		{
 			Name:           "freetype",
 			Version:        "2.12.1",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 		{
 			Name:           "libpng",
 			Version:        "1.6.39",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 		{
 			Name:           "brotli",
 			Version:        "1.0.9",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 	})
 }
@@ -159,7 +159,7 @@ func TestParseConanLock_v1_revisions_OnePackageDev(t *testing.T) {
 			Name:           "ninja",
 			Version:        "1.11.1",
 			PackageManager: models.Conan,
-			Ecosystem:      lockfile.ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		},
 	})
 }

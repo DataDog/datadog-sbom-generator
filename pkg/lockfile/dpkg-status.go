@@ -10,8 +10,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const DebianEcosystem Ecosystem = "Debian"
-
 func groupDpkgPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -50,7 +48,7 @@ func parseSourceField(source string) (string, string) {
 
 func parseDpkgPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
-		Ecosystem:      DebianEcosystem,
+		Ecosystem:      models.EcosystemDebian,
 		PackageManager: models.Unknown,
 	}
 
@@ -137,7 +135,7 @@ func (e DpkgStatusExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	debianReleaseVersion := getReleaseVersion(packages)
 	if debianReleaseVersion != "" {
 		for i := range packages {
-			packages[i].Ecosystem = Ecosystem(string(packages[i].Ecosystem) + ":" + debianReleaseVersion)
+			packages[i].Ecosystem = models.Ecosystem(string(packages[i].Ecosystem) + ":" + debianReleaseVersion)
 		}
 	}
 

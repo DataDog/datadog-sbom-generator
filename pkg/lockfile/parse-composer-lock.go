@@ -21,8 +21,6 @@ type ComposerLock struct {
 	PackagesDev []ComposerPackage `json:"packages-dev"`
 }
 
-const ComposerEcosystem Ecosystem = "Packagist"
-
 type ComposerLockExtractor struct {
 	WithMatcher
 }
@@ -52,7 +50,7 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
-			Ecosystem:      ComposerEcosystem,
+			Ecosystem:      models.EcosystemPackagist,
 		})
 	}
 
@@ -62,7 +60,7 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
 			PackageManager: models.Composer,
-			Ecosystem:      ComposerEcosystem,
+			Ecosystem:      models.EcosystemPackagist,
 			DepGroups:      []string{"dev"},
 		})
 	}

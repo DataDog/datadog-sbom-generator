@@ -153,7 +153,7 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile DepFile,
 			}
 		}
 		if gem.isDev {
-			pkg.DepGroups = []string{string(DepGroupDev)}
+			pkg.DepGroups = []string{string(models.DepGroupDev)}
 		}
 	}
 }

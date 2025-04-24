@@ -115,7 +115,7 @@ func TestParsePoetryLock_OnePackage(t *testing.T) {
 			Name:           "numpy",
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -160,7 +160,7 @@ func TestParsePoetryLock_OnePackage_MatcherFailed(t *testing.T) {
 			Name:           "numpy",
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 
@@ -186,13 +186,13 @@ func TestParsePoetryLock_TwoPackages(t *testing.T) {
 			Name:           "proto-plus",
 			Version:        "1.22.0",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "protobuf",
 			Version:        "4.21.5",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -215,7 +215,7 @@ func TestParsePoetryLock_PackageWithMetadata(t *testing.T) {
 			Name:           "emoji",
 			Version:        "2.0.0",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -238,7 +238,7 @@ func TestParsePoetryLock_PackageWithGitSource(t *testing.T) {
 			Name:           "ike",
 			Version:        "0.2.0",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			Commit:         "cd66602cd29f61a2d2e7fb995fef1e61708c034d",
 		},
 	})
@@ -262,7 +262,7 @@ func TestParsePoetryLock_PackageWithLegacySource(t *testing.T) {
 			Name:           "appdirs",
 			Version:        "1.4.4",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			Commit:         "",
 		},
 	})
@@ -286,7 +286,7 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 			Name:           "numpy",
 			Version:        "1.23.3",
 			PackageManager: models.Poetry,
-			Ecosystem:      lockfile.PoetryEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"optional"},
 		},
 	})

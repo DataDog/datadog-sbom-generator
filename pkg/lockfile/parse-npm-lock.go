@@ -69,8 +69,6 @@ type NpmLockfile struct {
 	Packages map[string]*NpmLockPackage `json:"packages,omitempty"`
 }
 
-const NpmEcosystem Ecosystem = "npm"
-
 type npmPackageDetailsMap map[string]PackageDetails
 
 // mergeNpmDepsGroups handles merging the dependency groups of packages within the
@@ -167,7 +165,7 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			Name:           name,
 			Version:        finalVersion,
 			PackageManager: models.NPM,
-			Ecosystem:      NpmEcosystem,
+			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
 		})
@@ -282,7 +280,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				Version:        detail.Version,
 				TargetVersions: targetVersions,
 				PackageManager: models.NPM,
-				Ecosystem:      NpmEcosystem,
+				Ecosystem:      models.EcosystemNPM,
 				Commit:         commit,
 				DepGroups:      detail.depGroups(),
 			})

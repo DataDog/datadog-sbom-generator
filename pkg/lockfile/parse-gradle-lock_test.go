@@ -144,7 +144,7 @@ func TestParseGradleLock_OnePackage(t *testing.T) {
 			Version:        "5.7.3",
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 	})
 }
@@ -190,7 +190,7 @@ func TestParseGradleLock_OnePackage_MatcherFailed(t *testing.T) {
 			Version:        "5.7.3",
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 	})
 
@@ -217,35 +217,35 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			Version:        "2.7.4",
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-configuration-processor",
 			Version:        "2.7.5",
 			DepGroups:      []string{"annotationProcessor", "compileClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-devtools",
 			Version:        "2.7.6",
 			DepGroups:      []string{"developmentOnly", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-aop",
 			Version:        "2.7.7",
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-data-jpa",
 			Version:        "2.7.8",
 			DepGroups:      []string{"compileClasspath", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 	})
 }
@@ -269,14 +269,14 @@ func TestParseGradleLock_WithInvalidLines(t *testing.T) {
 			Version:        "2.7.4",
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 		{
 			Name:           "org.springframework.boot:spring-boot-configuration-processor",
 			Version:        "2.7.5",
 			DepGroups:      []string{"compileClasspath", "developmentOnly", "productionRuntimeClasspath", "runtimeClasspath"},
 			PackageManager: models.Gradle,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 		},
 	})
 }

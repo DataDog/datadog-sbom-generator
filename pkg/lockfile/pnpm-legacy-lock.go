@@ -74,8 +74,6 @@ func (pnpmDependencies *PnpmLegacyDependencies) UnmarshalYAML(value *yaml.Node) 
 	return nil
 }
 
-const PnpmEcosystem = NpmEcosystem
-
 func startsWithNumber(str string) bool {
 	matcher := cachedregexp.MustCompile(`^\d`)
 
@@ -252,7 +250,7 @@ func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
 			Version:        version,
 			TargetVersions: targetVersions,
 			PackageManager: models.Pnpm,
-			Ecosystem:      PnpmEcosystem,
+			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      depGroups,
 			IsDirect:       isDirect,

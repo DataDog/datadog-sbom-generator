@@ -46,9 +46,6 @@ type ConanLockFile struct {
 	PythonRequires []string `json:"python_requires,omitempty"`
 }
 
-// TODO this is tentative and subject to change depending on the OSV schema
-const ConanEcosystem Ecosystem = "ConanCenter"
-
 func parseConanRenference(ref string) ConanReference {
 	// very flexible format name/version[@username[/channel]][#rrev][:pkgid[#prev]][%timestamp]
 	var reference ConanReference
@@ -127,7 +124,7 @@ func parseConanV1Lock(lockfile ConanLockFile) []PackageDetails {
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: models.Conan,
-			Ecosystem:      ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 		})
 	}
 
@@ -147,7 +144,7 @@ func parseConanRequires(packages *[]PackageDetails, requires []string, group str
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: models.Conan,
-			Ecosystem:      ConanEcosystem,
+			Ecosystem:      models.EcosystemConanCenter,
 			DepGroups:      []string{group},
 		})
 	}

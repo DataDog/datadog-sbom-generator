@@ -15,8 +15,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const PipEcosystem Ecosystem = "PyPI"
-
 // CommentType represents the type of dependency comment
 type CommentType int
 
@@ -213,7 +211,7 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 		NameLocation:    nameLocation,
 		VersionLocation: versionLocation,
 		PackageManager:  models.Requirements,
-		Ecosystem:       PipEcosystem,
+		Ecosystem:       models.EcosystemPyPI,
 		IsDirect:        true,
 	}
 }
