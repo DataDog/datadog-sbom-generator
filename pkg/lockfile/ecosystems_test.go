@@ -1,10 +1,11 @@
 package lockfile_test
 
 import (
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )

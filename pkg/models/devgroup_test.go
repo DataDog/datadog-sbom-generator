@@ -1,8 +1,9 @@
 package models_test
 
 import (
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
 )
