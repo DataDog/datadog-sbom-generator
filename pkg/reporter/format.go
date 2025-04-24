@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-var format = []string{"json", "cyclonedx-1-4", "cyclonedx-1-5"}
+var format = []string{"json", "cyclonedx-1-5"}
 
 func Format() []string {
 	return format
@@ -17,8 +17,6 @@ func New(format string, stdout, stderr io.Writer, level VerbosityLevel) (Reporte
 	switch format {
 	case "json":
 		return NewJSONReporter(stdout, stderr, level), nil
-	case "cyclonedx-1-4":
-		return NewCycloneDXReporter(stdout, stderr, level), nil
 	case "cyclonedx-1-5":
 		return NewCycloneDXReporter(stdout, stderr, level), nil
 	default:

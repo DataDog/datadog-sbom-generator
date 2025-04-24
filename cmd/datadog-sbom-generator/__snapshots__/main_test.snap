@@ -161,7 +161,7 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#05 - 2]
-unsupported output format "unknown" - must be one of: json, cyclonedx-1-4, cyclonedx-1-5
+unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 ---
 
