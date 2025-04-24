@@ -20,9 +20,9 @@ func New(format string, stdout, stderr io.Writer, level VerbosityLevel, terminal
 	case "json":
 		return NewJSONReporter(stdout, stderr, level), nil
 	case "cyclonedx-1-4":
-		return NewCycloneDXReporter(stdout, stderr, models.CycloneDXVersion14, level), nil
+		return NewCycloneDXReporter(stdout, stderr, level), nil
 	case "cyclonedx-1-5":
-		return NewCycloneDXReporter(stdout, stderr, models.CycloneDXVersion15, level), nil
+		return NewCycloneDXReporter(stdout, stderr, level), nil
 	default:
 		return nil, fmt.Errorf("%v is not a valid format", format)
 	}

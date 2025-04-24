@@ -16,16 +16,14 @@ type CycloneDXReporter struct {
 	hasErrored bool
 	stdout     io.Writer
 	stderr     io.Writer
-	version    models.CycloneDXVersion
 	level      VerbosityLevel
 }
 
-func NewCycloneDXReporter(stdout, stderr io.Writer, version models.CycloneDXVersion, level VerbosityLevel) *CycloneDXReporter {
+func NewCycloneDXReporter(stdout, stderr io.Writer, level VerbosityLevel) *CycloneDXReporter {
 	return &CycloneDXReporter{
 		stdout:     stdout,
 		stderr:     stderr,
 		hasErrored: false,
-		version:    version,
 		level:      level,
 	}
 }
