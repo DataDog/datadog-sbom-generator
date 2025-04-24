@@ -18,13 +18,13 @@ If you're interested in this repository, you might be interested in [Setting up 
 To scan a repository folder and generate a SBOM, you can use this command:
 
 ```bash
-datadog-sbom-scanner -o "/tmp/sbom.json" "/path/of/the/directory/to/scan"
+datadog-sbom-generator -o "/tmp/sbom.json" "/path/of/the/directory/to/scan"
 ```
 
 If you want to know more about available options, you can run the following:
 
 ```bash
-datadog-sbom-scanner scan help
+datadog-sbom-generator scan help
 ```
 
 ## Supported package managers
