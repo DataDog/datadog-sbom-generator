@@ -168,10 +168,8 @@ core,golang.org/x/net/internal/socks,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/net/proxy,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/cpu,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/execabs,BSD-3-Clause,Copyright 2009 The Go Authors
-core,golang.org/x/sys/plan9,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/unix,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/windows,BSD-3-Clause,Copyright 2009 The Go Authors
-core,golang.org/x/term,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/text/encoding,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/text/encoding/internal,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/text/encoding/internal/identifier,BSD-3-Clause,Copyright 2009 The Go Authors
