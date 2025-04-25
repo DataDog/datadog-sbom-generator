@@ -12,8 +12,6 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
-	"golang.org/x/term"
-
 	"github.com/urfave/cli/v2"
 )
 
@@ -83,19 +81,11 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 
 	outputPath := context.String("output")
 
-	termWidth := 0
 	var err error
 	if outputPath != "" { // Output is definitely a file
 		stdout, err = os.Create(outputPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create output file: %w", err)
-		}
-	} else { // Output might be a terminal
-		if stdoutAsFile, ok := stdout.(*os.File); ok {
-			termWidth, _, err = term.GetSize(int(stdoutAsFile.Fd()))
-			if err != nil { // If output is not a terminal,
-				termWidth = 0
-			}
 		}
 	}
 
@@ -103,7 +93,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	if err != nil {
 		return nil, err
 	}
-	r, err := reporter.New(format, stdout, stderr, verbosityLevel, termWidth)
+	r, err := reporter.New(format, stdout, stderr, verbosityLevel)
 	if err != nil {
 		return r, err
 	}

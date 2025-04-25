@@ -12,8 +12,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const BundlerEcosystem Ecosystem = "RubyGems"
-
 const (
 	lockfileSectionBUNDLED      = "BUNDLED WITH"
 	lockfileSectionDEPENDENCIES = "DEPENDENCIES"
@@ -72,7 +70,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Bundler,
-			Ecosystem:      BundlerEcosystem,
+			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 		})
 
@@ -96,7 +94,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Bundler,
-			Ecosystem:      BundlerEcosystem,
+			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
 		})

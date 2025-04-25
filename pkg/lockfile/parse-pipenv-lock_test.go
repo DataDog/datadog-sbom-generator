@@ -115,7 +115,7 @@ func TestParsePipenvLock_OnePackage(t *testing.T) {
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -160,7 +160,7 @@ func TestParsePipenvLock_OnePackage_MatcherFailed(t *testing.T) {
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 
@@ -186,7 +186,7 @@ func TestParsePipenvLock_OnePackageDev(t *testing.T) {
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -210,13 +210,13 @@ func TestParsePipenvLock_TwoPackages(t *testing.T) {
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -240,13 +240,13 @@ func TestParsePipenvLock_TwoPackagesAlt(t *testing.T) {
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -269,26 +269,26 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "pluggy",
 			Version:        "1.0.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "pluggy",
 			Version:        "1.0.0",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"dev"},
 		},
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
 			PackageManager: models.Pipfile,
-			Ecosystem:      lockfile.PipenvEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }

@@ -225,8 +225,6 @@ type MavenLockFile struct {
 	ProjectVersionSourceFile string
 }
 
-const MavenEcosystem Ecosystem = "Maven"
-
 type MavenLockProperty struct {
 	Property   models.StringWithPosition
 	SourceFile string
@@ -542,7 +540,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		pkgDetails := PackageDetails{
 			Name:            finalName,
 			Version:         resolvedVersion,
-			Ecosystem:       MavenEcosystem,
+			Ecosystem:       models.EcosystemMaven,
 			BlockLocation:   blockLocation,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,

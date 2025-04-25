@@ -53,7 +53,7 @@ func TestParseOSVScannerResults_OnePackage(t *testing.T) {
 			Name:           "activesupport",
 			Version:        "7.0.7",
 			PackageManager: models.Unknown,
-			Ecosystem:      lockfile.BundlerEcosystem,
+			Ecosystem:      models.EcosystemRubyGems,
 		},
 	})
 }
@@ -89,19 +89,19 @@ func TestParseOSVScannerResults_MultiPackages(t *testing.T) {
 			Name:           "crossbeam-utils",
 			Version:        "0.6.6",
 			PackageManager: models.Unknown,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 		{
 			Name:           "memoffset",
 			Version:        "0.5.6",
 			PackageManager: models.Unknown,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 		{
 			Name:           "smallvec",
 			Version:        "1.6.0",
 			PackageManager: models.Unknown,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 	})
 }

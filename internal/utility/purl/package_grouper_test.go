@@ -6,7 +6,6 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -22,7 +21,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
@@ -33,7 +32,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
@@ -43,7 +42,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
@@ -52,7 +51,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 				{
 					Package: models.PackageInfo{
 						Name:      "foo.bar:package-2",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 						Version:   "1.0.0",
 					},
 				},
@@ -67,7 +66,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Vulnerabilities: []models.Vulnerability{
 						{ID: "GHSA-456"},
@@ -77,7 +76,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 				{
 					Package: models.PackageInfo{
 						Name:      "foo.bar:package-2",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 						Version:   "1.0.0",
 					},
 				},
@@ -92,7 +91,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 			Package: models.PackageInfo{
 				Name:      "foo.bar:the-first-package",
 				Version:   "1.0.0",
-				Ecosystem: string(lockfile.MavenEcosystem),
+				Ecosystem: string(models.EcosystemMaven),
 			},
 			Vulnerabilities: []models.Vulnerability{
 				{ID: "GHSA-456"},
@@ -103,7 +102,7 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 			Package: models.PackageInfo{
 				Name:      "foo.bar:package-2",
 				Version:   "1.0.0",
-				Ecosystem: string(lockfile.MavenEcosystem),
+				Ecosystem: string(models.EcosystemMaven),
 			},
 		},
 	}
@@ -138,7 +137,7 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Metadata: map[models.PackageMetadataType]string{
 						models.PackageManagerMetadata: "Maven",
@@ -155,7 +154,7 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 					Package: models.PackageInfo{
 						Name:      "foo.bar:the-first-package",
 						Version:   "1.0.0",
-						Ecosystem: string(lockfile.MavenEcosystem),
+						Ecosystem: string(models.EcosystemMaven),
 					},
 					Metadata: map[models.PackageMetadataType]string{
 						models.PackageManagerMetadata:     "Maven",
@@ -173,7 +172,7 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 			Package: models.PackageInfo{
 				Name:      "foo.bar:the-first-package",
 				Version:   "1.0.0",
-				Ecosystem: string(lockfile.MavenEcosystem),
+				Ecosystem: string(models.EcosystemMaven),
 			},
 			Metadata: map[models.PackageMetadataType]string{
 				models.PackageManagerMetadata:     "Maven",

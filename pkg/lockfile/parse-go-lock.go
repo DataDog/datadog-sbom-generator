@@ -21,7 +21,6 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-const GoEcosystem Ecosystem = "Go"
 const unknownVersion = "v0.0.0-unresolved-version"
 
 func deduplicatePackages(packages map[string]PackageDetails) map[string]PackageDetails {
@@ -112,7 +111,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:            name,
 			Version:         version,
 			PackageManager:  models.Golang,
-			Ecosystem:       GoEcosystem,
+			Ecosystem:       models.EcosystemGo,
 			BlockLocation:   blockLocation,
 			NameLocation:    nameLocation,
 			VersionLocation: versionLocation,
@@ -168,7 +167,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				Name:            name,
 				Version:         version,
 				PackageManager:  models.Golang,
-				Ecosystem:       GoEcosystem,
+				Ecosystem:       models.EcosystemGo,
 				BlockLocation:   blockLocation,
 				VersionLocation: versionLocation,
 				NameLocation:    nameLocation,
@@ -182,7 +181,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           "stdlib",
 			Version:        parsedLockfile.Go.Version,
 			PackageManager: models.Golang,
-			Ecosystem:      GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
 				Filename: f.Path(),
 			},

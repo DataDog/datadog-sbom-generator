@@ -9,8 +9,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const AlpineEcosystem Ecosystem = "Alpine"
-
 func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -37,7 +35,7 @@ func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 
 func parseApkPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
-		Ecosystem:      AlpineEcosystem,
+		Ecosystem:      models.EcosystemAlpine,
 		PackageManager: models.Unknown,
 	}
 
@@ -86,7 +84,7 @@ func (e ApkInstalledExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	alpineVersion, alpineVerErr := alpineReleaseExtractor(f)
 	if alpineVerErr == nil { // TODO: Log error? We might not be on a alpine system
 		for i := range packages {
-			packages[i].Ecosystem = Ecosystem(string(packages[i].Ecosystem) + ":" + alpineVersion)
+			packages[i].Ecosystem = models.Ecosystem(string(packages[i].Ecosystem) + ":" + alpineVersion)
 		}
 	}
 

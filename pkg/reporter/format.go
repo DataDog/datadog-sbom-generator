@@ -3,11 +3,9 @@ package reporter
 import (
 	"fmt"
 	"io"
-
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-var format = []string{"json", "cyclonedx-1-4", "cyclonedx-1-5"}
+var format = []string{"json", "cyclonedx-1-5"}
 
 func Format() []string {
 	return format
@@ -15,14 +13,12 @@ func Format() []string {
 
 // New returns an implementation of the reporter interface depending on the format passed in
 // set terminalWidth as 0 to indicate the output is not a terminal
-func New(format string, stdout, stderr io.Writer, level VerbosityLevel, terminalWidth int) (Reporter, error) {
+func New(format string, stdout, stderr io.Writer, level VerbosityLevel) (Reporter, error) {
 	switch format {
 	case "json":
 		return NewJSONReporter(stdout, stderr, level), nil
-	case "cyclonedx-1-4":
-		return NewCycloneDXReporter(stdout, stderr, models.CycloneDXVersion14, level), nil
 	case "cyclonedx-1-5":
-		return NewCycloneDXReporter(stdout, stderr, models.CycloneDXVersion15, level), nil
+		return NewCycloneDXReporter(stdout, stderr, level), nil
 	default:
 		return nil, fmt.Errorf("%v is not a valid format", format)
 	}

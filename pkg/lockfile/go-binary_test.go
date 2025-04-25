@@ -86,7 +86,7 @@ func TestExtractGoBinary_NoPackages(t *testing.T) {
 		{
 			Name:           "stdlib",
 			Version:        "1.21.10",
-			Ecosystem:      lockfile.GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			PackageManager: models.Golang,
 		},
 	})
@@ -109,13 +109,13 @@ func TestExtractGoBinary_OnePackage(t *testing.T) {
 		{
 			Name:           "stdlib",
 			Version:        "1.21.10",
-			Ecosystem:      lockfile.GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			PackageManager: models.Golang,
 		},
 		{
 			Name:           "github.com/BurntSushi/toml",
 			Version:        "1.4.0",
-			Ecosystem:      lockfile.GoEcosystem,
+			Ecosystem:      models.EcosystemGo,
 			PackageManager: models.Golang,
 		},
 	})

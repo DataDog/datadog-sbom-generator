@@ -53,7 +53,7 @@ func TestParseRenvLock_OnePackage(t *testing.T) {
 			Name:           "morning",
 			Version:        "0.1.0",
 			PackageManager: models.Renv,
-			Ecosystem:      lockfile.CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		},
 	})
 }
@@ -72,13 +72,13 @@ func TestParseRenvLock_TwoPackages(t *testing.T) {
 			Name:           "markdown",
 			Version:        "1.0",
 			PackageManager: models.Renv,
-			Ecosystem:      lockfile.CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		},
 		{
 			Name:           "mime",
 			Version:        "0.7",
 			PackageManager: models.Renv,
-			Ecosystem:      lockfile.CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		},
 	})
 }
@@ -97,7 +97,7 @@ func TestParseRenvLock_WithMixedSources(t *testing.T) {
 			Name:           "markdown",
 			Version:        "1.0",
 			PackageManager: models.Renv,
-			Ecosystem:      lockfile.CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		},
 	})
 }
@@ -117,7 +117,7 @@ func TestParseRenvLock_WithBioconductor(t *testing.T) {
 			Name:           "BH",
 			Version:        "1.75.0-0",
 			PackageManager: models.Renv,
-			Ecosystem:      lockfile.CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		},
 	})
 }

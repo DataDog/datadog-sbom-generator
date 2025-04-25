@@ -65,8 +65,6 @@ type PubspecLockfile struct {
 	Sdks     map[string]string             `yaml:"sdks"`
 }
 
-const PubEcosystem Ecosystem = "Pub"
-
 type PubspecLockExtractor struct{}
 
 func (e PubspecLockExtractor) ShouldExtract(path string) bool {
@@ -93,7 +91,7 @@ func (e PubspecLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Version:        pkg.Version,
 			Commit:         pkg.Description.Ref,
 			PackageManager: models.Pub,
-			Ecosystem:      PubEcosystem,
+			Ecosystem:      models.EcosystemPub,
 		}
 		for _, str := range strings.Split(pkg.Dependency, " ") {
 			if str == "dev" {

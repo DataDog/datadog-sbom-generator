@@ -12,8 +12,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
-const MixEcosystem Ecosystem = "Hex"
-
 type MixLockExtractor struct{}
 
 func (e MixLockExtractor) ShouldExtract(path string) bool {
@@ -68,7 +66,7 @@ func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           name,
 			Version:        version,
 			PackageManager: models.Hex,
-			Ecosystem:      MixEcosystem,
+			Ecosystem:      models.EcosystemHex,
 			Commit:         commit,
 		})
 	}

@@ -104,7 +104,7 @@ func TestParseCargoLock_OnePackage(t *testing.T) {
 			Name:           "addr2line",
 			Version:        "0.15.2",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 	})
 }
@@ -123,13 +123,13 @@ func TestParseCargoLock_TwoPackages(t *testing.T) {
 			Name:           "addr2line",
 			Version:        "0.15.2",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 		{
 			Name:           "syn",
 			Version:        "1.0.73",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 	})
 }
@@ -148,13 +148,13 @@ func TestParseCargoLock_TwoPackagesWithLocal(t *testing.T) {
 			Name:           "addr2line",
 			Version:        "0.15.2",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 		{
 			Name:           "local-rust-pkg",
 			Version:        "0.1.0",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 	})
 }
@@ -173,7 +173,7 @@ func TestParseCargoLock_PackageWithBuildString(t *testing.T) {
 			Name:           "wasi",
 			Version:        "0.10.2+wasi-snapshot-preview1",
 			PackageManager: models.Crates,
-			Ecosystem:      lockfile.CargoEcosystem,
+			Ecosystem:      models.EcosystemCratesIO,
 		},
 	})
 }

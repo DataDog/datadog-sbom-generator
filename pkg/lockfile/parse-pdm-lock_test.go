@@ -112,7 +112,7 @@ func TestParsePdmLock_SinglePackage(t *testing.T) {
 			Name:           "toml",
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -128,13 +128,13 @@ func TestParsePdmLock_TwoPackages(t *testing.T) {
 			Name:           "toml",
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "six",
 			Version:        "1.16.0",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
 }
@@ -150,20 +150,20 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 			Name:           "toml",
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "pyroute2",
 			Version:        "0.7.11",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"dev"},
 		},
 		{
 			Name:           "win-inet-pton",
 			Version:        "1.1.0",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"dev"},
 		},
 	})
@@ -180,20 +180,20 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 			Name:           "toml",
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 		},
 		{
 			Name:           "pyroute2",
 			Version:        "0.7.11",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"optional"},
 		},
 		{
 			Name:           "win-inet-pton",
 			Version:        "1.1.0",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			DepGroups:      []string{"optional"},
 		},
 	})
@@ -210,7 +210,7 @@ func TestParsePdmLock_PackageWithGitDependency(t *testing.T) {
 			Name:           "toml",
 			Version:        "0.10.2",
 			PackageManager: models.Pdm,
-			Ecosystem:      lockfile.PdmEcosystem,
+			Ecosystem:      models.EcosystemPyPI,
 			Commit:         "65bab7582ce14c55cdeec2244c65ea23039c9e6f",
 		},
 	})

@@ -63,8 +63,8 @@ var ErrParserNotFound = errors.New("could not determine parser")
 
 type Packages []PackageDetails
 
-func (ps Packages) Ecosystems() []Ecosystem {
-	ecosystems := make(map[Ecosystem]struct{})
+func (ps Packages) Ecosystems() []models.Ecosystem {
+	ecosystems := make(map[models.Ecosystem]struct{})
 
 	for _, pkg := range ps {
 		ecosystems[pkg.Ecosystem] = struct{}{}

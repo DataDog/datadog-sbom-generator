@@ -39,7 +39,7 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 				packages = append(packages, PackageDetails{
 					Name:           pkg.Package.Name,
 					PackageManager: models.Unknown,
-					Ecosystem:      Ecosystem(pkg.Package.Ecosystem),
+					Ecosystem:      models.Ecosystem(pkg.Package.Ecosystem),
 					Version:        pkg.Package.Version,
 				})
 			}

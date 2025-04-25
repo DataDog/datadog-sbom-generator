@@ -1,9 +1,10 @@
-package lockfile_test
+package models_test
 
 import (
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +24,7 @@ func TestIsDevGroup_Maven(t *testing.T) {
 		{name: "system", scopes: []string{"system"}, isDevGroup: false},
 	}
 
-	runTestCases(t, lockfile.MavenEcosystem, testCases)
+	runTestCases(t, models.EcosystemMaven, testCases)
 }
 
 func TestIsDevGroup_Gradle(t *testing.T) {
@@ -41,10 +42,10 @@ func TestIsDevGroup_Gradle(t *testing.T) {
 		{name: "testRuntimeOnly", scopes: []string{"testRuntimeClasspath"}, isDevGroup: true},
 	}
 
-	runTestCases(t, lockfile.MavenEcosystem, testCases)
+	runTestCases(t, models.EcosystemMaven, testCases)
 }
 
-func runTestCases(t *testing.T, ecosystem lockfile.Ecosystem, testCases []devGroupTestCase) {
+func runTestCases(t *testing.T, ecosystem models.Ecosystem, testCases []devGroupTestCase) {
 	t.Helper()
 	for _, testCase := range testCases {
 		tt := testCase

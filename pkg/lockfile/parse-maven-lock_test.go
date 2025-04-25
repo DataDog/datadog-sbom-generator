@@ -120,7 +120,7 @@ func TestParseMavenLock_ShouldRemoveComments(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 15},
 				Column:   models.Position{Start: 5, End: 18},
@@ -159,7 +159,7 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 18},
 				Column:   models.Position{Start: 5, End: 18},
@@ -181,7 +181,7 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact2",
 			Version:        "3.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 19, End: 28},
 				Column:   models.Position{Start: 5, End: 18},
@@ -203,7 +203,7 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact3",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 29, End: 36},
 				Column:   models.Position{Start: 5, End: 18},
@@ -242,7 +242,7 @@ func TestParseMavenLock_OnePackage(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 11},
 				Column:   models.Position{Start: 5, End: 18},
@@ -281,7 +281,7 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 			Name:           "org.apache.activemq:activemq-amqp",
 			Version:        "5.16.5",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 13},
 				Column:   models.Position{Start: 5, End: 18},
@@ -316,7 +316,7 @@ func TestParseMavenLock_OnePackageWithMultipleVersionVariable(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "1.0.0-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 13},
 				Column:   models.Position{Start: 5, End: 18},
@@ -355,7 +355,7 @@ func TestParseMavenLock_TwoPackageWithMixedVersionDefinition(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.3.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 11},
 				Column:   models.Position{Start: 5, End: 18},
@@ -376,7 +376,7 @@ func TestParseMavenLock_TwoPackageWithMixedVersionDefinition(t *testing.T) {
 		{
 			Name:           "org.slf4j:slf4j-log4j12-3.0",
 			Version:        "1.7.25",
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			PackageManager: models.Maven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 16},
@@ -416,7 +416,7 @@ func TestParseMavenLock_TwoPackages(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 11},
 				Column:   models.Position{Start: 5, End: 18},
@@ -437,7 +437,7 @@ func TestParseMavenLock_TwoPackages(t *testing.T) {
 		{
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			PackageManager: models.Maven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 16},
@@ -477,7 +477,7 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 10},
 				Column:   models.Position{Start: 5, End: 18},
@@ -499,7 +499,7 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 15},
 				Column:   models.Position{Start: 5, End: 18},
@@ -538,7 +538,7 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 22},
 				Column:   models.Position{Start: 5, End: 18},
@@ -560,7 +560,7 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			Name:           "org.mine:my.package",
 			Version:        "2.3.4",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 24, End: 28},
 				Column:   models.Position{Start: 5, End: 18},
@@ -582,7 +582,7 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			Name:           "org.mine:ranged-package",
 			Version:        "9.4.35.v20201120",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 30, End: 33},
 				Column:   models.Position{Start: 5, End: 18},
@@ -622,7 +622,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 26, End: 29},
 				Column:   models.Position{Start: 5, End: 18},
@@ -644,7 +644,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 17},
 				Column:   models.Position{Start: 5, End: 18},
@@ -666,7 +666,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 22},
 				Column:   models.Position{Start: 5, End: 18},
@@ -688,7 +688,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 23, End: 27},
 				Column:   models.Position{Start: 5, End: 18},
@@ -710,7 +710,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "org.mine:my.package",
 			Version:        "2.3.4",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 28, End: 32},
 				Column:   models.Position{Start: 5, End: 18},
@@ -732,7 +732,7 @@ func TestMavenLock_WithParent(t *testing.T) {
 			Name:           "dev.foo:bar",
 			Version:        "1.0-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 33, End: 37},
 				Column:   models.Position{Start: 5, End: 18},
@@ -772,7 +772,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 25, End: 28},
 				Column:   models.Position{Start: 5, End: 18},
@@ -794,7 +794,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 17},
 				Column:   models.Position{Start: 5, End: 18},
@@ -816,7 +816,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 22},
 				Column:   models.Position{Start: 5, End: 18},
@@ -838,7 +838,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 23, End: 27},
 				Column:   models.Position{Start: 5, End: 18},
@@ -860,7 +860,7 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			Name:           "org.mine:my.package",
 			Version:        "2.3.4",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 28, End: 32},
 				Column:   models.Position{Start: 5, End: 18},
@@ -900,7 +900,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 25, End: 28},
 				Column:   models.Position{Start: 5, End: 18},
@@ -922,7 +922,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 16},
 				Column:   models.Position{Start: 5, End: 18},
@@ -944,7 +944,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 17, End: 21},
 				Column:   models.Position{Start: 5, End: 18},
@@ -966,7 +966,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 22, End: 26},
 				Column:   models.Position{Start: 5, End: 18},
@@ -988,7 +988,7 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			Name:           "org.mine:my.package",
 			Version:        "2.3.4",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 27, End: 31},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1028,7 +1028,7 @@ func TestMavenLock_WithParent_Child_Project(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "1.0-CHILD-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 15},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1069,7 +1069,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "3.0.2",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 26, End: 29},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1091,7 +1091,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 17},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1113,7 +1113,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "org.slf4j:slf4j-log4j12",
 			Version:        "1.7.25",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 18, End: 22},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1135,7 +1135,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "org.mine:mypackage",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 23, End: 27},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1157,7 +1157,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "org.mine:my.package",
 			Version:        "9.4.35.v20201120",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 18},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1179,7 +1179,7 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			Name:           "dev.foo:bar",
 			Version:        "1.0-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 33, End: 37},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1320,7 +1320,7 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 			Name:           "abc:xyz",
 			Version:        "1.2.3",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 3, End: 8},
 				Column:   models.Position{Start: 5, End: 18},
@@ -1342,7 +1342,7 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 			Name:           "junit:junit",
 			Version:        "4.12",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 9, End: 14},
@@ -1383,7 +1383,7 @@ func TestParseMavenLock_WithUnusedDependencyManagementDependencies(t *testing.T)
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 17, End: 21},
@@ -1424,7 +1424,7 @@ func TestParseMavenLock_WithOverriddenDependencyVersions(t *testing.T) {
 			Name:           "junit:junit",
 			Version:        "4.12",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 18},
@@ -1465,7 +1465,7 @@ func TestParseMavenLock_WithProjectVersionProperty(t *testing.T) {
 			Name:           "dev.foo:bar",
 			Version:        "1.0-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 12},
@@ -1489,7 +1489,7 @@ func TestParseMavenLock_WithProjectVersionProperty(t *testing.T) {
 			Name:           "dev.bar:foo",
 			Version:        "1.0-SNAPSHOT",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 17},
@@ -1526,7 +1526,7 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 			Name:           "io.netty:netty-all",
 			Version:        "4.1.42.Final",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 27, End: 30},
@@ -1550,7 +1550,7 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 			Name:           "com.google.code.findbugs:jsr305",
 			Version:        "9.4.35.v20201120",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 31, End: 35},
@@ -1574,7 +1574,7 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 			Name:           "io.ktor:ktor-server-netty-jvm",
 			Version:        "9.4.35.v20201120",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			Commit:         "",
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 36, End: 40},
@@ -1610,7 +1610,7 @@ func TestParseMavenLock_NoVersion(t *testing.T) {
 			Name:           "org.apache.maven:maven-artifact",
 			Version:        "",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			IsDirect:       true,
 		},
 	})
@@ -1630,7 +1630,7 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 			Name:           "org.springframework.boot:spring-boot-starter-test",
 			Version:        "3.4.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 38, End: 42},
 				Column:   models.Position{Start: 3, End: 16},
@@ -1649,7 +1649,7 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 			Name:           "org.springframework.boot:spring-boot-starter-web",
 			Version:        "3.4.0",
 			PackageManager: models.Maven,
-			Ecosystem:      lockfile.MavenEcosystem,
+			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 33, End: 36},
 				Column:   models.Position{Start: 3, End: 16},

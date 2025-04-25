@@ -55,25 +55,25 @@ func TestFromCSVRows(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "addr2line",
 						Version:        "0.15.2",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "sentry/sdk",
 						Version:        "2.0.4",
-						Ecosystem:      lockfile.ComposerEcosystem,
+						Ecosystem:      models.EcosystemPackagist,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "wasi",
 						Version:        "0.10.2+wasi-snapshot-preview1",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 				},
@@ -96,7 +96,7 @@ func TestFromCSVRows(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
@@ -297,31 +297,31 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "4.9.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "addr2line",
 						Version:        "0.15.2",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "sentry/sdk",
 						Version:        "2.0.4",
-						Ecosystem:      lockfile.ComposerEcosystem,
+						Ecosystem:      models.EcosystemPackagist,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "wasi",
 						Version:        "0.10.2+wasi-snapshot-preview1",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 				},
@@ -340,25 +340,25 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "addr2line",
 						Version:        "0.15.2",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "sentry/sdk",
 						Version:        "2.0.4",
-						Ecosystem:      lockfile.ComposerEcosystem,
+						Ecosystem:      models.EcosystemPackagist,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "wasi",
 						Version:        "0.10.2+wasi-snapshot-preview1",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 				},
@@ -377,7 +377,7 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 				},
@@ -396,7 +396,7 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
@@ -421,7 +421,7 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "5.13.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
@@ -433,7 +433,7 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:      "sentry/sdk",
 						Version:   "2.0.4",
-						Ecosystem: lockfile.ComposerEcosystem,
+						Ecosystem: models.EcosystemPackagist,
 
 						PackageManager: models.Unknown,
 					},
@@ -453,13 +453,13 @@ func TestFromCSVFile(t *testing.T) {
 					{
 						Name:           "@typescript-eslint/types",
 						Version:        "4.9.0",
-						Ecosystem:      lockfile.PnpmEcosystem,
+						Ecosystem:      models.EcosystemNPM,
 						PackageManager: models.Unknown,
 					},
 					{
 						Name:           "addr2line",
 						Version:        "0.15.2",
-						Ecosystem:      lockfile.CargoEcosystem,
+						Ecosystem:      models.EcosystemCratesIO,
 						PackageManager: models.Unknown,
 					},
 					{

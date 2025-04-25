@@ -18,8 +18,6 @@ type RenvLockfile struct {
 	Packages map[string]RenvPackage `json:"Packages"`
 }
 
-const CRANEcosystem Ecosystem = "CRAN"
-
 type RenvLockExtractor struct{}
 
 func (e RenvLockExtractor) ShouldExtract(path string) bool {
@@ -39,7 +37,7 @@ func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 
 	for _, pkg := range parsedLockfile.Packages {
 		// currently we only support CRAN
-		if pkg.Repository != string(CRANEcosystem) {
+		if pkg.Repository != string(models.EcosystemCRAN) {
 			continue
 		}
 
@@ -47,7 +45,7 @@ func (e RenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           pkg.Package,
 			Version:        pkg.Version,
 			PackageManager: models.Renv,
-			Ecosystem:      CRANEcosystem,
+			Ecosystem:      models.EcosystemCRAN,
 		})
 	}
 
