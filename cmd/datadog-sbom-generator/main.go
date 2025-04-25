@@ -9,15 +9,15 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
 
 	"github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/scan"
-	"github.com/DataDog/datadog-sbom-generator/internal/version"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	commit = "n/a"
-	date   = "n/a"
+	commit  = "set at build time, see .goreleaser.yml ldflags section"
+	date    = "set at build time, see .goreleaser.yml ldflags section"
+	version = "set at build time, see .goreleaser.yml ldflags section"
 )
 
 func run(args []string, stdout, stderr io.Writer) int {
@@ -30,7 +30,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 
 	app := &cli.App{
 		Name:           "datadog-sbom-generator",
-		Version:        version.OSVVersion,
+		Version:        version,
 		Usage:          "scans various mediums for dependencies and checks them against the OSV database",
 		Suggest:        true,
 		Writer:         stdout,
