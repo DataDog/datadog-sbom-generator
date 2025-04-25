@@ -19,9 +19,9 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#01 - 2]
-datadog-sbom-generator version: 1.8.2
-commit: n/a
-built at: n/a
+datadog-sbom-generator version: set at build time, see .goreleaser.yml ldflags section
+commit: set at build time, see .goreleaser.yml ldflags section
+built at: set at build time, see .goreleaser.yml ldflags section
 
 ---
 
