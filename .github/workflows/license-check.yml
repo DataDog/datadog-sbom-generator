@@ -19,7 +19,7 @@ jobs:
         run: go install github.com/frapposelli/wwhrd@latest
       - name: Installing go-license-detector tool
         run: GO111MODULE=on go install github.com/go-enry/go-license-detector/v4/cmd/license-detector@latest
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.9.12"
           cache: "pip"
