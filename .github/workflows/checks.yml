@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - run: scripts/report_uncleaned_snapshots.py
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: Run lint action
@@ -59,11 +59,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
         with:
           go-version-file: .go-version
           check-latest: true
@@ -84,11 +84,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
         with:
           go-version-file: .go-version
           check-latest: true
@@ -105,11 +105,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: download coverages
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # 4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # 4.3.0
         with:
           merge-multiple: "true"
       - name: download artifact (main.breakdown)
@@ -123,7 +123,7 @@ jobs:
           name: main.breakdown
           if_no_artifact_found: warn
       - name: check test coverage
-        uses: vladopajic/go-test-coverage@e44e229d0edbb82c8b9d217f83ce14a878f95117 # 2.13.2
+        uses: vladopajic/go-test-coverage@937b863f06595080198d555b7ed3aa474ae5199c # 2.14.1
         id: go-test-coverage
         with:
           profile: ubuntu-latest.cov,macos-latest.cov,windows-latest.cov
