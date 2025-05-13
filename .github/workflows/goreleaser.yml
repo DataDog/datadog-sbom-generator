@@ -74,7 +74,9 @@ jobs:
       actions: read # To read the workflow path.
       id-token: write # To sign the provenance.
       contents: write # To add assets to a release.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@5a775b367a56d5bd118a224a811bba288150a563
+    # See https://github.com/DataDog/datadog-sbom-generator/actions/runs/14980148145/job/42082507191#step:2:215
+    # where the workflow fails with when uses a pinned SHA and says "Expected ref of the form refs/tags/vX.Y.Z"
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
       base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
       upload-assets: true # upload to a new release
