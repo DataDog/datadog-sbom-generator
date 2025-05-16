@@ -23,8 +23,8 @@ var (
 func run(args []string, stdout, stderr io.Writer) int {
 	var r reporter.Reporter
 	cli.VersionPrinter = func(ctx *cli.Context) {
-		// Use the app Writer and ErrWriter since they will be the writers to keep parallel tests consistent
-		r = reporter.NewJSONReporter(ctx.App.Writer, ctx.App.ErrWriter, reporter.InfoLevel)
+		// Use the app Writer and Writer since they will be the writers to keep parallel tests consistent
+		r = reporter.NewJSONReporter(ctx.App.Writer, ctx.App.Writer, reporter.InfoLevel)
 		r.Infof("datadog-sbom-generator version: %s\ncommit: %s\nbuilt at: %s\n", ctx.App.Version, commit, date)
 	}
 

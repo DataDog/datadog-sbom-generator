@@ -15,13 +15,13 @@ No package sources found, --help for usage information.
 ---
 
 [TestRun/#01 - 1]
+datadog-sbom-generator version: set at build time, see .goreleaser.yml ldflags section
+commit: set at build time, see .goreleaser.yml ldflags section
+built at: set at build time, see .goreleaser.yml ldflags section
 
 ---
 
 [TestRun/#01 - 2]
-datadog-sbom-generator version: set at build time, see .goreleaser.yml ldflags section
-commit: set at build time, see .goreleaser.yml ldflags section
-built at: set at build time, see .goreleaser.yml ldflags section
 
 ---
 
