@@ -22,6 +22,7 @@ import (
 
 type ScannerActions struct {
 	DirectoryPaths []string
+	ExcludePaths   []string
 	Recursive      bool
 	NoIgnore       bool
 	Reachability   bool
@@ -52,7 +53,7 @@ var ErrAPIFailed = errors.New("API query failed")
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, excludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -68,13 +69,13 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
-	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(path string, info os.DirEntry, err error) error {
+	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(relativePath string, info os.DirEntry, err error) error {
 		if err != nil {
-			r.Infof("Failed to walk %s: %v\n", path, err)
+			r.Infof("Failed to walk %s: %v\n", relativePath, err)
 			return err
 		}
 
-		path, err = filepath.Abs(path)
+		path, err := filepath.Abs(relativePath)
 		if err != nil {
 			r.Errorf("Failed to walk path %s\n", err)
 			return err
@@ -103,6 +104,18 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
+				// Check if the file matches any of the excluded glob patterns
+				for _, pattern := range excludePaths {
+					matched, err := filepath.Match(pattern, relativePath)
+					if err != nil {
+						r.Warnf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
+					}
+					if matched {
+						r.Infof("Skipping %s file due to exclusion rule %s\n", path, pattern)
+						return nil
+					}
+				}
+
 				pkgs, artifact, err := scanLockfile(r, path, enabledParsers)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
@@ -221,7 +234,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	for _, dir := range actions.DirectoryPaths {
 		r.Infof("Scanning dir %s\n", dir)
-		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers)
+		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}

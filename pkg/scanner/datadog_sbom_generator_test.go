@@ -1,12 +1,94 @@
 package scanner
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+	"github.com/stretchr/testify/require"
 
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
+
+const packageJSONLock = `
+{
+  "name": "example",
+  "version": "1.0.0",
+  "lockfileVersion": 2,
+  "dependencies": {
+    "lodash": {
+      "version": "4.17.21",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+      "integrity": "sha512-v2kDEf3Q8XQ..."
+    }
+  }
+}
+`
+
+const yarnLock = `
+# yarn lockfile v1
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz"
+  integrity sha512-v2kDEf3Q8XQ...
+`
+
+func Test_scanDir(t *testing.T) {
+	t.Parallel()
+
+	// Setup temporary directory
+	tempDir := t.TempDir()
+
+	// Schedule cleanup
+	t.Cleanup(func() {
+		os.RemoveAll(tempDir)
+	})
+
+	subdir := tempDir + "/subdir"
+
+	// Create test files and directories
+	_ = os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600)
+	_ = os.WriteFile(filepath.Join(tempDir, "yarn.lock"), []byte(yarnLock), 0600)
+	_ = os.Mkdir(subdir, 0755)
+	_ = os.WriteFile(filepath.Join(subdir, "package-lock.json"), []byte(packageJSONLock), 0600)
+
+	// Mock reporter
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+	// Call scanDir without exclusion
+	excludedGlobs := []string{}
+	enabledParsers := initializeEnabledParsers([]string{})
+	packages, artifacts, err := scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+
+	// Validate results
+	require.NoError(t, err)
+	assert.Len(t, packages, 3) // matched 3 files, at all locations, no exclusion
+	assert.Empty(t, artifacts)
+
+	// Exclude all files in the subdir
+	excludedGlobs = []string{subdir + "/*"}
+	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+
+	require.NoError(t, err)
+	assert.Len(t, packages, 2) // Only package-lock.json and yarn.lock should be scanned (subdir/package-lock.json is excluded)
+	assert.Empty(t, artifacts)
+
+	// Exclude all files in the subdir and yarn.lock (precisely one file)
+	excludedGlobs = []string{subdir + "/*", tempDir + "/yarn.lock"}
+	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+
+	require.NoError(t, err)
+	assert.Len(t, packages, 1) // Only package-lock.json should be scanned (yarn.lock and subdir/package-lock.json is excluded)
+	assert.Empty(t, artifacts)
+}
 
 func Test_getDirectPackagePurls(t *testing.T) {
 	t.Parallel()
