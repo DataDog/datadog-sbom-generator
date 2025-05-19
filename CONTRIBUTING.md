@@ -77,7 +77,7 @@ If you want to generate a coverage report, you can run:
 To lint your code, run the following command:
 
 ```bash
-./scripts/run_lints.sh
+./scripts/run_lints.sh --fix
 ```
 
 ### Updating LICENSE-3rdparty.csv
