@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -43,6 +44,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Schedule cleanup
 	t.Cleanup(func() {
+		time.Sleep(100 * time.Millisecond) // Allow time for file handles to close
 		os.RemoveAll(tempDir)
 	})
 
