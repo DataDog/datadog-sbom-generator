@@ -179,6 +179,7 @@ func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bo
 	if err == nil {
 		parsedLockfile, err = lockfile.ExtractDeps(file, enabledParsers)
 	}
+	defer file.Close()
 
 	if err != nil {
 		return nil, nil, err

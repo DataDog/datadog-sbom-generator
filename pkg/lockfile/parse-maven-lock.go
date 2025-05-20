@@ -67,7 +67,7 @@ func NewMavenRegistryAPIClient(url string) (DepFile, error) {
 	}, nil
 }
 
-func (m *MavenRegistryProject) Open(_ string) (NestedDepFile, error) {
+func (m *MavenRegistryProject) Open(_ string) (DepFile, error) {
 	panic("Should not be called")
 }
 

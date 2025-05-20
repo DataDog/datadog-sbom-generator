@@ -10,10 +10,10 @@ func matchWithFile(lockfile DepFile, packages []PackageDetails, matcher Matcher)
 	if err != nil {
 		return err
 	}
-
 	if sourceFile == nil {
 		return nil
 	}
+	defer sourceFile.Close()
 
 	return matcher.Match(sourceFile, packages)
 }

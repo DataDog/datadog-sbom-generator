@@ -89,6 +89,7 @@ func ExtractDeps(f DepFile, enabledParsers map[string]bool) (Lockfile, error) {
 	if err != nil {
 		return parsedLockfile, err
 	}
+	defer depFile.Close()
 	if e, ok := extractor.(ArtifactExtractor); ok {
 		artifact, err := e.GetArtifact(depFile)
 		if err == nil {

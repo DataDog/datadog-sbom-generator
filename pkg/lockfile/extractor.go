@@ -17,21 +17,15 @@ import (
 // and that knows how to open other DepFiles relative to itself.
 type DepFile interface {
 	io.Reader
+	io.Closer
 
-	// Open opens an NestedDepFile based on the path of the
+	// Open opens an DepFile based on the path of the
 	// current DepFile if the provided path is relative.
 	//
 	// If the path is an absolute path, then it is opened absolutely.
-	Open(path string) (NestedDepFile, error)
+	Open(path string) (DepFile, error)
 
 	Path() string
-}
-
-// NestedDepFile is an abstraction for a file that has been opened while extracting another file,
-// and would need to be closed.
-type NestedDepFile interface {
-	io.Closer
-	DepFile
 }
 
 type Extractor interface {
@@ -65,7 +59,7 @@ type LocalFile struct {
 	path string
 }
 
-func (f LocalFile) Open(path string) (NestedDepFile, error) {
+func (f LocalFile) Open(path string) (DepFile, error) {
 	if filepath.IsAbs(path) {
 		return OpenLocalDepFile(path)
 	}
@@ -75,7 +69,7 @@ func (f LocalFile) Open(path string) (NestedDepFile, error) {
 
 func (f LocalFile) Path() string { return f.path }
 
-func OpenLocalDepFile(path string) (NestedDepFile, error) {
+func OpenLocalDepFile(path string) (DepFile, error) {
 	r, err := os.Open(path)
 
 	if err != nil {
@@ -93,7 +87,7 @@ func OpenLocalDepFile(path string) (NestedDepFile, error) {
 }
 
 var _ DepFile = LocalFile{}
-var _ NestedDepFile = LocalFile{}
+var _ DepFile = LocalFile{}
 
 func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetails, error) {
 	f, err := OpenLocalDepFile(pathToLockfile)
