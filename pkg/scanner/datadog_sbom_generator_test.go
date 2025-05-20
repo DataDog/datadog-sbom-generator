@@ -1,14 +1,16 @@
 package scanner
 
 import (
+	"log"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 const packageJSONLock = `
@@ -42,7 +44,10 @@ func Test_scanDir(t *testing.T) {
 
 	// Schedule cleanup
 	t.Cleanup(func() {
-		os.RemoveAll(tempDir)
+		err := os.RemoveAll(tempDir)
+		if err != nil {
+			log.Printf("Failed to cleanup tmpDir")
+		}
 	})
 
 	subdir := filepath.Join(tempDir, "subdir")
