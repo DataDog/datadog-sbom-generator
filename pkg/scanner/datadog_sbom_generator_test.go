@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,15 +40,6 @@ func Test_scanDir(t *testing.T) {
 
 	// Setup temporary directory
 	tempDir := t.TempDir()
-
-	// Schedule cleanup
-	t.Cleanup(func() {
-		err := os.RemoveAll(tempDir)
-		if err != nil {
-			log.Printf("Failed to cleanup tmpDir")
-		}
-	})
-
 	subdir := filepath.Join(tempDir, "subdir")
 
 	// Create test files and directories
@@ -67,7 +57,7 @@ func Test_scanDir(t *testing.T) {
 	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
 
 	// Call scanDir without exclusion
-	excludedGlobs := []string{}
+	var excludedGlobs []string
 	enabledParsers := initializeEnabledParsers([]string{})
 	packages, artifacts, err := scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
