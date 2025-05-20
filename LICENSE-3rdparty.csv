@@ -123,6 +123,7 @@ core,github.com/goccy/go-yaml/printer,MIT,Copyright (c) 2019 Masaaki Goshima
 core,github.com/goccy/go-yaml/scanner,MIT,Copyright (c) 2019 Masaaki Goshima
 core,github.com/goccy/go-yaml/token,MIT,Copyright (c) 2019 Masaaki Goshima
 core,github.com/golang/groupcache/lru,Apache-2.0,Copyright (c) 2009 The Go Authors. All rights reserved.
+core,github.com/golang/mock/gomock,Apache-2.0,Copyright (c) 2009 The Go Authors. All rights reserved.
 core,github.com/jbenet/go-context/io,MIT,Copyright (c) 2014 Juan Batiz-Benet
 core,github.com/kevinburke/ssh_config,MIT,"Copyright (c) 2013 - 2017 Thomas Pelletier, Eric Anderton | Copyright (c) 2017 Kevin Burke"
 core,github.com/kr/pretty,MIT,Copyright 2012 Keith Rarick
