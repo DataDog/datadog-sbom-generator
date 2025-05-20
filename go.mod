@@ -9,7 +9,6 @@ require (
 	github.com/gkampitakis/go-snaps v0.5.11
 	github.com/go-git/go-billy/v5 v5.6.2
 	github.com/go-git/go-git/v5 v5.14.0
-	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.7.0
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/stretchr/testify v1.10.0
@@ -17,6 +16,7 @@ require (
 	github.com/tree-sitter/tree-sitter-java v0.23.5
 	github.com/tree-sitter/tree-sitter-ruby v0.23.1
 	github.com/urfave/cli/v2 v2.27.6
+	go.uber.org/mock v0.5.2
 	golang.org/x/mod v0.24.0
 	golang.org/x/text v0.24.0
 	gopkg.in/yaml.v3 v3.0.1

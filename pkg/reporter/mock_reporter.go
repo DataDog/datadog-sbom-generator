@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/DataDog/datadog-sbom-generator/pkg/models"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockReporter is a mock of Reporter interface.
