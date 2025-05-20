@@ -1,16 +1,14 @@
 package scanner
 
 import (
-	"os"
-	"path/filepath"
-	"testing"
-	"time"
-
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"os"
+	"path/filepath"
+	"testing"
 )
 
 const packageJSONLock = `
@@ -44,7 +42,6 @@ func Test_scanDir(t *testing.T) {
 
 	// Schedule cleanup
 	t.Cleanup(func() {
-		time.Sleep(100 * time.Millisecond) // Allow time for file handles to close
 		os.RemoveAll(tempDir)
 	})
 
