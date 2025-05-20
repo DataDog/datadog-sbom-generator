@@ -106,9 +106,11 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
 				// Check if the file matches any of the excluded glob patterns
 				for _, pattern := range excludePaths {
+					_, _ = fmt.Fprintf(os.Stderr, "Checking exclusion of %s with pattern %s\n", relativePath, pattern)
 					matched, err := filepath.Match(pattern, relativePath)
 					if err != nil {
-						r.Warnf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
+						_, _ = fmt.Fprintf(os.Stderr, "Invalid exclusion glob pattern %s: %v\n", pattern, err)
+						r.Errorf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
 					}
 					if matched {
 						r.Infof("Skipping %s file due to exclusion rule %s\n", path, pattern)
