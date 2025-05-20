@@ -47,7 +47,7 @@ func Test_scanDir(t *testing.T) {
 		os.RemoveAll(tempDir)
 	})
 
-	subdir := tempDir + "/subdir"
+	subdir := filepath.Join(tempDir, "subdir")
 
 	// Create test files and directories
 	_ = os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600)
@@ -74,7 +74,7 @@ func Test_scanDir(t *testing.T) {
 	assert.Empty(t, artifacts)
 
 	// Exclude all files in the subdir
-	excludedGlobs = []string{subdir + "/*"}
+	excludedGlobs = []string{filepath.Join(subdir, "*")}
 	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func Test_scanDir(t *testing.T) {
 	assert.Empty(t, artifacts)
 
 	// Exclude all files in the subdir and yarn.lock (precisely one file)
-	excludedGlobs = []string{subdir + "/*", tempDir + "/yarn.lock"}
+	excludedGlobs = []string{filepath.Join(subdir, "*"), filepath.Join(tempDir, "yarn.lock")}
 	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
 	require.NoError(t, err)
