@@ -67,7 +67,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
-				Usage: "exclude paths from being scanned using a glob expression",
+				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
 			},
 		},
 		ArgsUsage: "[directory1 directory2...]",

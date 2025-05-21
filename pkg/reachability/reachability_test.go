@@ -133,7 +133,7 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
 	require.NoError(t, err)
 
-	excludePaths := []string{filepath.Join(tempDir, "subdir", "*")}
+	excludePaths := []string{filepath.Join("subdir", "*")}
 	result := PerformReachabilityAnalysis(
 		true,
 		[]string{},

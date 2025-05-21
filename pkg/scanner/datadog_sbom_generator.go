@@ -69,13 +69,14 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
-	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(relativePath string, info os.DirEntry, err error) error {
+	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
-			r.Infof("Failed to walk %s: %v\n", relativePath, err)
+			r.Infof("Failed to walk %s: %v\n", path, err)
 			return err
 		}
 
-		path, err := filepath.Abs(relativePath)
+		path, err = filepath.Abs(path)
+
 		if err != nil {
 			r.Errorf("Failed to walk path %s\n", err)
 			return err
@@ -103,6 +104,8 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 		}
 
 		if !info.IsDir() {
+			relativePath := fileposition.ToRelativePath(dir, path)
+
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
 				// Check if the file matches any of the excluded glob patterns
 				for _, pattern := range excludePaths {

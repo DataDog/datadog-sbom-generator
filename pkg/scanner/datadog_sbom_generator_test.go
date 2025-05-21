@@ -40,13 +40,12 @@ func Test_scanDir(t *testing.T) {
 
 	// Setup temporary directory
 	tempDir := t.TempDir()
-	subdir := filepath.Join(tempDir, "subdir")
 
 	// Create test files and directories
 	_ = os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600)
 	_ = os.WriteFile(filepath.Join(tempDir, "yarn.lock"), []byte(yarnLock), 0600)
-	_ = os.Mkdir(subdir, 0755)
-	_ = os.WriteFile(filepath.Join(subdir, "package-lock.json"), []byte(packageJSONLock), 0600)
+	_ = os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	_ = os.WriteFile(filepath.Join(tempDir, "subdir", "package-lock.json"), []byte(packageJSONLock), 0600)
 
 	// Mock reporter
 	ctrl := gomock.NewController(t)
@@ -67,7 +66,7 @@ func Test_scanDir(t *testing.T) {
 	assert.Empty(t, artifacts)
 
 	// Exclude all files in the subdir
-	excludedGlobs = []string{filepath.Join(subdir, "*")}
+	excludedGlobs = []string{filepath.Join("subdir", "*")}
 	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
 	require.NoError(t, err)
@@ -75,7 +74,7 @@ func Test_scanDir(t *testing.T) {
 	assert.Empty(t, artifacts)
 
 	// Exclude all files in the subdir and yarn.lock (precisely one file)
-	excludedGlobs = []string{filepath.Join(subdir, "*"), filepath.Join(tempDir, "yarn.lock")}
+	excludedGlobs = []string{filepath.Join("subdir", "*"), "yarn.lock"}
 	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
 	require.NoError(t, err)
