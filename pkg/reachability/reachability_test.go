@@ -75,9 +75,9 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 	require.NoError(t, err)
 
 	result := PerformReachabilityAnalysis(
+		true,
 		[]string{},
 		[]string{tempDir},
-		true,
 		mockServer.URL,
 		ddJwtToken,
 	)

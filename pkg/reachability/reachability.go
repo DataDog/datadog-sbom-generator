@@ -11,7 +11,7 @@ import (
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enabled bool, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
+func PerformReachabilityAnalysis(enabled bool, purls []string, directoryPaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
 	if !enabled {
 		log.Println("reachability analysis is disabled")
 		return models.ReachabilityAnalysis{}
