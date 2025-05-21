@@ -78,6 +78,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 		true,
 		[]string{},
 		[]string{tempDir},
+		[]string{},
 		mockServer.URL,
 		ddJwtToken,
 	)
@@ -104,6 +105,50 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+	}
+
+	// Assert the result
+	assert.Equal(t, expected, result)
+}
+
+func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	// Create a mock server to simulate the API response
+	// The server will return a successful response with the vulnerable symbols
+	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	defer mockServer.Close()
+
+	// Create a temporary directory with a mock Java file
+	tempDir := t.TempDir()
+	err := os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	// Create a mock Java file with a vulnerable class (should match the vulnerable symbols)
+	mockJavaFile := filepath.Join(tempDir, "subdir", "Main.java")
+	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+	require.NoError(t, err)
+
+	excludePaths := []string{filepath.Join(tempDir, "subdir", "*")}
+	result := PerformReachabilityAnalysis(
+		true,
+		[]string{},
+		[]string{tempDir},
+		excludePaths,
+		mockServer.URL,
+		ddJwtToken,
+	)
+
+	// Expected result
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
 			},
 		},
 	}

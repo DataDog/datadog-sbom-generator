@@ -277,7 +277,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
-	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(actions.Reachability, purlsForDirectPackages, actions.DirectoryPaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(actions.Reachability, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
 
 	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 

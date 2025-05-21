@@ -11,7 +11,7 @@ import (
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(enabled bool, purls []string, directoryPaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
+func PerformReachabilityAnalysis(enabled bool, purls []string, directoryPaths []string, excludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
 	if !enabled {
 		log.Println("reachability analysis is disabled")
 		return models.ReachabilityAnalysis{}
@@ -43,6 +43,17 @@ func PerformReachabilityAnalysis(enabled bool, purls []string, directoryPaths []
 			}
 			if d.IsDir() {
 				return nil
+			}
+
+			for _, pattern := range excludePaths {
+				matched, err := filepath.Match(pattern, path)
+				if err != nil {
+					log.Printf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
+				}
+				if matched {
+					log.Printf("Skipping %s file due to exclusion rule %s\n", path, pattern)
+					return nil
+				}
 			}
 
 			switch filepath.Ext(d.Name()) {
