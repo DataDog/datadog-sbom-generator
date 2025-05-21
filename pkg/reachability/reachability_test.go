@@ -94,7 +94,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 							{
 								Symbol: "Greeter",
 								PackageLocation: models.PackageLocation{
-									Filename:    filepath.Join("subdir", "Main.java"),
+									Filename:    "subdir/Main.java",
 									LineStart:   9,
 									LineEnd:     9,
 									ColumnStart: 29,
