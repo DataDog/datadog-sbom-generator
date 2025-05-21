@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
-
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
@@ -47,16 +45,21 @@ func PerformReachabilityAnalysis(enabled bool, purls []string, directoryPaths []
 				return nil
 			}
 
-			relativePath := fileposition.ToRelativePath(dir, path)
+			relativePath, err := filepath.Rel(dir, path)
+			if err != nil {
+				log.Printf("Invalid relative path %s: %v\n", path, err)
+			}
 
-			for _, pattern := range excludePaths {
-				matched, err := filepath.Match(pattern, relativePath)
-				if err != nil {
-					log.Printf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
-				}
-				if matched {
-					log.Printf("Skipping %s file due to exclusion rule %s\n", path, pattern)
-					return nil
+			if relativePath != "" {
+				for _, pattern := range excludePaths {
+					matched, err := filepath.Match(pattern, relativePath)
+					if err != nil {
+						log.Printf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
+					}
+					if matched {
+						log.Printf("Skipping %s file due to exclusion rule %s\n", path, pattern)
+						return nil
+					}
 				}
 			}
 
