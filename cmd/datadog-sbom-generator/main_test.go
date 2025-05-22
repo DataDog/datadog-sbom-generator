@@ -244,6 +244,11 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--verbosity", "info", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
+		{
+			name: "Scan locks-many with exclusion",
+			args: []string{"", "--verbosity", "info", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
+			exit: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
