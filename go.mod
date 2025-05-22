@@ -16,6 +16,7 @@ require (
 	github.com/tree-sitter/tree-sitter-java v0.23.5
 	github.com/tree-sitter/tree-sitter-ruby v0.23.1
 	github.com/urfave/cli/v2 v2.27.6
+	go.uber.org/mock v0.5.2
 	golang.org/x/mod v0.24.0
 	golang.org/x/text v0.24.0
 	gopkg.in/yaml.v3 v3.0.1

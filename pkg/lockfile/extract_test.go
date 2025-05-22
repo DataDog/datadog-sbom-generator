@@ -15,7 +15,7 @@ type TestDepFile struct {
 	path string
 }
 
-func (f TestDepFile) Open(_ string) (lockfile.NestedDepFile, error) {
+func (f TestDepFile) Open(_ string) (lockfile.DepFile, error) {
 	return TestDepFile{}, errors.New("file opening is not supported")
 }
 
@@ -27,7 +27,7 @@ func openTestDepFile(p string) TestDepFile {
 }
 
 var _ lockfile.DepFile = TestDepFile{}
-var _ lockfile.NestedDepFile = TestDepFile{}
+var _ lockfile.DepFile = TestDepFile{}
 
 func TestFindExtractor(t *testing.T) {
 	t.Parallel()

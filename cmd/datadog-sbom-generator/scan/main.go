@@ -63,7 +63,11 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: fmt.Sprintf("Explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
+				Usage: fmt.Sprintf("explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
+			},
+			&cli.StringSliceFlag{
+				Name:  "exclude",
+				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
 			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
@@ -103,6 +107,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		NoIgnore:       context.Bool("no-ignore"),
 		Reachability:   context.Bool("reachability"),
 		DirectoryPaths: context.Args().Slice(),
+		ExcludePaths:   context.StringSlice("exclude"),
 		EnableParsers:  context.StringSlice("enable-parsers"),
 	}, r)
 

@@ -248,6 +248,44 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 ---
 
+[TestRun/Scan_locks-many_with_exclusion - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_locks-many_with_exclusion - 2]
+Scanning dir ./fixtures/locks-many
+Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
+Skipping <rootdir>/fixtures/locks-many/composer.lock with exclusion rule: *composer.lock
+Skipping <rootdir>/fixtures/locks-many/package-lock.json with exclusion rule: *package-lock.json
+Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/all_supported_lockfiles_in_the_directory_should_be_checked - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -552,7 +590,7 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 [TestRun/verbosity_level_=_info - 2]
 Scanning dir ./fixtures/locks-many/composer.lock
 Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
-
+[reachability] Reachability analysis is disabled
 ---
 
 [TestRun_InsertDefaultCommand - 1]

@@ -1,9 +1,12 @@
 package reachability
 
 import (
-	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -11,17 +14,17 @@ import (
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enabled bool, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
+func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
 	if !enabled {
-		log.Println("reachability analysis is disabled")
+		r.Infof("[reachability] Reachability analysis is disabled")
 		return models.ReachabilityAnalysis{}
 	}
 
-	log.Println("fetching symbols to perform a reachability analysis")
+	r.Infof("[reachability] Fetching symbols...")
 	resp, err := http.PostResolveVulnerableSymbols(purls, ddBaseURL, ddJwtToken)
 	if err != nil {
-		log.Printf("failed to fetch symbols for reachability analysis: %v\n", err)
-		log.Println("continuing without reachability information")
+		r.Warnf("[reachability] Failed to fetch symbols: %v\n", err)
+		r.Warnf("[reachability] Continuing without reachability information")
 
 		return models.ReachabilityAnalysis{}
 	}
@@ -30,7 +33,7 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enable
 
 	javaReachabilityDetector, err := codefile.NewJavaReachableDetector()
 	if err != nil {
-		log.Fatalf("failed to create Java reachability detector: %v", err)
+		r.Errorf("[reachability] Failed to create Java reachability detector: %v", err)
 	}
 	defer javaReachabilityDetector.Close()
 
@@ -41,6 +44,21 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enable
 			if err != nil {
 				return err
 			}
+
+			shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)
+			if err != nil {
+				r.Warnf("[reachability] Failed exclusion of path %s: %v\n", path, err)
+			}
+
+			if shouldExcludePath {
+				if d.IsDir() {
+					return filepath.SkipDir
+				}
+				r.Infof("[reachability] Skipping %s with exclusion rule: %s\n", path, pattern)
+
+				return nil
+			}
+
 			if d.IsDir() {
 				return nil
 			}
@@ -56,7 +74,7 @@ func PerformReachabilityAnalysis(purls []string, directoryPaths []string, enable
 		})
 
 		if err != nil {
-			log.Printf("error walking the path: %v\n", err)
+			r.Errorf("[reachability] Error walking the path: %v\n", err)
 			return models.ReachabilityAnalysis{}
 		}
 	}
