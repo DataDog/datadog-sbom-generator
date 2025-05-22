@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
@@ -42,26 +44,23 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 			if err != nil {
 				return err
 			}
-			if d.IsDir() {
+
+			shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)
+			if err != nil {
+				r.Warnf("[reachability] Failed exclusion of path %s: %v\n", path, err)
+			}
+
+			if shouldExcludePath {
+				if d.IsDir() {
+					return filepath.SkipDir
+				}
+				r.Infof("[reachability] Skipping %s with exclusion rule: %s\n", path, pattern)
+
 				return nil
 			}
 
-			relativePath, err := filepath.Rel(dir, path)
-			if err != nil {
-				r.Warnf("Invalid relative path %s: %v\n", path, err)
-			}
-
-			if relativePath != "" {
-				for _, pattern := range excludePaths {
-					matched, err := filepath.Match(pattern, relativePath)
-					if err != nil {
-						r.Warnf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
-					}
-					if matched {
-						r.Infof("Skipping %s file due to exclusion rule %s\n", path, pattern)
-						return nil
-					}
-				}
+			if d.IsDir() {
+				return nil
 			}
 
 			switch filepath.Ext(d.Name()) {

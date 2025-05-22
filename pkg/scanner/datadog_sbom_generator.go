@@ -104,24 +104,15 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 		}
 
 		if !info.IsDir() {
-			relativePath, err := filepath.Rel(dir, path)
-			if err != nil {
-				log.Printf("Invalid relative path %s: %v\n", path, err)
-			}
-
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
 				// Check if the file matches any of the excluded glob patterns
-				if relativePath != "" {
-					for _, pattern := range excludePaths {
-						matched, err := filepath.Match(pattern, relativePath)
-						if err != nil {
-							r.Warnf("Invalid exclusion glob pattern %s: %v\n", pattern, err)
-						}
-						if matched {
-							r.Infof("Skipping %s file due to exclusion rule %s\n", path, pattern)
-							return nil
-						}
-					}
+				shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)
+				if err != nil {
+					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
+				}
+				if shouldExcludePath {
+					r.Infof("Skipping %s with exclusion rule: %s\n", path, pattern)
+					return nil
 				}
 
 				pkgs, artifact, err := scanLockfile(r, path, enabledParsers)
