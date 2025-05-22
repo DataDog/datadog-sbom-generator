@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+	"go.uber.org/mock/gomock"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -74,8 +77,11 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
 	require.NoError(t, err)
 
+	mockReporter := createMockReporter(t)
+
 	result := PerformReachabilityAnalysis(
 		true,
+		mockReporter,
 		[]string{},
 		[]string{tempDir},
 		[]string{},
@@ -133,9 +139,12 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
 	require.NoError(t, err)
 
+	mockReporter := createMockReporter(t)
+
 	excludePaths := []string{filepath.Join("subdir", "*")}
 	result := PerformReachabilityAnalysis(
 		true,
+		mockReporter,
 		[]string{},
 		[]string{tempDir},
 		excludePaths,
@@ -162,4 +171,19 @@ func createMockServer(statusCode int, data string) *httptest.Server {
 		w.WriteHeader(statusCode)
 		_, _ = w.Write([]byte(data))
 	}))
+}
+
+func createMockReporter(t *testing.T) *reporter.MockReporter {
+	t.Helper() // Mark this function as a test helper
+
+	// Mock reporter
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+	return mockReporter
 }
