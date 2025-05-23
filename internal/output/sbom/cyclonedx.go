@@ -57,6 +57,7 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		return strings.Compare(a.Ref, b.Ref)
 	})
 
+	bom.Metadata = buildMetadataComponent()
 	bom.Components = &components
 	bom.Dependencies = &dependencies
 	bom.Vulnerabilities = &bomVulnerabilities
@@ -85,6 +86,21 @@ func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 	}
 	if len(occurrences) > 0 {
 		component.Evidence = &cyclonedx.Evidence{Occurrences: &occurrences}
+	}
+}
+
+func buildMetadataComponent() *cyclonedx.Metadata {
+	return &cyclonedx.Metadata{
+		Tools: &cyclonedx.ToolsChoice{
+			Components: &[]cyclonedx.Component{
+				{
+					Type:    cyclonedx.ComponentTypeApplication,
+					Group:   "datadog",
+					Name:    "datadog-sbom-generator",
+					Version: "0.62.1",
+				},
+			},
+		},
 	}
 }
 
