@@ -63,6 +63,7 @@ func TestFindParser(t *testing.T) {
 		"renv.lock",
 		"requirements.txt",
 		"yarn.lock",
+		"uv.lock",
 	}
 
 	for _, file := range lockfiles {
@@ -116,6 +117,7 @@ func TestParse_FindsExpectedParsers(t *testing.T) {
 		"renv.lock",
 		"requirements.txt",
 		"yarn.lock",
+		"uv.lock",
 	}
 
 	count := 0
