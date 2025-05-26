@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/DataDog/datadog-sbom-generator/pkg/models"
+	v2 "github.com/urfave/cli/v2"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -83,17 +84,17 @@ func (mr *MockReporterMockRecorder) Infof(format interface{}, a ...interface{}) 
 }
 
 // PrintResult mocks base method.
-func (m *MockReporter) PrintResult(vulnResult *models.VulnerabilityResults) error {
+func (m *MockReporter) PrintResult(context *v2.Context, vulnResult *models.VulnerabilityResults) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrintResult", vulnResult)
+	ret := m.ctrl.Call(m, "PrintResult", context, vulnResult)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PrintResult indicates an expected call of PrintResult.
-func (mr *MockReporterMockRecorder) PrintResult(vulnResult interface{}) *gomock.Call {
+func (mr *MockReporterMockRecorder) PrintResult(context, vulnResult interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintResult", reflect.TypeOf((*MockReporter)(nil).PrintResult), vulnResult)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintResult", reflect.TypeOf((*MockReporter)(nil).PrintResult), context, vulnResult)
 }
 
 // Verbosef mocks base method.

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -53,6 +55,6 @@ func (r *JSONReporter) Verbosef(format string, a ...any) {
 	}
 }
 
-func (r *JSONReporter) PrintResult(vulnResult *models.VulnerabilityResults) error {
+func (r *JSONReporter) PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error {
 	return output.PrintJSONResults(vulnResult, r.stdout)
 }

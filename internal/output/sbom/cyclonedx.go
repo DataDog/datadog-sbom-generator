@@ -15,7 +15,12 @@ import (
 
 type PackageProcessingHook = func(component *cyclonedx.Component, details models.PackageVulns)
 
-func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts []models.ScannedArtifact) *cyclonedx.BOM {
+type Tool struct {
+	Name    string
+	Version string
+}
+
+func BuildCycloneDXBom(tool Tool, uniquePackages map[string]models.PackageVulns, artifacts []models.ScannedArtifact) *cyclonedx.BOM {
 	bom := cyclonedx.NewBOM()
 	bom.JSONSchema = cycloneDx15Schema
 	bom.SpecVersion = cyclonedx.SpecVersion1_5
@@ -57,7 +62,9 @@ func BuildCycloneDXBom(uniquePackages map[string]models.PackageVulns, artifacts 
 		return strings.Compare(a.Ref, b.Ref)
 	})
 
-	bom.Metadata = buildMetadataComponent()
+	metadata := buildMetadataComponent(tool)
+
+	bom.Metadata = metadata
 	bom.Components = &components
 	bom.Dependencies = &dependencies
 	bom.Vulnerabilities = &bomVulnerabilities
@@ -89,15 +96,15 @@ func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 	}
 }
 
-func buildMetadataComponent() *cyclonedx.Metadata {
+func buildMetadataComponent(tool Tool) *cyclonedx.Metadata {
 	return &cyclonedx.Metadata{
 		Tools: &cyclonedx.ToolsChoice{
 			Components: &[]cyclonedx.Component{
 				{
 					Type:    cyclonedx.ComponentTypeApplication,
 					Group:   "datadog",
-					Name:    "datadog-sbom-generator",
-					Version: "0.62.1",
+					Name:    tool.Name,
+					Version: tool.Version,
 				},
 			},
 		},
