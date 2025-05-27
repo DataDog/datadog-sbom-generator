@@ -4,7 +4,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -14,7 +26,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -25,6 +49,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:maven/dev.foo/lib1@1.0-SNAPSHOT",
@@ -59,7 +95,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -70,6 +118,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:maven/com.nobody/mine1@1.2.3",
@@ -89,6 +149,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:maven/com.nobody/mine1@1.2.3",
@@ -108,6 +180,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/com.nobody%3Amine1@1.2.3",
@@ -127,6 +211,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -191,6 +287,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -255,6 +363,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -287,6 +407,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -319,6 +451,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -351,6 +495,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -390,6 +546,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.2",
@@ -476,6 +644,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.2",
@@ -562,6 +742,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -602,6 +794,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -666,6 +870,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/author1/mine1@1.2.3",
@@ -752,6 +968,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/author1/mine1@1.2.3",
@@ -837,7 +1065,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -847,7 +1087,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -857,7 +1109,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -868,6 +1132,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -887,6 +1163,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -930,6 +1218,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -962,6 +1262,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -994,6 +1306,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1026,6 +1350,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1058,6 +1394,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1107,6 +1455,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1156,6 +1516,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1193,6 +1565,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
@@ -1232,6 +1616,18 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",

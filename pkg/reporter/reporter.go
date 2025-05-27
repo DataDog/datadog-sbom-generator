@@ -2,6 +2,7 @@ package reporter
 
 import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/urfave/cli/v2"
 )
 
 // Reporter provides printing operations for vulnerability results and for runtime information (depending on the verbosity
@@ -31,5 +32,5 @@ type Reporter interface {
 	Verbosef(format string, a ...any)
 	// PrintResult prints the models.VulnerabilityResults per the logic of the
 	// actual reporter
-	PrintResult(vulnResult *models.VulnerabilityResults) error
+	PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error
 }

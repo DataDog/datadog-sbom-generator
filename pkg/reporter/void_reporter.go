@@ -2,6 +2,7 @@ package reporter
 
 import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/urfave/cli/v2"
 )
 
 type VoidReporter struct {
@@ -25,6 +26,6 @@ func (r *VoidReporter) Infof(msg string, a ...any) {
 func (r *VoidReporter) Verbosef(msg string, a ...any) {
 }
 
-func (r *VoidReporter) PrintResult(vulnResult *models.VulnerabilityResults) error {
+func (r *VoidReporter) PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error {
 	return nil
 }

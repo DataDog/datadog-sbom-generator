@@ -5,8 +5,14 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
 	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
 )
+
+var defaultTool = sbom.Tool{
+	Name:    "datadog-sbom-generator",
+	Version: "1.0.1",
+}
 
 func TestPrintCycloneDX15Results_WithDependencies(t *testing.T) {
 	t.Parallel()
@@ -15,7 +21,7 @@ func TestPrintCycloneDX15Results_WithDependencies(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
 
 		if err != nil {
 			t.Errorf("%v", err)
@@ -32,7 +38,7 @@ func TestPrintCycloneDX15Results_WithVulnerabilities(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
 
 		if err != nil {
 			t.Errorf("%v", err)
@@ -49,7 +55,7 @@ func TestPrintCycloneDX15Results_WithMixedIssues(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
 
 		if err != nil {
 			t.Errorf("%v", err)
