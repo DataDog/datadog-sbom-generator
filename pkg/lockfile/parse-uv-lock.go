@@ -112,17 +112,12 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	var packages []PackageDetails
 	if rootPackage != nil {
 		//Get the Direct Dependencies
-		var directDependencies map[string]struct{}
-		if len(parsedLockfile.Packages) > 0 {
-			directDependencies = extractNames(rootPackage.Dependencies)
-		}
+		directDependencies := extractNames(rootPackage.Dependencies)
 
 		devDependencies := make(map[string]struct{})
-		if len(parsedLockfile.Packages) > 0 {
-			for _, deps := range rootPackage.DevDependencies {
-				for _, dep := range deps {
-					devDependencies[dep.Name] = struct{}{}
-				}
+		for _, deps := range rootPackage.DevDependencies {
+			for _, dep := range deps {
+				devDependencies[dep.Name] = struct{}{}
 			}
 		}
 
@@ -133,18 +128,16 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			}
 
 			_, commit, _ := strings.Cut(lockPackage.Source.Git, "#")
-
 			_, isDirect := directDependencies[lockPackage.Name]
-
 			_, isDevDependency := devDependencies[lockPackage.Name]
+			if !isDirect && !isDevDependency {
+				continue
+			}
 			depGroups := []string{}
 			if isDevDependency {
 				depGroups = append(depGroups, "dev")
 			}
 
-			if !isDirect && !isDevDependency {
-				continue
-			}
 			pkgDetails := PackageDetails{
 				Name:           lockPackage.Name,
 				Version:        lockPackage.Version,
