@@ -4,7 +4,19 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -30,7 +42,19 @@ built at: set at build time, see .goreleaser.yml ldflags section
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -46,6 +70,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:gem/ast@2.4.2",
@@ -92,6 +128,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -171,6 +219,18 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -254,6 +314,18 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:gem/ast@2.4.2",
@@ -292,6 +364,18 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:gem/ast@2.4.2",
@@ -388,6 +472,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -441,6 +537,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -470,6 +578,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/ansi-html@0.0.1",
@@ -499,6 +619,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/balanced-match@1.0.2",
@@ -539,6 +671,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -568,6 +712,18 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -656,6 +812,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint-community%2Feslint-utils@4.4.1",
@@ -1317,6 +1485,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint%2Feslintrc@2.1.4",
@@ -3079,6 +3259,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint%2Feslintrc@2.1.4",
@@ -4841,6 +5033,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint%2Feslintrc@2.1.4",
@@ -6603,6 +6807,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint%2Feslintrc@2.1.4",
@@ -8365,6 +8581,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -8419,6 +8647,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -8448,6 +8688,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
@@ -8478,6 +8730,18 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "libs/pom.xml",
@@ -8603,7 +8867,19 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "version": 1
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  }
 }
 
 ---
@@ -8619,6 +8895,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "maven-spring/pom.xml",
@@ -13492,6 +13780,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "maven-spring/pom.xml",
@@ -18297,6 +18597,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "maven-spring/pom.xml",
@@ -23102,6 +23414,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "libs/pom.xml",
@@ -23211,6 +23535,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint-community%2Feslint-utils@4.4.1",
@@ -23860,6 +24196,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint-community%2Feslint-utils@4.4.1",
@@ -24522,6 +24870,18 @@ No package sources found, --help for usage information.
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
   "components": [
     {
       "bom-ref": "pkg:npm/%40eslint-community%2Feslint-utils@4.4.1",

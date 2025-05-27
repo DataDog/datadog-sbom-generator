@@ -115,7 +115,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		return r, err
 	}
 
-	if errPrint := r.PrintResult(&vulnResult); errPrint != nil {
+	if errPrint := r.PrintResult(context, &vulnResult); errPrint != nil {
 		return r, fmt.Errorf("failed to write output: %w", errPrint)
 	}
 

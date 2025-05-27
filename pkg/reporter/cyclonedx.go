@@ -5,7 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/CycloneDX/cyclonedx-go"
+	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
+	"github.com/urfave/cli/v2"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 
@@ -55,8 +56,9 @@ func (r *CycloneDXReporter) Verbosef(format string, a ...any) {
 	}
 }
 
-func (r *CycloneDXReporter) PrintResult(vulnerabilityResults *models.VulnerabilityResults) error {
-	errs := output.PrintCycloneDXResults(vulnerabilityResults, r.stdout)
+func (r *CycloneDXReporter) PrintResult(context *cli.Context, vulnerabilityResults *models.VulnerabilityResults) error {
+	tool := sbom.Tool{Name: context.App.Name, Version: context.App.Version}
+	errs := output.PrintCycloneDXResults(tool, vulnerabilityResults, r.stdout)
 	if errs != nil {
 		for _, err := range strings.Split(errs.Error(), "\n") {
 			r.Warnf("Failed to parse package URL: %v", err)
@@ -64,10 +66,4 @@ func (r *CycloneDXReporter) PrintResult(vulnerabilityResults *models.Vulnerabili
 	}
 
 	return nil
-}
-
-// BuildCycloneDXBOM is only intended to be used when datadog-sbom-generator is used as a library as opposed to the CLI,
-// it has been written here to avoid being in an internal package which triggers linting issues
-func BuildCycloneDXBOM(vulnerabilityResults *models.VulnerabilityResults) (*cyclonedx.BOM, error) {
-	return output.CreateCycloneDXBOM(vulnerabilityResults)
 }

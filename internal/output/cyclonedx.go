@@ -12,15 +12,15 @@ import (
 )
 
 // This method creates a CycloneDX SBOM and returns it. Error being returned here are from components being filtered during PURL grouping
-func CreateCycloneDXBOM(vulnResult *models.VulnerabilityResults) (*cyclonedx.BOM, error) {
+func CreateCycloneDXBOM(tool sbom.Tool, vulnResult *models.VulnerabilityResults) (*cyclonedx.BOM, error) {
 	resultsByPurl, errs := purl.Group(vulnResult.Results)
 
-	return sbom.BuildCycloneDXBom(resultsByPurl, vulnResult.Artifacts), errors.Join(errs...)
+	return sbom.BuildCycloneDXBom(tool, resultsByPurl, vulnResult.Artifacts), errors.Join(errs...)
 }
 
 // PrintCycloneDXResults writes results to the provided writer in CycloneDX format
-func PrintCycloneDXResults(vulnResult *models.VulnerabilityResults, outputWriter io.Writer) error {
-	bom, errs := CreateCycloneDXBOM(vulnResult)
+func PrintCycloneDXResults(tool sbom.Tool, vulnResult *models.VulnerabilityResults, outputWriter io.Writer) error {
+	bom, errs := CreateCycloneDXBOM(tool, vulnResult)
 	encoder := cyclonedx.NewBOMEncoder(outputWriter, cyclonedx.BOMFileFormatJSON)
 	encoder.SetPretty(testing.Testing())
 
