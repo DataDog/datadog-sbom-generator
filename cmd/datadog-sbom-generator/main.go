@@ -8,6 +8,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
 
+	"github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/parsers"
 	"github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/scan"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
@@ -38,6 +39,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		DefaultCommand: "scan",
 		Commands: []*cli.Command{
 			scan.Command(stdout, stderr, &r),
+			parsers.Command(stdout),
 		},
 	}
 
