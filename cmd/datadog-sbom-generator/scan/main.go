@@ -61,7 +61,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: "explicitly define which lockfile to parse. If set, any non-set parsers will be ignored",
+				Usage: "explicitly define which lockfile to parse. If set, any non-set parsers will be ignored (to see all available parsers run datadog-sbom-generator parsers list)",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
