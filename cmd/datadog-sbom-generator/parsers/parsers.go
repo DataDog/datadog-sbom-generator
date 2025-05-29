@@ -9,8 +9,8 @@ import (
 func Command(stdout io.Writer) *cli.Command {
 	return &cli.Command{
 		Name:        "parsers",
-		Usage:       "manage and inspect lockfile parsers used for SBOM generation",
-		Description: "provides functionality related to lockfile parsers used by the generator, including listing available parsers",
+		Usage:       "inspect parsers used for SBOM generation",
+		Description: "provides functionality related to parsers used by the generator, including listing available parsers",
 		Subcommands: []*cli.Command{
 			ListCommand(stdout),
 		},
