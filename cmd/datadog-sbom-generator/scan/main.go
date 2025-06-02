@@ -8,8 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
-
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
 	"github.com/urfave/cli/v2"
@@ -63,7 +61,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: fmt.Sprintf("explicitly define which lockfile to parse. If set, any non-set parsers will be ignored. (Available parsers: %v)", lockfile.ListExtractors()),
+				Usage: "explicitly define which lockfile to parse. If set, any non-set parsers will be ignored (to see all available parsers run datadog-sbom-generator parsers list)",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",

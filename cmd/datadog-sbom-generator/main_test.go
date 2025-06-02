@@ -603,3 +603,12 @@ func TestRun_InsertDefaultCommand(t *testing.T) {
 		testutility.NewSnapshot().MatchText(t, normalizeStdStream(t, stderr))
 	}
 }
+
+func TestRun_ParsersList(t *testing.T) {
+	t.Parallel()
+	testCli(t, cliTestCase{
+		name: "parsers list",
+		args: []string{"", "parsers", "list"},
+		exit: 0,
+	})
+}
