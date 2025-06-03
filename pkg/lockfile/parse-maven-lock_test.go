@@ -1665,3 +1665,45 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 		},
 	})
 }
+
+func TestParseMavenLock_TwoExclusions(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "fixtures/maven/one-package-two-exclusions.xml"))
+	packages, err := lockfile.ParseMavenLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "org.apache.maven:maven-artifact",
+			Version:        "1.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 21},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 19, End: 33},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 16, End: 21},
+				Filename: path,
+			},
+			IsDirect: true,
+			Exclusions: []string{
+				"com.example:not-wanted", "com.example:*",
+			},
+		},
+	})
+}

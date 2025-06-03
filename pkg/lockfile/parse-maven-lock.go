@@ -81,6 +81,7 @@ type MavenLockDependency struct {
 	ArtifactID models.StringWithPosition `xml:"artifactId"`
 	Version    models.StringWithPosition `xml:"version"`
 	Scope      string                    `xml:"scope"`
+	Exclusions []MavenLockExclusion      `xml:"exclusions>exclusion"`
 	SourceFile string
 	models.FilePosition
 }
@@ -91,6 +92,12 @@ type MavenLockParent struct {
 	GroupID      string   `xml:"groupId"`
 	ArtifactID   string   `xml:"artifactId"`
 	Version      string   `xml:"version"`
+}
+
+type MavenLockExclusion struct {
+	XMLName    xml.Name                  `xml:"exclusion"`
+	GroupID    models.StringWithPosition `xml:"groupId"`
+	ArtifactID models.StringWithPosition `xml:"artifactId"`
 }
 
 type MavenLockDependencyHolder struct {
@@ -537,6 +544,11 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			versionPosition.Filename = lockPackage.SourceFile
 		}
 
+		exclusions := []string{}
+		for _, exclusion := range lockPackage.Exclusions {
+			exclusions = append(exclusions, exclusion.GroupID.Value+":"+exclusion.ArtifactID.Value)
+		}
+
 		pkgDetails := PackageDetails{
 			Name:            finalName,
 			Version:         resolvedVersion,
@@ -546,6 +558,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			VersionLocation: &versionPosition,
 			PackageManager:  models.Maven,
 			IsDirect:        true,
+			Exclusions:      exclusions,
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
 			// Only append non-default scope (compile is the default scope).

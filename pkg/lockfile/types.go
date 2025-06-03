@@ -19,6 +19,7 @@ type PackageDetails struct {
 	PackageManager  models.PackageManager `json:"packageManager,omitempty"`
 	IsDirect        bool                  `json:"isDirect,omitempty"`
 	Dependencies    []*PackageDetails     `json:"dependencies,omitempty"`
+	Exclusions      []string              `json:"exclusions,omitempty"`
 }
 
 type Ecosystem string
