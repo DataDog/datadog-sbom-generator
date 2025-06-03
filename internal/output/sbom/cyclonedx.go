@@ -124,6 +124,14 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 				Name:  "datadog-sbom-generator:" + string(metadataType),
 				Value: value,
 			})
+		} else if metadataType == models.ExclusionMetadata {
+			props := strings.Split(value, ",")
+			for _, prop := range props {
+				properties = append(properties, cyclonedx.Property{
+					Name:  "datadog-sbom-generator:" + string(metadataType),
+					Value: prop,
+				})
+			}
 		} else {
 			properties = append(properties, cyclonedx.Property{
 				Name:  "osv-scanner:" + string(metadataType),
