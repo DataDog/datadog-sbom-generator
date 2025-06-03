@@ -1,6 +1,7 @@
 package lockfile
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -66,27 +67,28 @@ func extractNames(deps []uvDependency) map[string]struct{} {
 	for _, dep := range deps {
 		names[dep.Name] = struct{}{}
 	}
+
 	return names
 }
 
-func buildDependencies(depList []uvDependency, allPkgs map[string]*UvLockPackage, directSet map[string]struct{}) []*PackageDetails {
-	var deps []*PackageDetails
-	for _, dep := range depList {
-		if depPkg, ok := allPkgs[dep.Name]; ok {
-			_, commit, _ := strings.Cut(depPkg.Source.Git, "#")
-			_, isDirect := directSet[depPkg.Name]
-
-			deps = append(deps, &PackageDetails{
-				Name:           depPkg.Name,
-				Version:        depPkg.Version,
-				Commit:         commit,
-				PackageManager: models.Uv,
-				Ecosystem:      models.EcosystemPyPI,
-				IsDirect:       isDirect,
-			})
+func isRoot(pkg *UvLockPackage) bool {
+	return pkg.Source.Editable == "." || pkg.Source.Virtual == "."
+}
+func findRootPackage(allPackages []*UvLockPackage) (*UvLockPackage, error) {
+	var rootPackage []*UvLockPackage
+	for _, pkg := range allPackages {
+		if isRoot(pkg) {
+			rootPackage = append(rootPackage, pkg)
 		}
 	}
-	return deps
+	if len(rootPackage) == 0 {
+		return nil, errors.New("no root package found in uv lockfile")
+	}
+	if len(rootPackage) > 1 {
+		return nil, errors.New("uv lockfile cannot have more than one root")
+	}
+
+	return rootPackage[0], nil
 }
 
 func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -98,20 +100,15 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	//Convert array of packages to a map to make lookup faster.
-	parsedPackages := make(map[string]*UvLockPackage, len(parsedLockfile.Packages))
-	var rootPackage *UvLockPackage
-	for _, pkg := range parsedLockfile.Packages {
-		parsedPackages[pkg.Name] = pkg
-		if pkg.Source.Virtual == "." || pkg.Source.Editable == "." {
-			rootPackage = pkg
-		}
+	rootPackage, err := findRootPackage(parsedLockfile.Packages)
+	if err != nil {
+		return []PackageDetails{}, fmt.Errorf("could not find root package: %w", err)
 	}
 
-	//This will hold packages we will return
-	var packages []PackageDetails
+	// This will hold packages we will return
+	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
 	if rootPackage != nil {
-		//Get the Direct Dependencies
+		// Get the Direct Dependencies
 		directDependencies := extractNames(rootPackage.Dependencies)
 
 		devDependencies := make(map[string]struct{})
@@ -122,17 +119,15 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 
 		for _, lockPackage := range parsedLockfile.Packages {
-			//Skip root package
-			if lockPackage.Source.Virtual == "." || lockPackage.Source.Editable == "." {
+			// Skip root package
+			if isRoot(lockPackage) {
 				continue
 			}
 
 			_, commit, _ := strings.Cut(lockPackage.Source.Git, "#")
 			_, isDirect := directDependencies[lockPackage.Name]
 			_, isDevDependency := devDependencies[lockPackage.Name]
-			if !isDirect && !isDevDependency {
-				continue
-			}
+
 			depGroups := []string{}
 			if isDevDependency {
 				depGroups = append(depGroups, "dev")
@@ -145,7 +140,6 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				PackageManager: models.Uv,
 				Ecosystem:      models.EcosystemPyPI,
 				IsDirect:       isDirect || isDevDependency,
-				Dependencies:   buildDependencies(lockPackage.Dependencies, parsedPackages, directDependencies),
 			}
 
 			if len(depGroups) > 0 {
@@ -155,6 +149,7 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			packages = append(packages, pkgDetails)
 		}
 	}
+
 	return packages, nil
 }
 

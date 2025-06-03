@@ -22,5 +22,5 @@ const (
 	Pub          PackageManager = "Pub"
 	Renv         PackageManager = "Renv"
 	Unknown      PackageManager = "Unknown"
-	Uv           PackageManager = "Uv"
+	Uv           PackageManager = "uv"
 )
