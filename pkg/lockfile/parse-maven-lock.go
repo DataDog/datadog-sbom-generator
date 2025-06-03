@@ -544,9 +544,12 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			versionPosition.Filename = lockPackage.SourceFile
 		}
 
-		exclusions := []string{}
-		for _, exclusion := range lockPackage.Exclusions {
-			exclusions = append(exclusions, exclusion.GroupID.Value+":"+exclusion.ArtifactID.Value)
+		var exclusions []string
+		if len(lockPackage.Exclusions) > 0 {
+			exclusions = make([]string, 0, len(lockPackage.Exclusions))
+			for _, exclusion := range lockPackage.Exclusions {
+				exclusions = append(exclusions, exclusion.GroupID.Value+":"+exclusion.ArtifactID.Value)
+			}
 		}
 
 		pkgDetails := PackageDetails{
