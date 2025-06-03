@@ -32,7 +32,7 @@ datadog-sbom-generator scan help
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
 | Language                | Package Manager  |
-|-------------------------|------------------|
+| ----------------------- | ---------------- |
 | Ruby                    | Bundler          |
 | .NET                    | Nuget            |
 | PHP                     | Composer         |
