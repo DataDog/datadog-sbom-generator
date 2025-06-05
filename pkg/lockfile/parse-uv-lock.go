@@ -48,9 +48,8 @@ type UvLockPackage struct {
 }
 
 type UvLockFile struct {
-	Version  int              `toml:"version"`
-	Packages []*UvLockPackage `toml:"package"`
-
+	Version  int               `toml:"version"`
+	Packages []*UvLockPackage  `toml:"package"`
 	Metadata uvPackageMetadata `toml:"package.metadata"`
 }
 
@@ -74,6 +73,7 @@ func extractNames(deps []uvDependency) map[string]struct{} {
 func isRoot(pkg *UvLockPackage) bool {
 	return pkg.Source.Editable == "." || pkg.Source.Virtual == "."
 }
+
 func findRootPackage(allPackages []*UvLockPackage) (*UvLockPackage, error) {
 	var rootPackage []*UvLockPackage
 	for _, pkg := range allPackages {
@@ -95,7 +95,6 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	var parsedLockfile *UvLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)
-
 	if err != nil {
 		return []PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
