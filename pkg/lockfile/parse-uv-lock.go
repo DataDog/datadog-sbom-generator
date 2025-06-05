@@ -70,6 +70,8 @@ func extractNames(deps []uvDependency) map[string]struct{} {
 	return names
 }
 
+// This link shows how roots are defined
+// https://github.com/astral-sh/uv/blob/f7d647e81d7e1e3be189324b06024ed2057168e6/crates/uv-resolver/src/lock/mod.rs#L572-L579
 func isRoot(pkg *UvLockPackage) bool {
 	return pkg.Source.Editable == "." || pkg.Source.Virtual == "."
 }
@@ -81,6 +83,9 @@ func findRootPackage(allPackages []*UvLockPackage) (*UvLockPackage, error) {
 			rootPackage = append(rootPackage, pkg)
 		}
 	}
+
+	// Lock file must have one root
+	// https://github.com/astral-sh/uv/blob/f80ddf10b63c3e7b421ca4658e63f97db1e0378c/crates/uv/src/commands/project/lock.rs#L933-L936
 	if len(rootPackage) == 0 {
 		return nil, errors.New("no root package found in uv lockfile")
 	}
@@ -118,7 +123,8 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		}
 
 		for _, lockPackage := range parsedLockfile.Packages {
-			// Skip root package
+			// Skip root package because root files describe what it depends on, but isn't itself a dependency
+			// https://docs.astral.sh/uv/concepts/projects/layout/
 			if isRoot(lockPackage) {
 				continue
 			}
