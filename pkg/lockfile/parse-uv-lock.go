@@ -18,13 +18,6 @@ type UvLockPackageSource struct {
 	Editable string `toml:"editable,omitempty"`
 }
 
-type UvLockPackageSdist struct {
-	URL        string `toml:"url"`
-	Hash       string `toml:"hash"`
-	Size       int    `toml:"size"`
-	UploadTime string `toml:"upload-time"`
-}
-
 type uvDependency struct {
 	Name string `toml:"name"`
 }
@@ -39,12 +32,11 @@ type uvMetadata struct {
 }
 
 type UvLockPackage struct {
-	Name                 string                    `toml:"name"`
-	Version              string                    `toml:"version"`
-	Source               UvLockPackageSource       `toml:"source"`
-	Dependencies         []uvDependency            `toml:"dependencies"`
-	OptionalDependencies map[string][]uvDependency `toml:"optional-dependencies"`
-	DevDependencies      map[string][]uvDependency `toml:"dev-dependencies"`
+	Name            string                    `toml:"name"`
+	Version         string                    `toml:"version"`
+	Source          UvLockPackageSource       `toml:"source"`
+	Dependencies    []uvDependency            `toml:"dependencies"`
+	DevDependencies map[string][]uvDependency `toml:"dev-dependencies"`
 }
 
 type UvLockFile struct {
@@ -71,7 +63,7 @@ func extractNames(deps []uvDependency) map[string]struct{} {
 }
 
 // This link shows how roots are defined
-// https://github.com/astral-sh/uv/blob/f7d647e81d7e1e3be189324b06024ed2057168e6/crates/uv-resolver/src/lock/mod.rs#L572-L579
+// https://docs.astral.sh/uv/reference/settings/#build-backend_module-root
 func isRoot(pkg *UvLockPackage) bool {
 	return pkg.Source.Editable == "." || pkg.Source.Virtual == "."
 }
@@ -106,13 +98,12 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 
 	rootPackage, err := findRootPackage(parsedLockfile.Packages)
 	if err != nil {
-		return []PackageDetails{}, fmt.Errorf("could not find root package: %w", err)
+		return []PackageDetails{}, errors.New("error getting root package")
 	}
 
 	// This will hold packages we will return
 	packages := make([]PackageDetails, 0, len(parsedLockfile.Packages))
 	if rootPackage != nil {
-		// Get the Direct Dependencies
 		directDependencies := extractNames(rootPackage.Dependencies)
 
 		devDependencies := make(map[string]struct{})
