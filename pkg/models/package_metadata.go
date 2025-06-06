@@ -17,7 +17,7 @@ func (metadata PackageMetadata) Merge(other PackageMetadata) PackageMetadata {
 		return metadata
 	}
 	_, isDevDependency := metadata[IsDevDependencyMetadata]
-	_, otherIsDevDependency := other[IsDirectDependencyMetadata]
+	_, otherIsDevDependency := other[IsDevDependencyMetadata]
 
 	for key, value := range other {
 		if _, exists := metadata[key]; !exists {
