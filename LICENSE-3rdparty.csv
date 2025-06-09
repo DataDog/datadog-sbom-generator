@@ -171,6 +171,7 @@ core,golang.org/x/crypto/ssh/knownhosts,BSD-3-Clause,Copyright 2009 The Go Autho
 core,golang.org/x/net/context,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/net/internal/socks,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/net/proxy,BSD-3-Clause,Copyright 2009 The Go Authors
+core,golang.org/x/sync/errgroup,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/cpu,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/execabs,BSD-3-Clause,Copyright 2009 The Go Authors
 core,golang.org/x/sys/unix,BSD-3-Clause,Copyright 2009 The Go Authors
