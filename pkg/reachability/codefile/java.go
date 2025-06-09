@@ -1,6 +1,7 @@
 package codefile
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -66,7 +67,11 @@ func (r *ReachabilityJava) Close() {
 	}
 }
 
-func (r *ReachabilityJava) Detect(dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
 	fileContent, err := readFileContent(path)
 	if err != nil {
 		return err

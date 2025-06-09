@@ -1,8 +1,13 @@
 package reachability
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 
@@ -31,13 +36,34 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 
 	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resp)
 
-	javaReachabilityDetector, err := codefile.NewJavaReachableDetector()
-	if err != nil {
-		r.Errorf("[reachability] Failed to create Java reachability detector: %v", err)
-	}
-	defer javaReachabilityDetector.Close()
-
 	detectionResults := make(models.DetectionResults)
+	// Needed to protect detectionResults from concurrent writes
+	var detectionMutex sync.Mutex
+
+	// Parallel for reachability scanning
+	ctx := context.Background()
+	g, ctx := errgroup.WithContext(ctx)
+
+	// Creates a worker pool of Java detectors for thread-safe parsing
+	workerCount := runtime.NumCPU()
+	detectorPool := make(chan *codefile.ReachabilityJava, workerCount)
+
+	for range workerCount {
+		detector, err := codefile.NewJavaReachableDetector()
+		if err != nil {
+			r.Errorf("[reachability] Failed to create Java reachability detector: %v", err)
+			return models.ReachabilityAnalysis{}
+		}
+		detectorPool <- detector
+	}
+
+	// Cleanup all detectors when done
+	defer func() {
+		close(detectorPool)
+		for detector := range detectorPool {
+			detector.Close()
+		}
+	}()
 
 	for _, dir := range directoryPaths {
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
@@ -65,7 +91,36 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 
 			switch filepath.Ext(d.Name()) {
 			case ".java":
-				err = javaReachabilityDetector.Detect(dir, path, detectionResults, advisoriesToCheckPerLanguage["java"])
+				dir := dir
+				path := path
+				g.Go(func() error {
+					// Get a detector from the pool
+					detector := <-detectorPool
+					// Return detector to pool after it's finished
+					defer func() {
+						detectorPool <- detector
+					}()
+
+					localResults := make(models.DetectionResults)
+					err := detector.Detect(ctx, dir, path, localResults, advisoriesToCheckPerLanguage["java"])
+					if err != nil {
+						return err
+					}
+
+					// Merge local results back to main detectionResults with mutex protection
+					detectionMutex.Lock()
+					for purl, advisoryMap := range localResults {
+						if _, exists := detectionResults[purl]; !exists {
+							detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
+						}
+						for advisoryID, locations := range advisoryMap {
+							detectionResults[purl][advisoryID] = append(detectionResults[purl][advisoryID], locations...)
+						}
+					}
+					detectionMutex.Unlock()
+
+					return nil
+				})
 			default:
 				return nil
 			}
@@ -79,6 +134,10 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 		}
 	}
 
+	if gErr := g.Wait(); gErr != nil {
+		r.Errorf("[reachability] Failed to process directories: %v", gErr)
+		return models.ReachabilityAnalysis{}
+	}
 	purlToReachabilityAnalysisResults := getPurlsToReachabilityAnalysisResults(advisoriesToCheckPerLanguage, detectionResults)
 
 	return models.ReachabilityAnalysis{
