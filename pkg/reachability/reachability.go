@@ -37,14 +37,11 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resp)
 
 	detectionResults := make(models.DetectionResults)
-	// Needed to protect detectionResults from concurrent writes
 	var detectionMutex sync.Mutex
 
-	// Parallel for reachability scanning
 	ctx := context.Background()
 	g, ctx := errgroup.WithContext(ctx)
 
-	// Creates a worker pool of Java detectors for thread-safe parsing
 	workerCount := runtime.NumCPU()
 	detectorPool := make(chan *codefile.ReachabilityJava, workerCount)
 
@@ -57,7 +54,6 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 		detectorPool <- detector
 	}
 
-	// Cleanup all detectors when done
 	defer func() {
 		close(detectorPool)
 		for detector := range detectorPool {
@@ -91,8 +87,6 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 
 			switch filepath.Ext(d.Name()) {
 			case ".java":
-				dir := dir
-				path := path
 				g.Go(func() error {
 					// Get a detector from the pool
 					detector := <-detectorPool
