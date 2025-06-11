@@ -9,13 +9,11 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
-
-	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
-
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
@@ -39,8 +37,7 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
 
-	ctx := context.Background()
-	g, ctx := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(context.Background())
 
 	workerCount := runtime.NumCPU()
 	detectorPool := make(chan *codefile.ReachabilityJava, workerCount)

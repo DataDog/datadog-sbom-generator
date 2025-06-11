@@ -68,16 +68,28 @@ func (r *ReachabilityJava) Close() {
 }
 
 func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
 	fileContent, err := readFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := r.tsParser.Parse(fileContent, nil)
+	readCallback := func(offset int, position treesitter.Point) []byte {
+		if ctx.Err() != nil {
+			return []byte{}
+		}
+		if offset >= len(fileContent) {
+			return []byte{}
+		}
+
+		return fileContent[offset:]
+	}
+
+	// Periodically check context to see if it has been canceled
+	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
+		ProgressCallback: func(_ treesitter.ParseState) bool {
+			return ctx.Err() != nil
+		},
+	})
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
