@@ -12,6 +12,7 @@ const (
 	Pipfile      PackageManager = "Pipfile"
 	Pdm          PackageManager = "Pdm"
 	Poetry       PackageManager = "Poetry"
+	Uv           PackageManager = "uv"
 	NuGet        PackageManager = "NuGet"
 	Bundler      PackageManager = "Bundler"
 	Golang       PackageManager = "Golang"

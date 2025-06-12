@@ -62,6 +62,7 @@ func TestFindParser(t *testing.T) {
 		"pubspec.lock",
 		"renv.lock",
 		"requirements.txt",
+		"uv.lock",
 		"yarn.lock",
 	}
 
@@ -115,6 +116,7 @@ func TestParse_FindsExpectedParsers(t *testing.T) {
 		"pubspec.lock",
 		"renv.lock",
 		"requirements.txt",
+		"uv.lock",
 		"yarn.lock",
 	}
 

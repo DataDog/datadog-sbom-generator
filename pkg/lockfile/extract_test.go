@@ -92,6 +92,7 @@ func TestExtractDeps_FindsExpectedExtractor(t *testing.T) {
 		"renv.lock",
 		"requirements.txt",
 		"yarn.lock",
+		"uv.lock",
 	}
 	enabledParsers := make(map[string]bool)
 	for _, name := range lockfiles {

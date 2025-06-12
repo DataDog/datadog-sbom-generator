@@ -41,6 +41,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | Python                  | requirements.txt |
 | Python                  | pipenv           |
 | Python                  | Poetry           |
+| Python                  | uv               |
 | JavaScript / TypeScript | NPM              |
 | JavaScript / TypeScript | Yarn             |
 | JavaScript / TypeScript | PNPM             |
@@ -61,6 +62,7 @@ This tool only supports extracting packages from:
 - `Pipfile.lock`
 - `poetry.lock`
 - `pdm.lock`
+- `uv.lock`
 
 This tool only supports enriching information from the following package manager declaration files:
 
