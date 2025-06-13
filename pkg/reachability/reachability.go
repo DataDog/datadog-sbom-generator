@@ -37,10 +37,11 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
 
-	g, ctx := errgroup.WithContext(context.Background())
-
 	workerCount := runtime.NumCPU()
 	detectorPool := make(chan *codefile.ReachabilityJava, workerCount)
+
+	eg, ctx := errgroup.WithContext(context.Background())
+	eg.SetLimit(workerCount)
 
 	for range workerCount {
 		detector, err := codefile.NewJavaReachableDetector()
@@ -84,7 +85,7 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 
 			switch filepath.Ext(d.Name()) {
 			case ".java":
-				g.Go(func() error {
+				eg.Go(func() error {
 					// Get a detector from the pool
 					detector := <-detectorPool
 					// Return detector to pool after it's finished
@@ -125,7 +126,7 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 		}
 	}
 
-	if gErr := g.Wait(); gErr != nil {
+	if gErr := eg.Wait(); gErr != nil {
 		r.Errorf("[reachability] Failed to process directories: %v", gErr)
 		return models.ReachabilityAnalysis{}
 	}

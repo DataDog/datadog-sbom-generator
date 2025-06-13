@@ -72,7 +72,7 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 	if err != nil {
 		return err
 	}
-
+	// Callback function that checks if there is an error
 	readCallback := func(offset int, position treesitter.Point) []byte {
 		if ctx.Err() != nil {
 			return []byte{}
@@ -84,8 +84,10 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 		return fileContent[offset:]
 	}
 
-	// Periodically check context to see if it has been canceled
 	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
+		// ProgressCallback returns true to cancel parsing
+		// We use ctx.Err() != nil to cancel the parse if the context is canceled
+		// See: https://github.com/tree-sitter/go-tree-sitter/blob/adc13ffd8b2c0b01b878fda9f7c422ce0df5fad3/parser.go#L319
 		ProgressCallback: func(_ treesitter.ParseState) bool {
 			return ctx.Err() != nil
 		},
