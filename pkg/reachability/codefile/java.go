@@ -1,6 +1,7 @@
 package codefile
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -66,13 +67,31 @@ func (r *ReachabilityJava) Close() {
 	}
 }
 
-func (r *ReachabilityJava) Detect(dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
 	fileContent, err := readFileContent(path)
 	if err != nil {
 		return err
 	}
+	// Callback function that checks if there is an error
+	readCallback := func(offset int, position treesitter.Point) []byte {
+		if ctx.Err() != nil {
+			return []byte{}
+		}
+		if offset >= len(fileContent) {
+			return []byte{}
+		}
 
-	tree := r.tsParser.Parse(fileContent, nil)
+		return fileContent[offset:]
+	}
+
+	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
+		// ProgressCallback returns true to cancel parsing
+		// We use ctx.Err() != nil to cancel the parse if the context is canceled
+		// See: https://github.com/tree-sitter/go-tree-sitter/blob/adc13ffd8b2c0b01b878fda9f7c422ce0df5fad3/parser.go#L319
+		ProgressCallback: func(_ treesitter.ParseState) bool {
+			return ctx.Err() != nil
+		},
+	})
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
