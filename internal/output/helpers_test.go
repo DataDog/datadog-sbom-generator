@@ -1463,6 +1463,32 @@ func testOutputWithArtifacts(t *testing.T, run outputTestRunner) {
 				},
 			},
 		},
+		{
+			name: "one source with one package, two exclusions",
+			args: outputTestCaseArgs{
+				vulnResult: &models.VulnerabilityResults{
+					Artifacts: make([]models.ScannedArtifact, 0),
+					Results: []models.PackageSource{
+						{
+							Source: models.SourceInfo{Path: "path/to/my/first/pom.xml"},
+							Packages: []models.PackageVulns{
+								{
+									Package: models.PackageInfo{
+										Name:      "org.apache.maven:maven-artifact",
+										Version:   "1.2.1",
+										Ecosystem: "Maven",
+									},
+									Metadata: models.PackageMetadata{
+										models.IsDevDependencyMetadata: "true",
+										models.ExclusionMetadata:       "org.example:example-artifact1,org.example:*",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

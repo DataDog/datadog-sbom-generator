@@ -50,18 +50,24 @@ func packageToString(pkg lockfile.PackageDetails) string {
 		groups = "<no groups>"
 	}
 
-	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t)", pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect)
+	exclusions := strings.Join(pkg.Exclusions, ", ")
+
+	if exclusions == "" {
+		exclusions = "<no exclusions>"
+	}
+
+	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t, %s)", pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect, exclusions)
 }
 
-func hasPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.PackageDetails, ignoreLocations bool) bool {
+func hasPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg lockfile.PackageDetails, ignoreLocations bool) bool {
 	t.Helper()
 
-	for _, details := range packages {
+	for _, expectedPkg := range expectedPkgs {
 		var ignore []string
 		if ignoreLocations {
 			ignore = []string{"BlockLocation", "NameLocation", "VersionLocation"}
 		}
-		if cmp.Equal(details, pkg, cmpopts.IgnoreFields(lockfile.PackageDetails{}, ignore...)) {
+		if cmp.Equal(expectedPkg, currentPkg, cmpopts.IgnoreFields(lockfile.PackageDetails{}, ignore...)) {
 			return true
 		}
 	}
@@ -69,15 +75,15 @@ func hasPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.P
 	return false
 }
 
-func innerExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfile.PackageDetails, ignoreLocations bool) {
+func innerExpectPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg lockfile.PackageDetails, ignoreLocations bool) {
 	t.Helper()
 
-	if !hasPackage(t, packages, pkg, ignoreLocations) {
+	if !hasPackage(t, expectedPkgs, currentPkg, ignoreLocations) {
 		t.Errorf(
 			"Expected packages to include %s@%s (%s), but it did not",
-			pkg.Name,
-			pkg.Version,
-			pkg.Ecosystem,
+			currentPkg.Name,
+			currentPkg.Version,
+			currentPkg.Ecosystem,
 		)
 	}
 }

@@ -8,6 +8,7 @@ const (
 	PackageManagerMetadata     PackageMetadataType = "package-manager"
 	IsDirectDependencyMetadata PackageMetadataType = "is-direct"
 	IsDevDependencyMetadata    PackageMetadataType = "is-dev"
+	ExclusionMetadata          PackageMetadataType = "exclusion"
 )
 
 type PackageMetadata map[PackageMetadataType]string
