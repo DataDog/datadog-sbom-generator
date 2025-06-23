@@ -11,6 +11,12 @@ import (
 	"maps"
 )
 
+const (
+	pipenvPackageManager      = models.Pipfile
+	pipenvFilePath            = "Pipfile.lock"
+	pipenvOfficiallySupported = true
+)
+
 type PipenvPackage struct {
 	Version string `json:"version"`
 }
@@ -25,7 +31,15 @@ type PipenvLockExtractor struct {
 }
 
 func (e PipenvLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "Pipfile.lock"
+	return filepath.Base(path) == pipenvFilePath
+}
+
+func (e PipenvLockExtractor) IsOfficiallySupported() bool {
+	return pipenvOfficiallySupported
+}
+
+func (e PipenvLockExtractor) PackageManager() models.PackageManager {
+	return pipenvPackageManager
 }
 
 func (e PipenvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -57,7 +71,7 @@ func addPkgDetails(details map[string]PackageDetails, packages map[string]Pipenv
 			pkgDetails := PackageDetails{
 				Name:           name,
 				Version:        version,
-				PackageManager: models.Pipfile,
+				PackageManager: pipenvPackageManager,
 				Ecosystem:      models.EcosystemPyPI,
 			}
 			if group != "" {

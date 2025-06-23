@@ -2,12 +2,27 @@ package lockfile
 
 import (
 	"path/filepath"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+)
+
+const (
+	nodeModulesPackageManager      = models.NPM
+	nodeModulesOfficiallySupported = false
 )
 
 type NodeModulesExtractor struct{}
 
 func (e NodeModulesExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(filepath.Dir(path)) == "node_modules" && filepath.Base(path) == ".package-lock.json"
+}
+
+func (e NodeModulesExtractor) IsOfficiallySupported() bool {
+	return nodeModulesOfficiallySupported
+}
+
+func (e NodeModulesExtractor) PackageManager() models.PackageManager {
+	return nodeModulesPackageManager
 }
 
 func (e NodeModulesExtractor) Extract(f DepFile) ([]PackageDetails, error) {

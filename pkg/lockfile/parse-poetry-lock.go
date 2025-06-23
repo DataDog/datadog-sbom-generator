@@ -9,6 +9,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	poetryPackageManager      = models.Poetry
+	poetryFilePath            = "poetry.lock"
+	poetryOfficiallySupported = true
+)
+
 type PoetryLockPackageSource struct {
 	Type   string `toml:"type"`
 	Commit string `toml:"resolved_reference"`
@@ -31,7 +37,15 @@ type PoetryLockExtractor struct {
 }
 
 func (e PoetryLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "poetry.lock"
+	return filepath.Base(path) == poetryFilePath
+}
+
+func (e PoetryLockExtractor) IsOfficiallySupported() bool {
+	return poetryOfficiallySupported
+}
+
+func (e PoetryLockExtractor) PackageManager() models.PackageManager {
+	return poetryPackageManager
 }
 
 func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -50,7 +64,7 @@ func (e PoetryLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           lockPackage.Name,
 			Version:        lockPackage.Version,
 			Commit:         lockPackage.Source.Commit,
-			PackageManager: models.Poetry,
+			PackageManager: poetryPackageManager,
 			Ecosystem:      models.EcosystemPyPI,
 		}
 		if lockPackage.Optional {

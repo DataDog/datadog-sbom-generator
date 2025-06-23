@@ -14,6 +14,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	pnpmPackageManager      = models.Pnpm
+	pnpmFilePath            = "pnpm-lock.yaml"
+	pnpmOfficiallySupported = true
+)
+
 type PnpmLegacyLockPackageResolution struct {
 	Tarball string `yaml:"tarball"`
 	Commit  string `yaml:"commit"`
@@ -249,7 +255,7 @@ func parsePnpmLegacyLock(lockfile PnpmLegacyLockfile) []PackageDetails {
 			Name:           name,
 			Version:        version,
 			TargetVersions: targetVersions,
-			PackageManager: models.Pnpm,
+			PackageManager: pnpmPackageManager,
 			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      depGroups,
@@ -265,7 +271,15 @@ type PnpmLockExtractor struct {
 }
 
 func (e PnpmLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "pnpm-lock.yaml"
+	return filepath.Base(path) == pnpmFilePath
+}
+
+func (e PnpmLockExtractor) IsOfficiallySupported() bool {
+	return pnpmOfficiallySupported
+}
+
+func (e PnpmLockExtractor) PackageManager() models.PackageManager {
+	return pnpmPackageManager
 }
 
 func (e PnpmLockExtractor) extractLegacyPnpm(f DepFile) ([]PackageDetails, error) {

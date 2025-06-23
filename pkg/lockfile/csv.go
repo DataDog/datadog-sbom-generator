@@ -11,6 +11,11 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	csvPackageManager      = models.Unknown
+	csvOfficiallySupported = false
+)
+
 var errCSVRecordNotEnoughFields = errors.New("not enough fields (expected at least four)")
 var errCSVRecordMissingPackageField = errors.New("field 3 is empty (must be the name of a package)")
 var errCSVRecordMissingCommitField = errors.New("field 4 is empty (must be a commit)")
@@ -43,7 +48,7 @@ func fromCSVRecord(lines []string) (PackageDetails, error) {
 		Version:        version,
 		Ecosystem:      ecosystem,
 		Commit:         commit,
-		PackageManager: models.Unknown,
+		PackageManager: csvPackageManager,
 	}, nil
 }
 
@@ -87,6 +92,14 @@ type CSVExtractor struct{}
 func (e CSVExtractor) ShouldExtract(_ string) bool {
 	// the csv extractor should never implicitly extract a file
 	return false
+}
+
+func (e CSVExtractor) IsOfficiallySupported() bool {
+	return csvOfficiallySupported
+}
+
+func (e CSVExtractor) PackageManager() models.PackageManager {
+	return csvPackageManager
 }
 
 func (e CSVExtractor) Extract(f DepFile) ([]PackageDetails, error) {

@@ -13,6 +13,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
+const (
+	yarnPackageManager      = models.Yarn
+	yarnFilePath            = "yarn.lock"
+	yarnOfficiallySupported = true
+)
+
 type YarnDependency struct {
 	Name     string
 	Version  string
@@ -307,7 +313,7 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		Name:           dependency.Name,
 		Version:        dependency.Version,
 		TargetVersions: dependency.TargetVersions,
-		PackageManager: models.Yarn,
+		PackageManager: yarnPackageManager,
 		Ecosystem:      models.EcosystemNPM,
 		Commit:         tryExtractCommit(dependency.Resolution),
 	}
@@ -339,7 +345,15 @@ type YarnLockExtractor struct {
 }
 
 func (e YarnLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "yarn.lock"
+	return filepath.Base(path) == yarnFilePath
+}
+
+func (e YarnLockExtractor) IsOfficiallySupported() bool {
+	return yarnOfficiallySupported
+}
+
+func (e YarnLockExtractor) PackageManager() models.PackageManager {
+	return yarnPackageManager
 }
 
 func (e YarnLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

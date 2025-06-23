@@ -9,6 +9,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	pdmPackageManager      = models.Pdm
+	pdmFilePath            = "pdm.lock"
+	pdmOfficiallySupported = true
+)
+
 type PdmLockPackage struct {
 	Name     string   `toml:"name"`
 	Version  string   `toml:"version"`
@@ -24,7 +30,15 @@ type PdmLockFile struct {
 type PdmLockExtractor struct{}
 
 func (p PdmLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "pdm.lock"
+	return filepath.Base(path) == pdmFilePath
+}
+
+func (p PdmLockExtractor) IsOfficiallySupported() bool {
+	return pdmOfficiallySupported
+}
+
+func (p PdmLockExtractor) PackageManager() models.PackageManager {
+	return pdmPackageManager
 }
 
 func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -40,7 +54,7 @@ func (p PdmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		details := PackageDetails{
 			Name:           pkg.Name,
 			Version:        pkg.Version,
-			PackageManager: models.Pdm,
+			PackageManager: pdmPackageManager,
 			Ecosystem:      models.EcosystemPyPI,
 		}
 

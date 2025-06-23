@@ -10,6 +10,11 @@ import (
 )
 
 const (
+	gradlePackageManager      = models.Gradle
+	gradleOfficiallySupported = true
+)
+
+const (
 	gradleLockFileCommentPrefix = "#"
 	gradleLockFileEmptyPrefix   = "empty="
 )
@@ -38,7 +43,7 @@ func parseToGradlePackageDetail(line string) (PackageDetails, error) {
 	return PackageDetails{
 		Name:           fmt.Sprintf("%s:%s", group, artifact),
 		Version:        version,
-		PackageManager: models.Gradle,
+		PackageManager: gradlePackageManager,
 		DepGroups:      scopes,
 		Ecosystem:      models.EcosystemMaven,
 	}, nil
@@ -58,6 +63,14 @@ func (e GradleLockExtractor) ShouldExtract(path string) bool {
 	}
 
 	return false
+}
+
+func (e GradleLockExtractor) IsOfficiallySupported() bool {
+	return gradleOfficiallySupported
+}
+
+func (e GradleLockExtractor) PackageManager() models.PackageManager {
+	return gradlePackageManager
 }
 
 func (e GradleLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

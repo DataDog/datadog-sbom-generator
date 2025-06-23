@@ -8,6 +8,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	composerPackageManager      = models.Composer
+	composerFilePath            = "composer.lock"
+	composerOfficiallySupported = true
+)
+
 type ComposerPackage struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
@@ -26,7 +32,15 @@ type ComposerLockExtractor struct {
 }
 
 func (e ComposerLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "composer.lock"
+	return filepath.Base(path) == composerFilePath
+}
+
+func (e ComposerLockExtractor) IsOfficiallySupported() bool {
+	return composerOfficiallySupported
+}
+
+func (e ComposerLockExtractor) PackageManager() models.PackageManager {
+	return composerPackageManager
 }
 
 func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -49,7 +63,7 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           composerPackage.Name,
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
-			PackageManager: models.Composer,
+			PackageManager: composerPackageManager,
 			Ecosystem:      models.EcosystemPackagist,
 		})
 	}
@@ -59,7 +73,7 @@ func (e ComposerLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           composerPackage.Name,
 			Version:        composerPackage.Version,
 			Commit:         composerPackage.Dist.Reference,
-			PackageManager: models.Composer,
+			PackageManager: composerPackageManager,
 			Ecosystem:      models.EcosystemPackagist,
 			DepGroups:      []string{"dev"},
 		})

@@ -7,6 +7,11 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	osvVulnPackageManager      = models.Unknown
+	osvVulnOfficiallySupported = false
+)
+
 func ParseOSVScannerResults(pathToLockfile string) ([]PackageDetails, error) {
 	return ExtractFromFile(pathToLockfile, OSVScannerResultsExtractor{})
 }
@@ -16,6 +21,14 @@ type OSVScannerResultsExtractor struct{}
 func (e OSVScannerResultsExtractor) ShouldExtract(path string) bool {
 	// The output will always be a custom json file, so don't return a default should extract
 	return false
+}
+
+func (e OSVScannerResultsExtractor) IsOfficiallySupported() bool {
+	return osvVulnOfficiallySupported
+}
+
+func (e OSVScannerResultsExtractor) PackageManager() models.PackageManager {
+	return osvVulnPackageManager
 }
 
 func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -33,12 +46,12 @@ func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error)
 				packages = append(packages, PackageDetails{
 					Commit:         pkg.Package.Commit,
 					Name:           pkg.Package.Name,
-					PackageManager: models.Unknown,
+					PackageManager: osvVulnPackageManager,
 				})
 			} else {
 				packages = append(packages, PackageDetails{
 					Name:           pkg.Package.Name,
-					PackageManager: models.Unknown,
+					PackageManager: osvVulnPackageManager,
 					Ecosystem:      models.Ecosystem(pkg.Package.Ecosystem),
 					Version:        pkg.Package.Version,
 				})

@@ -32,6 +32,9 @@ type Extractor interface {
 	// ShouldExtract checks if the Extractor should be used for the given path.
 	ShouldExtract(path string) bool
 	Extract(f DepFile) ([]PackageDetails, error)
+	// IsOfficiallySupported returns true if the extractor is officially supported by Datadog SCA
+	IsOfficiallySupported() bool
+	PackageManager() models.PackageManager
 }
 
 type WithMatcher struct {

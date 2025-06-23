@@ -11,6 +11,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	uvPackageManager      = models.Uv
+	uvFilePath            = "uv.lock"
+	uvOfficiallySupported = true
+)
+
 type UvLockPackageSource struct {
 	Registry string `toml:"registry,omitempty"`
 	Git      string `toml:"git,omitempty"`
@@ -50,7 +56,15 @@ type UvLockExtractor struct {
 }
 
 func (e UvLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "uv.lock"
+	return filepath.Base(path) == uvFilePath
+}
+
+func (e UvLockExtractor) IsOfficiallySupported() bool {
+	return uvOfficiallySupported
+}
+
+func (e UvLockExtractor) PackageManager() models.PackageManager {
+	return uvPackageManager
 }
 
 func extractNames(deps []uvDependency) map[string]struct{} {
@@ -133,7 +147,7 @@ func (e UvLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 				Name:           lockPackage.Name,
 				Version:        lockPackage.Version,
 				Commit:         commit,
-				PackageManager: models.Uv,
+				PackageManager: uvPackageManager,
 				Ecosystem:      models.EcosystemPyPI,
 				IsDirect:       isDirect || isDevDependency,
 			}

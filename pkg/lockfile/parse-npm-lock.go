@@ -18,6 +18,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	npmPackageManager      = models.NPM
+	npmFilePath            = "package-lock.json"
+	npmOfficiallySupported = true
+)
+
 type NpmLockDependency struct {
 	// For an aliased package, Version is like "npm:[name]@[version]"
 	Version      string                        `json:"version"`
@@ -164,7 +170,7 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 		details.add(name+"@"+version, PackageDetails{
 			Name:           name,
 			Version:        finalVersion,
-			PackageManager: models.NPM,
+			PackageManager: npmPackageManager,
 			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
@@ -279,7 +285,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				Name:           finalName,
 				Version:        detail.Version,
 				TargetVersions: targetVersions,
-				PackageManager: models.NPM,
+				PackageManager: npmPackageManager,
 				Ecosystem:      models.EcosystemNPM,
 				Commit:         commit,
 				DepGroups:      detail.depGroups(),
@@ -307,7 +313,15 @@ type NpmLockExtractor struct {
 }
 
 func (e NpmLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "package-lock.json"
+	return filepath.Base(path) == npmFilePath
+}
+
+func (e NpmLockExtractor) IsOfficiallySupported() bool {
+	return npmOfficiallySupported
+}
+
+func (e NpmLockExtractor) PackageManager() models.PackageManager {
+	return npmPackageManager
 }
 
 func (e NpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
