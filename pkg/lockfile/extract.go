@@ -29,18 +29,31 @@ func FindExtractor(path string, enabledParsers map[string]bool) (Extractor, stri
 	return nil, ""
 }
 
-func ListExtractors() []string {
-	es := make([]string, 0, len(lockfileExtractors))
+func ListSupportedExtractors() map[string]Extractor {
+	supportedExtractors := make(map[string]Extractor)
 
-	for s := range lockfileExtractors {
-		es = append(es, s)
+	for name, extractor := range lockfileExtractors {
+		if extractor.IsOfficiallySupported() {
+			supportedExtractors[name] = extractor
+		}
 	}
 
-	sort.Slice(es, func(i, j int) bool {
-		return strings.ToLower(es[i]) < strings.ToLower(es[j])
+	return supportedExtractors
+}
+
+func ListExtractorNames() []string {
+	extractors := ListSupportedExtractors()
+	extractorNames := make([]string, 0, len(extractors))
+
+	for extractorName := range extractors {
+		extractorNames = append(extractorNames, extractorName)
+	}
+
+	sort.Slice(extractorNames, func(i, j int) bool {
+		return strings.ToLower(extractorNames[i]) < strings.ToLower(extractorNames[j])
 	})
 
-	return es
+	return extractorNames
 }
 
 var ErrExtractorNotFound = errors.New("could not determine extractor")
