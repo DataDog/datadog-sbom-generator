@@ -37,6 +37,8 @@ type DDEnvVars struct {
 }
 
 // NoDirectoryPathsFoundErr for when no directory paths are provided to scan.
+//
+//nolint:errname,stylecheck // Would require version major bump to change
 var NoDirectoryPathsFoundErr = errors.New("no directory paths provided to scan")
 
 // NoPackagesFoundErr for when no packages are found during a scan.
