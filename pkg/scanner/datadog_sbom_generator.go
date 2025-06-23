@@ -36,6 +36,11 @@ type DDEnvVars struct {
 	JwtToken string
 }
 
+// NoDirectoryPathsFoundErr for when no directory paths are provided to scan.
+//
+//nolint:errname,stylecheck // Would require version major bump to change
+var NoDirectoryPathsFoundErr = errors.New("no directory paths provided to scan")
+
 // NoPackagesFoundErr for when no packages are found during a scan.
 //
 //nolint:errname,stylecheck // Would require version major bump to change
@@ -184,7 +189,7 @@ func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bo
 		return nil, nil, err
 	}
 
-	r.Infof(
+	r.Verbosef(
 		"Scanned %s file and found %d %s\n",
 		path,
 		len(parsedLockfile.Packages),
@@ -219,6 +224,10 @@ func initializeEnabledParsers(enabledParsers []string) map[string]bool {
 
 // DoScan Perform datadog-sbom-generator scan action, with optional reporter to output information
 func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityResults, error) {
+	if len(actions.DirectoryPaths) == 0 {
+		return models.VulnerabilityResults{}, NoDirectoryPathsFoundErr
+	}
+
 	enabledParsers := initializeEnabledParsers(actions.EnableParsers)
 
 	if r == nil {
@@ -233,7 +242,11 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 	}
 
 	for _, dir := range actions.DirectoryPaths {
-		r.Infof("Scanning dir %s\n", dir)
+		absolutePath := dir
+		if absPath, err := filepath.Abs(dir); err == nil {
+			absolutePath = absPath
+		}
+		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
 		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths)
 		if err != nil {
 			return models.VulnerabilityResults{}, err

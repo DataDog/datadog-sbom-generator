@@ -157,7 +157,7 @@ func TestRun(t *testing.T) {
 		{
 			name: "",
 			args: []string{""},
-			exit: 0,
+			exit: 127,
 		},
 		{
 			name: "",
@@ -240,13 +240,13 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name: "verbosity level = info",
-			args: []string{"", "--verbosity", "info", "./fixtures/locks-many/composer.lock"},
+			name: "verbosity level = verbose",
+			args: []string{"", "--verbosity", "verbose", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		{
 			name: "Scan locks-many with exclusion",
-			args: []string{"", "--verbosity", "info", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
+			args: []string{"", "--verbosity", "verbose", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
 			exit: 0,
 		},
 	}
