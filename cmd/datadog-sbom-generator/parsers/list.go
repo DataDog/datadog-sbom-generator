@@ -34,6 +34,7 @@ func action(stdout io.Writer) {
 	t.SortBy([]table.SortBy{
 		{Name: "Language", Mode: table.Asc},
 		{Name: "Package Manager", Mode: table.Asc},
+		{Name: "Lockfile Parsers", Mode: table.Asc},
 	})
 	t.Render()
 }
