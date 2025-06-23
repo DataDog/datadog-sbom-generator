@@ -14,9 +14,14 @@ import (
 )
 
 func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
+	usageText, err := os.ReadFile("cmd/datadog-sbom-generator/scan/usage.txt")
+	if err != nil {
+		panic(fmt.Sprintf("failed to load usage text: %v", err))
+	}
+
 	return &cli.Command{
 		Name:        "scan",
-		Usage:       "scans various package managers for dependencies and produce an SBOM",
+		UsageText:   string(usageText),
 		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -61,7 +66,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: "explicitly define which lockfile to parse. If set, any non-set parsers will be ignored (to see all available parsers run datadog-sbom-generator parsers list)",
+				Usage: "filter lockfiles to parse. To list available parsers use the 'parsers' command.",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
