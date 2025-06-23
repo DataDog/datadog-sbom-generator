@@ -14,7 +14,6 @@ import (
 )
 
 func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
-
 	return &cli.Command{
 		Name: "scan",
 		UsageText: `datadog-sbom-generator scan [flags] [directory1 directory2...]
