@@ -53,7 +53,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		case errors.Is(err, scanner.VulnerabilitiesFoundErr):
 			return 0
 		case errors.Is(err, scanner.NoPackagesFoundErr):
-			r.Errorf("No package sources found, --help for usage information.\n")
+			r.Errorf("No package sources found. Use the 'parsers list' command to view supported lock files, or use --help for usage information.\n")
 			return 0
 		case errors.Is(err, scanner.ErrAPIFailed):
 			r.Errorf("%v\n", err)

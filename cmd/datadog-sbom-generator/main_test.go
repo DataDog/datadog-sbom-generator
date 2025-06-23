@@ -160,6 +160,11 @@ func TestRun(t *testing.T) {
 			exit: 127,
 		},
 		{
+			name: "not lockfile",
+			args: []string{"", "./fixtures/no-lockfile.txt"},
+			exit: 0,
+		},
+		{
 			name: "",
 			args: []string{"", "--version"},
 			exit: 0,
