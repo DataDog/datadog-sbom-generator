@@ -1,28 +1,10 @@
 
 [TestRun/#00 - 1]
-{
-  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.5",
-  "version": 1,
-  "metadata": {
-    "tools": {
-      "components": [
-        {
-          "type": "application",
-          "group": "datadog",
-          "name": "datadog-sbom-generator",
-          "version": "set at build time, see .goreleaser.yml ldflags section"
-        }
-      ]
-    }
-  }
-}
 
 ---
 
 [TestRun/#00 - 2]
-No package sources found, --help for usage information.
+no directory paths provided to scan
 
 ---
 
@@ -350,7 +332,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 ---
 
 [TestRun/Scan_locks-many_with_exclusion - 2]
-Scanning dir ./fixtures/locks-many
+Scanning directory './fixtures/locks-many', resolved absolute path '<rootdir>/fixtures/locks-many'
 Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
 Skipping <rootdir>/fixtures/locks-many/composer.lock with exclusion rule: *composer.lock
 Skipping <rootdir>/fixtures/locks-many/package-lock.json with exclusion rule: *package-lock.json
@@ -706,7 +688,7 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 
 ---
 
-[TestRun/verbosity_level_=_info - 1]
+[TestRun/verbosity_level_=_verbose - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
@@ -743,8 +725,8 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 
 ---
 
-[TestRun/verbosity_level_=_info - 2]
-Scanning dir ./fixtures/locks-many/composer.lock
+[TestRun/verbosity_level_=_verbose - 2]
+Scanning directory './fixtures/locks-many/composer.lock', resolved absolute path '<rootdir>/fixtures/locks-many/composer.lock'
 Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 [reachability] Reachability analysis is disabled
 ---
