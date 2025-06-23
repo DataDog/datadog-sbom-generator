@@ -24,3 +24,25 @@ const (
 	Renv         PackageManager = "Renv"
 	Unknown      PackageManager = "Unknown"
 )
+
+var PackageManagerToLanguage = map[PackageManager]Language{
+	Maven:        Java,
+	Gradle:       Java,
+	NPM:          Javascript,
+	Yarn:         Javascript,
+	Pnpm:         Javascript,
+	Requirements: Python,
+	Pipfile:      Python,
+	Pdm:          Python,
+	Poetry:       Python,
+	Uv:           Python,
+	NuGet:        Dotnet,
+	Bundler:      Ruby,
+	Golang:       Go,
+	Composer:     PHP,
+	Crates:       Cpp,
+	Conan:        Cpp,
+	Hex:          Elixir,
+	Pub:          Dart,
+	Renv:         R,
+}
