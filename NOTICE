@@ -2,3 +2,10 @@ Datadog datadog-sbom-generator
 Copyright 2025-Present Datadog, Inc.
 
 This product includes software developed at Datadog (https://www.datadoghq.com/).
+
+Portions of this product are derived from the osv-scanner project, originally developed by Google.
+Copyright 2022 Google LLC.
+
+The original project is available at: https://github.com/google/osv-scanner
+
+This usage does not imply endorsement by Google or affiliation with the original project.
