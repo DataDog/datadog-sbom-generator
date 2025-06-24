@@ -42,7 +42,7 @@ built at: set at build time, see .goreleaser.yml ldflags section
 ---
 
 [TestRun/#02 - 2]
-No package sources found. Use the 'parsers list' command to view supported lock files, or use --help for usage information.
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 
@@ -536,7 +536,7 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/not_lockfile - 2]
-No package sources found. Use the 'parsers list' command to view supported lock files, or use --help for usage information.
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 
@@ -8923,7 +8923,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 ---
 
 [TestRun_WithEmptyCycloneDX15 - 2]
-No package sources found. Use the 'parsers list' command to view supported lock files, or use --help for usage information.
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 

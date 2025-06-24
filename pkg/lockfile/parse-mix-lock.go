@@ -14,7 +14,7 @@ import (
 
 const (
 	mixPackageManager      = models.Hex
-	mixFilePath            = "mix.lock"
+	mixFilePath            = models.HexFilePath
 	mixOfficiallySupported = false
 )
 

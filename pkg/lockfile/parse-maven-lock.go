@@ -28,7 +28,7 @@ const MavenCentral = "https://repo.maven.apache.org/maven2"
 
 const (
 	mavenPackageManager      = models.Maven
-	mavenFilePath            = "pom.xml"
+	mavenFilePath            = models.MavenFilePath
 	mavenOfficiallySupported = true
 )
 
@@ -409,7 +409,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 	if len(parentRelativePath) == 0 {
 		// if the parent path exists, use that,
 		// else we return an empty string to signal that we should fetch a remote pom
-		parentRelativePath = "../pom.xml"
+		parentRelativePath = "../" + mavenFilePath
 
 		shouldComputeURL := strings.HasPrefix(currentPath, "https")
 		if !shouldComputeURL {
@@ -435,7 +435,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 		}
 	} else if !strings.HasSuffix(parentRelativePath, ".xml") {
 		// It means we only have a path, we should append the default pom.xml
-		parentRelativePath = path.Join(parentRelativePath, "pom.xml")
+		parentRelativePath = path.Join(parentRelativePath, mavenFilePath)
 	}
 
 	return filepath.FromSlash(filepath.Join(filepath.Dir(currentPath), parentRelativePath))

@@ -10,7 +10,7 @@ import (
 
 const (
 	composerPackageManager      = models.Composer
-	composerFilePath            = "composer.lock"
+	composerFilePath            = models.ComposerFilePath
 	composerOfficiallySupported = true
 )
 

@@ -11,7 +11,7 @@ import (
 
 const (
 	cargoPackageManager      = models.Crates
-	cargoFilePath            = "Cargo.lock"
+	cargoFilePath            = models.CratesFilePath
 	cargoOfficiallySupported = false
 )
 

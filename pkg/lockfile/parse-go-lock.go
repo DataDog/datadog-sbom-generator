@@ -23,7 +23,7 @@ import (
 
 const (
 	goPackageManager      = models.Golang
-	goFilePath            = "go.mod"
+	goFilePath            = models.GolangFilePath
 	goOfficiallySupported = true
 )
 

@@ -16,7 +16,7 @@ import (
 
 const (
 	pnpmPackageManager      = models.Pnpm
-	pnpmFilePath            = "pnpm-lock.yaml"
+	pnpmFilePath            = models.PnpmFilePath
 	pnpmOfficiallySupported = true
 )
 

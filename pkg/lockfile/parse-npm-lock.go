@@ -20,7 +20,7 @@ import (
 
 const (
 	npmPackageManager      = models.NPM
-	npmFilePath            = "package-lock.json"
+	npmFilePath            = models.NpmFilePath
 	npmOfficiallySupported = true
 )
 

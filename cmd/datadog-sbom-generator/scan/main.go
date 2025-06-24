@@ -19,18 +19,17 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 		UsageText: `datadog-sbom-generator scan [flags] [directory1 directory2...]
 
 Examples:
-  # Scan the current directory
-  datadog-sbom-generator scan .
+	# Scan the current directory
+	datadog-sbom-generator scan .
 
-  # Scan a specific directory and specify the output file
-  datadog-sbom-generator scan --output "/tmp/sbom.json" /path/to/directory
+	# Scan a specific directory and specify the output file
+	datadog-sbom-generator scan --output "/tmp/sbom.json" /path/to/directory
 
 	# Set verbosity level to verbose
 	datadog-sbom-generator scan --verbosity verbose .
 
 	# Exclude specific paths from being scanned
-	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .
-`,
+	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .`,
 		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

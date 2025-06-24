@@ -14,7 +14,7 @@ import (
 
 const (
 	pubsecPackageManager      = models.Pub
-	pubsecFilePath            = "pubspec.lock"
+	pubsecFilePath            = models.PubFilePath
 	pubsecOfficiallySupported = false
 )
 

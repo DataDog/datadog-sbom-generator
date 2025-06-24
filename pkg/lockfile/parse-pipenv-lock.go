@@ -13,7 +13,7 @@ import (
 
 const (
 	pipenvPackageManager      = models.Pipfile
-	pipenvFilePath            = "Pipfile.lock"
+	pipenvFilePath            = models.PipfileFilePath
 	pipenvOfficiallySupported = true
 )
 

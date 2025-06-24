@@ -11,7 +11,7 @@ import (
 
 const (
 	pdmPackageManager      = models.Pdm
-	pdmFilePath            = "pdm.lock"
+	pdmFilePath            = models.PdmFilePath
 	pdmOfficiallySupported = true
 )
 

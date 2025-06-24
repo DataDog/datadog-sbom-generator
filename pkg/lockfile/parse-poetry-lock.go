@@ -11,7 +11,7 @@ import (
 
 const (
 	poetryPackageManager      = models.Poetry
-	poetryFilePath            = "poetry.lock"
+	poetryFilePath            = models.PoetryFilePath
 	poetryOfficiallySupported = true
 )
 

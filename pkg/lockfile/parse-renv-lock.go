@@ -10,7 +10,7 @@ import (
 
 const (
 	renvPackageManager      = models.Renv
-	renvFilePath            = "renv.lock"
+	renvFilePath            = models.RenvFilePath
 	renvOfficiallySupported = false
 )
 

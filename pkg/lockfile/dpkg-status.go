@@ -12,7 +12,7 @@ import (
 
 const (
 	dpkgPackageManager      = models.Unknown
-	dpkgFilePath            = "/var/lib/dpkg/status"
+	dpkgFilePath            = models.DpkgFilePath
 	dpkgOfficiallySupported = false
 )
 

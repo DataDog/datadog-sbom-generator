@@ -11,7 +11,7 @@ import (
 
 const (
 	apkPackageManager      = models.Unknown
-	apkFilePath            = "/lib/apk/db/installed"
+	apkFilePath            = models.ApkFilePath
 	apkOfficiallySupported = false
 )
 

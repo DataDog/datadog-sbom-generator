@@ -14,7 +14,7 @@ import (
 
 const (
 	nugetPackageManager      = models.NuGet
-	nugetFilePath            = "packages.lock.json"
+	nugetFilePath            = models.NuGetFilePath
 	nugetOfficiallySupported = true
 )
 

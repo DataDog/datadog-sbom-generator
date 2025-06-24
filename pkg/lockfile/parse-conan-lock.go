@@ -11,7 +11,7 @@ import (
 
 const (
 	conanPackageManager      = models.Conan
-	conanFilePath            = "conan.lock"
+	conanFilePath            = models.ConanFilePath
 	conanOfficiallySupported = true
 )
 

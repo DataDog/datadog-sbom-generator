@@ -15,7 +15,7 @@ import (
 
 const (
 	yarnPackageManager      = models.Yarn
-	yarnFilePath            = "yarn.lock"
+	yarnFilePath            = models.YarnFilePath
 	yarnOfficiallySupported = true
 )
 

@@ -14,7 +14,7 @@ import (
 
 const (
 	gemfilePackageManager      = models.Bundler
-	gemfileFilePath            = "Gemfile.lock"
+	gemfileFilePath            = models.BundlerFilePath
 	gemfileOfficiallySupported = true
 )
 

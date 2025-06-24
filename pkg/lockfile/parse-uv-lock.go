@@ -13,7 +13,7 @@ import (
 
 const (
 	uvPackageManager      = models.Uv
-	uvFilePath            = "uv.lock"
+	uvFilePath            = models.UvFilePath
 	uvOfficiallySupported = true
 )
 

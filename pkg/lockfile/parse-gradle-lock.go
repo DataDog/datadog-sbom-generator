@@ -11,6 +11,8 @@ import (
 
 const (
 	gradlePackageManager      = models.Gradle
+	gradleFilePath            = models.GradleFilePath
+	gradleBuildScriptFilePath = models.GradleBuildScriptFilePath
 	gradleOfficiallySupported = true
 )
 
@@ -56,7 +58,7 @@ type GradleLockExtractor struct {
 func (e GradleLockExtractor) ShouldExtract(path string) bool {
 	base := filepath.Base(path)
 
-	for _, lockfile := range []string{"buildscript-gradle.lockfile", "gradle.lockfile"} {
+	for _, lockfile := range []string{gradleBuildScriptFilePath, gradleFilePath} {
 		if lockfile == base {
 			return true
 		}
