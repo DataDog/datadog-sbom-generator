@@ -8,6 +8,11 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	gradleVerificationPackageManager      = models.Gradle
+	gradleVerificationOfficiallySupported = true
+)
+
 type GradleVerificationMetadataFile struct {
 	Components []struct {
 		Group   string `xml:"group,attr"`
@@ -22,6 +27,14 @@ type GradleVerificationMetadataExtractor struct {
 
 func (e GradleVerificationMetadataExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(filepath.Dir(path)) == "gradle" && filepath.Base(path) == "verification-metadata.xml"
+}
+
+func (e GradleVerificationMetadataExtractor) IsOfficiallySupported() bool {
+	return gradleVerificationOfficiallySupported
+}
+
+func (e GradleVerificationMetadataExtractor) PackageManager() models.PackageManager {
+	return gradleVerificationPackageManager
 }
 
 func (e GradleVerificationMetadataExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -39,7 +52,7 @@ func (e GradleVerificationMetadataExtractor) Extract(f DepFile) ([]PackageDetail
 		pkgs = append(pkgs, PackageDetails{
 			Name:           component.Group + ":" + component.Name,
 			Version:        component.Version,
-			PackageManager: models.Gradle,
+			PackageManager: gradleVerificationPackageManager,
 			Ecosystem:      models.EcosystemMaven,
 		})
 	}

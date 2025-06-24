@@ -12,6 +12,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	pubsecPackageManager      = models.Pub
+	pubsecFilePath            = models.PubFilePath
+	pubsecOfficiallySupported = false
+)
+
 type PubspecLockDescription struct {
 	Name string `yaml:"name"`
 	URL  string `yaml:"url"`
@@ -68,7 +74,15 @@ type PubspecLockfile struct {
 type PubspecLockExtractor struct{}
 
 func (e PubspecLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "pubspec.lock"
+	return filepath.Base(path) == pubsecFilePath
+}
+
+func (e PubspecLockExtractor) IsOfficiallySupported() bool {
+	return pubsecOfficiallySupported
+}
+
+func (e PubspecLockExtractor) PackageManager() models.PackageManager {
+	return pubsecPackageManager
 }
 
 func (e PubspecLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -90,7 +104,7 @@ func (e PubspecLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           name,
 			Version:        pkg.Version,
 			Commit:         pkg.Description.Ref,
-			PackageManager: models.Pub,
+			PackageManager: pubsecPackageManager,
 			Ecosystem:      models.EcosystemPub,
 		}
 		for _, str := range strings.Split(pkg.Dependency, " ") {

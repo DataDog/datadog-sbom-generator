@@ -13,6 +13,12 @@ import (
 )
 
 const (
+	gemfilePackageManager      = models.Bundler
+	gemfileFilePath            = models.BundlerFilePath
+	gemfileOfficiallySupported = true
+)
+
+const (
 	lockfileSectionBUNDLED      = "BUNDLED WITH"
 	lockfileSectionDEPENDENCIES = "DEPENDENCIES"
 	lockfileSectionPLATFORMS    = "PLATFORMS"
@@ -69,7 +75,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 		parser.dependencies = append(parser.dependencies, PackageDetails{
 			Name:           name,
 			Version:        version,
-			PackageManager: models.Bundler,
+			PackageManager: gemfilePackageManager,
 			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 		})
@@ -93,7 +99,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 		parser.dependencies = append(parser.dependencies, PackageDetails{
 			Name:           name,
 			Version:        version,
-			PackageManager: models.Bundler,
+			PackageManager: gemfilePackageManager,
 			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
@@ -209,7 +215,15 @@ type GemfileLockExtractor struct {
 }
 
 func (e GemfileLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "Gemfile.lock"
+	return filepath.Base(path) == gemfileFilePath
+}
+
+func (e GemfileLockExtractor) IsOfficiallySupported() bool {
+	return gemfileOfficiallySupported
+}
+
+func (e GemfileLockExtractor) PackageManager() models.PackageManager {
+	return gemfilePackageManager
 }
 
 func (e GemfileLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

@@ -26,6 +26,12 @@ import (
 
 const MavenCentral = "https://repo.maven.apache.org/maven2"
 
+const (
+	mavenPackageManager      = models.Maven
+	mavenFilePath            = models.MavenFilePath
+	mavenOfficiallySupported = true
+)
+
 type MavenRegistryProject struct {
 	io.ReadCloser
 	path string
@@ -307,7 +313,15 @@ type MavenLockExtractor struct {
 }
 
 func (e MavenLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "pom.xml"
+	return filepath.Base(path) == mavenFilePath
+}
+
+func (e MavenLockExtractor) IsOfficiallySupported() bool {
+	return mavenOfficiallySupported
+}
+
+func (e MavenLockExtractor) PackageManager() models.PackageManager {
+	return mavenPackageManager
 }
 
 /**
@@ -395,7 +409,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 	if len(parentRelativePath) == 0 {
 		// if the parent path exists, use that,
 		// else we return an empty string to signal that we should fetch a remote pom
-		parentRelativePath = "../pom.xml"
+		parentRelativePath = "../" + mavenFilePath
 
 		shouldComputeURL := strings.HasPrefix(currentPath, "https")
 		if !shouldComputeURL {
@@ -421,7 +435,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 		}
 	} else if !strings.HasSuffix(parentRelativePath, ".xml") {
 		// It means we only have a path, we should append the default pom.xml
-		parentRelativePath = path.Join(parentRelativePath, "pom.xml")
+		parentRelativePath = path.Join(parentRelativePath, mavenFilePath)
 	}
 
 	return filepath.FromSlash(filepath.Join(filepath.Dir(currentPath), parentRelativePath))
@@ -559,7 +573,7 @@ func (e MavenLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			BlockLocation:   blockLocation,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,
-			PackageManager:  models.Maven,
+			PackageManager:  mavenPackageManager,
 			IsDirect:        true,
 			Exclusions:      exclusions,
 		}

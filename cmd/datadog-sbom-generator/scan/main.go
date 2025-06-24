@@ -15,8 +15,21 @@ import (
 
 func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 	return &cli.Command{
-		Name:        "scan",
-		Usage:       "scans various package managers for dependencies and produce an SBOM",
+		Name: "scan",
+		UsageText: `datadog-sbom-generator scan [flags] [directory1 directory2...]
+
+Examples:
+	# Scan the current directory
+	datadog-sbom-generator scan .
+
+	# Scan a specific directory and specify the output file
+	datadog-sbom-generator scan --output "/tmp/sbom.json" /path/to/directory
+
+	# Set verbosity level to verbose
+	datadog-sbom-generator scan --verbosity verbose .
+
+	# Exclude specific paths from being scanned
+	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .`,
 		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -61,7 +74,7 @@ func Command(stdout, stderr io.Writer, r *reporter.Reporter) *cli.Command {
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: "explicitly define which lockfile to parse. If set, any non-set parsers will be ignored (to see all available parsers run datadog-sbom-generator parsers list)",
+				Usage: "filter lockfiles to parse. To list available parsers use the 'parsers' command.",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",

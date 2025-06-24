@@ -210,7 +210,7 @@ func initializeEnabledParsers(enabledParsers []string) map[string]bool {
 
 	if len(enabledParsers) == 0 {
 		// If the list is empty, it means the flag is not set on the CLI, everything should be enabled
-		for _, parser := range lockfile.ListExtractors() {
+		for _, parser := range lockfile.ListExtractorNames() {
 			result[parser] = true
 		}
 	} else {

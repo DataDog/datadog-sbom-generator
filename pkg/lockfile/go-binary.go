@@ -10,6 +10,11 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	goBinaryPackageManager      = models.Golang
+	goBinaryOfficiallySupported = false
+)
+
 type GoBinaryExtractor struct{}
 
 func (e GoBinaryExtractor) ShouldExtract(path string) bool {
@@ -32,6 +37,14 @@ func (e GoBinaryExtractor) ShouldExtract(path string) bool {
 
 	// Any other path can be a go binary
 	return true
+}
+
+func (e GoBinaryExtractor) IsOfficiallySupported() bool {
+	return goBinaryOfficiallySupported
+}
+
+func (e GoBinaryExtractor) PackageManager() models.PackageManager {
+	return goBinaryPackageManager
 }
 
 func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -57,7 +70,7 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		Name:           "stdlib",
 		Version:        strings.TrimPrefix(info.GoVersion, "go"),
 		Ecosystem:      models.EcosystemGo,
-		PackageManager: models.Golang,
+		PackageManager: goBinaryPackageManager,
 	})
 
 	for _, dep := range info.Deps {
@@ -68,7 +81,7 @@ func (e GoBinaryExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			Name:           dep.Path,
 			Version:        strings.TrimPrefix(dep.Version, "v"),
 			Ecosystem:      models.EcosystemGo,
-			PackageManager: models.Golang,
+			PackageManager: goBinaryPackageManager,
 		})
 	}
 

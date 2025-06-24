@@ -12,10 +12,24 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
+const (
+	mixPackageManager      = models.Hex
+	mixFilePath            = models.HexFilePath
+	mixOfficiallySupported = false
+)
+
 type MixLockExtractor struct{}
 
 func (e MixLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "mix.lock"
+	return filepath.Base(path) == mixFilePath
+}
+
+func (e MixLockExtractor) IsOfficiallySupported() bool {
+	return mixOfficiallySupported
+}
+
+func (e MixLockExtractor) PackageManager() models.PackageManager {
+	return mixPackageManager
 }
 
 func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -65,7 +79,7 @@ func (e MixLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		packages = append(packages, PackageDetails{
 			Name:           name,
 			Version:        version,
-			PackageManager: models.Hex,
+			PackageManager: mixPackageManager,
 			Ecosystem:      models.EcosystemHex,
 			Commit:         commit,
 		})

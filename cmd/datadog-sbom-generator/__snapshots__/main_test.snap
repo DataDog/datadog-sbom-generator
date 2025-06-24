@@ -42,7 +42,7 @@ built at: set at build time, see .goreleaser.yml ldflags section
 ---
 
 [TestRun/#02 - 2]
-No package sources found, --help for usage information.
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 
@@ -510,6 +510,33 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 ---
 
 [TestRun/nested_directories_are_checked_by_default - 2]
+
+---
+
+[TestRun/not_lockfile - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  }
+}
+
+---
+
+[TestRun/not_lockfile - 2]
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 
@@ -8558,30 +8585,26 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 ---
 
 [TestRun_ParsersList - 1]
-+----------------------------------+
-| PARSERS                          |
-+----------------------------------+
-| Cargo.lock                       |
-| composer.lock                    |
-| conan.lock                       |
-| Gemfile.lock                     |
-| go.mod                           |
-| gradle.lockfile                  |
-| gradle/verification-metadata.xml |
-| mix.lock                         |
-| package-lock.json                |
-| packages.lock.json               |
-| pdm.lock                         |
-| Pipfile.lock                     |
-| pnpm-lock.yaml                   |
-| poetry.lock                      |
-| pom.xml                          |
-| pubspec.lock                     |
-| renv.lock                        |
-| requirements.txt                 |
-| uv.lock                          |
-| yarn.lock                        |
-+----------------------------------+
++------------+-----------------+----------------------------------+
+| LANGUAGE   | PACKAGE MANAGER | LOCKFILE PARSERS                 |
++------------+-----------------+----------------------------------+
+| .NET       | NuGet           | packages.lock.json               |
+| C++        | Conan           | conan.lock                       |
+| Go         | Golang          | go.mod                           |
+| Java       | Gradle          | gradle.lockfile                  |
+| Java       | Gradle          | gradle/verification-metadata.xml |
+| Java       | Maven           | pom.xml                          |
+| Javascript | NPM             | package-lock.json                |
+| Javascript | Pnpm            | pnpm-lock.yaml                   |
+| Javascript | Yarn            | yarn.lock                        |
+| PHP        | Composer        | composer.lock                    |
+| Python     | Pdm             | pdm.lock                         |
+| Python     | Pipfile         | Pipfile.lock                     |
+| Python     | Poetry          | poetry.lock                      |
+| Python     | Requirements    | requirements.txt                 |
+| Python     | uv              | uv.lock                          |
+| Ruby       | Bundler         | Gemfile.lock                     |
++------------+-----------------+----------------------------------+
 
 ---
 
@@ -8900,7 +8923,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 ---
 
 [TestRun_WithEmptyCycloneDX15 - 2]
-No package sources found, --help for usage information.
+No package sources found. Use the 'parsers list' command to view supported lockfiles, or use --help for usage information.
 
 ---
 
@@ -8931,19 +8954,6 @@ No package sources found, --help for usage information.
         {
           "name": "osv-scanner:package",
           "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
-        }
-      ]
-    },
-    {
-      "bom-ref": "pkg:cargo/addr2line@0.15.2",
-      "type": "library",
-      "name": "addr2line",
-      "version": "0.15.2",
-      "purl": "pkg:cargo/addr2line@0.15.2",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Crates"
         }
       ]
     },
@@ -11296,19 +11306,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:cran/morning@0.1.0",
-      "type": "library",
-      "name": "morning",
-      "version": "0.1.0",
-      "purl": "pkg:cran/morning@0.1.0",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Renv"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:gem/RedCloth@4.2.9",
       "type": "library",
       "name": "RedCloth",
@@ -12888,19 +12885,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:hex/plug@1.11.1",
-      "type": "library",
-      "name": "plug",
-      "version": "1.11.1",
-      "purl": "pkg:hex/plug@1.11.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Hex"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -13462,19 +13446,6 @@ No package sources found, --help for usage information.
       }
     },
     {
-      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
-      "type": "library",
-      "name": "back_button_interceptor",
-      "version": "6.0.1",
-      "purl": "pkg:pub/back_button_interceptor@6.0.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Pub"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",
       "type": "library",
       "name": "beautifulsoup4",
@@ -13816,19 +13787,6 @@ No package sources found, --help for usage information.
         {
           "name": "osv-scanner:package",
           "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
-        }
-      ]
-    },
-    {
-      "bom-ref": "pkg:cargo/addr2line@0.15.2",
-      "type": "library",
-      "name": "addr2line",
-      "version": "0.15.2",
-      "purl": "pkg:cargo/addr2line@0.15.2",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Crates"
         }
       ]
     },
@@ -16181,19 +16139,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:cran/morning@0.1.0",
-      "type": "library",
-      "name": "morning",
-      "version": "0.1.0",
-      "purl": "pkg:cran/morning@0.1.0",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Renv"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:gem/RedCloth@4.2.9",
       "type": "library",
       "name": "RedCloth",
@@ -17726,19 +17671,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:hex/plug@1.11.1",
-      "type": "library",
-      "name": "plug",
-      "version": "1.11.1",
-      "purl": "pkg:hex/plug@1.11.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Hex"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -18277,19 +18209,6 @@ No package sources found, --help for usage information.
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
-      "type": "library",
-      "name": "back_button_interceptor",
-      "version": "6.0.1",
-      "purl": "pkg:pub/back_button_interceptor@6.0.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Pub"
-        }
-      ]
     },
     {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",
@@ -18637,19 +18556,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:cargo/addr2line@0.15.2",
-      "type": "library",
-      "name": "addr2line",
-      "version": "0.15.2",
-      "purl": "pkg:cargo/addr2line@0.15.2",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Crates"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:composer/ably/ably-php@1.1.10",
       "type": "library",
       "name": "ably/ably-php",
@@ -20998,19 +20904,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:cran/morning@0.1.0",
-      "type": "library",
-      "name": "morning",
-      "version": "0.1.0",
-      "purl": "pkg:cran/morning@0.1.0",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Renv"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:gem/RedCloth@4.2.9",
       "type": "library",
       "name": "RedCloth",
@@ -22543,19 +22436,6 @@ No package sources found, --help for usage information.
       ]
     },
     {
-      "bom-ref": "pkg:hex/plug@1.11.1",
-      "type": "library",
-      "name": "plug",
-      "version": "1.11.1",
-      "purl": "pkg:hex/plug@1.11.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Hex"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -23094,19 +22974,6 @@ No package sources found, --help for usage information.
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
-      "type": "library",
-      "name": "back_button_interceptor",
-      "version": "6.0.1",
-      "purl": "pkg:pub/back_button_interceptor@6.0.1",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Pub"
-        }
-      ]
     },
     {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",

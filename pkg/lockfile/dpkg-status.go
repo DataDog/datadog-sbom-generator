@@ -10,6 +10,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 )
 
+const (
+	dpkgPackageManager      = models.Unknown
+	dpkgFilePath            = models.DpkgFilePath
+	dpkgOfficiallySupported = false
+)
+
 func groupDpkgPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -49,7 +55,7 @@ func parseSourceField(source string) (string, string) {
 func parseDpkgPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
 		Ecosystem:      models.EcosystemDebian,
-		PackageManager: models.Unknown,
+		PackageManager: dpkgPackageManager,
 	}
 
 	sourcePresent := false
@@ -107,7 +113,15 @@ func ParseDpkgStatus(pathToLockfile string) ([]PackageDetails, error) {
 type DpkgStatusExtractor struct{}
 
 func (e DpkgStatusExtractor) ShouldExtract(path string) bool {
-	return path == "/var/lib/dpkg/status"
+	return path == dpkgFilePath
+}
+
+func (e DpkgStatusExtractor) IsOfficiallySupported() bool {
+	return dpkgOfficiallySupported
+}
+
+func (e DpkgStatusExtractor) PackageManager() models.PackageManager {
+	return dpkgPackageManager
 }
 
 func (e DpkgStatusExtractor) Extract(f DepFile) ([]PackageDetails, error) {

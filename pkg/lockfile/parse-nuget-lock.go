@@ -12,6 +12,12 @@ import (
 	"maps"
 )
 
+const (
+	nugetPackageManager      = models.NuGet
+	nugetFilePath            = models.NuGetFilePath
+	nugetOfficiallySupported = true
+)
+
 type NuGetLockPackage struct {
 	Resolved string `json:"resolved"`
 	Type     string `json:"type"`
@@ -38,7 +44,7 @@ func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[st
 		details[name+"@"+dependency.Resolved] = PackageDetails{
 			Name:           name,
 			Version:        dependency.Resolved,
-			PackageManager: models.NuGet,
+			PackageManager: nugetPackageManager,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       dependency.Type == "Direct",
 		}
@@ -65,7 +71,15 @@ type NuGetLockExtractor struct {
 }
 
 func (e NuGetLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "packages.lock.json"
+	return filepath.Base(path) == nugetFilePath
+}
+
+func (e NuGetLockExtractor) IsOfficiallySupported() bool {
+	return nugetOfficiallySupported
+}
+
+func (e NuGetLockExtractor) PackageManager() models.PackageManager {
+	return nugetPackageManager
 }
 
 func (e NuGetLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

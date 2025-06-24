@@ -9,6 +9,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	cargoPackageManager      = models.Crates
+	cargoFilePath            = models.CratesFilePath
+	cargoOfficiallySupported = false
+)
+
 type CargoLockPackage struct {
 	Name    string `toml:"name"`
 	Version string `toml:"version"`
@@ -22,7 +28,15 @@ type CargoLockFile struct {
 type CargoLockExtractor struct{}
 
 func (e CargoLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "Cargo.lock"
+	return filepath.Base(path) == cargoFilePath
+}
+
+func (e CargoLockExtractor) IsOfficiallySupported() bool {
+	return cargoOfficiallySupported
+}
+
+func (e CargoLockExtractor) PackageManager() models.PackageManager {
+	return cargoPackageManager
 }
 
 func (e CargoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -40,7 +54,7 @@ func (e CargoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		packages = append(packages, PackageDetails{
 			Name:           lockPackage.Name,
 			Version:        lockPackage.Version,
-			PackageManager: models.Crates,
+			PackageManager: cargoPackageManager,
 			Ecosystem:      models.EcosystemCratesIO,
 		})
 	}

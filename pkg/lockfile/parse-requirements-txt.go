@@ -32,6 +32,11 @@ const (
 	CommentTypeDirect
 )
 
+const (
+	requirementsPackageManager      = models.Requirements
+	requirementsOfficiallySupported = true
+)
+
 // Comment represents a parsed requirements.txt comment
 type Comment struct {
 	Content string
@@ -210,7 +215,7 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 		BlockLocation:   blockLocation,
 		NameLocation:    nameLocation,
 		VersionLocation: versionLocation,
-		PackageManager:  models.Requirements,
+		PackageManager:  requirementsPackageManager,
 		Ecosystem:       models.EcosystemPyPI,
 		IsDirect:        true,
 	}
@@ -287,6 +292,14 @@ type RequirementsTxtExtractor struct{}
 func (e RequirementsTxtExtractor) ShouldExtract(path string) bool {
 	baseFilepath := filepath.Base(path)
 	return strings.Contains(baseFilepath, "requirements") && strings.HasSuffix(baseFilepath, ".txt")
+}
+
+func (e RequirementsTxtExtractor) IsOfficiallySupported() bool {
+	return requirementsOfficiallySupported
+}
+
+func (e RequirementsTxtExtractor) PackageManager() models.PackageManager {
+	return requirementsPackageManager
 }
 
 func (e RequirementsTxtExtractor) Extract(f DepFile) ([]PackageDetails, error) {

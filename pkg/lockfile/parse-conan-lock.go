@@ -9,6 +9,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	conanPackageManager      = models.Conan
+	conanFilePath            = models.ConanFilePath
+	conanOfficiallySupported = true
+)
+
 type ConanReference struct {
 	Name            string
 	Version         string
@@ -123,7 +129,7 @@ func parseConanV1Lock(lockfile ConanLockFile) []PackageDetails {
 		packages = append(packages, PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
-			PackageManager: models.Conan,
+			PackageManager: conanPackageManager,
 			Ecosystem:      models.EcosystemConanCenter,
 		})
 	}
@@ -143,7 +149,7 @@ func parseConanRequires(packages *[]PackageDetails, requires []string, group str
 		*packages = append(*packages, PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
-			PackageManager: models.Conan,
+			PackageManager: conanPackageManager,
 			Ecosystem:      models.EcosystemConanCenter,
 			DepGroups:      []string{group},
 		})
@@ -175,7 +181,15 @@ func parseConanLock(lockfile ConanLockFile) []PackageDetails {
 type ConanLockExtractor struct{}
 
 func (e ConanLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "conan.lock"
+	return filepath.Base(path) == conanFilePath
+}
+
+func (e ConanLockExtractor) IsOfficiallySupported() bool {
+	return conanOfficiallySupported
+}
+
+func (e ConanLockExtractor) PackageManager() models.PackageManager {
+	return conanPackageManager
 }
 
 func (e ConanLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {

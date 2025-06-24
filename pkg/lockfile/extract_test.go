@@ -148,18 +148,35 @@ func TestExtractDeps_ExtractorNotFound_WithExplicitExtractAs(t *testing.T) {
 func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
-	extractors := lockfile.ListExtractors()
-
-	firstExpected := "Cargo.lock"
-	//nolint:ifshort
-	lastExpected := "yarn.lock"
-
-	if first := extractors[0]; first != firstExpected {
-		t.Errorf("Expected first element to be %s, but got %s", firstExpected, first)
+	expectedOrder := []string{
+		"composer.lock",
+		"conan.lock",
+		"Gemfile.lock",
+		"go.mod",
+		"gradle.lockfile",
+		"gradle/verification-metadata.xml",
+		"package-lock.json",
+		"packages.lock.json",
+		"pdm.lock",
+		"Pipfile.lock",
+		"pnpm-lock.yaml",
+		"poetry.lock",
+		"pom.xml",
+		"requirements.txt",
+		"uv.lock",
+		"yarn.lock",
 	}
 
-	if last := extractors[len(extractors)-1]; last != lastExpected {
-		t.Errorf("Expected last element to be %s, but got %s", lastExpected, last)
+	extractors := lockfile.ListExtractorNames()
+
+	if len(extractors) != len(expectedOrder) {
+		t.Fatalf("Expected %d extractors, but got %d", len(expectedOrder), len(extractors))
+	}
+
+	for i, expected := range expectedOrder {
+		if extractors[i] != expected {
+			t.Errorf("Expected extractors[%d] to be %s, but got %s", i, expected, extractors[i])
+		}
 	}
 }
 

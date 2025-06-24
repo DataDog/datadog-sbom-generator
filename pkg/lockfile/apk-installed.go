@@ -9,6 +9,12 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	apkPackageManager      = models.Unknown
+	apkFilePath            = models.ApkFilePath
+	apkOfficiallySupported = false
+)
+
 func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 	var groups [][]string
 	var group []string
@@ -36,7 +42,7 @@ func groupApkPackageLines(scanner *bufio.Scanner) [][]string {
 func parseApkPackageGroup(group []string) PackageDetails {
 	var pkg = PackageDetails{
 		Ecosystem:      models.EcosystemAlpine,
-		PackageManager: models.Unknown,
+		PackageManager: apkPackageManager,
 	}
 
 	// File SPECS: https://wiki.alpinelinux.org/wiki/Apk_spec
@@ -60,8 +66,15 @@ func ParseApkInstalled(pathToLockfile string) ([]PackageDetails, error) {
 
 type ApkInstalledExtractor struct{}
 
+func (e ApkInstalledExtractor) PackageManager() models.PackageManager {
+	return apkPackageManager
+}
 func (e ApkInstalledExtractor) ShouldExtract(path string) bool {
-	return path == "/lib/apk/db/installed"
+	return path == apkFilePath
+}
+
+func (e ApkInstalledExtractor) IsOfficiallySupported() bool {
+	return apkOfficiallySupported
 }
 
 func (e ApkInstalledExtractor) Extract(f DepFile) ([]PackageDetails, error) {

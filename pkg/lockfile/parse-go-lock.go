@@ -21,6 +21,12 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+const (
+	goPackageManager      = models.Golang
+	goFilePath            = models.GolangFilePath
+	goOfficiallySupported = true
+)
+
 const unknownVersion = "v0.0.0-unresolved-version"
 
 func deduplicatePackages(packages map[string]PackageDetails) map[string]PackageDetails {
@@ -76,7 +82,15 @@ func extractLocations(block []string, start modfile.Position, end modfile.Positi
 }
 
 func (e GoLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == "go.mod"
+	return filepath.Base(path) == goFilePath
+}
+
+func (e GoLockExtractor) IsOfficiallySupported() bool {
+	return goOfficiallySupported
+}
+
+func (e GoLockExtractor) PackageManager() models.PackageManager {
+	return goPackageManager
 }
 
 func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -110,7 +124,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		packages[require.Mod.Path+"@"+require.Mod.Version] = PackageDetails{
 			Name:            name,
 			Version:         version,
-			PackageManager:  models.Golang,
+			PackageManager:  goPackageManager,
 			Ecosystem:       models.EcosystemGo,
 			BlockLocation:   blockLocation,
 			NameLocation:    nameLocation,
@@ -166,7 +180,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			packages[replacement] = PackageDetails{
 				Name:            name,
 				Version:         version,
-				PackageManager:  models.Golang,
+				PackageManager:  goPackageManager,
 				Ecosystem:       models.EcosystemGo,
 				BlockLocation:   blockLocation,
 				VersionLocation: versionLocation,
@@ -180,7 +194,7 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		packages["stdlib"] = PackageDetails{
 			Name:           "stdlib",
 			Version:        parsedLockfile.Go.Version,
-			PackageManager: models.Golang,
+			PackageManager: goPackageManager,
 			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
 				Filename: f.Path(),
