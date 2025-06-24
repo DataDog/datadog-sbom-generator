@@ -124,3 +124,8 @@ This tool only supports enriching information from the following package manager
 ## License
 
 The Datadog version of datadog-sbom-generator is licensed under the [Apache License, Version 2.0](LICENSE).
+
+## Acknowledgement
+
+This project builds upon portions of the osv-scanner project originally developed by Google and released under the Apache License 2.0.
+We thank the original authors for their foundational work.
