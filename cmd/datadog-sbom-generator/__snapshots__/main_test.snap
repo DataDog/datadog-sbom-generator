@@ -9162,9 +9162,6 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -13223,9 +13220,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -13994,9 +13988,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
@@ -18009,9 +18000,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -18759,9 +18747,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
@@ -22774,9 +22759,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -23526,9 +23508,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
         ]
       }
@@ -23688,9 +23667,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
