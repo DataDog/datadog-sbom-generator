@@ -205,6 +205,12 @@ func TestRun(t *testing.T) {
 			args: []string{"", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
+		// requirements files are referencing each other
+		{
+			name: "nested requirements files",
+			args: []string{"", "./fixtures/locks-requirements"},
+			exit: 0,
+		},
 		// .gitignored files
 		{
 			name: "",

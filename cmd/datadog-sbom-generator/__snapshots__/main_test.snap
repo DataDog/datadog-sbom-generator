@@ -513,6 +513,321 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
 
 ---
 
+[TestRun/nested_requirements_files - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/black@25.1.0",
+      "type": "library",
+      "name": "black",
+      "version": "25.1.0",
+      "purl": "pkg:pypi/black@25.1.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":10,/"line_end/":10,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":10,/"line_end/":10,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":10,/"line_end/":10,/"column_start/":8,/"column_end/":14}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/dirty-equals@0.8.0",
+      "type": "library",
+      "name": "dirty-equals",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/dirty-equals@0.8.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":1,/"column_end/":21},/"name/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":1,/"column_end/":13},/"version/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":16,/"column_end/":21}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/inline-snapshot@0.19.3",
+      "type": "library",
+      "name": "inline-snapshot",
+      "version": "0.19.3",
+      "purl": "pkg:pypi/inline-snapshot@0.19.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":1,/"column_end/":24},/"name/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":1,/"column_end/":16},/"version/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":18,/"column_end/":24}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/jieba@0.42.1",
+      "type": "library",
+      "name": "jieba",
+      "version": "0.42.1",
+      "purl": "pkg:pypi/jieba@0.42.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":8,/"column_end/":14}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/markdown-include-variants@0.0.4",
+      "type": "library",
+      "name": "markdown-include-variants",
+      "version": "0.0.4",
+      "purl": "pkg:pypi/markdown-include-variants@0.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":1,/"column_end/":33},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":1,/"column_end/":26},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":12,/"line_end/":12,/"column_start/":28,/"column_end/":33}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/mkdocs-macros-plugin@1.3.7",
+      "type": "library",
+      "name": "mkdocs-macros-plugin",
+      "version": "1.3.7",
+      "purl": "pkg:pypi/mkdocs-macros-plugin@1.3.7",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":28},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":21},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":23,/"column_end/":28}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/mkdocs-material@9.6.1",
+      "type": "library",
+      "name": "mkdocs-material",
+      "version": "9.6.1",
+      "purl": "pkg:pypi/mkdocs-material@9.6.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":2,/"line_end/":2,/"column_start/":1,/"column_end/":23},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":2,/"line_end/":2,/"column_start/":1,/"column_end/":16},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":2,/"line_end/":2,/"column_start/":18,/"column_end/":23}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/mypy@1.8.0",
+      "type": "library",
+      "name": "mypy",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/mypy@1.8.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":4,/"line_end/":4,/"column_start/":1,/"column_end/":13},/"name/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":4,/"line_end/":4,/"column_start/":1,/"column_end/":5},/"version/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":4,/"line_end/":4,/"column_start/":8,/"column_end/":13}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/playwright",
+      "type": "library",
+      "name": "playwright",
+      "purl": "pkg:pypi/playwright",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":6,/"line_end/":6,/"column_start/":1,/"column_end/":11},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":6,/"line_end/":6,/"column_start/":1,/"column_end/":11}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/pyjwt@2.8.0",
+      "type": "library",
+      "name": "pyjwt",
+      "version": "2.8.0",
+      "purl": "pkg:pypi/pyjwt@2.8.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":9,/"line_end/":9,/"column_start/":1,/"column_end/":13},/"name/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":9,/"line_end/":9,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":9,/"line_end/":9,/"column_start/":8,/"column_end/":13}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/sqlmodel@0.0.23",
+      "type": "library",
+      "name": "sqlmodel",
+      "version": "0.0.23",
+      "purl": "pkg:pypi/sqlmodel@0.0.23",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":6,/"line_end/":6,/"column_start/":1,/"column_end/":17},/"name/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":6,/"line_end/":6,/"column_start/":1,/"column_end/":9},/"version/":{/"file_name/":/"requirements-tests.txt/",/"line_start/":6,/"line_end/":6,/"column_start/":11,/"column_end/":17}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/typer@0.12.5",
+      "type": "library",
+      "name": "typer",
+      "version": "0.12.5",
+      "purl": "pkg:pypi/typer@0.12.5",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Requirements"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":1,/"column_end/":16},/"name/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"requirements-docs.txt/",/"line_start/":5,/"line_end/":5,/"column_start/":10,/"column_end/":16}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/nested_requirements_files - 2]
+
+---
+
 [TestRun/not_lockfile - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -8847,9 +9162,6 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -12908,9 +13220,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -13679,9 +13988,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
@@ -17694,9 +18000,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -18444,9 +18747,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
@@ -22459,9 +22759,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }
         ]
       }
@@ -23211,9 +23508,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
-          },
-          {
-            "location": "{/"block/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":7},/"version/":{/"file_name/":/"other-requirements.txt/",/"line_start/":1,/"line_end/":1,/"column_start/":9,/"column_end/":14}}"
           }
         ]
       }
@@ -23373,9 +23667,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23}}"
           }

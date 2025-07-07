@@ -75,6 +75,12 @@ func BuildCycloneDXBom(tool Tool, uniquePackages map[string]models.PackageVulns,
 func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 	occurrences := make([]cyclonedx.EvidenceOccurrence, 0)
 
+	// Track unique jsonLocation values
+	// If lock files are self referencing each other,
+	// we might have been traversing the same file more than once.
+	// Causing multiple identical locations to be reported.
+	seenLocations := make(map[string]struct{})
+
 	for _, packageLocations := range details.Locations {
 		cleanedLocation := packageLocations.Clean()
 
@@ -86,10 +92,14 @@ func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 		if err != nil {
 			continue
 		}
+		if _, exists := seenLocations[jsonLocation]; exists {
+			continue // Skip duplicate jsonLocation
+		}
 		occurrence := cyclonedx.EvidenceOccurrence{
 			Location: jsonLocation,
 		}
 		occurrences = append(occurrences, occurrence)
+		seenLocations[jsonLocation] = struct{}{}
 	}
 	if len(occurrences) > 0 {
 		component.Evidence = &cyclonedx.Evidence{Occurrences: &occurrences}
