@@ -1,0 +1,8 @@
+{
+  "name": "workspaces",
+  "version": "1.0.0",
+  "workspaces": [
+    "folder",
+    "other-folder/**"
+  ]
+}
