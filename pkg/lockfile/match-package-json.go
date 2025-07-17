@@ -3,8 +3,13 @@ package lockfile
 import (
 	"encoding/json"
 	"io"
+	"os"
+	"path"
+	"path/filepath"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 const (
@@ -13,7 +18,14 @@ const (
 	typeOptionalDependencies
 )
 
-type PackageJSONMatcher struct{}
+type PackageJSONMatcher struct {
+	// Used to store the patterns for workspaces in a given root package.json
+	WorkspacePatterns []string
+}
+
+type WorkspacePackageJSON struct {
+	Workspaces []string `json:"workspaces"`
+}
 
 /*
 packageJSONDependencyMap is here to have access to all MatcherDependencyMap methods and at the same time having
@@ -51,11 +63,12 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			continue
 		}
 		var depGroup string
-		if depMap.RootType == typeDependencies {
+		switch depMap.RootType {
+		case typeDependencies:
 			depGroup = "prod"
-		} else if depMap.RootType == typeDevDependencies {
+		case typeDevDependencies:
 			depGroup = "dev"
-		} else if depMap.RootType == typeOptionalDependencies {
+		case typeOptionalDependencies:
 			depGroup = "optional"
 		}
 
@@ -68,6 +81,30 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []string {
+	var results []string
+	// Create a filesystem rooted at the directory containing basePath
+	baseDir := filepath.Dir(basePath)
+	fsys := os.DirFS(baseDir)
+
+	for _, pattern := range workspacePatterns {
+		// Convert npm workspace pattern to package.json file pattern
+		// Important: When we pass the pattern to doublestar.Glob, we need to ensure
+		// it uses forward slashes as path separators, regardless of OS
+		searchPattern := path.Join(pattern, "package.json")
+
+		// Use the new function signature with the filesystem
+		matches, err := doublestar.Glob(fsys, searchPattern)
+		if err != nil {
+			continue
+		}
+
+		results = append(results, matches...)
+	}
+
+	return results
 }
 
 /*
@@ -83,10 +120,57 @@ To work around this limitation, we are pre-filling the structure with all the fi
   - And a list of pointer to the original PackageDetails extracted by the parser to be able to modify them with the json section content
 */
 func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+	var wpj struct {
+		Workspaces []string `json:"workspaces"`
+	}
+
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err
 	}
+
+	if err := json.Unmarshal(content, &wpj); err != nil {
+		err = m.matchFile(sourcefile, packages, content)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	// Match in root package.json
+	err = m.matchFile(sourcefile, packages, content)
+	if err != nil {
+		return err
+	}
+
+	// For workspaces, find and match in workspace package.json files
+	if len(wpj.Workspaces) > 0 {
+		matches := globWorkspacePackageJsons(wpj.Workspaces, sourcefile.Path())
+
+		for _, match := range matches {
+			workspacePkg, err := sourcefile.Open(match)
+			if err != nil {
+				continue
+			}
+			defer workspacePkg.Close()
+
+			workspaceContent, err := io.ReadAll(workspacePkg)
+			if err != nil {
+				continue
+			}
+
+			// Match dependencies in workspace package.json
+			if err := m.matchFile(workspacePkg, packages, workspaceContent); err != nil {
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m PackageJSONMatcher) matchFile(file DepFile, packages []PackageDetails, content []byte) error {
 	contentStr := string(content)
 	dependenciesLineOffset := jsonUtils.GetSectionOffset("dependencies", contentStr)
 	devDependenciesLineOffset := jsonUtils.GetSectionOffset("devDependencies", contentStr)
@@ -96,21 +180,21 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		Dependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeDependencies,
-				FilePath:   sourcefile.Path(),
+				FilePath:   file.Path(),
 				LineOffset: dependenciesLineOffset,
 			},
 		},
 		DevDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeDevDependencies,
-				FilePath:   sourcefile.Path(),
+				FilePath:   file.Path(),
 				LineOffset: devDependenciesLineOffset,
 			},
 		},
 		OptionalDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeOptionalDependencies,
-				FilePath:   sourcefile.Path(),
+				FilePath:   file.Path(),
 				LineOffset: optionalDepenenciesLineOffset,
 			},
 		},
