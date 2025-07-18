@@ -91,7 +91,7 @@ func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []st
 
 	for _, pattern := range workspacePatterns {
 		// Convert npm workspace pattern to package.json file pattern
-		// Important: When we pass the pattern to doublestar.Glob, we need to ensure
+		// When we pass the pattern to doublestar.Glob, we need to ensure
 		// it uses forward slashes as path separators, regardless of OS
 		searchPattern := path.Join(pattern, "package.json")
 
@@ -120,16 +120,21 @@ To work around this limitation, we are pre-filling the structure with all the fi
   - And a list of pointer to the original PackageDetails extracted by the parser to be able to modify them with the json section content
 */
 func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
-	var wpj struct {
-		Workspaces []string `json:"workspaces"`
-	}
-
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(content, &wpj); err != nil {
+	// Match root package.json
+	err = m.matchFile(sourcefile, packages, content)
+	if err != nil {
+		return err
+	}
+
+	var workspacesJSON struct {
+		Workspaces []string `json:"workspaces"`
+	}
+	if err := json.Unmarshal(content, &workspacesJSON); err != nil {
 		err = m.matchFile(sourcefile, packages, content)
 		if err != nil {
 			return err
@@ -138,15 +143,9 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		return nil
 	}
 
-	// Match in root package.json
-	err = m.matchFile(sourcefile, packages, content)
-	if err != nil {
-		return err
-	}
-
-	// For workspaces, find and match in workspace package.json files
-	if len(wpj.Workspaces) > 0 {
-		matches := globWorkspacePackageJsons(wpj.Workspaces, sourcefile.Path())
+	// Find and match each workspaces package.json file
+	if len(workspacesJSON.Workspaces) > 0 {
+		matches := globWorkspacePackageJsons(workspacesJSON.Workspaces, sourcefile.Path())
 
 		for _, match := range matches {
 			workspacePkg, err := sourcefile.Open(match)

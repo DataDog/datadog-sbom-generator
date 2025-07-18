@@ -215,6 +215,7 @@ func (pkg NpmLockPackage) depGroups() []string {
 
 	return groups
 }
+
 func matchesWorkspacePattern(patterns []string, testPath string) bool {
 	for _, pattern := range patterns {
 		if matched, _ := doublestar.Match(pattern, testPath); matched {
@@ -225,32 +226,40 @@ func matchesWorkspacePattern(patterns []string, testPath string) bool {
 	return false
 }
 
-func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
-	details := npmPackageDetailsMap{}
-
-	rootPkg, hasRootPkg := packages[""]
-	// Find workspace patterns from root package
-	var workspacePatterns []string
-	if hasRootPkg {
-		workspacePatterns = rootPkg.Workspaces
-	}
-
-	// Build map of workspace package paths to their dependency versions
+func buildWorkspaceDeps(packages map[string]*NpmLockPackage, workspacePatterns []string) map[string]string {
 	workspaceDeps := make(map[string]string)
 	for pkgPath, pkg := range packages {
+		// Skip non workspace packages
 		if strings.HasPrefix(pkgPath, "node_modules/") || pkgPath == "" {
 			continue
 		}
 
 		if matchesWorkspacePattern(workspacePatterns, pkgPath) {
-			// Store all dependencies for this workspace
-			for _, p := range []map[string]string{pkg.Dependencies, pkg.DevDependencies, pkg.OptionalDependencies} {
-				for k, v := range p {
-					workspaceDeps[k] = v
-				}
+			for name, version := range pkg.Dependencies {
+				workspaceDeps[name] = version
+			}
+			for name, version := range pkg.DevDependencies {
+				workspaceDeps[name] = version
+			}
+			for name, version := range pkg.OptionalDependencies {
+				workspaceDeps[name] = version
 			}
 		}
 	}
+
+	return workspaceDeps
+}
+
+func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
+	details := npmPackageDetailsMap{}
+
+	// Find workspace patterns from root package
+	rootPkg, hasRootPkg := packages[""]
+	var workspacePatterns []string
+	if hasRootPkg {
+		workspacePatterns = rootPkg.Workspaces
+	}
+	workspaceDeps := buildWorkspaceDeps(packages, workspacePatterns)
 
 	keys := reflect.ValueOf(packages).MapKeys()
 	keysOrder := func(i, j int) bool { return keys[i].Interface().(string) < keys[j].Interface().(string) }
