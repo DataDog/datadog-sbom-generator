@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -91,6 +92,58 @@ func (e GoLockExtractor) IsOfficiallySupported() bool {
 
 func (e GoLockExtractor) PackageManager() models.PackageManager {
 	return goPackageManager
+}
+
+// executeGoModGraph runs 'go mod graph' and parses the output into a dependency graph
+func (e GoLockExtractor) executeGoModGraph(rootDir string) (map[string][]string, error) {
+	cmd := exec.Command("go", "mod", "graph")
+	cmd.Dir = rootDir
+	output, err := cmd.Output()
+	if err != nil {
+		// Return empty graph but don't fail the extraction
+		return make(map[string][]string), nil
+	}
+
+	// Parse "parent child" lines into map
+	graph := make(map[string][]string)
+	for _, line := range strings.Split(string(output), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) == 2 {
+			parent, child := parts[0], parts[1]
+			graph[parent] = append(graph[parent], child)
+		}
+	}
+	return graph, nil
+}
+
+// populateDependencyTree populates the Dependencies field of PackageDetails with parent-child relationships
+func (e GoLockExtractor) populateDependencyTree(packages map[string]PackageDetails, graph map[string][]string) {
+	// Convert packages map to use pointers for modification
+	packagePtrs := make(map[string]*PackageDetails)
+	for key, pkg := range packages {
+		pkgCopy := pkg
+		packagePtrs[key] = &pkgCopy
+	}
+
+	// Build dependency relationships
+	for parentKey, children := range graph {
+		if parent, exists := packagePtrs[parentKey]; exists {
+			for _, childKey := range children {
+				if child, exists := packagePtrs[childKey]; exists {
+					parent.Dependencies = append(parent.Dependencies, child)
+				}
+			}
+		}
+	}
+
+	// Update the original packages map
+	for key, pkg := range packagePtrs {
+		packages[key] = *pkg
+	}
 }
 
 func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
@@ -201,6 +254,13 @@ func (e GoLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 			},
 			IsDirect: true,
 		}
+	}
+
+	// Execute go mod graph to build dependency relationships
+	rootDir := filepath.Dir(f.Path())
+	depGraph, err := e.executeGoModGraph(rootDir)
+	if err == nil && len(depGraph) > 0 {
+		e.populateDependencyTree(packages, depGraph)
 	}
 
 	return slices.Collect(maps.Values(deduplicatePackages(packages))), nil
