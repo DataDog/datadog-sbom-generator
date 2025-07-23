@@ -84,7 +84,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 }
 
 func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []string {
-	var results []string
+	var packageJSONFilePaths []string
 	// Create a filesystem rooted at the directory containing basePath
 	baseDir := filepath.Dir(basePath)
 	fsys := os.DirFS(baseDir)
@@ -101,10 +101,10 @@ func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []st
 			continue
 		}
 
-		results = append(results, matches...)
+		packageJSONFilePaths = append(packageJSONFilePaths, matches...)
 	}
 
-	return results
+	return packageJSONFilePaths
 }
 
 /*
@@ -131,9 +131,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		return err
 	}
 
-	var workspacesJSON struct {
-		Workspaces []string `json:"workspaces"`
-	}
+	var workspacesJSON WorkspacePackageJSON
 	if err := json.Unmarshal(content, &workspacesJSON); err != nil {
 		err = m.matchFile(sourcefile, packages, content)
 		if err != nil {
