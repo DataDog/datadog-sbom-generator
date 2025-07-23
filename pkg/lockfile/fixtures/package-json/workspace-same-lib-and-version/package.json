@@ -1,0 +1,8 @@
+{
+  "name": "workspaces-same-lib-and-version",
+  "version": "1.0.0",
+  "workspaces": [
+    "folder/*",
+    "other-folder/**"
+  ]
+}

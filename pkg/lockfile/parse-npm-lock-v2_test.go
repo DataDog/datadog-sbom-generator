@@ -713,3 +713,69 @@ func TestParseNpmLock_v2_Workspaces(t *testing.T) {
 		},
 	})
 }
+
+func TestParseNpmLock_v2_WorkspacesSameLibSameVersion(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-and-version/package-lock.json"))
+	packages, err := lockfile.ParseNpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/package-json/workspace-same-lib-and-version/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	workspace2path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-and-version/other-folder/workspace-2/package.json"))
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "semver",
+			Version:        "7.6.3",
+			PackageManager: models.NPM,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace2path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace2path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace2path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "workspace-1",
+			Version:        "1.0.0",
+			PackageManager: models.NPM,
+			Ecosystem:      models.EcosystemNPM,
+			DepGroups:      []string{"prod"},
+		},
+		{
+			Name:           "workspace-2",
+			Version:        "1.0.0",
+			PackageManager: models.NPM,
+			Ecosystem:      models.EcosystemNPM,
+			DepGroups:      []string{"prod"},
+		},
+	})
+}
