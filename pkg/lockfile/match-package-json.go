@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -145,23 +146,40 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	if len(workspacesJSON.Workspaces) > 0 {
 		matches := globWorkspacePackageJsons(workspacesJSON.Workspaces, sourcefile.Path())
 
+		// Process workspace files in parallel for better performance
+		var wg sync.WaitGroup
+		errorChan := make(chan error, len(matches))
+		semaphore := make(chan struct{}, 10) // Limit concurrent file operations
+
 		for _, match := range matches {
-			workspacePkg, err := sourcefile.Open(match)
-			if err != nil {
-				continue
-			}
-			defer workspacePkg.Close()
+			wg.Add(1)
+			go func(matchPath string) {
+				defer wg.Done()
+				semaphore <- struct{}{} // Acquire semaphore
+				defer func() { <-semaphore }() // Release semaphore
 
-			workspaceContent, err := io.ReadAll(workspacePkg)
-			if err != nil {
-				continue
-			}
+				workspacePkg, err := sourcefile.Open(matchPath)
+				if err != nil {
+					errorChan <- err
+					return
+				}
+				defer workspacePkg.Close()
 
-			// Match dependencies in workspace package.json
-			if err := m.matchFile(workspacePkg, packages, workspaceContent); err != nil {
-				continue
-			}
+				workspaceContent, err := io.ReadAll(workspacePkg)
+				if err != nil {
+					errorChan <- err
+					return
+				}
+
+				// Match dependencies in workspace package.json
+				if err := m.matchFile(workspacePkg, packages, workspaceContent); err != nil {
+					errorChan <- err
+				}
+			}(match)
 		}
+
+		wg.Wait()
+		close(errorChan)
 	}
 
 	return nil

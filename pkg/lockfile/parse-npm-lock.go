@@ -11,6 +11,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -216,6 +217,11 @@ func (pkg NpmLockPackage) depGroups() []string {
 	return groups
 }
 
+var (
+	patternCache = make(map[string]bool)
+	patternMutex = sync.RWMutex{}
+)
+
 func matchesWorkspacePattern(patterns []string, testPath string) bool {
 	for _, pattern := range patterns {
 		if matched, _ := doublestar.Match(pattern, testPath); matched {
@@ -227,9 +233,14 @@ func matchesWorkspacePattern(patterns []string, testPath string) bool {
 }
 
 func buildWorkspaceDeps(packages map[string]*NpmLockPackage, workspacePatterns []string) map[string]string {
-	workspaceDeps := make(map[string]string)
+	if len(workspacePatterns) == 0 {
+		return make(map[string]string)
+	}
+	
+	estimatedSize := len(packages) / 4
+	workspaceDeps := make(map[string]string, estimatedSize)
+	
 	for pkgPath, pkg := range packages {
-		// Skip non workspace packages
 		if strings.HasPrefix(pkgPath, "node_modules/") || pkgPath == "" {
 			continue
 		}
