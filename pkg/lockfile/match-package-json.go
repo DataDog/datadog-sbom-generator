@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -83,13 +84,97 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// optimizeWorkspacePatterns removes redundant patterns and combines overlapping ones
+func optimizeWorkspacePatterns(patterns []string) []string {
+	if len(patterns) <= 1 {
+		return patterns
+	}
+
+	// Remove exact duplicates
+	seen := make(map[string]bool)
+	unique := make([]string, 0, len(patterns))
+	for _, pattern := range patterns {
+		if !seen[pattern] {
+			seen[pattern] = true
+			unique = append(unique, pattern)
+		}
+	}
+
+	// Sort patterns by specificity (shorter patterns first, fewer wildcards first)
+	// This helps identify when more specific patterns are subsumed by general ones
+	optimized := make([]string, 0, len(unique))
+	for _, pattern := range unique {
+		isSubsumed := false
+		for _, existing := range optimized {
+			// Check if this pattern would be covered by an existing broader pattern
+			if isPatternSubsumed(pattern, existing) {
+				isSubsumed = true
+				break
+			}
+		}
+		if !isSubsumed {
+			// Remove any existing patterns that would be subsumed by this new one
+			filtered := make([]string, 0, len(optimized))
+			for _, existing := range optimized {
+				if !isPatternSubsumed(existing, pattern) {
+					filtered = append(filtered, existing)
+				}
+			}
+			filtered = append(filtered, pattern)
+			optimized = filtered
+		}
+	}
+
+	return optimized
+}
+
+// isPatternSubsumed checks if pattern1 would be covered by pattern2
+func isPatternSubsumed(pattern1, pattern2 string) bool {
+	// Handle the case where one pattern is a more general version of another
+	// e.g., "packages/apps/**" subsumes "packages/apps/*/*"
+	
+	// Convert patterns to comparable forms by replacing multiple * with **
+	normalizePattern := func(p string) string {
+		// Replace sequences like "/*/*/*" with "/**"
+		for strings.Contains(p, "/*/*") {
+			p = strings.ReplaceAll(p, "/*/*", "/**")
+		}
+		return p
+	}
+	
+	norm1 := normalizePattern(pattern1)
+	norm2 := normalizePattern(pattern2)
+	
+	// If pattern2 ends with ** and pattern1 starts with the same prefix
+	if strings.HasSuffix(norm2, "/**") {
+		prefix := strings.TrimSuffix(norm2, "/**")
+		if strings.HasPrefix(norm1, prefix) && len(norm1) > len(norm2) {
+			return true
+		}
+	}
+	
+	// Also check the reverse - if pattern1 is more general than pattern2
+	if strings.HasSuffix(norm1, "/**") {
+		prefix := strings.TrimSuffix(norm1, "/**")
+		if strings.HasPrefix(norm2, prefix) && len(norm2) > len(norm1) {
+			return false // pattern2 is more specific, don't subsume
+		}
+	}
+	
+	return false
+}
+
 func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []string {
+	// Optimize patterns to reduce redundant filesystem operations
+	optimizedPatterns := optimizeWorkspacePatterns(workspacePatterns)
+	
 	var packageJSONFilePaths []string
+
 	// Create a filesystem rooted at the directory containing basePath
 	baseDir := filepath.Dir(basePath)
 	fsys := os.DirFS(baseDir)
 
-	for _, pattern := range workspacePatterns {
+	for _, pattern := range optimizedPatterns {
 		// Convert npm workspace pattern to package.json file pattern
 		// When we pass the pattern to doublestar.Glob, we need to ensure
 		// it uses forward slashes as path separators, regardless of OS
