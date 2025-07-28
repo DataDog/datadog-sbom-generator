@@ -3,12 +3,14 @@ package lockfile
 import (
 	"context"
 	"encoding/json"
-	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"slices"
+
+	"golang.org/x/sync/errgroup"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -105,6 +107,8 @@ func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []st
 		packageJSONFilePaths = append(packageJSONFilePaths, matches...)
 	}
 
+	// Sort to ensure deterministic processing order
+	slices.Sort(packageJSONFilePaths)
 	return packageJSONFilePaths
 }
 
@@ -152,7 +156,6 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		eg.SetLimit(runtime.NumCPU())
 
 		for _, match := range matches {
-			match := match // Capture loop variable
 			eg.Go(func() error {
 				workspacePkg, err := sourcefile.Open(match)
 				if err != nil {
@@ -171,25 +174,31 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 				packagesCopy := make([]PackageDetails, len(packages))
 				copy(packagesCopy, packages)
 
-				m.matchFile(workspacePkg, packagesCopy, workspaceContent)
+				err = m.matchFile(workspacePkg, packagesCopy, workspaceContent)
+				if err != nil {
+					results <- nil
+					return nil
+				}
 				results <- packagesCopy
+
 				return nil
 			})
 		}
 
 		// Wait for all workers and close channel
 		go func() {
-			eg.Wait()
+			err := eg.Wait()
+			if err != nil {
+				return
+			}
 			close(results)
 		}()
 
 		// Merge results back into original packages
 		for result := range results {
-			if result != nil {
-				for i, pkg := range result {
-					if pkg.IsDirect && !packages[i].IsDirect {
-						packages[i] = pkg
-					}
+			for i, pkg := range result {
+				if pkg.IsDirect && !packages[i].IsDirect {
+					packages[i] = pkg
 				}
 			}
 		}

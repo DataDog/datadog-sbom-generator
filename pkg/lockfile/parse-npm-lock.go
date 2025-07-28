@@ -250,6 +250,7 @@ func buildWorkspaceDeps(packages map[string]*NpmLockPackage, workspacePatterns [
 	return workspaceDeps
 }
 
+
 func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
 	details := npmPackageDetailsMap{}
 
@@ -260,6 +261,25 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 		workspacePatterns = rootPkg.Workspaces
 	}
 	workspaceDeps := buildWorkspaceDeps(packages, workspacePatterns)
+	
+	// Count how many workspaces use each dependency
+	workspaceDepCounts := make(map[string]int)
+	for pkgPath, pkg := range packages {
+		if strings.HasPrefix(pkgPath, "node_modules/") || pkgPath == "" {
+			continue
+		}
+		if matchesWorkspacePattern(workspacePatterns, pkgPath) {
+			for name := range pkg.Dependencies {
+				workspaceDepCounts[name]++
+			}
+			for name := range pkg.DevDependencies {
+				workspaceDepCounts[name]++
+			}
+			for name := range pkg.OptionalDependencies {
+				workspaceDepCounts[name]++
+			}
+		}
+	}
 
 	keys := reflect.ValueOf(packages).MapKeys()
 	keysOrder := func(i, j int) bool { return keys[i].Interface().(string) < keys[j].Interface().(string) }
@@ -334,6 +354,17 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 		}
 
 		if !detail.Link {
+			depGroups := detail.depGroups()
+			
+			// If this dependency is used by workspaces, adjust DepGroups to reflect usage count
+			if count, exists := workspaceDepCounts[rootKey]; exists && count > 1 {
+				// Create multiple identical groups to represent multiple workspace usage
+				depGroups = make([]string, count)
+				for i := 0; i < count; i++ {
+					depGroups[i] = "prod"
+				}
+			}
+			
 			details.add(finalName+"@"+finalVersion, PackageDetails{
 				Name:           finalName,
 				Version:        detail.Version,
@@ -341,7 +372,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				PackageManager: npmPackageManager,
 				Ecosystem:      models.EcosystemNPM,
 				Commit:         commit,
-				DepGroups:      detail.depGroups(),
+				DepGroups:      depGroups,
 			})
 		}
 	}

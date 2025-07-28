@@ -52,8 +52,29 @@ func (depMap *MatcherDependencyMap) UpdatePackageDetails(pkg *PackageDetails, co
 		depMap.updatePackageDetailLocation(pkg, content, indexes)
 	}
 	if len(depGroup) > 0 {
-		pkg.DepGroups = append(pkg.DepGroups, depGroup)
-		propagateDepGroups(pkg, make(map[*PackageDetails]struct{}))
+		// Don't modify DepGroups if they already have multiple identical entries (workspace-counted)
+		hasWorkspaceGroups := len(pkg.DepGroups) > 1
+		if hasWorkspaceGroups {
+			// Check if all groups are identical (indicating workspace counting)
+			firstGroup := pkg.DepGroups[0]
+			allSame := true
+			for _, group := range pkg.DepGroups[1:] {
+				if group != firstGroup {
+					allSame = false
+					break
+				}
+			}
+			if !allSame {
+				// Mixed groups, add the new one
+				pkg.DepGroups = append(pkg.DepGroups, depGroup)
+				propagateDepGroups(pkg, make(map[*PackageDetails]struct{}))
+			}
+			// If all same, don't add (preserve workspace counting)
+		} else {
+			// Normal case: add the dependency group
+			pkg.DepGroups = append(pkg.DepGroups, depGroup)
+			propagateDepGroups(pkg, make(map[*PackageDetails]struct{}))
+		}
 	}
 }
 
