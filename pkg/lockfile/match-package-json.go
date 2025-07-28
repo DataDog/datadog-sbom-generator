@@ -1,11 +1,14 @@
 package lockfile
 
 import (
+	"context"
 	"encoding/json"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -85,17 +88,15 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 
 func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []string {
 	var packageJSONFilePaths []string
+
 	// Create a filesystem rooted at the directory containing basePath
 	baseDir := filepath.Dir(basePath)
 	fsys := os.DirFS(baseDir)
 
 	for _, pattern := range workspacePatterns {
 		// Convert npm workspace pattern to package.json file pattern
-		// When we pass the pattern to doublestar.Glob, we need to ensure
-		// it uses forward slashes as path separators, regardless of OS
 		searchPattern := path.Join(pattern, "package.json")
 
-		// Use the new function signature with the filesystem
 		matches, err := doublestar.Glob(fsys, searchPattern)
 		if err != nil {
 			continue
@@ -145,21 +146,51 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	if len(workspacesJSON.Workspaces) > 0 {
 		matches := globWorkspacePackageJsons(workspacesJSON.Workspaces, sourcefile.Path())
 
+		// Process files in parallel using channels
+		results := make(chan []PackageDetails, len(matches))
+		eg, _ := errgroup.WithContext(context.Background())
+		eg.SetLimit(runtime.NumCPU())
+
 		for _, match := range matches {
-			workspacePkg, err := sourcefile.Open(match)
-			if err != nil {
-				continue
-			}
-			defer workspacePkg.Close()
+			match := match // Capture loop variable
+			eg.Go(func() error {
+				workspacePkg, err := sourcefile.Open(match)
+				if err != nil {
+					results <- nil
+					return nil
+				}
+				defer workspacePkg.Close()
 
-			workspaceContent, err := io.ReadAll(workspacePkg)
-			if err != nil {
-				continue
-			}
+				workspaceContent, err := io.ReadAll(workspacePkg)
+				if err != nil {
+					results <- nil
+					return nil
+				}
 
-			// Match dependencies in workspace package.json
-			if err := m.matchFile(workspacePkg, packages, workspaceContent); err != nil {
-				continue
+				// Process file with a copy of packages to avoid race conditions
+				packagesCopy := make([]PackageDetails, len(packages))
+				copy(packagesCopy, packages)
+
+				m.matchFile(workspacePkg, packagesCopy, workspaceContent)
+				results <- packagesCopy
+				return nil
+			})
+		}
+
+		// Wait for all workers and close channel
+		go func() {
+			eg.Wait()
+			close(results)
+		}()
+
+		// Merge results back into original packages
+		for result := range results {
+			if result != nil {
+				for i, pkg := range result {
+					if pkg.IsDirect && !packages[i].IsDirect {
+						packages[i] = pkg
+					}
+				}
 			}
 		}
 	}
