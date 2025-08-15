@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -49,6 +50,12 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	content := string(data)
 
 	for _, pkg := range depMap.Packages {
+		// Workspace optimization: only process packages that could possibly be in this package.json file, if pkg is not
+		// present just skip it
+		if !strings.Contains(content, `"`+pkg.Name+`"`) {
+			continue
+		}
+
 		var pkgIndexes []int
 
 		for _, targetedVersion := range pkg.TargetVersions {
