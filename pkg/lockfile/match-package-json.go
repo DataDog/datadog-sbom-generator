@@ -53,7 +53,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	var parsed map[string]interface{}
 	unmarshallErr := json.Unmarshal(data, &parsed)
 	if unmarshallErr != nil {
-		log.Printf("could not unmarshal %s", packageJSONContent)
+		log.Printf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
 	}
 
 	dependencyNames := make(map[string]bool)
