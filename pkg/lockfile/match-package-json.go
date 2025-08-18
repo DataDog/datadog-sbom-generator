@@ -6,8 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -50,10 +48,18 @@ func (m PackageJSONMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	packageJSONContent := string(data)
 
+	// Parse dependencies in incoming data
+	dependencyNames := make(map[string]bool)
+	var parsed map[string]interface{}
+	if json.Unmarshal(data, &parsed) == nil {
+		for name := range parsed {
+			dependencyNames[name] = true
+		}
+	}
+
 	for _, pkg := range depMap.Packages {
-		// Workspace optimization: only process packages that could possibly be in this package.json file, if pkg is not
-		// present just skip it
-		if !strings.Contains(packageJSONContent, strconv.Quote(pkg.Name)) {
+		// Skip packages in lockfile that are not declared in current dependency section
+		if !dependencyNames[pkg.Name] {
 			continue
 		}
 
@@ -67,7 +73,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 		}
 
 		if len(pkgIndexes) == 0 {
-			// The matcher haven't found package information, lets skip it
+			// The matcher hasn't found package information, lets skip it
 			continue
 		}
 		var depGroup string
