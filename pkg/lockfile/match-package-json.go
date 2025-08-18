@@ -3,6 +3,7 @@ package lockfile
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -49,17 +50,21 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	packageJSONContent := string(data)
 
 	// Parse dependencies in incoming data
-	dependencyNames := make(map[string]bool)
 	var parsed map[string]interface{}
-	if json.Unmarshal(data, &parsed) == nil {
-		for name := range parsed {
-			dependencyNames[name] = true
-		}
+	unmarshallErr := json.Unmarshal(data, &parsed)
+	if unmarshallErr != nil {
+		log.Printf("could not unmarshal %s", packageJSONContent)
+	}
+
+	dependencyNames := make(map[string]bool)
+	for name := range parsed {
+		dependencyNames[name] = true
 	}
 
 	for _, pkg := range depMap.Packages {
 		// Skip packages in lockfile that are not declared in current dependency section
-		if !dependencyNames[pkg.Name] {
+		// If we fail to unmarshall just process as before
+		if unmarshallErr == nil && !dependencyNames[pkg.Name] {
 			continue
 		}
 
@@ -72,8 +77,8 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			}
 		}
 
+		// The matcher hasn't found package information, lets skip it
 		if len(pkgIndexes) == 0 {
-			// The matcher hasn't found package information, lets skip it
 			continue
 		}
 		var depGroup string
