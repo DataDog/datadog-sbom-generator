@@ -3,6 +3,7 @@ package lockfile
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,20 +47,38 @@ func (m PackageJSONMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 }
 
 func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
-	content := string(data)
+	packageJSONContent := string(data)
+
+	// Parse dependencies in incoming data
+	var parsed map[string]interface{}
+	unmarshallErr := json.Unmarshal(data, &parsed)
+	if unmarshallErr != nil {
+		log.Printf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
+	}
+
+	dependencyNames := make(map[string]bool)
+	for name := range parsed {
+		dependencyNames[name] = true
+	}
 
 	for _, pkg := range depMap.Packages {
+		// Skip packages in lockfile that are not declared in current dependency section
+		// If we fail to unmarshall just process as before
+		if unmarshallErr == nil && !dependencyNames[pkg.Name] {
+			continue
+		}
+
 		var pkgIndexes []int
 
 		for _, targetedVersion := range pkg.TargetVersions {
-			pkgIndexes = jsonUtils.ExtractPackageIndexes(pkg.Name, targetedVersion, content)
+			pkgIndexes = jsonUtils.ExtractPackageIndexes(pkg.Name, targetedVersion, packageJSONContent)
 			if len(pkgIndexes) > 0 {
 				break
 			}
 		}
 
+		// The matcher hasn't found package information, lets skip it
 		if len(pkgIndexes) == 0 {
-			// The matcher haven't found package information, lets skip it
 			continue
 		}
 		var depGroup string
@@ -77,7 +96,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			// we skip it to prioritize non-dev dependencies
 			pkgIndexes = []int{}
 		}
-		depMap.UpdatePackageDetails(pkg, content, pkgIndexes, depGroup)
+		depMap.UpdatePackageDetails(pkg, packageJSONContent, pkgIndexes, depGroup)
 	}
 
 	return nil
