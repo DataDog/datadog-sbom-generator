@@ -48,19 +48,19 @@ func (m PackageJSONMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 }
 
 func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
-	content := string(data)
+	packageJSONContent := string(data)
 
 	for _, pkg := range depMap.Packages {
 		// Workspace optimization: only process packages that could possibly be in this package.json file, if pkg is not
 		// present just skip it
-		if !strings.Contains(content, strconv.Quote(pkg.Name)) {
+		if !strings.Contains(packageJSONContent, strconv.Quote(pkg.Name)) {
 			continue
 		}
 
 		var pkgIndexes []int
 
 		for _, targetedVersion := range pkg.TargetVersions {
-			pkgIndexes = jsonUtils.ExtractPackageIndexes(pkg.Name, targetedVersion, content)
+			pkgIndexes = jsonUtils.ExtractPackageIndexes(pkg.Name, targetedVersion, packageJSONContent)
 			if len(pkgIndexes) > 0 {
 				break
 			}
@@ -85,7 +85,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			// we skip it to prioritize non-dev dependencies
 			pkgIndexes = []int{}
 		}
-		depMap.UpdatePackageDetails(pkg, content, pkgIndexes, depGroup)
+		depMap.UpdatePackageDetails(pkg, packageJSONContent, pkgIndexes, depGroup)
 	}
 
 	return nil
