@@ -1,7 +1,6 @@
 package sbom
 
 import (
-	"iter"
 	"slices"
 	"strings"
 	"time"
@@ -124,11 +123,11 @@ func buildMetadataComponent(tool Tool) *cyclonedx.Metadata {
 	}
 }
 
-func buildProperties(metadatas models.PackageMetadata, lockfilePaths iter.Seq[string]) []cyclonedx.Property {
+func buildProperties(metadatas models.PackageMetadata, lockfilePaths []string) []cyclonedx.Property {
 	properties := make([]cyclonedx.Property, 0)
 
 	// Reporting all lockfile paths found for that library
-	for lockfilePath := range lockfilePaths {
+	for _, lockfilePath := range lockfilePaths {
 		properties = append(properties, cyclonedx.Property{
 			Name:  propertyPrefix + "lockfile-filepath",
 			Value: lockfilePath,
@@ -208,7 +207,10 @@ func createLibraryComponent(packageURL string, packageDetail models.PackageVulns
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 
-	properties := buildProperties(packageDetail.Metadata, maps.Keys(packageDetail.LockfilePath))
+	sortedLockfilePaths := slices.AppendSeq(make([]string, 0), maps.Keys(packageDetail.LockfilePath))
+	slices.Sort(sortedLockfilePaths)
+
+	properties := buildProperties(packageDetail.Metadata, sortedLockfilePaths)
 	component.Properties = &properties
 
 	return component

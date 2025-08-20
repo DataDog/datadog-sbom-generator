@@ -161,15 +161,15 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "properties": [
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
-          "value": "subdir/Gemfile.lock"
-        },
-        {
-          "name": "datadog-sbom-generator:lockfile-filepath",
           "value": "Gemfile.lock"
         },
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
           "value": "ignored/Gemfile.lock"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "subdir/Gemfile.lock"
         },
         {
           "name": "osv-scanner:is-direct",
@@ -900,11 +900,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
       "properties": [
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
-          "value": "requirements.txt"
+          "value": "requirements-tests.txt"
         },
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
-          "value": "requirements-tests.txt"
+          "value": "requirements.txt"
         },
         {
           "name": "osv-scanner:is-direct",
@@ -964,11 +964,11 @@ invalid verbosity level "unknown" - must be one of: error, warn, info, verbose
       "properties": [
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
-          "value": "requirements.txt"
+          "value": "requirements-docs.txt"
         },
         {
           "name": "datadog-sbom-generator:lockfile-filepath",
-          "value": "requirements-docs.txt"
+          "value": "requirements.txt"
         },
         {
           "name": "osv-scanner:is-direct",
