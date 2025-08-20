@@ -1,6 +1,7 @@
 package sbom
 
 import (
+	"iter"
 	"slices"
 	"strings"
 	"time"
@@ -12,6 +13,8 @@ import (
 	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
+
+const propertyPrefix = "datadog-sbom-generator:"
 
 type PackageProcessingHook = func(component *cyclonedx.Component, details models.PackageVulns)
 
@@ -121,8 +124,16 @@ func buildMetadataComponent(tool Tool) *cyclonedx.Metadata {
 	}
 }
 
-func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
+func buildProperties(metadatas models.PackageMetadata, lockfilePaths iter.Seq[string]) []cyclonedx.Property {
 	properties := make([]cyclonedx.Property, 0)
+
+	// Reporting all lockfile paths found for that library
+	for lockfilePath := range lockfilePaths {
+		properties = append(properties, cyclonedx.Property{
+			Name:  propertyPrefix + "lockfile-filepath",
+			Value: lockfilePath,
+		})
+	}
 
 	for metadataType, value := range metadatas {
 		if len(value) == 0 {
@@ -131,14 +142,14 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 		// TODO(daniel.strong) Remove this conditional when we support datadog-sbom-generator prefixes in all metadata keys.
 		if strings.HasPrefix(string(metadataType), string(models.ReachableSymbolLocationMetadata)) {
 			properties = append(properties, cyclonedx.Property{
-				Name:  "datadog-sbom-generator:" + string(metadataType),
+				Name:  propertyPrefix + string(metadataType),
 				Value: value,
 			})
 		} else if metadataType == models.ExclusionMetadata {
 			props := strings.Split(value, ",")
 			for _, prop := range props {
 				properties = append(properties, cyclonedx.Property{
-					Name:  "datadog-sbom-generator:" + string(metadataType),
+					Name:  propertyPrefix + string(metadataType),
 					Value: prop,
 				})
 			}
@@ -197,7 +208,7 @@ func createLibraryComponent(packageURL string, packageDetail models.PackageVulns
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 
-	properties := buildProperties(packageDetail.Metadata)
+	properties := buildProperties(packageDetail.Metadata, maps.Keys(packageDetail.LockfilePath))
 	component.Properties = &properties
 
 	return component

@@ -67,14 +67,26 @@
       "type": "library",
       "name": "dev.foo:lib1",
       "version": "1.0-SNAPSHOT",
-      "purl": "pkg:maven/dev.foo/lib1@1.0-SNAPSHOT"
+      "purl": "pkg:maven/dev.foo/lib1@1.0-SNAPSHOT",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "pom.xml"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:maven/dev.foo/lib2@1.0-SNAPSHOT",
       "type": "library",
       "name": "dev.foo:lib2",
       "version": "1.0-SNAPSHOT",
-      "purl": "pkg:maven/dev.foo/lib2@1.0-SNAPSHOT"
+      "purl": "pkg:maven/dev.foo/lib2@1.0-SNAPSHOT",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "pom.xml"
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -136,7 +148,13 @@
       "type": "library",
       "name": "com.nobody:mine1",
       "version": "1.2.3",
-      "purl": "pkg:maven/com.nobody/mine1@1.2.3"
+      "purl": "pkg:maven/com.nobody/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "pom.xml"
+        }
+      ]
     }
   ]
 }
@@ -167,7 +185,13 @@
       "type": "library",
       "name": "com.nobody:mine1",
       "version": "1.2.3",
-      "purl": "pkg:maven/com.nobody/mine1@1.2.3"
+      "purl": "pkg:maven/com.nobody/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "pom.xml"
+        }
+      ]
     }
   ]
 }
@@ -198,7 +222,13 @@
       "type": "library",
       "name": "com.nobody:mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/com.nobody%3Amine1@1.2.3"
+      "purl": "pkg:npm/com.nobody%3Amine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ]
 }
@@ -240,6 +270,10 @@
           "value": "org.example:*"
         },
         {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/pom.xml"
+        },
+        {
           "name": "osv-scanner:is-dev",
           "value": "true"
         }
@@ -274,28 +308,56 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.3.5",
       "type": "library",
       "name": "mine1",
       "version": "1.3.5",
-      "purl": "pkg:npm/mine1@1.3.5"
+      "purl": "pkg:npm/mine1@1.3.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -350,28 +412,56 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.3.5",
       "type": "library",
       "name": "mine1",
       "version": "1.3.5",
-      "purl": "pkg:npm/mine1@1.3.5"
+      "purl": "pkg:npm/mine1@1.3.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -426,7 +516,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -470,7 +566,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -514,7 +616,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -558,14 +666,26 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@5.9.0",
       "type": "library",
       "name": "mine2",
       "version": "5.9.0",
-      "purl": "pkg:npm/mine2@5.9.0"
+      "purl": "pkg:npm/mine2@5.9.0",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -609,28 +729,52 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.2",
-      "purl": "pkg:npm/mine1@1.2.2"
+      "purl": "pkg:npm/mine1@1.2.2",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -707,28 +851,52 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.2",
-      "purl": "pkg:npm/mine1@1.2.2"
+      "purl": "pkg:npm/mine1@1.2.2",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.2.3",
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -805,28 +973,56 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.3.5",
       "type": "library",
       "name": "mine1",
       "version": "1.3.5",
-      "purl": "pkg:npm/mine1@1.3.5"
+      "purl": "pkg:npm/mine1@1.3.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ]
 }
@@ -857,28 +1053,56 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.3.5",
       "type": "library",
       "name": "mine1",
       "version": "1.3.5",
-      "purl": "pkg:npm/mine1@1.3.5"
+      "purl": "pkg:npm/mine1@1.3.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/third/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:npm/mine2@3.2.5"
+      "purl": "pkg:npm/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.4.1",
       "type": "library",
       "name": "mine3",
       "version": "0.4.1",
-      "purl": "pkg:npm/mine3@0.4.1"
+      "purl": "pkg:npm/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -933,28 +1157,52 @@
       "type": "library",
       "name": "author1/mine1",
       "version": "1.2.3",
-      "purl": "pkg:composer/author1/mine1@1.2.3"
+      "purl": "pkg:composer/author1/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:composer/author3/mine3@0.4.1",
       "type": "library",
       "name": "author3/mine3",
       "version": "0.4.1",
-      "purl": "pkg:composer/author3/mine3@0.4.1"
+      "purl": "pkg:composer/author3/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.2.2",
       "type": "library",
       "name": "mine1",
       "version": "1.2.2",
-      "purl": "pkg:npm/mine1@1.2.2"
+      "purl": "pkg:npm/mine1@1.2.2",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:nuget/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:nuget/mine2@3.2.5"
+      "purl": "pkg:nuget/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1031,28 +1279,52 @@
       "type": "library",
       "name": "author1/mine1",
       "version": "1.2.3",
-      "purl": "pkg:composer/author1/mine1@1.2.3"
+      "purl": "pkg:composer/author1/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:composer/author3/mine3@0.4.1",
       "type": "library",
       "name": "author3/mine3",
       "version": "0.4.1",
-      "purl": "pkg:composer/author3/mine3@0.4.1"
+      "purl": "pkg:composer/author3/mine3@0.4.1",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine1@1.2.2",
       "type": "library",
       "name": "mine1",
       "version": "1.2.2",
-      "purl": "pkg:npm/mine1@1.2.2"
+      "purl": "pkg:npm/mine1@1.2.2",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:nuget/mine2@3.2.5",
       "type": "library",
       "name": "mine2",
       "version": "3.2.5",
-      "purl": "pkg:nuget/mine2@3.2.5"
+      "purl": "pkg:nuget/mine2@3.2.5",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1195,7 +1467,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ]
 }
@@ -1226,7 +1504,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1281,7 +1565,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1325,7 +1615,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1369,7 +1665,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1413,7 +1715,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1457,7 +1765,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1518,7 +1832,13 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1579,14 +1899,26 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine3@0.10.2-rc",
       "type": "library",
       "name": "mine3",
       "version": "0.10.2-rc",
-      "purl": "pkg:npm/mine3@0.10.2-rc"
+      "purl": "pkg:npm/mine3@0.10.2-rc",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1628,14 +1960,26 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/mine2@5.9.0",
       "type": "library",
       "name": "mine2",
       "version": "5.9.0",
-      "purl": "pkg:npm/mine2@5.9.0"
+      "purl": "pkg:npm/mine2@5.9.0",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [
@@ -1679,7 +2023,17 @@
       "type": "library",
       "name": "mine1",
       "version": "1.2.3",
-      "purl": "pkg:npm/mine1@1.2.3"
+      "purl": "pkg:npm/mine1@1.2.3",
+      "properties": [
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/first/lockfile"
+        },
+        {
+          "name": "datadog-sbom-generator:lockfile-filepath",
+          "value": "path/to/my/second/lockfile"
+        }
+      ]
     }
   ],
   "vulnerabilities": [

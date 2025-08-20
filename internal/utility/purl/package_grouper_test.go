@@ -97,12 +97,20 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 				{ID: "GHSA-456"},
 			},
 			DepGroups: []string{"build", "test"},
+			LockfilePath: map[string]struct{}{
+				"/dir/lockfile.xml":   {},
+				"/dir2/lockfile.json": {},
+			},
 		},
 		"pkg:maven/foo.bar/package-2@1.0.0": {
 			Package: models.PackageInfo{
 				Name:      "foo.bar:package-2",
 				Version:   "1.0.0",
 				Ecosystem: string(models.EcosystemMaven),
+			},
+			LockfilePath: map[string]struct{}{
+				"/dir/lockfile.xml":   {},
+				"/dir2/lockfile.json": {},
 			},
 		},
 	}
@@ -173,6 +181,10 @@ func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 				Name:      "foo.bar:the-first-package",
 				Version:   "1.0.0",
 				Ecosystem: string(models.EcosystemMaven),
+			},
+			LockfilePath: map[string]struct{}{
+				"/lockfile.xml":     {},
+				"/dir/lockfile.xml": {},
 			},
 			Metadata: map[models.PackageMetadataType]string{
 				models.PackageManagerMetadata:     "Maven",

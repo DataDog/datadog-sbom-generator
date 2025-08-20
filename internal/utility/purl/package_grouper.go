@@ -27,6 +27,8 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				// Entry already exists, we need to merge slices which are not expected to be the exact same
 				packageVulns.DepGroups = append(packageVulns.DepGroups, pkg.DepGroups...)
 				packageVulns.Locations = append(packageVulns.Locations, pkg.Locations...)
+				packageVulns.LockfilePath[packageSource.Source.Path] = struct{}{}
+
 				if packageVulns.Metadata == nil {
 					packageVulns.Metadata = pkg.Metadata
 				} else {
@@ -37,6 +39,9 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				uniquePackages[packageURL.ToString()] = packageVulns
 			} else {
 				// Entry does not exists yet, lets create it
+				lockfilePaths := make(map[string]struct{})
+				lockfilePaths[packageSource.Source.Path] = struct{}{}
+
 				newPackageVuln := models.PackageVulns{
 					Package:                   pkg.Package,
 					Locations:                 slices.Clone(pkg.Locations),
@@ -44,6 +49,7 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 					Vulnerabilities:           slices.Clone(pkg.Vulnerabilities),
 					Metadata:                  pkg.Metadata,
 					AdvisoriesForReachability: pkg.AdvisoriesForReachability,
+					LockfilePath:              lockfilePaths,
 				}
 				uniquePackages[packageURL.ToString()] = newPackageVuln
 			}
