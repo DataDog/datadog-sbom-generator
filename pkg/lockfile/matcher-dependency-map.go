@@ -109,6 +109,8 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		return
 	}
 	visitedMap[root] = struct{}{}
+
+	// Build the merged dependency groups map
 	newDepGroups := make(map[string]bool)
 	for _, group := range root.DepGroups {
 		newDepGroups[group] = true
@@ -118,7 +120,17 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		for _, group := range deps.DepGroups {
 			newDepGroups[group] = true
 		}
-		deps.DepGroups = slices.Collect(maps.Keys(newDepGroups))
+	}
+
+	// Compute the slice once outside the loop instead of N times
+	var mergedGroups []string
+	if len(newDepGroups) > 0 {
+		mergedGroups = slices.Collect(maps.Keys(newDepGroups))
+	}
+
+	// Just assign the same slice to all children (simple assignment, no allocation)
+	for _, deps := range root.Dependencies {
+		deps.DepGroups = mergedGroups
 		propagateDepGroups(deps, visitedMap)
 	}
 }
