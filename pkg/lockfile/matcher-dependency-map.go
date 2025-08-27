@@ -1,10 +1,7 @@
 package lockfile
 
 import (
-	"slices"
 	"strings"
-
-	"maps"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -125,7 +122,10 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 	// Compute the slice once outside the loop instead of N times
 	var mergedGroups []string
 	if len(newDepGroups) > 0 {
-		mergedGroups = slices.Collect(maps.Keys(newDepGroups))
+		mergedGroups = make([]string, 0, len(newDepGroups))
+		for group := range newDepGroups {
+			mergedGroups = append(mergedGroups, group)
+		}
 	}
 
 	// Just assign the same slice to all children (simple assignment, no allocation)
