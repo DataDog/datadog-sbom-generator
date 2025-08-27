@@ -1,10 +1,7 @@
 package lockfile
 
 import (
-	"slices"
 	"strings"
-
-	"maps"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -109,6 +106,8 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		return
 	}
 	visitedMap[root] = struct{}{}
+
+	// Build the merged dependency groups map
 	newDepGroups := make(map[string]bool)
 	for _, group := range root.DepGroups {
 		newDepGroups[group] = true
@@ -118,7 +117,20 @@ func propagateDepGroups(root *PackageDetails, visitedMap map[*PackageDetails]str
 		for _, group := range deps.DepGroups {
 			newDepGroups[group] = true
 		}
-		deps.DepGroups = slices.Collect(maps.Keys(newDepGroups))
+	}
+
+	// Compute the slice once outside the loop instead of N times
+	var mergedGroups []string
+	if len(newDepGroups) > 0 {
+		mergedGroups = make([]string, 0, len(newDepGroups))
+		for group := range newDepGroups {
+			mergedGroups = append(mergedGroups, group)
+		}
+	}
+
+	// Just assign the same slice to all children (simple assignment, no allocation)
+	for _, deps := range root.Dependencies {
+		deps.DepGroups = mergedGroups
 		propagateDepGroups(deps, visitedMap)
 	}
 }
