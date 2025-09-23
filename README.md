@@ -84,23 +84,22 @@ This tool only supports enriching information from the following package manager
 
 ### Javascript and Typescript
 
+NPM and Yarn have workspace support
+
 #### NPM
 
 - This tool only supports extracting packages from `package-lock.json`.
 - This tool only supports package information enrichment from `package.json`.
-- This tool does not support Workspaces.
 
 #### Yarn
 
 - This tool only supports extracting packages from `yarn.lock`.
 - This tool only supports package information enrichment from `package.json`.
-- This tool does not support Workspaces.
 
 #### PNPM
 
 - This tool only supports extracting packages from `pnpm-lock.yaml`.
 - This tool only supports package information enrichment from `package.json`.
-- This tool does not support Workspaces.
 
 ### .Net
 
