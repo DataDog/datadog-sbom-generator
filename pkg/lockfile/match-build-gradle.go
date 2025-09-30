@@ -48,6 +48,9 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 			group, artifact, _ := strings.Cut(pkg.Name, ":")
 			// TODO: what to do if, while using extended format, components are split in multiple lines?
 			if strings.Contains(line, group) && strings.Contains(line, artifact) {
+				// If we find the dependency in build.gradle, it's a direct dependency
+				packages[key].IsDirect = true
+
 				scope := m.extractScope(line)
 				if len(scope) > 0 {
 					packages[key].DepGroups = append(packages[key].DepGroups, scope)

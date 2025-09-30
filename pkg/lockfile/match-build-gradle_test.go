@@ -143,6 +143,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 77},
@@ -187,6 +188,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 105},
@@ -231,6 +233,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 78},
@@ -275,6 +278,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 109},
@@ -320,6 +324,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			DepGroups:      []string{"testRuntimeClasspath", "runtimeClasspath"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
