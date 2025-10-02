@@ -45,9 +45,6 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 
 	m.matchFileContent(content, sourcefile.Path(), packages)
 
-	// Find the project root
-	// The sourcefile is the build.gradle file (e.g., /path/to/project/build.gradle)
-	// The project root is the directory containing build.gradle
 	buildGradlePath := sourcefile.Path()
 	projectRoot := filepath.Dir(buildGradlePath)
 
@@ -59,7 +56,9 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 
 	// Match packages against all build.gradle files
 	for _, buildFile := range buildFiles {
-		// Skip the file we already processed
+		// Skip if this is the source file (already processed above).
+		// This can happen when Match() is called with a build.gradle file directly
+		// instead of a lockfile (e.g., gradle.lockfile or verification-metadata.xml)
 		if buildFile == sourcefile.Path() {
 			continue
 		}
@@ -81,7 +80,7 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	return nil
 }
 
-// findAllBuildGradleFiles recursively finds all build.gradle and build.gradle.kts files
+// findAllBuildGradleFiles finds all build.gradle and build.gradle.kts files
 // starting from the project root directory
 func (m BuildGradleMatcher) findAllBuildGradleFiles(projectRoot string) ([]string, error) {
 	var buildFiles []string
@@ -94,7 +93,7 @@ func (m BuildGradleMatcher) findAllBuildGradleFiles(projectRoot string) ([]strin
 		// Skip hidden directories and common non-source directories
 		if d.IsDir() {
 			name := d.Name()
-			if strings.HasPrefix(name, ".") || name == "build" || name == "node_modules" {
+			if strings.HasPrefix(name, ".") || name == "build" {
 				return filepath.SkipDir
 			}
 

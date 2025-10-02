@@ -381,14 +381,6 @@ func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	for _, p := range packages {
-		if p.Name == "com.fasterxml.jackson.core:jackson-databind" && p.Version == "2.15.0" {
-			t.Logf("databind actual BlockLocation:   %+v", p.BlockLocation)
-			t.Logf("databind actual NameLocation:    %+v", p.NameLocation)
-			t.Logf("databind actual VersionLocation: %+v", p.VersionLocation)
-		}
-	}
-
 	expectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "com.google.guava:guava",
