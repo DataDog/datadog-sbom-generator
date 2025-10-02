@@ -56,7 +56,21 @@ func packageToString(pkg lockfile.PackageDetails) string {
 		exclusions = "<no exclusions>"
 	}
 
-	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t, %s)", pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect, exclusions)
+	blockLoc := fmt.Sprintf("BlockLocation{Line:%+v Column:%+v Filename:%s}", pkg.BlockLocation.Line, pkg.BlockLocation.Column, pkg.BlockLocation.Filename)
+
+	nameLoc := "<nil>"
+	if pkg.NameLocation != nil {
+		nameLoc = fmt.Sprintf("{Line:%+v Column:%+v Filename:%s}", pkg.NameLocation.Line, pkg.NameLocation.Column, pkg.NameLocation.Filename)
+	}
+
+	versionLoc := "<nil>"
+	if pkg.VersionLocation != nil {
+		versionLoc = fmt.Sprintf("{Line:%+v Column:%+v Filename:%s}", pkg.VersionLocation.Line, pkg.VersionLocation.Column, pkg.VersionLocation.Filename)
+	}
+
+	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t, %s) %s NameLocation:%s VersionLocation:%s",
+		pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect, exclusions,
+		blockLoc, nameLoc, versionLoc)
 }
 
 func hasPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg lockfile.PackageDetails, ignoreLocations bool) bool {
