@@ -13236,6 +13236,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "value": "true"
         },
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -13257,6 +13261,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "properties": [
         {
           "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:is-direct",
           "value": "true"
         },
         {
@@ -13364,6 +13372,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.2",
       "properties": [
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -13383,6 +13395,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.7.3",
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.3",
       "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
         {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
@@ -18016,6 +18032,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "value": "true"
         },
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -18037,6 +18057,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "properties": [
         {
           "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:is-direct",
           "value": "true"
         },
         {
@@ -18144,6 +18168,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.2",
       "properties": [
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -18163,6 +18191,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.7.3",
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.3",
       "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
         {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
@@ -22775,6 +22807,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "value": "true"
         },
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -22796,6 +22832,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "properties": [
         {
           "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:is-direct",
           "value": "true"
         },
         {
@@ -22903,6 +22943,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.2",
       "properties": [
         {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
         }
@@ -22922,6 +22966,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.7.3",
       "purl": "pkg:maven/org.springframework.security/spring-security-crypto@5.7.3",
       "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
         {
           "name": "osv-scanner:package-manager",
           "value": "Gradle"
