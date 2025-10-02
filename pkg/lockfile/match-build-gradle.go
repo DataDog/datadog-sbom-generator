@@ -2,6 +2,8 @@ package lockfile
 
 import (
 	"io"
+	"io/fs"
+	"path/filepath"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
@@ -35,11 +37,83 @@ func (m BuildGradleMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
 }
 
 func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails) error {
+	// First, try to match against the main build.gradle file
 	content, err := io.ReadAll(sourcefile)
 	if err != nil {
 		return err
 	}
 
+	m.matchFileContent(content, sourcefile.Path(), packages)
+
+	// Find the project root
+	// The sourcefile is the build.gradle file (e.g., /path/to/project/build.gradle)
+	// The project root is the directory containing build.gradle
+	buildGradlePath := sourcefile.Path()
+	projectRoot := filepath.Dir(buildGradlePath)
+
+	// Find all build.gradle files in the project
+	buildFiles, err := m.findAllBuildGradleFiles(projectRoot)
+	if err != nil {
+		return err
+	}
+
+	// Match packages against all build.gradle files
+	for _, buildFile := range buildFiles {
+		// Skip the file we already processed
+		if buildFile == sourcefile.Path() {
+			continue
+		}
+
+		buildFileDepFile, err := sourcefile.Open(buildFile)
+		if err != nil {
+			continue
+		}
+
+		fileContent, err := io.ReadAll(buildFileDepFile)
+		buildFileDepFile.Close()
+		if err != nil {
+			continue
+		}
+
+		m.matchFileContent(fileContent, buildFile, packages)
+	}
+
+	return nil
+}
+
+// findAllBuildGradleFiles recursively finds all build.gradle and build.gradle.kts files
+// starting from the project root directory
+func (m BuildGradleMatcher) findAllBuildGradleFiles(projectRoot string) ([]string, error) {
+	var buildFiles []string
+
+	err := filepath.WalkDir(projectRoot, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip hidden directories and common non-source directories
+		if d.IsDir() {
+			name := d.Name()
+			if strings.HasPrefix(name, ".") || name == "build" || name == "node_modules" {
+				return filepath.SkipDir
+			}
+
+			return nil
+		}
+
+		// Check if this is a build.gradle or build.gradle.kts file
+		if d.Name() == "build.gradle" || d.Name() == "build.gradle.kts" {
+			buildFiles = append(buildFiles, path)
+		}
+
+		return nil
+	})
+
+	return buildFiles, err
+}
+
+// matchFileContent matches packages against the content of a single build.gradle file
+func (m BuildGradleMatcher) matchFileContent(content []byte, sourcePath string, packages []PackageDetails) {
 	lines := fileposition.BytesToLines(content)
 
 	for index, line := range lines {
@@ -63,26 +137,24 @@ func (m BuildGradleMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 					packages[key].BlockLocation = models.FilePosition{
 						Line:     models.Position{Start: lineNumber, End: lineNumber},
 						Column:   models.Position{Start: startColumn, End: endColumn},
-						Filename: sourcefile.Path(),
+						Filename: sourcePath,
 					}
 
 					nameLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{line}, artifact, lineNumber, "['\":]", "['\":]")
 					if nameLocation != nil {
-						nameLocation.Filename = sourcefile.Path()
+						nameLocation.Filename = sourcePath
 						packages[key].NameLocation = nameLocation
 					}
 
 					versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{line}, pkg.Version, lineNumber, "['\":]", "['\"]")
 					if versionLocation != nil {
-						versionLocation.Filename = sourcefile.Path()
+						versionLocation.Filename = sourcePath
 						packages[key].VersionLocation = versionLocation
 					}
 				}
 			}
 		}
 	}
-
-	return nil
 }
 
 /*
