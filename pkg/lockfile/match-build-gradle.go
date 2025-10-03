@@ -10,27 +10,30 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+const (
+	buildGradleFilename    = "build.gradle"
+	buildGradleKtsFilename = "build.gradle.kts"
+)
+
 type BuildGradleMatcher struct{}
 
 func (m BuildGradleMatcher) GetSourceFile(lockfile DepFile) (DepFile, error) {
-	fileName := "build.gradle"
-
 	// lockfile (default, groovy)
-	sourcefile, err := lockfile.Open(fileName)
+	sourcefile, err := lockfile.Open(buildGradleFilename)
 	if err != nil {
 		// kotlin
-		sourcefile, err = lockfile.Open(fileName + ".kts")
+		sourcefile, err = lockfile.Open(buildGradleKtsFilename)
 	}
 
 	// gradle verification metadata (<rootdir>/gradle/verification-metadata.xml)
-	relativePath := "../" + fileName
+	relativePath := "../" + buildGradleFilename
 	if err != nil {
 		// groovy
 		sourcefile, err = lockfile.Open(relativePath)
 	}
 	if err != nil {
 		// kotlin
-		sourcefile, err = lockfile.Open(relativePath + ".kts")
+		sourcefile, err = lockfile.Open("../" + buildGradleKtsFilename)
 	}
 
 	return sourcefile, err
@@ -93,7 +96,7 @@ func (m BuildGradleMatcher) findAllBuildGradleFiles(projectRoot string) ([]strin
 		// Skip hidden directories and common non-source directories
 		if d.IsDir() {
 			name := d.Name()
-			if strings.HasPrefix(name, ".") || name == "build" {
+			if strings.HasPrefix(name, ".") || name == "build" || name == "test" {
 				return filepath.SkipDir
 			}
 
@@ -101,7 +104,7 @@ func (m BuildGradleMatcher) findAllBuildGradleFiles(projectRoot string) ([]strin
 		}
 
 		// Check if this is a build.gradle or build.gradle.kts file
-		if d.Name() == "build.gradle" || d.Name() == "build.gradle.kts" {
+		if d.Name() == buildGradleFilename || d.Name() == buildGradleKtsFilename {
 			buildFiles = append(buildFiles, path)
 		}
 
