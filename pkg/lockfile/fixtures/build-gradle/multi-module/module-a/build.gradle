@@ -1,0 +1,11 @@
+plugins {
+  id 'java'
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  api "org.springframework.security:spring-security-crypto:5.7.3"
+}
