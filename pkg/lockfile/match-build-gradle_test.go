@@ -143,6 +143,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 77},
@@ -187,6 +188,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 105},
@@ -231,6 +233,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 78},
@@ -275,6 +278,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 3, End: 109},
@@ -320,6 +324,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 			Name:           "org.springframework.security:spring-security-crypto",
 			Version:        "5.7.3",
 			PackageManager: models.Gradle,
+			IsDirect:       true,
 			DepGroups:      []string{"testRuntimeClasspath", "runtimeClasspath"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
@@ -336,6 +341,91 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 				Column:   models.Position{Start: 68, End: 73},
 				Filename: sourceFile.Path(),
 			},
+		},
+	})
+}
+
+func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/build-gradle/multi-module/build.gradle")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "com.google.guava:guava",
+			Version:        "32.0.0-jre",
+			PackageManager: models.Gradle,
+		},
+		{
+			Name:           "org.springframework.security:spring-security-crypto",
+			Version:        "5.7.3",
+			PackageManager: models.Gradle,
+		},
+		{
+			Name:           "com.fasterxml.jackson.core:jackson-databind",
+			Version:        "2.15.0",
+			PackageManager: models.Gradle,
+		},
+		{
+			Name:           "com.fasterxml.jackson.core:jackson-core",
+			Version:        "2.15.0",
+			PackageManager: models.Gradle,
+		},
+	}
+
+	err = buildGradleMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.google.guava:guava",
+			Version:        "32.0.0-jre",
+			PackageManager: models.Gradle,
+			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 3, End: 53},
+				Filename: packages[0].BlockLocation.Filename,
+			},
+			NameLocation:    packages[0].NameLocation,
+			VersionLocation: packages[0].VersionLocation,
+		},
+		{
+			Name:           "org.springframework.security:spring-security-crypto",
+			Version:        "5.7.3",
+			PackageManager: models.Gradle,
+			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 3, End: 66},
+				Filename: packages[1].BlockLocation.Filename,
+			},
+			NameLocation:    packages[1].NameLocation,
+			VersionLocation: packages[1].VersionLocation,
+		},
+		{
+			Name:           "com.fasterxml.jackson.core:jackson-databind",
+			Version:        "2.15.0",
+			PackageManager: models.Gradle,
+			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 3, End: 70},
+				Filename: packages[2].BlockLocation.Filename,
+			},
+			NameLocation:    packages[2].NameLocation,
+			VersionLocation: packages[2].VersionLocation,
+		},
+		{
+			Name:           "com.fasterxml.jackson.core:jackson-core",
+			Version:        "2.15.0",
+			PackageManager: models.Gradle,
+			IsDirect:       false,
 		},
 	})
 }
