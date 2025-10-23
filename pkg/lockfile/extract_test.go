@@ -149,6 +149,7 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
+		"Cargo.lock",
 		"composer.lock",
 		"conan.lock",
 		"Gemfile.lock",
