@@ -6,15 +6,16 @@ type Language string
 // For language constants used by our backend, follow this pattern:
 // https://github.com/DataDog/datadog-ci/blob/master/src/commands/sbom/types.ts#L1-L10
 const (
-	Java       Language = "Java"
-	Python     Language = "Python"
-	Dotnet     Language = ".NET"
-	Javascript Language = "Javascript"
-	Ruby       Language = "Ruby"
-	Go         Language = "Go"
-	PHP        Language = "PHP"
 	Cpp        Language = "C++"
-	Elixir     Language = "Elixir"
 	Dart       Language = "Dart"
+	Dotnet     Language = ".NET"
+	Elixir     Language = "Elixir"
+	Go         Language = "Go"
+	Java       Language = "Java"
+	Javascript Language = "Javascript"
+	PHP        Language = "PHP"
+	Python     Language = "Python"
 	R          Language = "R"
+	Ruby       Language = "Ruby"
+	Rust       Language = "Rust"
 )
