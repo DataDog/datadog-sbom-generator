@@ -17,13 +17,19 @@ type JSONReporter struct {
 	stdout     io.Writer
 	stderr     io.Writer
 	level      VerbosityLevel
+	pretty     bool
 }
 
 func NewJSONReporter(stdout io.Writer, stderr io.Writer, level VerbosityLevel) *JSONReporter {
+	return NewJSONReporterWithPretty(stdout, stderr, level, true)
+}
+
+func NewJSONReporterWithPretty(stdout io.Writer, stderr io.Writer, level VerbosityLevel, pretty bool) *JSONReporter {
 	return &JSONReporter{
 		stdout:     stdout,
 		stderr:     stderr,
 		level:      level,
+		pretty:     pretty,
 		hasErrored: false,
 	}
 }
@@ -56,5 +62,5 @@ func (r *JSONReporter) Verbosef(format string, a ...any) {
 }
 
 func (r *JSONReporter) PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error {
-	return output.PrintJSONResults(vulnResult, r.stdout)
+	return output.PrintJSONResultsWithPretty(vulnResult, r.stdout, r.pretty)
 }

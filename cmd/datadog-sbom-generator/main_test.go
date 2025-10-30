@@ -161,6 +161,11 @@ func TestRun(t *testing.T) {
 		},
 		{
 			name: "not lockfile",
+			args: []string{"", "--pretty", "./fixtures/no-lockfile.txt"},
+			exit: 0,
+		},
+		{
+			name: "not lockfile and not formatter",
 			args: []string{"", "./fixtures/no-lockfile.txt"},
 			exit: 0,
 		},
@@ -172,60 +177,60 @@ func TestRun(t *testing.T) {
 		// one specific supported lockfile
 		{
 			name: "one specific supported lockfile",
-			args: []string{"", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		// one specific unsupported lockfile
 		{
 			name: "",
-			args: []string{"", "./fixtures/locks-many/not-a-lockfile.toml"},
+			args: []string{"", "--pretty", "./fixtures/locks-many/not-a-lockfile.toml"},
 			exit: 0,
 		},
 		// all supported lockfiles in the directory should be checked
 		{
 			name: "Scan locks-many",
-			args: []string{"", "./fixtures/locks-many"},
+			args: []string{"", "--pretty", "./fixtures/locks-many"},
 			exit: 0,
 		},
 		// all supported lockfiles in the directory should be checked
 		{
 			name: "all supported lockfiles in the directory should be checked",
-			args: []string{"", "./fixtures/locks-many-with-invalid"},
+			args: []string{"", "--pretty", "./fixtures/locks-many-with-invalid"},
 			exit: 0,
 		},
 		// only the files in the given directories are checked when --not-recursive is passed
 		{
 			name: "only the files in the given directories are checked when --not-recursive is passed",
-			args: []string{"", "--not-recursive", "./fixtures/locks-one-with-nested"},
+			args: []string{"", "--pretty", "--not-recursive", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// nested directories are checked by default
 		{
 			name: "nested directories are checked by default",
-			args: []string{"", "./fixtures/locks-one-with-nested"},
+			args: []string{"", "--pretty", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// requirements files are referencing each other
 		{
 			name: "nested requirements files",
-			args: []string{"", "./fixtures/locks-requirements"},
+			args: []string{"", "--pretty", "./fixtures/locks-requirements"},
 			exit: 0,
 		},
 		// .gitignored files
 		{
 			name: "",
-			args: []string{"", "./fixtures/locks-gitignore"},
+			args: []string{"", "--pretty", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		// ignoring .gitignore
 		{
 			name: "",
-			args: []string{"", "--no-ignore", "./fixtures/locks-gitignore"},
+			args: []string{"", "--pretty", "--no-ignore", "./fixtures/locks-gitignore"},
 			exit: 0,
 		},
 		{
 			name: "json output 2",
-			args: []string{"", "--format", "json", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "--format", "json", "--pretty", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		// output format: unsupported
@@ -237,27 +242,27 @@ func TestRun(t *testing.T) {
 		// one specific supported lockfile with ignore
 		{
 			name: "one specific supported lockfile with ignore",
-			args: []string{"", "./fixtures/locks-test-ignore/package-lock.json"},
+			args: []string{"", "--pretty", "./fixtures/locks-test-ignore/package-lock.json"},
 			exit: 0,
 		},
 		{
 			name: "invalid --verbosity value",
-			args: []string{"", "--verbosity", "unknown", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "--verbosity", "unknown", "./fixtures/locks-many/composer.lock"},
 			exit: 127,
 		},
 		{
 			name: "verbosity level = error",
-			args: []string{"", "--verbosity", "error", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "--verbosity", "error", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		{
 			name: "verbosity level = verbose",
-			args: []string{"", "--verbosity", "verbose", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		{
 			name: "Scan locks-many with exclusion",
-			args: []string{"", "--verbosity", "verbose", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
 			exit: 0,
 		},
 	}
@@ -276,13 +281,13 @@ func TestRun_WithoutHostPathInformation(t *testing.T) {
 		// one specific supported lockfile
 		{
 			name:          "one specific supported lockfile (relative path)",
-			args:          []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many/yarn.lock"},
+			args:          []string{"", "--format=cyclonedx-1-5", "--pretty", "./fixtures/locks-many/yarn.lock"},
 			wantExitCode:  0,
 			wantFilePaths: []string{"package.json"},
 		},
 		{
 			name:         "Multiple lockfiles (relative path)",
-			args:         []string{"", "--format=cyclonedx-1-5", "./fixtures/locks-many"},
+			args:         []string{"", "--format=cyclonedx-1-5", "--pretty", "./fixtures/locks-many"},
 			wantExitCode: 0,
 			wantFilePaths: []string{
 				"package.json",
@@ -319,6 +324,7 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 	args := []string{
 		"",
 		"--format=cyclonedx-1-5",
+		"--pretty",
 		"./fixtures/integration-test-locks",
 	}
 
@@ -334,6 +340,7 @@ func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 	args := []string{
 		"",
 		"--format=cyclonedx-1-5",
+		"--pretty",
 		"./fixtures/locks-empty",
 	}
 
@@ -349,6 +356,7 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 	args := []string{
 		"",
 		"--format=cyclonedx-1-5",
+		"--pretty",
 		"--enable-parsers=pom.xml",
 		"./fixtures/integration-test-locks",
 	}
@@ -374,6 +382,7 @@ func TestRun_YarnPackageOnly(t *testing.T) {
 			args := []string{
 				"",
 				"--format=cyclonedx-1-5",
+				"--pretty",
 				"./fixtures/integration-yarn/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -401,6 +410,7 @@ func TestRun_NpmPackageOnly(t *testing.T) {
 			args := []string{
 				"",
 				"--format=cyclonedx-1-5",
+				"--pretty",
 				"./fixtures/integration-npm/" + tt,
 			}
 			testCli(t, cliTestCase{
@@ -426,6 +436,7 @@ func TestRun_WithEncodedLockfile(t *testing.T) {
 			args := []string{
 				"",
 				"--format=cyclonedx-1-5",
+				"--pretty",
 				"./fixtures/encoding-integration-test-locks/" + tt.encoding,
 			}
 
@@ -528,19 +539,19 @@ func TestRun_SubCommands(t *testing.T) {
 		// without subcommands
 		{
 			name: "with no subcommand",
-			args: []string{"", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "--pretty", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		// with scan subcommand
 		{
 			name: "with scan subcommand",
-			args: []string{"", "scan", "./fixtures/locks-many/composer.lock"},
+			args: []string{"", "scan", "--pretty", "./fixtures/locks-many/composer.lock"},
 			exit: 0,
 		},
 		// scan with a flag
 		{
 			name: "scan with a flag",
-			args: []string{"", "scan", "./fixtures/locks-one-with-nested"},
+			args: []string{"", "scan", "--pretty", "./fixtures/locks-one-with-nested"},
 			exit: 0,
 		},
 		// TODO: add tests for other future subcommands
