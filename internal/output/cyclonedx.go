@@ -20,9 +20,14 @@ func CreateCycloneDXBOM(tool sbom.Tool, vulnResult *models.VulnerabilityResults)
 
 // PrintCycloneDXResults writes results to the provided writer in CycloneDX format
 func PrintCycloneDXResults(tool sbom.Tool, vulnResult *models.VulnerabilityResults, outputWriter io.Writer) error {
+	return PrintCycloneDXResultsWithPretty(tool, vulnResult, outputWriter, testing.Testing())
+}
+
+// PrintCycloneDXResultsWithPretty writes results to the provided writer in CycloneDX format with optional pretty printing
+func PrintCycloneDXResultsWithPretty(tool sbom.Tool, vulnResult *models.VulnerabilityResults, outputWriter io.Writer, pretty bool) error {
 	bom, errs := CreateCycloneDXBOM(tool, vulnResult)
 	encoder := cyclonedx.NewBOMEncoder(outputWriter, cyclonedx.BOMFileFormatJSON)
-	encoder.SetPretty(testing.Testing())
+	encoder.SetPretty(pretty)
 
 	if bom == nil {
 		return errs

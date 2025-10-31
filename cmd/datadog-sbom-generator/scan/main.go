@@ -80,6 +80,11 @@ Examples:
 				Name:  "exclude",
 				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
 			},
+			&cli.BoolFlag{
+				Name:  "pretty",
+				Usage: "format output with indentation and newlines for readability",
+				Value: false,
+			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
 		Action: func(c *cli.Context) error {
@@ -108,7 +113,8 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	if err != nil {
 		return nil, err
 	}
-	r, err := reporter.New(format, stdout, stderr, verbosityLevel)
+	pretty := context.Bool("pretty")
+	r, err := reporter.New(format, stdout, stderr, verbosityLevel, pretty)
 	if err != nil {
 		return r, err
 	}

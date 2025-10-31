@@ -18,14 +18,20 @@ type CycloneDXReporter struct {
 	stdout     io.Writer
 	stderr     io.Writer
 	level      VerbosityLevel
+	pretty     bool
 }
 
 func NewCycloneDXReporter(stdout, stderr io.Writer, level VerbosityLevel) *CycloneDXReporter {
+	return NewCycloneDXReporterWithPretty(stdout, stderr, level, true)
+}
+
+func NewCycloneDXReporterWithPretty(stdout, stderr io.Writer, level VerbosityLevel, pretty bool) *CycloneDXReporter {
 	return &CycloneDXReporter{
 		stdout:     stdout,
 		stderr:     stderr,
 		hasErrored: false,
 		level:      level,
+		pretty:     pretty,
 	}
 }
 
@@ -58,7 +64,7 @@ func (r *CycloneDXReporter) Verbosef(format string, a ...any) {
 
 func (r *CycloneDXReporter) PrintResult(context *cli.Context, vulnerabilityResults *models.VulnerabilityResults) error {
 	tool := sbom.Tool{Name: context.App.Name, Version: context.App.Version}
-	errs := output.PrintCycloneDXResults(tool, vulnerabilityResults, r.stdout)
+	errs := output.PrintCycloneDXResultsWithPretty(tool, vulnerabilityResults, r.stdout, r.pretty)
 	if errs != nil {
 		for _, err := range strings.Split(errs.Error(), "\n") {
 			r.Warnf("Failed to parse package URL: %v", err)
