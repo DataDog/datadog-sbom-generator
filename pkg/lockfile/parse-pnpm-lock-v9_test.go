@@ -1,10 +1,10 @@
 package lockfile_test
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -362,7 +362,7 @@ func TestParsePnpmLock_v9_WorkspaceDevConsistency(t *testing.T) {
 	// Create a map of package name@version -> isDevGroup result for all iterations
 	currentResults := make(map[string][]string)
 
-	for i := 0; i < iterations; i++ {
+	for range iterations {
 		// this fixture file is coming from https://github.com/vuejs/core. Which is a complex pnpm lock file
 		packages, err := lockfile.ParsePnpmLock("fixtures/pnpm/is-dev-inconsistency.v9.yaml")
 		if err != nil {
@@ -389,8 +389,6 @@ func TestParsePnpmLock_v9_WorkspaceDevConsistency(t *testing.T) {
 		}
 	}
 
-	if len(keysWithMultipleUnique) > 0 {
-		assert.Empty(t, keysWithMultipleUnique)
-		fmt.Printf("We found multiple is-dev values for the same package:%v ", keysWithMultipleUnique)
-	}
+	// We shouldn't have a single package with multiple is-dev results
+	assert.Empty(t, keysWithMultipleUnique)
 }
