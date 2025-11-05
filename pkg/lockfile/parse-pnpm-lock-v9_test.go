@@ -1,11 +1,13 @@
 package lockfile_test
 
 import (
+	"fmt"
+	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestParsePnpmLock_v9_NoPackages(t *testing.T) {
@@ -96,9 +98,10 @@ func TestParsePnpmLock_v9_PeerDependencies(t *testing.T) {
 			Version:        "5.3.2",
 			PackageManager: models.Pnpm,
 			TargetVersions: []string{"^5.3.2"},
-			Ecosystem:      models.EcosystemNPM,
-			IsDirect:       true,
-			DepGroups:      []string{"prod"},
+
+			Ecosystem: models.EcosystemNPM,
+			IsDirect:  true,
+			DepGroups: []string{"prod"},
 		},
 		{
 			Name:           "acorn",
@@ -346,4 +349,48 @@ func TestParsePnpmLock_v9_MixedGroups(t *testing.T) {
 			IsDirect:       true,
 		},
 	})
+}
+
+// TestParsePnpmLock_v9_WorkspaceDevConsistency demonstrates the non-deterministic
+// behavior in workspace dev dependency detection
+func TestParsePnpmLock_v9_WorkspaceDevConsistency(t *testing.T) {
+	t.Parallel()
+
+	// Run the parser multiple times to check for non-deterministic behavior
+	const iterations = 100
+
+	// Create a map of package name@version -> isDevGroup result for all iterations
+	currentResults := make(map[string][]string)
+
+	for i := 0; i < iterations; i++ {
+		// this fixture file is coming from https://github.com/vuejs/core. Which is a complex pnpm lock file
+		packages, err := lockfile.ParsePnpmLock("fixtures/pnpm/is-dev-inconsistency.v9.yaml")
+		if err != nil {
+			t.Errorf("Got unexpected error: %v", err)
+		}
+
+		for _, pkg := range packages {
+			packageKey := pkg.Name + "@" + pkg.Version
+			isDevResult := models.EcosystemNPM.IsDevGroup(pkg.DepGroups)
+			currentResults[packageKey] = append(currentResults[packageKey], strconv.FormatBool(isDevResult))
+		}
+	}
+
+	var keysWithMultipleUnique []string
+
+	for key, values := range currentResults {
+		uniq := make(map[string]struct{})
+		for _, v := range values {
+			uniq[v] = struct{}{}
+		}
+
+		if len(uniq) > 1 {
+			keysWithMultipleUnique = append(keysWithMultipleUnique, key)
+		}
+	}
+
+	if len(keysWithMultipleUnique) > 0 {
+		assert.Empty(t, keysWithMultipleUnique)
+		fmt.Printf("We found multiple is-dev values for the same package:%v ", keysWithMultipleUnique)
+	}
 }
