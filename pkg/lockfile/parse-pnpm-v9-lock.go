@@ -104,7 +104,7 @@ func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]Pa
 		newDepGroups := mergeSlices(dep.DepGroups, dependency.DepGroups)
 		newTargetedVersions := mergeSlices(dep.TargetVersions, dependency.TargetVersions)
 
-		if len(newTargetedVersions) > 0 {
+		if len(newDepGroups) > 0 {
 			dep.DepGroups = newDepGroups
 		}
 		if len(newTargetedVersions) > 0 {
