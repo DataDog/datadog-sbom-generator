@@ -1,0 +1,8 @@
+{
+  "name": "another-folder-workspace",
+  "version": "1.0.0",
+  "dependencies": {
+    "picocolors": "^1.1.1",
+    "semver": "^5.0.0"
+  }
+}

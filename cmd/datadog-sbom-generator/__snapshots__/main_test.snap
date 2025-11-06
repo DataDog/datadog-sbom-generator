@@ -340,6 +340,217 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_npm_with_workspace_support - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/colors@1.4.0",
+      "type": "library",
+      "name": "colors",
+      "version": "1.4.0",
+      "purl": "pkg:npm/colors@1.4.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/group-dependencies@0.0.11",
+      "type": "library",
+      "name": "group-dependencies",
+      "version": "0.0.11",
+      "purl": "pkg:npm/group-dependencies@0.0.11",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":5,/"column_end/":35},/"name/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":6,/"column_end/":24},/"version/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":28,/"column_end/":34}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/picocolors@0.2.1",
+      "type": "library",
+      "name": "picocolors",
+      "version": "0.2.1",
+      "purl": "pkg:npm/picocolors@0.2.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/picocolors@1.1.1",
+      "type": "library",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "purl": "pkg:npm/picocolors@1.1.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@4.3.6",
+      "type": "library",
+      "name": "semver",
+      "version": "4.3.6",
+      "purl": "pkg:npm/semver@4.3.6",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@5.7.2",
+      "type": "library",
+      "name": "semver",
+      "version": "5.7.2",
+      "purl": "pkg:npm/semver@5.7.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@6.3.1",
+      "type": "library",
+      "name": "semver",
+      "version": "6.3.1",
+      "purl": "pkg:npm/semver@6.3.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@7.7.3",
+      "type": "library",
+      "name": "semver",
+      "version": "7.7.3",
+      "purl": "pkg:npm/semver@7.7.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_npm_with_workspace_support - 2]
+Scanning directory './fixtures/integration-npm/with-workspace', resolved absolute path '<rootdir>/fixtures/integration-npm/with-workspace'
+Scanned <rootdir>/fixtures/integration-npm/with-workspace/package-lock.json file and found 8 packages
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/all_supported_lockfiles_in_the_directory_should_be_checked - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
