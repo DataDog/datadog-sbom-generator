@@ -231,12 +231,12 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 		workspacePatterns = rootPkg.Workspaces
 	}
 
-	// Pre-compute maps for O(1) lookups
-	physicalPackages := make(map[string]*NpmLockPackage)  // node_modules paths
-	workspacePackages := make(map[string]*NpmLockPackage) // workspace logical entries
+	// Pre-compute maps for efficient lookups
+	physicalPackages := make(map[string]*NpmLockPackage)  // node_modules paths (actual downloaded packages)
+	workspacePackages := make(map[string]*NpmLockPackage) // workspace logical entries from package.json
 	localPackages := make(map[string]*NpmLockPackage)     // local file dependencies
-	rootDeps := make(map[string]string)                   // root dependencies
-	processedPackages := make(map[string]bool)            // track processed packages
+	rootDeps := make(map[string]string)                   // root-level dependencies
+	processedPackages := make(map[string]bool)            // tracks already processed packages
 
 	// Categorize packages for efficient lookup
 	for packagePath, pkg := range packages {
@@ -282,7 +282,8 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 			allDeps[name] = version
 		}
 
-		// 2. For each logical dependency (dependency referenced in package.json), find physical entry (the actual downloaded node_modules)
+		// For each logical dependency (declared in workspace package.json), 
+		// find the corresponding physical package in node_modules
 		for depName, targetVersion := range allDeps {
 			// 2a. Check workspace-specific node_modules
 			workspaceNodeModulesPath := workspacePath + "/node_modules/" + depName
@@ -296,8 +297,9 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 				if physicalPkg, exists := physicalPackages[rootNodeModulesPath]; exists {
 					processPackage(details, depName, physicalPkg, targetVersion, workspacePath, rootNodeModulesPath, &processedPackages)
 				} else {
-					// 2c. Error if not found
-					return nil // Could add proper error handling
+					// 2c. Dependency not found in either workspace or root node_modules
+					// This could indicate a malformed lockfile or missing dependency
+					continue
 				}
 			}
 		}
@@ -339,7 +341,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 	return details
 }
 
-func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPackage, targetVersion string, workspacePath string, phyisicalPath string, processedPackages *map[string]bool) {
+func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPackage, targetVersion string, workspacePath string, physicalPath string, processedPackages *map[string]bool) {
 	finalName := pkg.Name
 	if finalName == "" {
 		finalName = depName
@@ -392,7 +394,7 @@ func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPa
 	})
 
 	// Mark as processed
-	(*processedPackages)[phyisicalPath] = true
+	(*processedPackages)[physicalPath] = true
 }
 
 func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]PackageDetails {
