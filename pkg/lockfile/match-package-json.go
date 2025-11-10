@@ -154,7 +154,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 			rootPackageIndices = append(rootPackageIndices, i)
 		} else {
 			// Workspace-specific packages
-			workspacePath := pkg.NameLocation.Filename
+			workspacePath := filepath.FromSlash(pkg.NameLocation.Filename)
 			packageIndicesByLocation[workspacePath] = append(packageIndicesByLocation[workspacePath], i)
 		}
 	}
