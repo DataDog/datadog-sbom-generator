@@ -176,6 +176,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 				return err
 			}
 		}
+
 		return nil
 	}
 
@@ -215,6 +216,7 @@ func (m PackageJSONMatcher) matchFile(file DepFile, packages []PackageDetails, c
 	for i := range packages {
 		allIndices[i] = i
 	}
+
 	return m.matchFileWithIndices(file, packages, allIndices, content)
 }
 

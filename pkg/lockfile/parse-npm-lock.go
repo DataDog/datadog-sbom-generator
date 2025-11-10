@@ -251,6 +251,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 			for name, version := range pkg.OptionalDependencies {
 				rootDeps[name] = version
 			}
+
 			continue
 		}
 
@@ -282,7 +283,7 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 			allDeps[name] = version
 		}
 
-		// For each logical dependency (declared in workspace package.json), 
+		// For each logical dependency (declared in workspace package.json),
 		// find the corresponding physical package in node_modules
 		for depName, targetVersion := range allDeps {
 			// 2a. Check workspace-specific node_modules
