@@ -221,57 +221,67 @@ func matchesWorkspacePattern(patterns []string, testPath string) bool {
 	return false
 }
 
-func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
-	details := npmPackageDetailsMap{}
-
-	// Find workspace patterns from root package
+func extractWorkspacePatterns(packages map[string]*NpmLockPackage) []string {
 	rootPkg, hasRootPkg := packages[""]
 	var workspacePatterns []string
 	if hasRootPkg {
 		workspacePatterns = rootPkg.Workspaces
 	}
 
-	// Pre-compute maps for efficient lookups
-	physicalPackages := make(map[string]*NpmLockPackage)  // node_modules paths (actual downloaded packages)
-	workspacePackages := make(map[string]*NpmLockPackage) // workspace logical entries from package.json
-	localPackages := make(map[string]*NpmLockPackage)     // local file dependencies
-	rootDeps := make(map[string]string)                   // root-level dependencies
-	processedPackages := make(map[string]bool)            // tracks already processed packages
+	return workspacePatterns
+}
 
-	// Categorize packages for efficient lookup
+func categorizePackages(packages map[string]*NpmLockPackage, workspacePatterns []string) (
+	map[string]*NpmLockPackage,
+	map[string]string,
+	map[string]*NpmLockPackage,
+	map[string]*NpmLockPackage,
+) {
+	// Pre-compute maps for lookups
+	resolvedPackages := make(map[string]*NpmLockPackage)          // resolved / downloaded packages (downloaded to node_modules)
+	declaredRootPackages := make(map[string]string)               // declared packages in <root>/package.json
+	declaredWorkspacePackages := make(map[string]*NpmLockPackage) // declared workspace packages in <workspace>/package.json
+	localPackages := make(map[string]*NpmLockPackage)
+
 	for packagePath, pkg := range packages {
 		if packagePath == "" {
-			// Collect root dependencies
 			for name, version := range pkg.Dependencies {
-				rootDeps[name] = version
+				declaredRootPackages[name] = version
 			}
 			for name, version := range pkg.DevDependencies {
-				rootDeps[name] = version
+				declaredRootPackages[name] = version
 			}
 			for name, version := range pkg.OptionalDependencies {
-				rootDeps[name] = version
+				declaredRootPackages[name] = version
 			}
 
 			continue
 		}
 
-		// Packages with 'link: true', are inner project workspace. We will read their dependencies directly
 		if pkg.Link {
 			continue
 		}
 
+		// Packages with a path containing "node_modules/" are the actual downloaded packages
 		if strings.Contains(packagePath, "/node_modules/") || strings.HasPrefix(packagePath, "node_modules/") {
-			physicalPackages[packagePath] = pkg
+			resolvedPackages[packagePath] = pkg
 		} else if matchesWorkspacePattern(workspacePatterns, packagePath) {
-			workspacePackages[packagePath] = pkg
+			declaredWorkspacePackages[packagePath] = pkg
 		} else {
-			// Local file dependencies (like "deps/etag")
 			localPackages[packagePath] = pkg
 		}
 	}
 
-	// 1. Process workspace logical entries first
-	for workspacePath, workspacePkg := range workspacePackages {
+	return resolvedPackages, declaredRootPackages, declaredWorkspacePackages, localPackages
+}
+
+func processWorkspacePackages(
+	details npmPackageDetailsMap,
+	declaredWorkspacePackages map[string]*NpmLockPackage,
+	resolvedPackages map[string]*NpmLockPackage,
+	processedPackages *map[string]bool,
+) {
+	for workspacePath, workspacePkg := range declaredWorkspacePackages {
 		allDeps := make(map[string]string)
 		for name, version := range workspacePkg.Dependencies {
 			allDeps[name] = version
@@ -283,66 +293,76 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 			allDeps[name] = version
 		}
 
-		// For each logical dependency (declared in workspace package.json),
-		// find the corresponding physical package in node_modules
+		// For declared packages in workspaces, try to find the related resolved package (the actual downloaded node_modules)
 		for depName, targetVersion := range allDeps {
-			// 2a. Check workspace-specific node_modules
 			workspaceNodeModulesPath := workspacePath + "/node_modules/" + depName
-			if physicalPkg, exists := physicalPackages[workspaceNodeModulesPath]; exists {
-				processPackage(details, depName, physicalPkg, targetVersion, workspacePath, workspaceNodeModulesPath, &processedPackages)
+			if resolvedPkg, exists := resolvedPackages[workspaceNodeModulesPath]; exists {
+				processPackage(details, depName, resolvedPkg, targetVersion, workspacePath, workspaceNodeModulesPath, processedPackages)
 			} else {
-				// 2b. Check root node_modules
 				// When resolving dependency, if a dependency only exist in a workspace, NPM would reference the library
 				// as a root node_modules. And not as a workspace dependency! That's why we fall back looking for root.
 				rootNodeModulesPath := "node_modules/" + depName
-				if physicalPkg, exists := physicalPackages[rootNodeModulesPath]; exists {
-					processPackage(details, depName, physicalPkg, targetVersion, workspacePath, rootNodeModulesPath, &processedPackages)
+				if resolvedPkg, exists := resolvedPackages[rootNodeModulesPath]; exists {
+					processPackage(details, depName, resolvedPkg, targetVersion, workspacePath, rootNodeModulesPath, processedPackages)
 				} else {
-					// 2c. Dependency not found in either workspace or root node_modules
-					// This could indicate a malformed lockfile or missing dependency
+					// Dependency not found in either workspace or root node_modules,
+					// This could indicate a malformed lockfile or a dependency added to package.json without running 'npm install'
 					continue
 				}
 			}
 		}
 	}
+}
 
-	// 3. Process root logical entries
-	for depName, targetVersion := range rootDeps {
+func processRootPackages(
+	details npmPackageDetailsMap,
+	declaredRootPackages map[string]string,
+	resolvedPackages map[string]*NpmLockPackage,
+	processedPackages *map[string]bool,
+) {
+	for depName, targetVersion := range declaredRootPackages {
 		rootNodeModulesPath := "node_modules/" + depName
-		if physicalPkg, exists := physicalPackages[rootNodeModulesPath]; exists {
-			if !processedPackages[rootNodeModulesPath] {
-				processPackage(details, depName, physicalPkg, targetVersion, "", rootNodeModulesPath, &processedPackages)
+		if resolvedPkg, exists := resolvedPackages[rootNodeModulesPath]; exists {
+			if !(*processedPackages)[rootNodeModulesPath] {
+				processPackage(details, depName, resolvedPkg, targetVersion, "", rootNodeModulesPath, processedPackages)
 			}
 		}
 	}
+}
 
-	// 4. Process local file dependencies (non 3rd parties!)
+func processLocalPackages(
+	details npmPackageDetailsMap,
+	localPackages map[string]*NpmLockPackage,
+	declaredRootPackages map[string]string,
+	processedPackages *map[string]bool,
+) {
 	for localPath, localPkg := range localPackages {
-		// Extract package name from path
 		depName := path.Base(localPath)
-		// Check if this is referenced in root dependencies
 		var targetVersion string
-		for name, version := range rootDeps {
+		for name, version := range declaredRootPackages {
 			if name == depName {
 				targetVersion = version
 				break
 			}
 		}
-		processPackage(details, depName, localPkg, targetVersion, "", localPath, &processedPackages)
+		processPackage(details, depName, localPkg, targetVersion, "", localPath, processedPackages)
 	}
-
-	// 5. Process remaining physical packages (transitive dependencies)
-	for physicalPath, pkg := range physicalPackages {
-		if !processedPackages[physicalPath] {
-			depName := extractNpmPackageName(physicalPath)
-			processPackage(details, depName, pkg, "", "", physicalPath, &processedPackages)
-		}
-	}
-
-	return details
 }
 
-func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPackage, targetVersion string, workspacePath string, physicalPath string, processedPackages *map[string]bool) {
+func processRemainingPackages(
+	details npmPackageDetailsMap,
+	resolvedPackages map[string]*NpmLockPackage,
+	processedPackages *map[string]bool,
+) {
+	for physicalPath, pkg := range resolvedPackages {
+		if !(*processedPackages)[physicalPath] {
+			depName := extractNpmPackageName(physicalPath)
+			processPackage(details, depName, pkg, "", "", physicalPath, processedPackages)
+		}
+	}
+}
+
+func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPackage, targetVersion string, declarationPath string, physicalPath string, processedPackages *map[string]bool) {
 	finalName := pkg.Name
 	if finalName == "" {
 		finalName = depName
@@ -379,8 +399,9 @@ func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPa
 	}
 	var location *models.FilePosition
 
-	if workspacePath != "" {
-		location = &models.FilePosition{Filename: workspacePath}
+	// A given package can be declared in multiple places, we want to track the declaration paths so that we know which one to match
+	if declarationPath != "" {
+		location = &models.FilePosition{Filename: declarationPath}
 	}
 
 	details.add(finalName+"@"+finalVersion, PackageDetails{
@@ -396,6 +417,22 @@ func processPackage(details npmPackageDetailsMap, depName string, pkg *NpmLockPa
 
 	// Mark as processed
 	(*processedPackages)[physicalPath] = true
+}
+
+func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]PackageDetails {
+	details := npmPackageDetailsMap{}
+
+	workspacePatterns := extractWorkspacePatterns(packages)
+	resolvedPackages, declaredRootPackages, declaredWorkspacePackages, localPackages := categorizePackages(packages, workspacePatterns)
+
+	processedPackages := make(map[string]bool) // makes sure we do not process the same package twice (meaningful with the support of workspaces)
+
+	processWorkspacePackages(details, declaredWorkspacePackages, resolvedPackages, &processedPackages)
+	processRootPackages(details, declaredRootPackages, resolvedPackages, &processedPackages)
+	processLocalPackages(details, localPackages, declaredRootPackages, &processedPackages)
+	processRemainingPackages(details, resolvedPackages, &processedPackages)
+
+	return details
 }
 
 func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]PackageDetails {

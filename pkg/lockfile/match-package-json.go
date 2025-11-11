@@ -149,6 +149,9 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	var rootPackageIndices []int
 
 	for i, pkg := range packages {
+		// We check if we happen to already have information about where the package is coming from
+		// When parsing package-lock.json, we would report known workspace location of the package
+		// If we don't have any, it means the package is a root-level package
 		if pkg.NameLocation == nil || pkg.NameLocation.Filename == "" {
 			// Root-level packages (no specific workspace location)
 			rootPackageIndices = append(rootPackageIndices, i)
