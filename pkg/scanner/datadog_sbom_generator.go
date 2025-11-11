@@ -205,7 +205,7 @@ func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bo
 	return parsedLockfile.Packages, parsedLockfile.Artifact, nil
 }
 
-func initializeEnabledParsers(enabledParsers []string) map[string]bool {
+func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[string]bool {
 	result := make(map[string]bool)
 
 	if len(enabledParsers) == 0 {
@@ -214,8 +214,15 @@ func initializeEnabledParsers(enabledParsers []string) map[string]bool {
 			result[parser] = true
 		}
 	} else {
-		for _, parser := range enabledParsers {
-			result[parser] = true
+		// We allow users to pass languages to bulk enable parsers for that language
+		// If a parser is directly passed (do not match a language, we pass it as it)
+		expandedParsers := models.ExpandLanguagesToParserNames(enabledParsers)
+		for _, parser := range expandedParsers {
+			if lockfile.IsSupportedExtractor(parser) {
+				result[parser] = true
+			} else {
+				r.Warnf("Parser '%s' is not supported, ignoring", parser)
+			}
 		}
 	}
 
@@ -228,7 +235,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		return models.VulnerabilityResults{}, NoDirectoryPathsFoundErr
 	}
 
-	enabledParsers := initializeEnabledParsers(actions.EnableParsers)
+	enabledParsers := initializeEnabledParsers(actions.EnableParsers, r)
 
 	if r == nil {
 		r = &reporter.VoidReporter{}

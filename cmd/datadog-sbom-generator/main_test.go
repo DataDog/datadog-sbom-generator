@@ -368,6 +368,23 @@ func TestRun_WithExplicitParsers(t *testing.T) {
 	})
 }
 
+func TestRun_WithLanguageParsers(t *testing.T) {
+	t.Parallel()
+	args := []string{
+		"",
+		"--format=cyclonedx-1-5",
+		"--pretty",
+		"--enable-parsers=ruby,php",
+		"./fixtures/locks-many",
+	}
+
+	testCli(t, cliTestCase{
+		name: "WithLanguageParsers",
+		args: args,
+		exit: 0,
+	})
+}
+
 func TestRun_YarnPackageOnly(t *testing.T) {
 	t.Parallel()
 	testCases := []string{

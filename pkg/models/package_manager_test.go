@@ -24,7 +24,7 @@ func TestPackageManagerToLanguage(t *testing.T) {
 		Bundler:      Ruby,
 		Golang:       Go,
 		Composer:     PHP,
-		Crates:       Cpp,
+		Crates:       Rust,
 		Conan:        Cpp,
 		Hex:          Elixir,
 		Pub:          Dart,

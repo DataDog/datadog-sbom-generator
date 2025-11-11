@@ -65,7 +65,7 @@ var PackageManagerToLanguage = map[PackageManager]Language{
 	Bundler:      Ruby,
 	Golang:       Go,
 	Composer:     PHP,
-	Crates:       Cpp,
+	Crates:       Rust,
 	Conan:        Cpp,
 	Hex:          Elixir,
 	Pub:          Dart,

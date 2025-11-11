@@ -29,6 +29,14 @@ func FindExtractor(path string, enabledParsers map[string]bool) (Extractor, stri
 	return nil, ""
 }
 
+func IsSupportedExtractor(lockfile string) bool {
+	if _, exists := lockfileExtractors[lockfile]; exists {
+		return true
+	}
+
+	return false
+}
+
 func ListSupportedExtractors() map[string]Extractor {
 	supportedExtractors := make(map[string]Extractor)
 

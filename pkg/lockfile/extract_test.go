@@ -189,3 +189,37 @@ func TestDisabledExtractor(t *testing.T) {
 		t.Errorf("Expected no extractor to be found but one has been found (%s)", extractedAs)
 	}
 }
+
+func TestIsSupportedExtractor(t *testing.T) {
+	t.Parallel()
+
+	// Test with known extractors that should exist
+	supportedExtractors := []string{
+		"package-lock.json",
+		"yarn.lock",
+		"pom.xml",
+		"go.mod",
+		"Gemfile.lock",
+		"composer.lock",
+	}
+
+	for _, extractor := range supportedExtractors {
+		if !lockfile.IsSupportedExtractor(extractor) {
+			t.Errorf("Expected %s to be supported", extractor)
+		}
+	}
+
+	// Test with non-existent extractors
+	unsupportedExtractors := []string{
+		"non-existent.json",
+		"fake-lockfile.xml",
+		"invalid.lock",
+		"",
+	}
+
+	for _, extractor := range unsupportedExtractors {
+		if lockfile.IsSupportedExtractor(extractor) {
+			t.Errorf("Expected %s to not be supported", extractor)
+		}
+	}
+}

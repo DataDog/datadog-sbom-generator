@@ -58,7 +58,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Call scanDir without exclusion
 	var excludedGlobs []string
-	enabledParsers := initializeEnabledParsers([]string{})
+	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
 	packages, artifacts, err := scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
 
 	// Validate results
