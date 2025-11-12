@@ -22,6 +22,7 @@ const (
 	npmPackageManager      = models.NPM
 	npmFilePath            = models.NpmFilePath
 	npmOfficiallySupported = true
+	nodeModulesPath        = "node_modules/"
 )
 
 type NpmLockDependency struct {
@@ -231,16 +232,26 @@ func extractWorkspacePatterns(packages map[string]*NpmLockPackage) []string {
 	return workspacePatterns
 }
 
-func categorizePackages(packages map[string]*NpmLockPackage, workspacePatterns []string) (
-	map[string]*NpmLockPackage,
-	map[string]string,
-	map[string]*NpmLockPackage,
-	map[string]*NpmLockPackage,
-) {
-	// Pre-compute maps for lookups
-	resolvedPackages := make(map[string]*NpmLockPackage)          // resolved / downloaded packages (downloaded to node_modules)
-	declaredRootPackages := make(map[string]string)               // declared packages in <root>/package.json
-	declaredWorkspacePackages := make(map[string]*NpmLockPackage) // declared workspace packages in <workspace>/package.json
+func getWorkspaceResolvedPath(workspacePath string, depName string) string {
+	return workspacePath + "/" + nodeModulesPath + depName
+}
+
+func getRootResolvedPath(depName string) string {
+	return nodeModulesPath + depName
+}
+
+// Pre-compute maps for lookups
+type categorizedPackages struct {
+	Resolved          map[string]*NpmLockPackage // resolved / downloaded packages (downloaded to node_modules)
+	DeclaredRoot      map[string]string          // declared packages in <root>/package.json
+	DeclaredWorkspace map[string]*NpmLockPackage // declared workspace packages in <workspace>/package.json
+	Local             map[string]*NpmLockPackage
+}
+
+func categorizePackages(packages map[string]*NpmLockPackage, workspacePatterns []string) categorizedPackages {
+	resolvedPackages := make(map[string]*NpmLockPackage)
+	declaredRootPackages := make(map[string]string)
+	declaredWorkspacePackages := make(map[string]*NpmLockPackage)
 	localPackages := make(map[string]*NpmLockPackage)
 
 	for packagePath, pkg := range packages {
@@ -263,7 +274,7 @@ func categorizePackages(packages map[string]*NpmLockPackage, workspacePatterns [
 		}
 
 		// Packages with a path containing "node_modules/" are the actual downloaded packages
-		if strings.Contains(packagePath, "/node_modules/") || strings.HasPrefix(packagePath, "node_modules/") {
+		if strings.Contains(packagePath, nodeModulesPath) || strings.HasPrefix(packagePath, nodeModulesPath) {
 			resolvedPackages[packagePath] = pkg
 		} else if matchesWorkspacePattern(workspacePatterns, packagePath) {
 			declaredWorkspacePackages[packagePath] = pkg
@@ -272,7 +283,12 @@ func categorizePackages(packages map[string]*NpmLockPackage, workspacePatterns [
 		}
 	}
 
-	return resolvedPackages, declaredRootPackages, declaredWorkspacePackages, localPackages
+	return categorizedPackages{
+		Resolved:          resolvedPackages,
+		DeclaredRoot:      declaredRootPackages,
+		DeclaredWorkspace: declaredWorkspacePackages,
+		Local:             localPackages,
+	}
 }
 
 func processWorkspacePackages(
@@ -295,13 +311,13 @@ func processWorkspacePackages(
 
 		// For declared packages in workspaces, try to find the related resolved package (the actual downloaded node_modules)
 		for depName, targetVersion := range allDeps {
-			workspaceNodeModulesPath := workspacePath + "/node_modules/" + depName
+			workspaceNodeModulesPath := getWorkspaceResolvedPath(workspacePath, depName)
 			if resolvedPkg, exists := resolvedPackages[workspaceNodeModulesPath]; exists {
 				processPackage(details, depName, resolvedPkg, targetVersion, workspacePath, workspaceNodeModulesPath, processedPackages)
 			} else {
 				// When resolving dependency, if a dependency only exist in a workspace, NPM would reference the library
 				// as a root node_modules. And not as a workspace dependency! That's why we fall back looking for root.
-				rootNodeModulesPath := "node_modules/" + depName
+				rootNodeModulesPath := getRootResolvedPath(depName)
 				if resolvedPkg, exists := resolvedPackages[rootNodeModulesPath]; exists {
 					processPackage(details, depName, resolvedPkg, targetVersion, workspacePath, rootNodeModulesPath, processedPackages)
 				} else {
@@ -321,7 +337,7 @@ func processRootPackages(
 	processedPackages *map[string]bool,
 ) {
 	for depName, targetVersion := range declaredRootPackages {
-		rootNodeModulesPath := "node_modules/" + depName
+		rootNodeModulesPath := getRootResolvedPath(depName)
 		if resolvedPkg, exists := resolvedPackages[rootNodeModulesPath]; exists {
 			if !(*processedPackages)[rootNodeModulesPath] {
 				processPackage(details, depName, resolvedPkg, targetVersion, "", rootNodeModulesPath, processedPackages)
@@ -423,14 +439,14 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 	details := npmPackageDetailsMap{}
 
 	workspacePatterns := extractWorkspacePatterns(packages)
-	resolvedPackages, declaredRootPackages, declaredWorkspacePackages, localPackages := categorizePackages(packages, workspacePatterns)
+	categorized := categorizePackages(packages, workspacePatterns)
 
 	processedPackages := make(map[string]bool) // makes sure we do not process the same package twice (meaningful with the support of workspaces)
 
-	processWorkspacePackages(details, declaredWorkspacePackages, resolvedPackages, &processedPackages)
-	processRootPackages(details, declaredRootPackages, resolvedPackages, &processedPackages)
-	processLocalPackages(details, localPackages, declaredRootPackages, &processedPackages)
-	processRemainingPackages(details, resolvedPackages, &processedPackages)
+	processWorkspacePackages(details, categorized.DeclaredWorkspace, categorized.Resolved, &processedPackages)
+	processRootPackages(details, categorized.DeclaredRoot, categorized.Resolved, &processedPackages)
+	processLocalPackages(details, categorized.Local, categorized.DeclaredRoot, &processedPackages)
+	processRemainingPackages(details, categorized.Resolved, &processedPackages)
 
 	return details
 }
