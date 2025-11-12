@@ -220,8 +220,9 @@ func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[
 		for _, parser := range expandedParsers {
 			if lockfile.IsSupportedExtractor(parser) {
 				result[parser] = true
+				r.Verbosef("[parser] Enabling: %s\n", parser)
 			} else {
-				r.Warnf("Parser '%s' is not supported, ignoring", parser)
+				r.Warnf("[parser] '%s' is not supported, ignoring\n", parser)
 			}
 		}
 	}

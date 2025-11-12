@@ -41,7 +41,7 @@ func ExpandLanguagesToParserNames(languagesAndParsers []string) []string {
 
 	// Create language-to-parsers mapping based on known file patterns
 	languageToParserMap := map[string][]string{
-		"java":       {PomXML, GradleLockfile, BuildscriptGradleLockfile, GradleVerificationXML},
+		"java":       {PomXML, GradleLockfile, GradleVerificationXML},
 		"python":     {RequirementsTXT, PoetryLock, PipfileLock, PdmLock, UvLock},
 		"javascript": {PackageLockJSON, YarnLock, PnpmLockYAML},
 		"ruby":       {GemfileLock},
