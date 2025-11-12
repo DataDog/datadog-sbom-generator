@@ -74,7 +74,7 @@ Examples:
 			},
 			&cli.StringSliceFlag{
 				Name:  "enable-parsers",
-				Usage: "filter lockfiles to parse by parser name or language. Use individual parser names (e.g., 'package-lock.json', 'pom.xml') or language names (e.g., 'javascript', 'java', 'python'). To list available parsers and languages use the 'parsers' command.",
+				Usage: "filter lockfiles to parse by lockfile, package manager or language. Use individual lockfile names (e.g., 'package-lock.json', 'pom.xml'), package manager names(e.g., 'gradle', 'poetry') or language names (e.g., 'javascript', 'java'). To list available parsers use the 'parsers list' command.",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 )
 
@@ -222,4 +224,51 @@ func TestIsSupportedExtractor(t *testing.T) {
 			t.Errorf("Expected %s to not be supported", extractor)
 		}
 	}
+}
+
+func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
+	t.Parallel()
+
+	// Test empty input
+	result := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{})
+	if len(result) != 0 {
+		t.Errorf("Expected empty result for empty input, got %v", result)
+	}
+
+	// Test language expansion
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
+	expected := []string{"package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	assert.Equal(t, expected, result)
+
+	// Test direct parser name
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"go.mod"})
+	expected = []string{"go.mod"}
+	assert.Equal(t, expected, result)
+
+	// Test mix of language and parser names
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"go", "package-lock.json"})
+	expected = []string{"go.mod", "package-lock.json"}
+	assert.Equal(t, expected, result)
+
+	// Test case insensitivity for language names
+	result1 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
+	result2 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"JAVASCRIPT"})
+	expected = []string{"package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	assert.Equal(t, expected, result1)
+	assert.Equal(t, expected, result2)
+
+	// Test case expand package manager
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"gradle"})
+	expected = []string{"gradle.lockfile", "gradle/verification-metadata.xml"}
+	assert.Equal(t, expected, result)
+
+	// Test case expand package manager and language while remove duplicates
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"java", "gradle"})
+	expected = []string{"gradle.lockfile", "gradle/verification-metadata.xml", "pom.xml"}
+	assert.Equal(t, expected, result)
+
+	// Test invalid language/parser names (should be still be passed - validation is not done here)
+	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"invalid-language", "go"})
+	expected = []string{"go.mod", "invalid-language"}
+	assert.Equal(t, expected, result)
 }

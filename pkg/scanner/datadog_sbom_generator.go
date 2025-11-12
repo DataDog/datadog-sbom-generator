@@ -216,7 +216,7 @@ func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[
 	} else {
 		// We allow users to pass languages to bulk enable parsers for that language
 		// If a parser is directly passed (do not match a language, we pass it as it)
-		expandedParsers := models.ExpandLanguagesToParserNames(enabledParsers)
+		expandedParsers := lockfile.ExpandLanguagesAndPackageManagersToExtractors(enabledParsers)
 		for _, parser := range expandedParsers {
 			if lockfile.IsSupportedExtractor(parser) {
 				result[parser] = true

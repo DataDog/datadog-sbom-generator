@@ -6,6 +6,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 var lockfileExtractors = map[string]Extractor{}
@@ -59,6 +61,69 @@ func ListExtractorNames() []string {
 	})
 
 	return extractorNames
+}
+
+func buildLanguageAndPackageManagerToExtractorsMap() map[string][]string {
+	extractors := ListSupportedExtractors()
+	indexedMap := make(map[string][]string)
+
+	for extractorName, extractor := range extractors {
+		packageManager := extractor.PackageManager()
+
+		// Add mapping by package manager name
+		packageManagerKey := strings.ToLower(string(packageManager))
+		indexedMap[packageManagerKey] = append(indexedMap[packageManagerKey], extractorName)
+
+		// Add mapping by language name (if package manager has a known language)
+		if language, exists := models.PackageManagerToLanguage[packageManager]; exists {
+			languageKey := strings.ToLower(string(language))
+			indexedMap[languageKey] = append(indexedMap[languageKey], extractorName)
+		}
+	}
+
+	return indexedMap
+}
+
+// ExpandLanguagesAndPackageManagersToExtractors converts a list of language names, package manager names, and extractor names to extractor names only
+// If a language name is provided, it expands to all parsers in that language based on known mappings
+// If a package manager name is provided, it expands to all parsers for that package manager
+// If it's anything else, it's included as-is
+func ExpandLanguagesAndPackageManagersToExtractors(parsers []string) []string {
+	if len(parsers) == 0 {
+		return []string{}
+	}
+
+	// Get the language-to-parsers mapping dynamically from registered extractors
+	indexedMap := buildLanguageAndPackageManagerToExtractorsMap()
+
+	var expandedParsers []string
+
+	for _, item := range parsers {
+		lowerItem := strings.ToLower(item)
+
+		if parsers, exists := indexedMap[lowerItem]; exists {
+			// It's a language or package manager, expand to all parsers in that language
+			expandedParsers = append(expandedParsers, parsers...)
+		} else {
+			// We don't know about this parser, pass it through as-is
+			expandedParsers = append(expandedParsers, item)
+		}
+	}
+
+	// Remove duplicates
+	seen := make(map[string]bool)
+	var result []string
+	for _, parser := range expandedParsers {
+		if !seen[parser] {
+			seen[parser] = true
+			result = append(result, parser)
+		}
+	}
+
+	// Sort for consistency of result
+	sort.Strings(result)
+
+	return result
 }
 
 var ErrExtractorNotFound = errors.New("could not determine extractor")
