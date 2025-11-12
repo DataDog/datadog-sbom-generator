@@ -30,11 +30,8 @@ func FindExtractor(path string, enabledParsers map[string]bool) (Extractor, stri
 }
 
 func IsSupportedExtractor(lockfile string) bool {
-	if _, exists := lockfileExtractors[lockfile]; exists {
-		return true
-	}
-
-	return false
+	_, exists := lockfileExtractors[lockfile]
+	return exists
 }
 
 func ListSupportedExtractors() map[string]Extractor {

@@ -24,13 +24,6 @@ const (
 	Rust       Language = "Rust"
 )
 
-// LanguageGroup represents a grouping of related parsers by their language
-type LanguageGroup struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Parsers     []string `json:"parsers"`
-}
-
 // ExpandLanguagesToParserNames converts a list of language names and parser names to parser names only
 // If a language name is provided, it expands to all parsers in that language based on known mappings
 // If it's anything else is provided, it's included as-is
