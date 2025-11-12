@@ -96,7 +96,7 @@ var _ Extractor = MixLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("mix.lock", MixLockExtractor{})
+	registerExtractor(models.MixLock, MixLockExtractor{})
 }
 
 func ParseMixLock(pathToLockfile string) ([]PackageDetails, error) {

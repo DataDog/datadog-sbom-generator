@@ -82,7 +82,7 @@ var PoetryExtractor = PoetryLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("poetry.lock", PoetryExtractor)
+	registerExtractor(models.PoetryLock, PoetryExtractor)
 }
 
 func ParsePoetryLock(pathToLockfile string) ([]PackageDetails, error) {

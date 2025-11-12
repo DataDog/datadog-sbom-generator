@@ -251,7 +251,7 @@ var GemfileExtractor = GemfileLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("Gemfile.lock", GemfileExtractor)
+	registerExtractor(models.GemfileLock, GemfileExtractor)
 }
 
 func ParseGemfileLock(pathToLockfile string) ([]PackageDetails, error) {

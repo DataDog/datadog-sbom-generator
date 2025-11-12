@@ -85,7 +85,7 @@ var _ Extractor = PdmLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("pdm.lock", PdmLockExtractor{})
+	registerExtractor(models.PdmLock, PdmLockExtractor{})
 }
 
 func ParsePdmLock(pathToLockfile string) ([]PackageDetails, error) {

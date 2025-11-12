@@ -88,7 +88,7 @@ var ComposerExtractor = ComposerLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("composer.lock", ComposerExtractor)
+	registerExtractor(models.ComposerLock, ComposerExtractor)
 }
 
 func ParseComposerLock(pathToLockfile string) ([]PackageDetails, error) {

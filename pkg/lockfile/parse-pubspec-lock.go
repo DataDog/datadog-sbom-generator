@@ -123,7 +123,7 @@ var _ Extractor = PubspecLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("pubspec.lock", PubspecLockExtractor{})
+	registerExtractor(models.PubspecLock, PubspecLockExtractor{})
 }
 
 func ParsePubspecLock(pathToLockfile string) ([]PackageDetails, error) {

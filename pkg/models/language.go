@@ -41,18 +41,18 @@ func ExpandLanguagesToParserNames(languagesAndParsers []string) []string {
 
 	// Create language-to-parsers mapping based on known file patterns
 	languageToParserMap := map[string][]string{
-		"java":       {"pom.xml", "gradle.lockfile", "buildscript-gradle.lockfile", "gradle/verification-metadata.xml"},
-		"python":     {"requirements.txt", "poetry.lock", "Pipfile.lock", "pdm.lock", "uv.lock"},
-		"javascript": {"package-lock.json", "yarn.lock", "pnpm-lock.yaml"},
-		"ruby":       {"Gemfile.lock"},
-		"go":         {"go.mod"},
-		"php":        {"composer.lock"},
-		"c++":        {"conan.lock"},
-		"rust":       {"Cargo.lock"},
-		".net":       {"packages.lock.json"},
-		"elixir":     {"mix.lock"},
-		"dart":       {"pubspec.lock"},
-		"r":          {"renv.lock"},
+		"java":       {PomXML, GradleLockfile, BuildscriptGradleLockfile, GradleVerificationXML},
+		"python":     {RequirementsTXT, PoetryLock, PipfileLock, PdmLock, UvLock},
+		"javascript": {PackageLockJSON, YarnLock, PnpmLockYAML},
+		"ruby":       {GemfileLock},
+		"go":         {GoMod},
+		"php":        {ComposerLock},
+		"c++":        {ConanLock},
+		"rust":       {CargoLock},
+		".net":       {PackagesLockJSON},
+		"elixir":     {MixLock},
+		"dart":       {PubspecLock},
+		"r":          {RenvLock},
 	}
 
 	var expandedParsers []string

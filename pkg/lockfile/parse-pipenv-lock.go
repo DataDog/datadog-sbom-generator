@@ -88,7 +88,7 @@ var PipenvExtractor = PipenvLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("Pipfile.lock", PipenvExtractor)
+	registerExtractor(models.PipfileLock, PipenvExtractor)
 }
 
 func ParsePipenvLock(pathToLockfile string) ([]PackageDetails, error) {

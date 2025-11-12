@@ -461,7 +461,7 @@ var _ Extractor = RequirementsTxtExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("requirements.txt", RequirementsTxtExtractor{})
+	registerExtractor(models.RequirementsTXT, RequirementsTxtExtractor{})
 }
 
 func ParseRequirementsTxt(pathToLockfile string) ([]PackageDetails, error) {
