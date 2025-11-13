@@ -265,6 +265,11 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude", "*composer.lock,*yarn.lock,*package-lock.json", "./fixtures/locks-many"},
 			exit: 0,
 		},
+		{
+			name: "Scan npm with workspace support",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-npm/with-workspace"},
+			exit: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

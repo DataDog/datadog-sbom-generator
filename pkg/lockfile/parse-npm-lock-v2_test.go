@@ -697,20 +697,6 @@ func TestParseNpmLock_v2_Workspaces(t *testing.T) {
 			IsDirect:  true,
 			DepGroups: []string{"prod", "prod"},
 		},
-		{
-			Name:           "workspace-1",
-			Version:        "1.0.0",
-			PackageManager: models.NPM,
-			Ecosystem:      models.EcosystemNPM,
-			DepGroups:      []string{"prod"},
-		},
-		{
-			Name:           "workspace-2",
-			Version:        "1.0.0",
-			PackageManager: models.NPM,
-			Ecosystem:      models.EcosystemNPM,
-			DepGroups:      []string{"prod"},
-		},
 	})
 }
 
@@ -770,13 +756,6 @@ func TestParseNpmLock_v2_WorkspacesSameLibSameVersion(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			DepGroups:      []string{"prod"},
 		},
-		{
-			Name:           "workspace-2",
-			Version:        "1.0.0",
-			PackageManager: models.NPM,
-			Ecosystem:      models.EcosystemNPM,
-			DepGroups:      []string{"prod"},
-		},
 	})
 }
 
@@ -803,12 +782,87 @@ func TestParseNpmLock_v2_WorkspacesSameLibDifferentVersion(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
+	projectpath := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/package.json"))
+	anotherfolderpath := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/another-folder/package.json"))
+	folderpath := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/folder/package.json"))
 	workspace2path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/other-folder/workspace-2/package.json"))
 
 	expectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "semver",
-			Version:        "7.3.2",
+			Version:        "7.7.3",
+			PackageManager: models.NPM,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: folderpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: folderpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: folderpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "picocolors",
+			Version:        "0.2.1",
+			PackageManager: models.NPM,
+			TargetVersions: []string{"^0.2.1"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 27},
+				Filename: folderpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 16},
+				Filename: folderpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 20, End: 26},
+				Filename: folderpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "picocolors",
+			Version:        "1.1.1",
+			PackageManager: models.NPM,
+			TargetVersions: []string{"^1.1.1"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 27},
+				Filename: anotherfolderpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 16},
+				Filename: anotherfolderpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 20, End: 26},
+				Filename: anotherfolderpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "6.3.1",
 			PackageManager: models.NPM,
 			TargetVersions: []string{"^6.3.0"},
 			Ecosystem:      models.EcosystemNPM,
@@ -832,23 +886,83 @@ func TestParseNpmLock_v2_WorkspacesSameLibDifferentVersion(t *testing.T) {
 		},
 		{
 			Name:           "semver",
-			Version:        "6.3.0",
+			Version:        "5.7.2",
 			PackageManager: models.NPM,
+			TargetVersions: []string{"^5.0.0"},
 			Ecosystem:      models.EcosystemNPM,
-			DepGroups:      []string{"prod"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: anotherfolderpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: anotherfolderpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: anotherfolderpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
 		},
 		{
-			Name:           "workspace-1",
-			Version:        "1.0.0",
+			Name:           "semver",
+			Version:        "4.3.6",
 			PackageManager: models.NPM,
+			TargetVersions: []string{"^4.3.0"},
 			Ecosystem:      models.EcosystemNPM,
-			DepGroups:      []string{"prod"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: projectpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: projectpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: projectpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
 		},
 		{
-			Name:           "workspace-2",
-			Version:        "1.0.0",
+			Name:           "group-dependencies",
+			Version:        "0.0.11",
+			PackageManager: models.NPM,
+			TargetVersions: []string{"0.0.11"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 35},
+				Filename: projectpath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 6, End: 24},
+				Filename: projectpath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 28, End: 34},
+				Filename: projectpath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "colors",
+			Version:        "1.4.0",
 			PackageManager: models.NPM,
 			Ecosystem:      models.EcosystemNPM,
+			BlockLocation:  models.FilePosition{},
+			IsDirect:       false,
 			DepGroups:      []string{"prod"},
 		},
 	})

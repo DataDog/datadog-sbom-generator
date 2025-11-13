@@ -144,17 +144,40 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		return err
 	}
 
-	// Match root package.json
-	err = m.matchFile(sourcefile, packages, content)
-	if err != nil {
-		return err
+	// Group package indices by their NameLocation.filename for efficient matching
+	packageIndicesByLocation := make(map[string][]int)
+	var rootPackageIndices []int
+
+	for i, pkg := range packages {
+		// We check if we happen to already have information about where the package is coming from
+		// When parsing package-lock.json, we would report known workspace location of the package
+		// If we don't have any, it means the package is a root-level package
+		if pkg.NameLocation == nil || pkg.NameLocation.Filename == "" {
+			// Root-level packages (no specific workspace location)
+			rootPackageIndices = append(rootPackageIndices, i)
+		} else {
+			// Workspace-specific packages
+			workspacePath := filepath.FromSlash(pkg.NameLocation.Filename)
+			packageIndicesByLocation[workspacePath] = append(packageIndicesByLocation[workspacePath], i)
+		}
+	}
+
+	// Match root package.json with root-level packages
+	if len(rootPackageIndices) > 0 {
+		err = m.matchFileWithIndices(sourcefile, packages, rootPackageIndices, content)
+		if err != nil {
+			return err
+		}
 	}
 
 	var workspacesJSON WorkspacePackageJSON
 	if err := json.Unmarshal(content, &workspacesJSON); err != nil {
-		err = m.matchFile(sourcefile, packages, content)
-		if err != nil {
-			return err
+		// If no workspaces, try matching all packages against root
+		if len(rootPackageIndices) == 0 && len(packages) > 0 {
+			err = m.matchFile(sourcefile, packages, content)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -176,9 +199,14 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 				continue
 			}
 
-			// Match dependencies in workspace package.json
-			if err := m.matchFile(workspacePkg, packages, workspaceContent); err != nil {
-				continue
+			// Get workspace path relative to root for matching
+			workspacePath := filepath.Dir(match)
+
+			// Only match packages that belong to this specific workspace
+			if workspaceIndices, exists := packageIndicesByLocation[workspacePath]; exists {
+				if err := m.matchFileWithIndices(workspacePkg, packages, workspaceIndices, workspaceContent); err != nil {
+					continue
+				}
 			}
 		}
 	}
@@ -187,43 +215,55 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 }
 
 func (m PackageJSONMatcher) matchFile(file DepFile, packages []PackageDetails, content []byte) error {
-	contentStr := string(content)
-	dependenciesLineOffset := jsonUtils.GetSectionOffset("dependencies", contentStr)
-	devDependenciesLineOffset := jsonUtils.GetSectionOffset("devDependencies", contentStr)
-	optionalDepenenciesLineOffset := jsonUtils.GetSectionOffset("optionalDependencies", contentStr)
+	allIndices := make([]int, len(packages))
+	for i := range packages {
+		allIndices[i] = i
+	}
 
-	jsonFile := packageJSONFile{
+	return m.matchFileWithIndices(file, packages, allIndices, content)
+}
+
+func (m PackageJSONMatcher) matchFileWithIndices(file DepFile, allPackages []PackageDetails, indices []int, content []byte) error {
+	contentStr := string(content)
+	jsonFile := m.createPackageJSONFile(file, contentStr)
+
+	// Create pointers only to the packages at specified indices
+	packagesPtr := make([]*PackageDetails, len(indices))
+	for i, idx := range indices {
+		packagesPtr[i] = &allPackages[idx]
+	}
+
+	jsonFile.Dependencies.Packages = packagesPtr
+	jsonFile.DevDependencies.Packages = packagesPtr
+	jsonFile.OptionalDependencies.Packages = packagesPtr
+
+	return json.Unmarshal(content, &jsonFile)
+}
+
+func (m PackageJSONMatcher) createPackageJSONFile(file DepFile, contentStr string) packageJSONFile {
+	return packageJSONFile{
 		Dependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeDependencies,
 				FilePath:   file.Path(),
-				LineOffset: dependenciesLineOffset,
+				LineOffset: jsonUtils.GetSectionOffset("dependencies", contentStr),
 			},
 		},
 		DevDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeDevDependencies,
 				FilePath:   file.Path(),
-				LineOffset: devDependenciesLineOffset,
+				LineOffset: jsonUtils.GetSectionOffset("devDependencies", contentStr),
 			},
 		},
 		OptionalDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: MatcherDependencyMap{
 				RootType:   typeOptionalDependencies,
 				FilePath:   file.Path(),
-				LineOffset: optionalDepenenciesLineOffset,
+				LineOffset: jsonUtils.GetSectionOffset("optionalDependencies", contentStr),
 			},
 		},
 	}
-	packagesPtr := make([]*PackageDetails, len(packages))
-	for index := range packages {
-		packagesPtr[index] = &packages[index]
-	}
-	jsonFile.Dependencies.Packages = packagesPtr
-	jsonFile.DevDependencies.Packages = packagesPtr
-	jsonFile.OptionalDependencies.Packages = packagesPtr
-
-	return json.Unmarshal(content, &jsonFile)
 }
 
 var _ Matcher = PackageJSONMatcher{}
