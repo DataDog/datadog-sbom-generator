@@ -17,4 +17,5 @@ const (
 	Elixir     Language = "Elixir"
 	Dart       Language = "Dart"
 	R          Language = "R"
+	Rust       Language = "Rust"
 )

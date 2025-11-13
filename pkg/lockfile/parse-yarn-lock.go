@@ -392,7 +392,7 @@ var YarnExtractor = YarnLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("yarn.lock", YarnExtractor)
+	registerExtractor(models.YarnLock, YarnExtractor)
 }
 
 func ParseYarnLock(pathToLockfile string) ([]PackageDetails, error) {

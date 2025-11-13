@@ -551,7 +551,7 @@ var NpmExtractor = NpmLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("package-lock.json", NpmExtractor)
+	registerExtractor(models.PackageLockJSON, NpmExtractor)
 }
 
 func ParseNpmLock(pathToLockfile string) ([]PackageDetails, error) {

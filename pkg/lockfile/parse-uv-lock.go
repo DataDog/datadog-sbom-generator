@@ -169,7 +169,7 @@ var UvExtractor = UvLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("uv.lock", UvExtractor)
+	registerExtractor(models.UvLock, UvExtractor)
 }
 
 func ParseUvLock(pathToLockfile string) ([]PackageDetails, error) {

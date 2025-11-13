@@ -23971,6 +23971,64 @@ No package sources found. Use the 'parsers list' command to view supported lockf
 
 ---
 
+[TestRun_WithLanguageParsers - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:composer/sentry/sdk@2.0.4",
+      "type": "library",
+      "name": "sentry/sdk",
+      "version": "2.0.4",
+      "purl": "pkg:composer/sentry/sdk@2.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Composer"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:gem/ast@2.4.2",
+      "type": "library",
+      "name": "ast",
+      "version": "2.4.2",
+      "purl": "pkg:gem/ast@2.4.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Bundler"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+[TestRun_WithLanguageParsers - 2]
+
+---
+
 [TestRun_YarnPackageOnly/v1.22.0 - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",

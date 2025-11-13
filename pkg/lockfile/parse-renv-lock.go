@@ -70,7 +70,7 @@ var _ Extractor = RenvLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("renv.lock", RenvLockExtractor{})
+	registerExtractor(models.RenvLock, RenvLockExtractor{})
 }
 
 func ParseRenvLock(pathToLockfile string) ([]PackageDetails, error) {

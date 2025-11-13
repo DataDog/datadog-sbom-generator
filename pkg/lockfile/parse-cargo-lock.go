@@ -66,7 +66,7 @@ var _ Extractor = CargoLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("Cargo.lock", CargoLockExtractor{})
+	registerExtractor(models.CargoLock, CargoLockExtractor{})
 }
 
 func ParseCargoLock(pathToLockfile string) ([]PackageDetails, error) {

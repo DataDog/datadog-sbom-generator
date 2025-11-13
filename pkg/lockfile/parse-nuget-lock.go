@@ -103,7 +103,7 @@ var NuGetExtractor = NuGetLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("packages.lock.json", NuGetExtractor)
+	registerExtractor(models.PackagesLockJSON, NuGetExtractor)
 }
 
 func ParseNuGetLock(pathToLockfile string) ([]PackageDetails, error) {

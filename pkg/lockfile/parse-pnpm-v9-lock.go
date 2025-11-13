@@ -252,7 +252,7 @@ var PnpmExtractor = PnpmLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("pnpm-lock.yaml", PnpmExtractor)
+	registerExtractor(models.PnpmLockYAML, PnpmExtractor)
 }
 
 func ParsePnpmLock(pathToLockfile string) ([]PackageDetails, error) {

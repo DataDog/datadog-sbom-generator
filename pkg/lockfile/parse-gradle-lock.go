@@ -106,7 +106,7 @@ var GradleExtractor = GradleLockExtractor{
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("gradle.lockfile", GradleExtractor)
+	registerExtractor(models.GradleLockfile, GradleExtractor)
 }
 
 func ParseGradleLock(pathToLockfile string) ([]PackageDetails, error) {

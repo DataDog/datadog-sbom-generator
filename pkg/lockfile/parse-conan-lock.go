@@ -207,7 +207,7 @@ var _ Extractor = ConanLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("conan.lock", ConanLockExtractor{})
+	registerExtractor(models.ConanLock, ConanLockExtractor{})
 }
 
 func ParseConanLock(pathToLockfile string) ([]PackageDetails, error) {

@@ -652,7 +652,7 @@ var _ Extractor = MavenLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor("pom.xml", MavenLockExtractor{})
+	registerExtractor(models.PomXML, MavenLockExtractor{})
 }
 
 func ParseMavenLock(pathToLockfile string) ([]PackageDetails, error) {
