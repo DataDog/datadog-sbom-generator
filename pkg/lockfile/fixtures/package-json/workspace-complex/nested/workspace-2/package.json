@@ -1,5 +1,5 @@
 {
-  "name": "other-workspace-workspace",
+  "name": "workspace-2",
   "version": "1.0.0",
   "dependencies": {
     "semver": "^6.3.0"
