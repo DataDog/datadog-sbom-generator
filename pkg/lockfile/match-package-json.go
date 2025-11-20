@@ -2,11 +2,13 @@ package lockfile
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 
@@ -123,6 +125,8 @@ func globWorkspacePackageJsons(workspacePatterns []string, basePath string) []st
 		packageJSONFilePaths = append(packageJSONFilePaths, matches...)
 	}
 
+	slices.Sort(packageJSONFilePaths)
+
 	return packageJSONFilePaths
 }
 
@@ -146,7 +150,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 
 	// Group package indices by their NameLocation.filename for efficient matching
 	packageIndicesByLocation := make(map[string][]int)
-	var rootPackageIndices []int
+	var packagesWithoutKnownLocationIndices []int
 
 	for i, pkg := range packages {
 		// We check if we happen to already have information about where the package is coming from
@@ -154,7 +158,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 		// If we don't have any, it means the package is a root-level package
 		if pkg.NameLocation == nil || pkg.NameLocation.Filename == "" {
 			// Root-level packages (no specific workspace location)
-			rootPackageIndices = append(rootPackageIndices, i)
+			packagesWithoutKnownLocationIndices = append(packagesWithoutKnownLocationIndices, i)
 		} else {
 			// Workspace-specific packages
 			workspacePath := filepath.FromSlash(pkg.NameLocation.Filename)
@@ -163,8 +167,8 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	}
 
 	// Match root package.json with root-level packages
-	if len(rootPackageIndices) > 0 {
-		err = m.matchFileWithIndices(sourcefile, packages, rootPackageIndices, content)
+	if len(packagesWithoutKnownLocationIndices) > 0 {
+		err = m.matchFileWithIndices(sourcefile, packages, packagesWithoutKnownLocationIndices, content)
 		if err != nil {
 			return err
 		}
@@ -173,7 +177,7 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	var workspacesJSON WorkspacePackageJSON
 	if err := json.Unmarshal(content, &workspacesJSON); err != nil {
 		// If no workspaces, try matching all packages against root
-		if len(rootPackageIndices) == 0 && len(packages) > 0 {
+		if len(packagesWithoutKnownLocationIndices) == 0 && len(packages) > 0 {
 			err = m.matchFile(sourcefile, packages, content)
 			if err != nil {
 				return err
@@ -187,27 +191,19 @@ func (m PackageJSONMatcher) Match(sourcefile DepFile, packages []PackageDetails)
 	if len(workspacesJSON.Workspaces) > 0 {
 		matches := globWorkspacePackageJsons(workspacesJSON.Workspaces, sourcefile.Path())
 
-		for _, match := range matches {
-			workspacePkg, err := sourcefile.Open(match)
-			if err != nil {
-				continue
-			}
-			defer workspacePkg.Close()
-
-			workspaceContent, err := io.ReadAll(workspacePkg)
-			if err != nil {
-				continue
-			}
-
-			// Get workspace path relative to root for matching
-			workspacePath := filepath.Dir(match)
-
-			// Only match packages that belong to this specific workspace
-			if workspaceIndices, exists := packageIndicesByLocation[workspacePath]; exists {
-				if err := m.matchFileWithIndices(workspacePkg, packages, workspaceIndices, workspaceContent); err != nil {
-					continue
+		// Match workspace-specific packages
+		for workspacePath, indices := range packageIndicesByLocation {
+			for _, match := range matches {
+				matchPath := filepath.Dir(match)
+				if matchPath == workspacePath {
+					m.matchWorkspaceFile(sourcefile, match, packages, indices)
 				}
 			}
+		}
+
+		if len(packagesWithoutKnownLocationIndices) > 0 {
+			// If there are workspaces, then try to match the packages without a known location against the different <workspaces>/package.json
+			m.matchPackagesWithoutKnownLocation(sourcefile, matches, packages, packagesWithoutKnownLocationIndices)
 		}
 	}
 
@@ -238,6 +234,40 @@ func (m PackageJSONMatcher) matchFileWithIndices(file DepFile, allPackages []Pac
 	jsonFile.OptionalDependencies.Packages = packagesPtr
 
 	return json.Unmarshal(content, &jsonFile)
+}
+
+func (m PackageJSONMatcher) matchWorkspaceFile(sourcefile DepFile, match string, packages []PackageDetails, indices []int) {
+	workspacePkg, err := sourcefile.Open(match)
+	if err != nil {
+		return
+	}
+	defer workspacePkg.Close()
+
+	workspaceContent, err := io.ReadAll(workspacePkg)
+	if err != nil {
+		return
+	}
+
+	_ = m.matchFileWithIndices(workspacePkg, packages, indices, workspaceContent)
+}
+
+func (m PackageJSONMatcher) matchPackagesWithoutKnownLocation(sourcefile DepFile, matches []string, packages []PackageDetails, packagesWithoutKnownLocationIndices []int) {
+	for _, match := range matches {
+		workspacePkg, err := sourcefile.Open(match)
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "Failed to open workspace: %s from %s\n", match, sourcefile.Path())
+			continue
+		}
+
+		workspaceContent, err := io.ReadAll(workspacePkg)
+		workspacePkg.Close()
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "Failed to open workspace: %s\n", workspacePkg)
+			continue
+		}
+
+		_ = m.matchFileWithIndices(workspacePkg, packages, packagesWithoutKnownLocationIndices, workspaceContent)
+	}
 }
 
 func (m PackageJSONMatcher) createPackageJSONFile(file DepFile, contentStr string) packageJSONFile {
