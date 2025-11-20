@@ -56,8 +56,9 @@ type PnpmLockfile struct {
 }
 
 type PnpmDirectDependency struct {
-	Pkg PackageDetails
-	Dep PnpmLockDependency
+	Pkg           PackageDetails
+	Dep           PnpmLockDependency
+	WorkspacePath string
 }
 
 func getCleanedVersion(lockfile PnpmLockfile, name, version string) string {
@@ -97,9 +98,7 @@ func mergeSlices(fromSlices ...[]string) []string {
 	return slices.Collect(maps.Keys(result))
 }
 
-func addDependencyToPackageDetails(dependency PackageDetails, deps map[string]PackageDetails) map[string]PackageDetails {
-	key := dependency.Name + "@" + dependency.Version
-
+func addDependencyToPackageDetails(dependency PackageDetails, key string, deps map[string]PackageDetails) map[string]PackageDetails {
 	if dep, exists := deps[key]; exists {
 		newDepGroups := mergeSlices(dep.DepGroups, dependency.DepGroups)
 		newTargetedVersions := mergeSlices(dep.TargetVersions, dependency.TargetVersions)
@@ -150,7 +149,7 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
 			}
-			addDependencyToPackageDetails(transitiveDep, deps)
+			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
 			snapshotQueue = append(snapshotQueue, childKey)
 		}
@@ -165,7 +164,7 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
 			}
-			addDependencyToPackageDetails(transitiveDep, deps)
+			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
 			snapshotQueue = append(snapshotQueue, childKey)
 		}
@@ -174,8 +173,13 @@ func extractTransitiveDeps(lockfile PnpmLockfile, root PnpmDirectDependency, tar
 	return deps
 }
 
-func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string) []PnpmDirectDependency {
+func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string, workspacePath string) []PnpmDirectDependency {
 	for dependencyName, dependency := range dependencies {
+		var nameLocation *models.FilePosition
+		if workspacePath != "" && workspacePath != "." {
+			nameLocation = &models.FilePosition{Filename: workspacePath}
+		}
+
 		roots = append(roots, PnpmDirectDependency{
 			Pkg: PackageDetails{
 				Name:           dependencyName,
@@ -186,8 +190,10 @@ func extractDirectDependencies(lockfile PnpmLockfile, roots []PnpmDirectDependen
 				DepGroups:      []string{depGroup},
 				PackageManager: models.Pnpm,
 				IsDirect:       true,
+				NameLocation:   nameLocation,
 			},
-			Dep: dependency,
+			Dep:           dependency,
+			WorkspacePath: workspacePath,
 		})
 	}
 
@@ -202,19 +208,35 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 
 	// Going through the importers to get a direct (prod or dev), then finding the transitives in the snapshot
 	directDependencies := make([]PnpmDirectDependency, 0)
-	for _, importer := range lockfile.Importers {
-		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.Dependencies, "prod")
-		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.OptionalDependencies, "optional")
-		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.DevDependencies, "dev")
+	for workspacePath, importer := range lockfile.Importers {
+		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.Dependencies, "prod", workspacePath)
+		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.OptionalDependencies, "optional", workspacePath)
+		directDependencies = extractDirectDependencies(lockfile, directDependencies, importer.DevDependencies, "dev", workspacePath)
 	}
 
 	packages := make(map[string]PackageDetails)
 	for _, direct := range directDependencies {
-		packages = addDependencyToPackageDetails(direct.Pkg, packages)
+		packages = addDependencyToPackageDetails(direct.Pkg, getPnpmWorkspaceDependencyKey(direct), packages)
 		packages = extractTransitiveDeps(lockfile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages)
 	}
 
 	return slices.Collect(maps.Values(packages))
+}
+
+func getPnpmWorkspaceDependencyKey(direct PnpmDirectDependency) string {
+	key := getPnpmDependencyKey(direct.Pkg)
+
+	// Create workspace-specific key to keep workspace declarations separate
+	workspacePath := direct.WorkspacePath
+	if workspacePath != "" && workspacePath != "." {
+		key += "@workspace:" + workspacePath
+	}
+
+	return key
+}
+
+func getPnpmDependencyKey(pkg PackageDetails) string {
+	return pkg.Name + "@" + pkg.Version
 }
 
 func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
