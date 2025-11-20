@@ -84,7 +84,7 @@ This tool only supports enriching information from the following package manager
 
 ### Javascript and Typescript
 
-NPM and Yarn have workspace support
+NPM, Yarn and PNPM have workspace support
 
 #### NPM
 
