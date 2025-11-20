@@ -2,12 +2,14 @@
   "name": "workspaces-same-lib-different-version",
   "version": "1.0.0",
   "workspaces": [
-    "folder",
-    "another-folder",
-    "other-folder/workspace-2"
+    "workspace-1",
+    "workspace-3",
+    "nested/workspace-2"
   ],
   "dependencies": {
-    "semver": "^4.3.0",
+    "semver": "^4.3.0"
+  },
+  "devDependencies": {
     "group-dependencies": "0.0.11"
   }
 }
