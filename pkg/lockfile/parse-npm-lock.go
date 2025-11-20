@@ -351,17 +351,15 @@ func processRootPackages(
 	for depName, targetVersion := range declaredRootPackages {
 		rootNodeModulesPath := getRootResolvedPath(depName)
 		if resolvedPkg, exists := resolvedPackages[rootNodeModulesPath]; exists {
-			if !(*processedPackages)[rootNodeModulesPath] {
-				processPackage(packageProcessingParams{
-					Details:           details,
-					DepName:           depName,
-					Pkg:               resolvedPkg,
-					TargetVersion:     targetVersion,
-					DeclarationPath:   "",
-					PhysicalPath:      rootNodeModulesPath,
-					ProcessedPackages: processedPackages,
-				})
-			}
+			processPackage(packageProcessingParams{
+				Details:           details,
+				DepName:           depName,
+				Pkg:               resolvedPkg,
+				TargetVersion:     targetVersion,
+				DeclarationPath:   "",
+				PhysicalPath:      rootNodeModulesPath,
+				ProcessedPackages: processedPackages,
+			})
 		}
 	}
 }
@@ -461,13 +459,15 @@ func processPackage(params packageProcessingParams) {
 		targetVersions = []string{targetVersion}
 	}
 	var location *models.FilePosition
+	packageUniqKey := finalName + "@" + finalVersion
 
 	// A given package can be declared in multiple places, we want to track the declaration paths so that we know which one to match
 	if params.DeclarationPath != "" {
 		location = &models.FilePosition{Filename: params.DeclarationPath}
+		packageUniqKey += "@workspace:" + params.DeclarationPath
 	}
 
-	params.Details.add(finalName+"@"+finalVersion, PackageDetails{
+	params.Details.add(packageUniqKey, PackageDetails{
 		Name:           finalName,
 		Version:        params.Pkg.Version,
 		TargetVersions: targetVersions,
@@ -490,8 +490,8 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]Packag
 
 	processedPackages := make(map[string]bool) // makes sure we do not process the same package twice (meaningful with the support of workspaces)
 
-	processWorkspacePackages(details, categorized.DeclaredWorkspace, categorized.Resolved, &processedPackages)
 	processRootPackages(details, categorized.DeclaredRoot, categorized.Resolved, &processedPackages)
+	processWorkspacePackages(details, categorized.DeclaredWorkspace, categorized.Resolved, &processedPackages)
 	processLocalPackages(details, categorized.Local, categorized.DeclaredRoot, &processedPackages)
 	processRemainingPackages(details, categorized.Resolved, &processedPackages)
 
