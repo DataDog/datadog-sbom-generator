@@ -34,17 +34,17 @@ datadog-sbom-generator scan --help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
-| Language   | Package Manager                        |
-| ---------- | -------------------------------------- |
-| .NET       | Nuget                                  |
-| C++        | Conan                                  |
-| Go         | Golang                                 |
-| Java       | Gradle, Maven                          |
-| JavaScript | NPM, PNPM, Yarn                        |
-| PHP        | Composer                               |
+| Language   | Package Manager                       |
+| ---------- | ------------------------------------- |
+| .NET       | Nuget                                 |
+| C++        | Conan                                 |
+| Go         | Golang                                |
+| Java       | Gradle, Maven                         |
+| JavaScript | NPM, PNPM, Yarn                       |
+| PHP        | Composer                              |
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv |
-| Ruby       | Bundler                                |
-| Rust       | Crates                                 |
+| Ruby       | Bundler                               |
+| Rust       | Crates                                |
 
 ## Limitations
 
