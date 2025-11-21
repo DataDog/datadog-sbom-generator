@@ -21,10 +21,13 @@ To scan a repository folder and generate a SBOM, you can use this command:
 datadog-sbom-generator scan -o "/tmp/sbom.json" "/path/to/directory"
 ```
 
-If you want to know more about available options, you can run the following:
+For detailed documentation on all commands and options, see [USAGE.md](USAGE.md).
+
+You can also get help directly from the command line:
 
 ```bash
-datadog-sbom-generator scan help
+datadog-sbom-generator --help
+datadog-sbom-generator scan --help
 ```
 
 ## Supported package managers
@@ -119,6 +122,15 @@ NPM and Yarn have workspace support
 - This tool only supports package information enrichment from `Gemfile` and `*.gemspec`.
 - If the version of a package is defined in a variable, the location reported by the scanner will be the usage of the variable.
 - Dependencies sourced from Git repositories won't have any version reported.
+
+## Contributing
+
+Contributions are welcome! You can contribute by:
+
+- Reporting issues or requesting features via [GitHub Issues](https://github.com/DataDog/datadog-sbom-generator/issues)
+- Submitting pull requests with improvements or bug fixes
+
+For detailed information on building, testing, and developing the project, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
