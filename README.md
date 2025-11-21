@@ -34,21 +34,17 @@ datadog-sbom-generator scan --help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
-| Language                | Package Manager  |
-| ----------------------- | ---------------- |
-| Ruby                    | Bundler          |
-| .NET                    | Nuget            |
-| PHP                     | Composer         |
-| Java                    | Maven            |
-| Java                    | Gradle           |
-| Python                  | requirements.txt |
-| Python                  | pipenv           |
-| Python                  | Poetry           |
-| Python                  | uv               |
-| JavaScript / TypeScript | NPM              |
-| JavaScript / TypeScript | Yarn             |
-| JavaScript / TypeScript | PNPM             |
-| Go                      | Go               |
+| Language   | Package Manager                        |
+| ---------- | -------------------------------------- |
+| .NET       | Nuget                                  |
+| C++        | Conan                                  |
+| Go         | Golang                                 |
+| Java       | Gradle, Maven                          |
+| JavaScript | NPM, PNPM, Yarn                        |
+| PHP        | Composer                               |
+| Python     | Pdm, Pipenv, Poetry, Requirements, uv |
+| Ruby       | Bundler                                |
+| Rust       | Crates                                 |
 
 ## Limitations
 
@@ -122,6 +118,18 @@ NPM, Yarn and PNPM have workspace support
 - This tool only supports package information enrichment from `Gemfile` and `*.gemspec`.
 - If the version of a package is defined in a variable, the location reported by the scanner will be the usage of the variable.
 - Dependencies sourced from Git repositories won't have any version reported.
+
+### C++
+
+#### Conan
+
+- This tool only supports extracting packages from `conan.lock`.
+
+### Rust
+
+#### Crates
+
+- This tool only supports extracting packages from `Cargo.lock`.
 
 ## Contributing
 

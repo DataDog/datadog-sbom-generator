@@ -12,7 +12,7 @@ import (
 const (
 	cargoPackageManager      = models.Crates
 	cargoFilePath            = models.CratesFilePath
-	cargoOfficiallySupported = false
+	cargoOfficiallySupported = true
 )
 
 type CargoLockPackage struct {
