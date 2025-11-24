@@ -1,0 +1,94 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      semver:
+        specifier: ^4.3.0
+        version: 4.3.6
+    devDependencies:
+      group-dependencies:
+        specifier: 0.0.11
+        version: 0.0.11
+
+  nested/workspace-2:
+    dependencies:
+      semver:
+        specifier: ^6.3.0
+        version: 6.3.1
+
+  workspace-1:
+    dependencies:
+      picocolors:
+        specifier: ^0.2.1
+        version: 0.2.1
+      semver:
+        specifier: ^7.3.2
+        version: 7.7.3
+
+  workspace-3:
+    dependencies:
+      picocolors:
+        specifier: ^1.1.1
+        version: 1.1.1
+      semver:
+        specifier: ^5.0.0
+        version: 5.7.2
+
+packages:
+
+  colors@1.4.0:
+    resolution: {integrity: sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==}
+    engines: {node: '>=0.1.90'}
+
+  group-dependencies@0.0.11:
+    resolution: {integrity: sha512-d66hGh5RZa4SwRu7FuKSGaKtZ+g+ZKIi7zRxgjK/fbllZg6WWZB9LasFAZYjF111KbjQSrPPdNaC5abNBRlqng==}
+    hasBin: true
+
+  picocolors@0.2.1:
+    resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
+
+  picocolors@1.1.1:
+    resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
+  semver@4.3.6:
+    resolution: {integrity: sha512-IrpJ+yoG4EOH8DFWuVg+8H1kW1Oaof0Wxe7cPcXW3x9BjkN/eVo54F15LyqemnDIUYskQWr9qvl/RihmSy6+xQ==}
+    hasBin: true
+
+  semver@5.7.2:
+    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
+    hasBin: true
+
+  semver@6.3.1:
+    resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
+    hasBin: true
+
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+snapshots:
+
+  colors@1.4.0: {}
+
+  group-dependencies@0.0.11:
+    dependencies:
+      colors: 1.4.0
+
+  picocolors@0.2.1: {}
+
+  picocolors@1.1.1: {}
+
+  semver@4.3.6: {}
+
+  semver@5.7.2: {}
+
+  semver@6.3.1: {}
+
+  semver@7.7.3: {}

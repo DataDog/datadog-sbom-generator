@@ -99,7 +99,8 @@ inv -e generate-licenses
 
 ## Releasing datadog-sbom-generator
 
+1. You can read about the release process and E2E testing [here](https://datadoghq.atlassian.net/wiki/spaces/Vulnerabil/pages/5095260787/CLI+datadog-sbom-generator#Releasing-a-new-version).
 1. Tag the main branch commit with the version name you want (e.g, v1.0.0).
-2. Wait for the Github workflow to run ([you can see it in the actions panel](https://github.com/DataDog/datadog-sbom-generator/actions/workflows/goreleaser.yml)).
-3. Once done, you will see a new draft release for your version in the [release section](https://github.com/DataDog/datadog-sbom-generator/releases).
-4. After testing it, you can finally publish it 🎉
+1. Wait for the Github workflow to run ([you can see it in the actions panel](https://github.com/DataDog/datadog-sbom-generator/actions/workflows/goreleaser.yml)).
+1. Once done, you will see a new draft release for your version in the [release section](https://github.com/DataDog/datadog-sbom-generator/releases).
+1. After testing it, you can finally publish it 🎉

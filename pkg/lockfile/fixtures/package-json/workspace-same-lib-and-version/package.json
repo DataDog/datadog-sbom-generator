@@ -1,8 +1,9 @@
 {
   "name": "workspaces-same-lib-and-version",
   "version": "1.0.0",
+  "private": true,
   "workspaces": [
-    "folder/*",
-    "other-folder/**"
+    "workspace-1",
+    "nested/**"
   ]
 }

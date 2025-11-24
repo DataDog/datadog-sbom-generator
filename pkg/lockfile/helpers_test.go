@@ -81,6 +81,7 @@ func hasPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg
 		if ignoreLocations {
 			ignore = []string{"BlockLocation", "NameLocation", "VersionLocation"}
 		}
+
 		if cmp.Equal(expectedPkg, currentPkg, cmpopts.IgnoreFields(lockfile.PackageDetails{}, ignore...)) {
 			return true
 		}
@@ -138,13 +139,13 @@ func innerExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails,
 
 	if len(missingActualPackages) != 0 {
 		for _, unexpectedPackage := range missingActualPackages {
-			t.Errorf("Did not expect %s", packageToString(unexpectedPackage))
+			t.Errorf("Did not expect: %s", packageToString(unexpectedPackage))
 		}
 	}
 
 	if len(missingExpectedPackages) != 0 {
 		for _, unexpectedPackage := range missingExpectedPackages {
-			t.Errorf("Did not find %s", packageToString(unexpectedPackage))
+			t.Errorf("Did not find:   %s", packageToString(unexpectedPackage))
 		}
 	}
 }

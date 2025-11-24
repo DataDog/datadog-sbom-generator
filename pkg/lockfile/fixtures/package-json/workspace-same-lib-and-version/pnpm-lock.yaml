@@ -1,0 +1,32 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  nested/workspace-2:
+    dependencies:
+      semver:
+        specifier: ^7.3.2
+        version: 7.7.3
+
+  workspace-1:
+    dependencies:
+      semver:
+        specifier: ^7.3.2
+        version: 7.7.3
+
+packages:
+
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+snapshots:
+
+  semver@7.7.3: {}
