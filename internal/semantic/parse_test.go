@@ -5,14 +5,13 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/semantic"
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
 func TestParse(t *testing.T) {
 	t.Parallel()
 
-	ecosystems := lockfile.KnownEcosystems()
+	ecosystems := ecosystems()
 
 	// todo: remove once CRAN is supported by lockfile
 	ecosystems = append(ecosystems, "CRAN")
@@ -35,7 +34,7 @@ func TestMustParse(t *testing.T) {
 		}
 	}()
 
-	ecosystems := lockfile.KnownEcosystems()
+	ecosystems := ecosystems()
 
 	// todo: remove once CRAN is supported by lockfile
 	ecosystems = append(ecosystems, "CRAN")
@@ -65,4 +64,23 @@ func TestMustParse_Panic_UnknownEcosystem(t *testing.T) {
 
 	// if we reached here, then we can't have panicked
 	t.Errorf("function did not panic when given an unknown ecosystem")
+}
+
+// ecosystems returns a list of ecosystems that `lockfile` supports
+// automatically inferring an extractor for based on a file path.
+func ecosystems() []models.Ecosystem {
+	return []models.Ecosystem{
+		models.EcosystemNPM,
+		models.EcosystemNuGet,
+		models.EcosystemCratesIO,
+		models.EcosystemRubyGems,
+		models.EcosystemPackagist,
+		models.EcosystemGo,
+		models.EcosystemHex,
+		models.EcosystemMaven,
+		models.EcosystemPyPI,
+		models.EcosystemPub,
+		models.EcosystemConanCenter,
+		models.EcosystemCRAN,
+	}
 }

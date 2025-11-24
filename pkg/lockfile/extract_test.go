@@ -3,8 +3,11 @@ package lockfile_test
 import (
 	"errors"
 	"io"
+	"os"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
 
 	"github.com/stretchr/testify/assert"
 
@@ -273,4 +276,32 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"invalid-language", "go"})
 	expected = []string{"go.mod", "invalid-language"}
 	assert.Equal(t, expected, result)
+}
+
+func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
+	t.Helper()
+
+	directories, err := os.ReadDir(".")
+
+	if err != nil {
+		t.Fatalf("unable to read current directory: ")
+	}
+
+	count := 0
+
+	for _, directory := range directories {
+		if strings.HasPrefix(directory.Name(), "parse-") &&
+			!strings.HasSuffix(directory.Name(), "_test.go") {
+			count++
+		}
+	}
+
+	if numberOfParsersCalled != count {
+		t.Errorf(
+			"Expected %d %s to have been called, but had %d",
+			count,
+			output.Form(count, "parser", "parsers"),
+			numberOfParsersCalled,
+		)
+	}
 }

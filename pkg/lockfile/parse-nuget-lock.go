@@ -14,7 +14,7 @@ import (
 
 const (
 	nugetPackageManager      = models.NuGet
-	nugetFilePath            = models.NuGetFilePath
+	nugetLockFilePath        = models.NugetLockFilePath
 	nugetOfficiallySupported = true
 )
 
@@ -71,7 +71,7 @@ type NuGetLockExtractor struct {
 }
 
 func (e NuGetLockExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == nugetFilePath
+	return filepath.Base(path) == nugetLockFilePath
 }
 
 func (e NuGetLockExtractor) IsOfficiallySupported() bool {

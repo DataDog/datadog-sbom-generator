@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	nugetCsprojFilePath = "*.csproj"
+	nugetCsprojFilePath = models.NuGetCsProjFilePath
 )
 
 type NugetCsProj struct {
@@ -35,6 +35,24 @@ type PackageReference struct {
 	PrivateAssetsAttr *string  `xml:"PrivateAssets,attr"`
 	PrivateAssets     *string  `xml:"PrivateAssets"`
 	models.FilePosition
+}
+
+func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
+	if !strings.HasSuffix(path, nugetCsprojFilePath) {
+		return false
+	}
+
+	// Only use csproj extractor if packages.lock.json doesn't exist
+	// This makes csproj a fallback when the lock file is not available
+	dir := filepath.Dir(path)
+	lockfilePath := filepath.Join(dir, nugetLockFilePath)
+
+	if _, err := os.Stat(lockfilePath); err == nil {
+		// Lock file exists, don't use csproj extractor
+		return false
+	}
+
+	return true
 }
 
 // UnmarshalXML implements xml.Unmarshaler to capture line and column positions for each PackageReference.
@@ -103,24 +121,6 @@ func ParseNugetCsProj(content []byte) (map[string]PackageReference, error) {
 }
 
 type NuGetCsprojExtractor struct{}
-
-func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
-	if !strings.HasSuffix(path, ".csproj") {
-		return false
-	}
-
-	// Only use csproj extractor if packages.lock.json doesn't exist
-	// This makes csproj a fallback when the lock file is not available
-	dir := filepath.Dir(path)
-	lockfilePath := filepath.Join(dir, nugetFilePath)
-
-	if _, err := os.Stat(lockfilePath); err == nil {
-		// Lock file exists, don't use csproj extractor
-		return false
-	}
-
-	return true
-}
 
 func (e NuGetCsprojExtractor) IsOfficiallySupported() bool {
 	return nugetOfficiallySupported
@@ -243,7 +243,7 @@ var _ Extractor = NuGetCsprojExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	registerExtractor(nugetCsprojFilePath, NuGetCsprojExtractor{})
+	registerExtractor(models.NugetCsProjFile, NuGetCsprojExtractor{})
 }
 
 func ParseNuGetCsproj(pathToCsproj string) ([]PackageDetails, error) {

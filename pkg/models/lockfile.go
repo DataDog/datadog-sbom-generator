@@ -11,6 +11,7 @@ const (
 	GradleLockfile            = "gradle.lockfile"
 	GradleVerificationXML     = "gradle/verification-metadata.xml"
 	MixLock                   = "mix.lock"
+	NugetCsProjFile           = "*.csproj"
 	PackageLockJSON           = "package-lock.json"
 	PackagesLockJSON          = "packages.lock.json"
 	PdmLock                   = "pdm.lock"
