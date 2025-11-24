@@ -437,28 +437,37 @@ func (e YarnLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 	return packages, nil
 }
 
+// Map to track which workspaces declare each dependency
+// yarn lockfile represents as a flat list all dependencies, and we need to reconstruct which workspace declare which dependency
 func createDependencyWorkspaceMap(workspaces []YarnPackage, allResolvedPackages []YarnPackage) map[string][]string {
-	// Map to track which workspaces declare each dependency
-	// yarn lockfile represents as a flat list all dependencies, and we need to reconstruct which workspace declare which dependency
+	// First, build an index of workspace dependencies
+	// Key: dependencyName@targetVersion, Value: workspace paths that declare it
+	workspaceDepsIndex := make(map[string][]string)
+
+	for _, workspace := range workspaces {
+		workspacePath := workspace.WorkspacePath
+		// "." is the value of the root workspace. Let's not use it -> default to empty string
+		if workspacePath == "." {
+			workspacePath = ""
+		}
+
+		for _, dep := range workspace.Dependencies {
+			key := dep.Name + "@" + dep.Version
+			workspaceDepsIndex[key] = append(workspaceDepsIndex[key], workspacePath)
+		}
+	}
+
 	dependencyWorkspaces := make(map[string][]string)
 
-	// For each workspace, record which dependencies it declares
-	for _, workspace := range workspaces {
-		for _, workspaceDependency := range workspace.Dependencies {
-			for _, pkg := range allResolvedPackages {
-				if pkg.Name == workspaceDependency.Name && pkg.TargetVersion == workspaceDependency.Version {
-					// Create unique key that includes both resolved version and target version
-					// The workspaceDependency is not the resolved version, but the targetVersion!
-					depKey := getWorkspaceDependencyKey(pkg.Name, pkg.Version, workspaceDependency.Version)
-					// For root workspace, use empty string to indicate no specific workspace location
-					// Because yarn reports root as: "@workspace:."
-					workspacePath := workspace.WorkspacePath
-					if workspacePath == "." {
-						workspacePath = ""
-					}
-					dependencyWorkspaces[depKey] = append(dependencyWorkspaces[depKey], workspacePath)
-				}
-			}
+	// Now iterate over resolved packages and lookup their workspace
+	for _, pkg := range allResolvedPackages {
+		// For the lookupKey, we use the pkg.TargetVersion and not pkg.Version because the dependencies
+		// listed in the workspace.Dependencies are listed with the target versions, not the resolved versions
+		// Meaning: pkg.TargetVersion == workspace.Dependencies.Version
+		lookupKey := pkg.Name + "@" + pkg.TargetVersion
+		if workspacePaths, exists := workspaceDepsIndex[lookupKey]; exists {
+			depKey := getWorkspaceDependencyKey(pkg.Name, pkg.Version, pkg.TargetVersion)
+			dependencyWorkspaces[depKey] = workspacePaths
 		}
 	}
 
