@@ -459,14 +459,13 @@ func processPackage(params packageProcessingParams) {
 		targetVersions = []string{targetVersion}
 	}
 	var location *models.FilePosition
-	packageUniqKey := finalName + "@" + finalVersion
 
 	// A given package can be declared in multiple places, we want to track the declaration paths so that we know which one to match
 	if params.DeclarationPath != "" {
 		location = &models.FilePosition{Filename: params.DeclarationPath}
-		packageUniqKey += "@workspace:" + params.DeclarationPath
 	}
 
+	packageUniqKey := getWorkspaceDependencyKey(finalName, finalVersion, params.DeclarationPath)
 	params.Details.add(packageUniqKey, PackageDetails{
 		Name:           finalName,
 		Version:        params.Pkg.Version,
@@ -508,6 +507,17 @@ func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]PackageDetail
 	fileposition.InJSON("dependencies", lockfile.Dependencies, lines, 0)
 
 	return parseNpmLockDependencies(lockfile.Dependencies)
+}
+
+func getWorkspaceDependencyKey(pkgName string, pkgVersion string, workspace string) string {
+	key := pkgName + "@" + pkgVersion
+
+	// Create workspace-specific key to keep workspace declarations separate
+	if workspace != "" && workspace != "." {
+		key += "@workspace:" + workspace
+	}
+
+	return key
 }
 
 type NpmLockExtractor struct {

@@ -19,6 +19,7 @@ const (
 	yarnOfficiallySupported       = true
 	yarnLocalVersionMarker        = "-use.local"
 	yarnWorkspaceResolutionMarker = "@workspace:"
+	yarnWorkspaceVersionMarker    = "workspace:"
 )
 
 type YarnDependency struct {
@@ -40,19 +41,23 @@ func shouldSkipYarnLine(line string) bool {
 	return line == "" || strings.HasPrefix(line, "#")
 }
 
-func parseYarnPackageGroup(group []string) []YarnPackage {
-	// Example of group:
-	//
-	// "semver@npm:^7.3.3, semver@npm:^7.3.4":
-	//   version: 7.7.3
-	//
-	// Where several targetVersions resolving to the same version would be stored on the same line
-	name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(group[0])
+// Example of block:
+//
+// "semver@npm:^7.3.3, semver@npm:^7.3.4":
+//
+//	version: 7.7.3
+//	dependencies:
+//	 semver: "foobar:^6.0.0"
+//
+// Where several targetVersions of 'semver' resolve to the same version: "7.7.3"
+// In this case, we return 2 YarnPackage. One per TargetVersions.
+func parseYarnPackageBlock(block []string) []YarnPackage {
+	name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(block[0]) // look at the first line
 
 	packages := make([]YarnPackage, 0, len(targetVersions))
-	version := determineYarnPackageVersion(group)
-	resolution := determineYarnPackageResolution(group)
-	dependencies := determineYarnPackageDependencies(group)
+	version := determineYarnPackageVersion(block)
+	resolution := determineYarnPackageResolution(block)
+	dependencies := determineYarnPackageDependencies(block)
 
 	// Create one YarnPackage per target version
 	for _, targetVersion := range targetVersions {
@@ -84,7 +89,7 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 		// represents the lineStart of a new dependency
 		if !strings.HasPrefix(line, " ") {
 			if len(group) > 0 {
-				packages := parseYarnPackageGroup(group)
+				packages := parseYarnPackageBlock(group)
 				groups = append(groups, packages...)
 			}
 			group = make([]string, 0)
@@ -94,17 +99,17 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 	}
 
 	if len(group) > 0 {
-		packages := parseYarnPackageGroup(group)
+		packages := parseYarnPackageBlock(group)
 		groups = append(groups, packages...)
 	}
 
 	return groups
 }
 
-func extractYarnPackageNameAndTargetVersions(str string) (string, []string, string) {
-	str = strings.ReplaceAll(str, "\"", "")
-	str = strings.TrimSuffix(str, ":")
-	parts := strings.Split(str, ",")
+func extractYarnPackageNameAndTargetVersions(line string) (string, []string, string) {
+	line = strings.ReplaceAll(line, "\"", "")
+	line = strings.TrimSuffix(line, ":")
+	parts := strings.Split(line, ",")
 
 	var name, right string
 	targetVersions := make([]string, 0)
@@ -153,8 +158,8 @@ func extractYarnPackageNameAndTargetVersions(str string) (string, []string, stri
 	// Extract workspace path if present
 	workspacePath := ""
 	for _, version := range targetVersions {
-		if strings.HasPrefix(version, "workspace:") {
-			workspacePath = strings.TrimPrefix(version, "workspace:")
+		if strings.HasPrefix(version, yarnWorkspaceVersionMarker) {
+			workspacePath = strings.TrimPrefix(version, yarnWorkspaceVersionMarker)
 			break
 		}
 	}
@@ -486,10 +491,6 @@ func createPackageDetails(allResolvedPackages []YarnPackage, dependencyWorkspace
 	}
 
 	return packages
-}
-
-func getWorkspaceDependencyKey(name string, version string, targetVersion string) string {
-	return name + "@" + version + "@target:" + targetVersion
 }
 
 var YarnExtractor = YarnLockExtractor{

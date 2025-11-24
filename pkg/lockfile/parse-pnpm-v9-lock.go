@@ -98,8 +98,8 @@ func mergeSlices(fromSlices ...[]string) []string {
 	return slices.Collect(maps.Keys(result))
 }
 
-func addDependencyToPackageDetails(dependency PackageDetails, key string, deps map[string]PackageDetails) map[string]PackageDetails {
-	if dep, exists := deps[key]; exists {
+func addDependencyToPackageDetails(dependency PackageDetails, packageIdentifier string, deps map[string]PackageDetails) map[string]PackageDetails {
+	if dep, exists := deps[packageIdentifier]; exists {
 		newDepGroups := mergeSlices(dep.DepGroups, dependency.DepGroups)
 		newTargetedVersions := mergeSlices(dep.TargetVersions, dependency.TargetVersions)
 
@@ -110,9 +110,9 @@ func addDependencyToPackageDetails(dependency PackageDetails, key string, deps m
 			dep.TargetVersions = newTargetedVersions
 		}
 		dep.IsDirect = dep.IsDirect || dependency.IsDirect
-		deps[key] = dep
+		deps[packageIdentifier] = dep
 	} else {
-		deps[key] = dependency
+		deps[packageIdentifier] = dependency
 	}
 
 	return deps
@@ -224,19 +224,11 @@ func parsePnpmLock(lockfile PnpmLockfile) []PackageDetails {
 }
 
 func getPnpmWorkspaceDependencyKey(direct PnpmDirectDependency) string {
-	key := getPnpmDependencyKey(direct.Pkg)
-
-	// Create workspace-specific key to keep workspace declarations separate
-	workspacePath := direct.WorkspacePath
-	if workspacePath != "" && workspacePath != "." {
-		key += "@workspace:" + workspacePath
-	}
-
-	return key
+	return getWorkspaceDependencyKey(direct.Pkg.Name, direct.Pkg.Version, direct.WorkspacePath)
 }
 
 func getPnpmDependencyKey(pkg PackageDetails) string {
-	return pkg.Name + "@" + pkg.Version
+	return getWorkspaceDependencyKey(pkg.Name, pkg.Version, "") // this has no workspace path
 }
 
 func (e PnpmLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
