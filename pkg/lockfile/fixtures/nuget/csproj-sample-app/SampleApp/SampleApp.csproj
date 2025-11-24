@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Local properties -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>SampleApp</AssemblyName>
+    <Version>1.0.0</Version>
+    <Company>ExampleCorp</Company>
+  </PropertyGroup>
+
+  <!-- Imported shared props -->
+  <Import Project="..\Directory.Packages.props" Condition="Exists('..\Directory.Packages.props')" />
+
+  <!-- Project references (monorepo structure) -->
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Logging\Logging.csproj" />
+  </ItemGroup>
+
+  <!-- Direct package dependencies -->
+  <ItemGroup>
+    <!-- Basic package reference -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+    <!-- Package using property substitution -->
+    <PackageReference Include="Serilog" Version="$(SerilogVersion)" />
+
+    <!-- Central package management reference without explicit version -->
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <!-- Conditional dependency -->
+    <PackageReference Include="xunit" Version="2.5.0" Condition="'$(Configuration)' == 'Debug'" />
+
+    <!-- Dev-only dependency -->
+    <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="All" />
+
+    <!-- Excluded asset types -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.0" ExcludeAssets="runtime" />
+
+    <!-- Non-existent package for testing -->
+    <!-- <PackageReference Include="NonExistent.TestPackage" Version="1.2.3" /> -->
+  </ItemGroup>
+
+  <!-- Custom properties and imported targets -->
+  <PropertyGroup>
+    <SerilogVersion>3.1.1</SerilogVersion>
+  </PropertyGroup>
+
+  <Import Project="build/Custom.props" Condition="Exists('build/Custom.props')" />
+  <Import Project="build/Custom.targets" Condition="Exists('build/Custom.targets')" />
+
+  <!-- Conditional target frameworks -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TargetFramework>net7.0</TargetFramework>
+  </PropertyGroup>
+
+</Project>
