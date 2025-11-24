@@ -144,7 +144,7 @@ func innerExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails,
 
 	if len(missingExpectedPackages) != 0 {
 		for _, unexpectedPackage := range missingExpectedPackages {
-			t.Errorf("Did not find %s", packageToString(unexpectedPackage))
+			t.Errorf("Did not find   %s", packageToString(unexpectedPackage))
 		}
 	}
 }
