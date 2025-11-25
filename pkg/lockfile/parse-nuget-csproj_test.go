@@ -175,10 +175,11 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 
 	// Expected packages:
 	// - Newtonsoft.Json 13.0.3
-	// - Serilog $(SerilogVersion) - property substitution kept as-is
+	// - Serilog 3.1.1  - property substitution
 	// - xunit 2.5.0
 	// - coverlet.collector 3.2.0 (PrivateAssets=All, should be dev)
 	// - Microsoft.CodeAnalysis.CSharp 4.9.0
+	// - Dapper $(GlobalVersion) - multi level property substitution
 	//
 	// Skipped packages:
 	// - Microsoft.Extensions.Logging - no version specified, skipped
@@ -209,7 +210,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 		},
 		{
 			Name:           "Serilog",
-			Version:        "$(SerilogVersion)",
+			Version:        "3.1.1",
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
@@ -296,6 +297,29 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 38, End: 38},
 				Column:   models.Position{Start: 72, End: 77},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Dapper",
+			Version:        "$(GlobalVersion)",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 5, End: 69},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 32, End: 38},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 49, End: 65},
 				Filename: absoluteCsprojPath,
 			},
 		},

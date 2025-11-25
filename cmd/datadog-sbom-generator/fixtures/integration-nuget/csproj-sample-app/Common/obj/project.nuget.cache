@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "dgSpecHash": "4E0i1tm0NuA=",
+  "success": true,
+  "projectFilePath": "/Users/pierrelouis.lacorte/go/src/github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj",
+  "expectedPackageFiles": [
+    "/Users/pierrelouis.lacorte/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/system.text.json/8.0.4/system.text.json.8.0.4.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.netcore.app.ref/8.0.20/microsoft.netcore.app.ref.8.0.20.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.20/microsoft.aspnetcore.app.ref.8.0.20.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "Package 'System.Text.Json' 8.0.4 has a known high severity vulnerability, https://github.com/advisories/GHSA-8g4q-xg66-9fp4",
+      "projectPath": "/Users/pierrelouis.lacorte/go/src/github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/pierrelouis.lacorte/go/src/github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

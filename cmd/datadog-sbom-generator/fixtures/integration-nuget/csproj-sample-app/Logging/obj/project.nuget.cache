@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "W23SO+nw920=",
+  "success": true,
+  "projectFilePath": "/Users/pierrelouis.lacorte/go/src/github.com/DataDog/datadog-sbom-generator/cmd/datadog-sbom-generator/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj",
+  "expectedPackageFiles": [
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.1/microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.1/microsoft.extensions.logging.abstractions.8.0.1.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.netcore.app.ref/8.0.20/microsoft.netcore.app.ref.8.0.20.nupkg.sha512",
+    "/Users/pierrelouis.lacorte/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.20/microsoft.aspnetcore.app.ref.8.0.20.nupkg.sha512"
+  ],
+  "logs": []
+}
