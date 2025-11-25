@@ -1,10 +1,9 @@
 package lockfile_test
 
 import (
-	"strconv"
+	"os"
+	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -351,44 +350,403 @@ func TestParsePnpmLock_v9_MixedGroups(t *testing.T) {
 	})
 }
 
-// TestParsePnpmLock_v9_WorkspaceDevConsistency demonstrates the non-deterministic
-// behavior in workspace dev dependency detection
-func TestParsePnpmLock_v9_WorkspaceDevConsistency(t *testing.T) {
+// Test case: workspace-same-lib-and-version demonstrates shared dependencies:
+// Root: no dependencies
+// workspace-1: semver ^7.3.2
+// workspace-2: semver ^7.3.2 (same as workspace-1)
+func TestParsePnpmLock_v9_WorkspacesSameLibSameVersion(t *testing.T) {
 	t.Parallel()
 
-	// Run the parser multiple times to check for non-deterministic behavior
-	const iterations = 100
-
-	// Create a map of package name@version -> isDevGroup result for all iterations
-	currentResults := make(map[string][]string)
-
-	for range iterations {
-		// this fixture file is coming from https://github.com/vuejs/core. Which is a complex pnpm lock file
-		packages, err := lockfile.ParsePnpmLock("fixtures/pnpm/is-dev-inconsistency.v9.yaml")
-		if err != nil {
-			t.Errorf("Got unexpected error: %v", err)
-		}
-
-		for _, pkg := range packages {
-			packageKey := pkg.Name + "@" + pkg.Version
-			isDevResult := models.EcosystemNPM.IsDevGroup(pkg.DepGroups)
-			currentResults[packageKey] = append(currentResults[packageKey], strconv.FormatBool(isDevResult))
-		}
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	var keysWithMultipleUnique []string
-
-	for key, values := range currentResults {
-		uniq := make(map[string]struct{})
-		for _, v := range values {
-			uniq[v] = struct{}{}
-		}
-
-		if len(uniq) > 1 {
-			keysWithMultipleUnique = append(keysWithMultipleUnique, key)
-		}
+	path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-and-version/pnpm-lock.yaml"))
+	packages, err := lockfile.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	// We shouldn't have a single package with multiple is-dev results
-	assert.Empty(t, keysWithMultipleUnique)
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/package-json/workspace-same-lib-and-version/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	workspace1path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-and-version/workspace-1/package.json"))
+	workspace2path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-and-version/nested/workspace-2/package.json"))
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "semver",
+			Version:        "7.7.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace1path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace1path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace1path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "7.7.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace2path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace2path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace2path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+	})
+}
+
+// Test case: workspace-same-lib-different-version demonstrates semver conflicts:
+// Root: semver ^7.3.4
+// workspace-1: semver ^7.3.3
+// workspace-2: semver ^6.0.0
+func TestParsePnpmLock_v9_WorkspacesSameLibDifferentVersion(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/pnpm-lock.yaml"))
+	packages, err := lockfile.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/package-json/workspace-same-lib-different-version/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	rootPath := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/package.json"))
+	workspace1path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/workspace-1/package.json"))
+	workspace2path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-same-lib-different-version/nested/workspace-2/package.json"))
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "semver",
+			Version:        "7.7.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^7.3.4"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: rootPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: rootPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: rootPath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "7.7.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^7.3.3"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace1path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace1path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace1path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "6.3.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^6.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace2path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace2path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace2path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+	})
+}
+
+// Test case: workspace-complex demonstrates multi-workspace dependency conflicts:
+// Root: semver ^4.3.0, group-dependencies 0.0.11
+// workspace-1: semver ^7.3.2, picocolors ^0.2.1
+// workspace-2: semver ^6.3.0
+// workspace-3: semver ^5.0.0, picocolors ^1.1.1
+func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-complex/pnpm-lock.yaml"))
+	packages, err := lockfile.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := lockfile.OpenLocalDepFile("fixtures/package-json/workspace-complex/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	rootPath := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-complex/package.json"))
+	workspace1Path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-complex/workspace-1/package.json"))
+	workspace2Path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-complex/nested/workspace-2/package.json"))
+	workspace3Path := filepath.FromSlash(filepath.Join(dir, "fixtures/package-json/workspace-complex/workspace-3/package.json"))
+
+	expectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "group-dependencies",
+			Version:        "0.0.11",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"0.0.11"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 14, End: 14},
+				Column:   models.Position{Start: 5, End: 35},
+				Filename: rootPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 14, End: 14},
+				Column:   models.Position{Start: 6, End: 24},
+				Filename: rootPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 14, End: 14},
+				Column:   models.Position{Start: 28, End: 34},
+				Filename: rootPath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev", "dev"},
+		},
+		{
+			Name:           "colors",
+			Version:        "1.4.0",
+			PackageManager: models.Pnpm,
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation:  models.FilePosition{},
+			IsDirect:       false, // is a dependency of group-dependencies@0.0.11
+			DepGroups:      []string{"dev"},
+		},
+		{
+			Name:           "semver",
+			Version:        "4.3.6",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^4.3.0"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: rootPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: rootPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: rootPath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "picocolors",
+			Version:        "0.2.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^0.2.1"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 27},
+				Filename: workspace1Path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 16},
+				Filename: workspace1Path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 20, End: 26},
+				Filename: workspace1Path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "7.7.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace1Path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace1Path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace1Path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "6.3.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^6.3.0"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace2Path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace2Path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace2Path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "picocolors",
+			Version:        "1.1.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^1.1.1"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 27},
+				Filename: workspace3Path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 16},
+				Filename: workspace3Path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 20, End: 26},
+				Filename: workspace3Path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+		{
+			Name:           "semver",
+			Version:        "5.7.2",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^5.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: workspace3Path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: workspace3Path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: workspace3Path,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+	})
 }

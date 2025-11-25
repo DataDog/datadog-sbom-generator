@@ -591,11 +591,171 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
   },
   "components": [
     {
+      "bom-ref": "pkg:npm/%40babel%2Fcode-frame@7.27.1",
+      "type": "library",
+      "name": "@babel/code-frame",
+      "version": "7.27.1",
+      "purl": "pkg:npm/%40babel%2Fcode-frame@7.27.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40babel%2Fhelper-validator-identifier@7.28.5",
+      "type": "library",
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.28.5",
+      "purl": "pkg:npm/%40babel%2Fhelper-validator-identifier@7.28.5",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fgen-mapping@0.3.13",
+      "type": "library",
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "purl": "pkg:npm/%40jridgewell%2Fgen-mapping@0.3.13",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fresolve-uri@3.1.2",
+      "type": "library",
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "purl": "pkg:npm/%40jridgewell%2Fresolve-uri@3.1.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fsource-map@0.3.11",
+      "type": "library",
+      "name": "@jridgewell/source-map",
+      "version": "0.3.11",
+      "purl": "pkg:npm/%40jridgewell%2Fsource-map@0.3.11",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fsourcemap-codec@1.5.5",
+      "type": "library",
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.5.5",
+      "purl": "pkg:npm/%40jridgewell%2Fsourcemap-codec@1.5.5",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Ftrace-mapping@0.3.31",
+      "type": "library",
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "purl": "pkg:npm/%40jridgewell%2Ftrace-mapping@0.3.31",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40types%2Fnode@24.10.1",
+      "type": "library",
+      "name": "@types/node",
+      "version": "24.10.1",
+      "purl": "pkg:npm/%40types%2Fnode@24.10.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/acorn@8.15.0",
+      "type": "library",
+      "name": "acorn",
+      "version": "8.15.0",
+      "purl": "pkg:npm/acorn@8.15.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/buffer-from@1.1.2",
+      "type": "library",
+      "name": "buffer-from",
+      "version": "1.1.2",
+      "purl": "pkg:npm/buffer-from@1.1.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:npm/colors@1.4.0",
       "type": "library",
       "name": "colors",
       "version": "1.4.0",
       "purl": "pkg:npm/colors@1.4.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/commander@2.20.3",
+      "type": "library",
+      "name": "commander",
+      "version": "2.20.3",
+      "purl": "pkg:npm/commander@2.20.3",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/fsevents@2.3.3",
+      "type": "library",
+      "name": "fsevents",
+      "version": "2.3.3",
+      "purl": "pkg:npm/fsevents@2.3.3",
       "properties": [
         {
           "name": "osv-scanner:package-manager",
@@ -611,6 +771,10 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "purl": "pkg:npm/group-dependencies@0.0.11",
       "properties": [
         {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -622,10 +786,62 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":5,/"column_end/":35},/"name/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":6,/"column_end/":24},/"version/":{/"file_name/":/"package.json/",/"line_start/":11,/"line_end/":11,/"column_start/":28,/"column_end/":34}}"
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":5,/"column_end/":35},/"name/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":6,/"column_end/":24},/"version/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":28,/"column_end/":34}}"
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:npm/has-flag@4.0.0",
+      "type": "library",
+      "name": "has-flag",
+      "version": "4.0.0",
+      "purl": "pkg:npm/has-flag@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/jest-worker@26.6.2",
+      "type": "library",
+      "name": "jest-worker",
+      "version": "26.6.2",
+      "purl": "pkg:npm/jest-worker@26.6.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/js-tokens@4.0.0",
+      "type": "library",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "purl": "pkg:npm/js-tokens@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/merge-stream@2.0.0",
+      "type": "library",
+      "name": "merge-stream",
+      "version": "2.0.0",
+      "purl": "pkg:npm/merge-stream@2.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/picocolors@0.2.1",
@@ -646,7 +862,7 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
           }
         ]
       }
@@ -670,10 +886,73 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"another-folder/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+            "location": "{/"block/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:npm/randombytes@2.1.0",
+      "type": "library",
+      "name": "randombytes",
+      "version": "2.1.0",
+      "purl": "pkg:npm/randombytes@2.1.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/rollup-plugin-terser@7.0.2",
+      "type": "library",
+      "name": "rollup-plugin-terser",
+      "version": "7.0.2",
+      "purl": "pkg:npm/rollup-plugin-terser@7.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":37},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":26},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":30,/"column_end/":36}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/rollup@2.79.2",
+      "type": "library",
+      "name": "rollup",
+      "version": "2.79.2",
+      "purl": "pkg:npm/rollup@2.79.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/safe-buffer@5.2.1",
+      "type": "library",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:npm/semver@4.3.6",
@@ -718,7 +997,7 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"another-folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+            "location": "{/"block/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
           }
         ]
       }
@@ -742,7 +1021,7 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"other-folder/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":16,/"column_end/":22}}"
+            "location": "{/"block/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":16,/"column_end/":22}}"
           }
         ]
       }
@@ -766,10 +1045,88 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"folder/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":16,/"column_end/":22}}"
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:npm/serialize-javascript@4.0.0",
+      "type": "library",
+      "name": "serialize-javascript",
+      "version": "4.0.0",
+      "purl": "pkg:npm/serialize-javascript@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/source-map-support@0.5.21",
+      "type": "library",
+      "name": "source-map-support",
+      "version": "0.5.21",
+      "purl": "pkg:npm/source-map-support@0.5.21",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/source-map@0.6.1",
+      "type": "library",
+      "name": "source-map",
+      "version": "0.6.1",
+      "purl": "pkg:npm/source-map@0.6.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/supports-color@7.2.0",
+      "type": "library",
+      "name": "supports-color",
+      "version": "7.2.0",
+      "purl": "pkg:npm/supports-color@7.2.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/terser@5.44.1",
+      "type": "library",
+      "name": "terser",
+      "version": "5.44.1",
+      "purl": "pkg:npm/terser@5.44.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/undici-types@7.16.0",
+      "type": "library",
+      "name": "undici-types",
+      "version": "7.16.0",
+      "purl": "pkg:npm/undici-types@7.16.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NPM"
+        }
+      ]
     }
   ]
 }
@@ -778,7 +1135,551 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
 
 [TestRun/Scan_npm_with_workspace_support - 2]
 Scanning directory './fixtures/integration-npm/with-workspace', resolved absolute path '<rootdir>/fixtures/integration-npm/with-workspace'
-Scanned <rootdir>/fixtures/integration-npm/with-workspace/package-lock.json file and found 8 packages
+Scanned <rootdir>/fixtures/integration-npm/with-workspace/package-lock.json file and found 35 packages
+Scanned <rootdir>/fixtures/integration-npm/with-workspace/pnpm-lock.yaml file and found 35 packages
+Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and found 34 packages
+[reachability] Reachability analysis is disabled
+---
+
+[TestRun/Scan_yarn_with_workspace_support - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/%40babel%2Fcode-frame@7.27.1",
+      "type": "library",
+      "name": "@babel/code-frame",
+      "version": "7.27.1",
+      "purl": "pkg:npm/%40babel%2Fcode-frame@7.27.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40babel%2Fhelper-validator-identifier@7.28.5",
+      "type": "library",
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.28.5",
+      "purl": "pkg:npm/%40babel%2Fhelper-validator-identifier@7.28.5",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fgen-mapping@0.3.13",
+      "type": "library",
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "purl": "pkg:npm/%40jridgewell%2Fgen-mapping@0.3.13",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fresolve-uri@3.1.2",
+      "type": "library",
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "purl": "pkg:npm/%40jridgewell%2Fresolve-uri@3.1.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fsource-map@0.3.11",
+      "type": "library",
+      "name": "@jridgewell/source-map",
+      "version": "0.3.11",
+      "purl": "pkg:npm/%40jridgewell%2Fsource-map@0.3.11",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Fsourcemap-codec@1.5.5",
+      "type": "library",
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.5.5",
+      "purl": "pkg:npm/%40jridgewell%2Fsourcemap-codec@1.5.5",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40jridgewell%2Ftrace-mapping@0.3.31",
+      "type": "library",
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "purl": "pkg:npm/%40jridgewell%2Ftrace-mapping@0.3.31",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/%40types%2Fnode@24.10.1",
+      "type": "library",
+      "name": "@types/node",
+      "version": "24.10.1",
+      "purl": "pkg:npm/%40types%2Fnode@24.10.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/acorn@8.15.0",
+      "type": "library",
+      "name": "acorn",
+      "version": "8.15.0",
+      "purl": "pkg:npm/acorn@8.15.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/buffer-from@1.1.2",
+      "type": "library",
+      "name": "buffer-from",
+      "version": "1.1.2",
+      "purl": "pkg:npm/buffer-from@1.1.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/colors@1.4.0",
+      "type": "library",
+      "name": "colors",
+      "version": "1.4.0",
+      "purl": "pkg:npm/colors@1.4.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/commander@2.20.3",
+      "type": "library",
+      "name": "commander",
+      "version": "2.20.3",
+      "purl": "pkg:npm/commander@2.20.3",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/group-dependencies@0.0.11",
+      "type": "library",
+      "name": "group-dependencies",
+      "version": "0.0.11",
+      "purl": "pkg:npm/group-dependencies@0.0.11",
+      "properties": [
+        {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":5,/"column_end/":35},/"name/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":6,/"column_end/":24},/"version/":{/"file_name/":/"package.json/",/"line_start/":13,/"line_end/":13,/"column_start/":28,/"column_end/":34}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/has-flag@4.0.0",
+      "type": "library",
+      "name": "has-flag",
+      "version": "4.0.0",
+      "purl": "pkg:npm/has-flag@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/jest-worker@26.6.2",
+      "type": "library",
+      "name": "jest-worker",
+      "version": "26.6.2",
+      "purl": "pkg:npm/jest-worker@26.6.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/js-tokens@4.0.0",
+      "type": "library",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "purl": "pkg:npm/js-tokens@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/merge-stream@2.0.0",
+      "type": "library",
+      "name": "merge-stream",
+      "version": "2.0.0",
+      "purl": "pkg:npm/merge-stream@2.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/picocolors@0.2.1",
+      "type": "library",
+      "name": "picocolors",
+      "version": "0.2.1",
+      "purl": "pkg:npm/picocolors@0.2.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/picocolors@1.1.1",
+      "type": "library",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "purl": "pkg:npm/picocolors@1.1.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":27},/"name/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":16},/"version/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":20,/"column_end/":26}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/randombytes@2.1.0",
+      "type": "library",
+      "name": "randombytes",
+      "version": "2.1.0",
+      "purl": "pkg:npm/randombytes@2.1.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/rollup-plugin-terser@7.0.2",
+      "type": "library",
+      "name": "rollup-plugin-terser",
+      "version": "7.0.2",
+      "purl": "pkg:npm/rollup-plugin-terser@7.0.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":37},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":26},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":30,/"column_end/":36}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/safe-buffer@5.2.1",
+      "type": "library",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/semver@4.3.6",
+      "type": "library",
+      "name": "semver",
+      "version": "4.3.6",
+      "purl": "pkg:npm/semver@4.3.6",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"package.json/",/"line_start/":10,/"line_end/":10,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@5.7.2",
+      "type": "library",
+      "name": "semver",
+      "version": "5.7.2",
+      "purl": "pkg:npm/semver@5.7.2",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"workspace-3/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@6.3.1",
+      "type": "library",
+      "name": "semver",
+      "version": "6.3.1",
+      "purl": "pkg:npm/semver@6.3.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"nested/workspace-2/package.json/",/"line_start/":5,/"line_end/":5,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/semver@7.7.3",
+      "type": "library",
+      "name": "semver",
+      "version": "7.7.3",
+      "purl": "pkg:npm/semver@7.7.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":23},/"name/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"workspace-1/package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/serialize-javascript@4.0.0",
+      "type": "library",
+      "name": "serialize-javascript",
+      "version": "4.0.0",
+      "purl": "pkg:npm/serialize-javascript@4.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/source-map-support@0.5.21",
+      "type": "library",
+      "name": "source-map-support",
+      "version": "0.5.21",
+      "purl": "pkg:npm/source-map-support@0.5.21",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/source-map@0.6.1",
+      "type": "library",
+      "name": "source-map",
+      "version": "0.6.1",
+      "purl": "pkg:npm/source-map@0.6.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/supports-color@7.2.0",
+      "type": "library",
+      "name": "supports-color",
+      "version": "7.2.0",
+      "purl": "pkg:npm/supports-color@7.2.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/terser@5.44.1",
+      "type": "library",
+      "name": "terser",
+      "version": "5.44.1",
+      "purl": "pkg:npm/terser@5.44.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:npm/undici-types@7.16.0",
+      "type": "library",
+      "name": "undici-types",
+      "version": "7.16.0",
+      "purl": "pkg:npm/undici-types@7.16.0",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Yarn"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_yarn_with_workspace_support - 2]
+Scanning directory './fixtures/integration-npm/with-workspace/yarn.lock', resolved absolute path '<rootdir>/fixtures/integration-npm/with-workspace/yarn.lock'
+Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and found 34 packages
 [reachability] Reachability analysis is disabled
 ---
 
@@ -13914,19 +14815,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
-      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "type": "library",
-      "name": "datadog-sbom-generator",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:npm/debug@1.0.0",
       "type": "library",
       "name": "debug",
@@ -18710,19 +19598,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
-      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "type": "library",
-      "name": "datadog-sbom-generator",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:npm/debug@2.6.9",
       "type": "library",
       "name": "debug",
@@ -23485,19 +24360,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
-      "bom-ref": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "type": "library",
-      "name": "datadog-sbom-generator",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/datadog-sbom-generator@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:npm/debug@2.6.9",
       "type": "library",
       "name": "debug",
@@ -25536,19 +26398,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ]
     },
     {
-      "bom-ref": "pkg:npm/suiftly.io@0.0.0-use.local",
-      "type": "library",
-      "name": "suiftly.io",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/suiftly.io@0.0.0-use.local",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:npm/to-regex-range@5.0.1",
       "type": "library",
       "name": "to-regex-range",
@@ -26202,19 +27051,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "name": "slash",
       "version": "3.0.0",
       "purl": "pkg:npm/slash@3.0.0",
-      "properties": [
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "Yarn"
-        }
-      ]
-    },
-    {
-      "bom-ref": "pkg:npm/suiftly.io@0.0.0-use.local",
-      "type": "library",
-      "name": "suiftly.io",
-      "version": "0.0.0-use.local",
-      "purl": "pkg:npm/suiftly.io@0.0.0-use.local",
       "properties": [
         {
           "name": "osv-scanner:package-manager",

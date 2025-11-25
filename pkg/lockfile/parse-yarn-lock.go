@@ -14,9 +14,12 @@ import (
 )
 
 const (
-	yarnPackageManager      = models.Yarn
-	yarnFilePath            = models.YarnFilePath
-	yarnOfficiallySupported = true
+	yarnPackageManager            = models.Yarn
+	yarnFilePath                  = models.YarnFilePath
+	yarnOfficiallySupported       = true
+	yarnLocalVersionMarker        = "-use.local"
+	yarnWorkspaceResolutionMarker = "@workspace:"
+	yarnWorkspaceVersionMarker    = "workspace:"
 )
 
 type YarnDependency struct {
@@ -26,27 +29,49 @@ type YarnDependency struct {
 }
 
 type YarnPackage struct {
-	Name           string
-	Version        string
-	TargetVersions []string
-	Resolution     string
-	Dependencies   []YarnDependency
+	Name          string
+	Version       string
+	TargetVersion string
+	Resolution    string
+	Dependencies  []YarnDependency
+	WorkspacePath string
 }
 
 func shouldSkipYarnLine(line string) bool {
 	return line == "" || strings.HasPrefix(line, "#")
 }
 
-func parseYarnPackageGroup(group []string) YarnPackage {
-	name, targetVersions := extractYarnPackageNameAndTargetVersions(group[0])
+// Example of block:
+//
+// "semver@npm:^7.3.3, semver@npm:^7.3.4":
+//
+//	version: 7.7.3
+//	dependencies:
+//	 semver: "foobar:^6.0.0"
+//
+// Where several targetVersions of 'semver' resolve to the same version: "7.7.3"
+// In this case, we return 2 YarnPackage. One per TargetVersions.
+func parseYarnPackageBlock(block []string) []YarnPackage {
+	name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(block[0]) // look at the first line
 
-	return YarnPackage{
-		Name:           name,
-		Version:        determineYarnPackageVersion(group),
-		TargetVersions: targetVersions,
-		Resolution:     determineYarnPackageResolution(group),
-		Dependencies:   determineYarnPackageDependencies(group),
+	packages := make([]YarnPackage, 0, len(targetVersions))
+	version := determineYarnPackageVersion(block)
+	resolution := determineYarnPackageResolution(block)
+	dependencies := determineYarnPackageDependencies(block)
+
+	// Create one YarnPackage per target version
+	for _, targetVersion := range targetVersions {
+		packages = append(packages, YarnPackage{
+			Name:          name,
+			Version:       version,
+			TargetVersion: targetVersion,
+			Resolution:    resolution,
+			Dependencies:  dependencies,
+			WorkspacePath: workspacePath,
+		})
 	}
+
+	return packages
 }
 
 func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
@@ -64,7 +89,8 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 		// represents the lineStart of a new dependency
 		if !strings.HasPrefix(line, " ") {
 			if len(group) > 0 {
-				groups = append(groups, parseYarnPackageGroup(group))
+				packages := parseYarnPackageBlock(group)
+				groups = append(groups, packages...)
 			}
 			group = make([]string, 0)
 		}
@@ -73,16 +99,17 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 	}
 
 	if len(group) > 0 {
-		groups = append(groups, parseYarnPackageGroup(group))
+		packages := parseYarnPackageBlock(group)
+		groups = append(groups, packages...)
 	}
 
 	return groups
 }
 
-func extractYarnPackageNameAndTargetVersions(str string) (string, []string) {
-	str = strings.ReplaceAll(str, "\"", "")
-	str = strings.TrimSuffix(str, ":")
-	parts := strings.Split(str, ",")
+func extractYarnPackageNameAndTargetVersions(line string) (string, []string, string) {
+	line = strings.ReplaceAll(line, "\"", "")
+	line = strings.TrimSuffix(line, ":")
+	parts := strings.Split(line, ",")
 
 	var name, right string
 	targetVersions := make([]string, 0)
@@ -106,7 +133,7 @@ func extractYarnPackageNameAndTargetVersions(str string) (string, []string) {
 		if strings.HasPrefix(right, "npm:") {
 			right = strings.TrimPrefix(right, "npm:")
 			if strings.Contains(right, "@") {
-				resolvedName, resolvedTargetVersions := extractYarnPackageNameAndTargetVersions(right)
+				resolvedName, resolvedTargetVersions, _ := extractYarnPackageNameAndTargetVersions(right)
 				name = resolvedName
 				targetVersions = append(targetVersions, resolvedTargetVersions...)
 
@@ -128,7 +155,16 @@ func extractYarnPackageNameAndTargetVersions(str string) (string, []string) {
 		targetVersions = append(targetVersions, right)
 	}
 
-	return name, targetVersions
+	// Extract workspace path if present
+	workspacePath := ""
+	for _, version := range targetVersions {
+		if strings.HasPrefix(version, yarnWorkspaceVersionMarker) {
+			workspacePath = strings.TrimPrefix(version, yarnWorkspaceVersionMarker)
+			break
+		}
+	}
+
+	return name, targetVersions, workspacePath
 }
 
 func determineYarnPackageVersion(group []string) string {
@@ -157,12 +193,12 @@ func determineYarnPackageDependencies(group []string) []YarnDependency {
 
 	for _, line := range group {
 		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "dependencies") {
-			// start of the dependencies section
+		if strings.HasPrefix(trimmed, "dependencies") || strings.HasPrefix(trimmed, "optionalDependencies") {
+			// start of the dependencies or optionalDependencies section
 			indentCount = len(line) - len(trimmed)
 		} else if indentCount != -1 && len(line)-len(trimmed) == indentCount {
-			// end of the dependencies section, we can stop there
-			break
+			// end of the current dependencies section, reset to look for next section
+			indentCount = -1
 		} else if indentCount != -1 {
 			// A line inside the dependencies section, lets parse it
 			match := lineParsing.FindStringSubmatch(trimmed)
@@ -291,7 +327,7 @@ func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry stri
 				continue
 			}
 		}
-		dep, exists := packagesIndex[dependentPackage.Name+"@"+dependentPackage.Version]
+		dep, exists := packagesIndex[dependentPackage.Name+"@"+dependentPackage.TargetVersion]
 		if exists {
 			results = append(results, dep)
 		}
@@ -309,13 +345,19 @@ func parseYarnPackage(dependency YarnPackage) PackageDetails {
 		)
 	}
 
+	var nameLocation *models.FilePosition
+	if dependency.WorkspacePath != "" {
+		nameLocation = &models.FilePosition{Filename: dependency.WorkspacePath}
+	}
+
 	return PackageDetails{
 		Name:           dependency.Name,
 		Version:        dependency.Version,
-		TargetVersions: dependency.TargetVersions,
+		TargetVersions: []string{dependency.TargetVersion},
 		PackageManager: yarnPackageManager,
 		Ecosystem:      models.EcosystemNPM,
 		Commit:         tryExtractCommit(dependency.Resolution),
+		NameLocation:   nameLocation,
 	}
 }
 
@@ -323,9 +365,7 @@ func indexByTargetVersion(packages []YarnPackage) map[string]YarnPackage {
 	index := make(map[string]YarnPackage)
 
 	for _, pkg := range packages {
-		for _, targetVersion := range pkg.TargetVersions {
-			index[pkg.Name+"@"+targetVersion] = pkg
-		}
+		index[pkg.Name+"@"+pkg.TargetVersion] = pkg
 	}
 
 	return index
@@ -334,7 +374,8 @@ func indexByTargetVersion(packages []YarnPackage) map[string]YarnPackage {
 func indexByNameAndVersions(packages []PackageDetails) map[string]*PackageDetails {
 	result := make(map[string]*PackageDetails)
 	for index, pkg := range packages {
-		result[pkg.Name+"@"+pkg.Version] = &packages[index]
+		// packages would have been created with a single TargetVersions
+		result[pkg.Name+"@"+pkg.TargetVersions[0]] = &packages[index]
 	}
 
 	return result
@@ -369,21 +410,96 @@ func (e YarnLockExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		return []PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
 	}
 
-	packages := make([]PackageDetails, 0, len(yarnPackages))
+	// Separate workspace packages from root packages
+	workspaces := make([]YarnPackage, 0)
+	allResolvedPackages := make([]YarnPackage, 0)
 
 	for _, yarnPackage := range yarnPackages {
 		if yarnPackage.Name == "__metadata" {
 			continue
 		}
-
-		packages = append(packages, parseYarnPackage(yarnPackage))
+		// Workspace packages have -use.local versions and workspace: resolutions
+		if strings.Contains(yarnPackage.Version, yarnLocalVersionMarker) || strings.Contains(yarnPackage.Resolution, yarnWorkspaceResolutionMarker) {
+			workspaces = append(workspaces, yarnPackage)
+		} else {
+			allResolvedPackages = append(allResolvedPackages, yarnPackage)
+		}
 	}
+
+	dependencyWorkspaces := createDependencyWorkspaceMap(workspaces, allResolvedPackages)
+	packages := createPackageDetails(allResolvedPackages, dependencyWorkspaces)
+
 	pkgIndex := indexByNameAndVersions(packages)
 	for index, pkg := range packages {
 		packages[index].Dependencies = buildDependencyTree(pkg.Name, pkg.TargetVersions[0], "npm", yarnPackageIndex, pkgIndex)
 	}
 
 	return packages, nil
+}
+
+// Map to track which workspaces declare each dependency
+// yarn lockfile represents as a flat list all dependencies, and we need to reconstruct which workspace declare which dependency
+func createDependencyWorkspaceMap(workspaces []YarnPackage, allResolvedPackages []YarnPackage) map[string][]string {
+	// First, build an index of workspace dependencies
+	// Key: dependencyName@targetVersion, Value: workspace paths that declare it
+	workspaceDepsIndex := make(map[string][]string)
+
+	for _, workspace := range workspaces {
+		workspacePath := workspace.WorkspacePath
+		// "." is the value of the root workspace. Let's not use it -> default to empty string
+		if workspacePath == "." {
+			workspacePath = ""
+		}
+
+		for _, dep := range workspace.Dependencies {
+			key := dep.Name + "@" + dep.Version
+			workspaceDepsIndex[key] = append(workspaceDepsIndex[key], workspacePath)
+		}
+	}
+
+	dependencyWorkspaces := make(map[string][]string)
+
+	// Now iterate over resolved packages and lookup their workspace
+	for _, pkg := range allResolvedPackages {
+		// For the lookupKey, we use the pkg.TargetVersion and not pkg.Version because the dependencies
+		// listed in the workspace.Dependencies are listed with the target versions, not the resolved versions
+		// Meaning: pkg.TargetVersion == workspace.Dependencies.Version
+		lookupKey := pkg.Name + "@" + pkg.TargetVersion
+		if workspacePaths, exists := workspaceDepsIndex[lookupKey]; exists {
+			depKey := getWorkspaceDependencyKey(pkg.Name, pkg.Version, pkg.TargetVersion)
+			dependencyWorkspaces[depKey] = workspacePaths
+		}
+	}
+
+	return dependencyWorkspaces
+}
+
+func createPackageDetails(allResolvedPackages []YarnPackage, dependencyWorkspaces map[string][]string) []PackageDetails {
+	packages := make([]PackageDetails, 0, len(allResolvedPackages))
+
+	// Create PackageDetails for regular packages, with workspace information where applicable
+	for _, yarnPackage := range allResolvedPackages {
+		basePackage := parseYarnPackage(yarnPackage)
+		depKey := getWorkspaceDependencyKey(yarnPackage.Name, yarnPackage.Version, yarnPackage.TargetVersion)
+
+		if workspacePaths, exists := dependencyWorkspaces[depKey]; exists {
+			// Create separate PackageDetails for each workspace that declares this dependency with this target version
+			// This is required to parse the related <workspace>/package.json and report an accurate location
+			// The duplicates will each have a different location and will get merged before creating the SBOM
+			for _, workspacePath := range workspacePaths {
+				workspacePackage := basePackage
+				if workspacePath != "" {
+					workspacePackage.NameLocation = &models.FilePosition{Filename: workspacePath}
+				}
+				packages = append(packages, workspacePackage)
+			}
+		} else {
+			// Regular package not declared by any workspace
+			packages = append(packages, basePackage)
+		}
+	}
+
+	return packages
 }
 
 var YarnExtractor = YarnLockExtractor{

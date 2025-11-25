@@ -1,13 +1,12 @@
 {
-  "name": "workspaces-same-lib-different-version",
+  "name": "workspaces-same-lib-and-version",
   "version": "1.0.0",
+  "private": true,
   "workspaces": [
-    "folder",
-    "another-folder",
-    "other-folder/workspace-2"
+    "workspace-1",
+    "nested/**"
   ],
   "dependencies": {
-    "semver": "^4.3.0",
-    "group-dependencies": "0.0.11"
+    "semver": "^7.3.4"
   }
 }

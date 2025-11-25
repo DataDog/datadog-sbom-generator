@@ -271,6 +271,11 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan yarn with workspace support",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-npm/with-workspace/yarn.lock"},
+			exit: 0,
+		},
+		{
 			name: "Scan *.csproj project",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/csproj-sample-app"},
 			exit: 0,
