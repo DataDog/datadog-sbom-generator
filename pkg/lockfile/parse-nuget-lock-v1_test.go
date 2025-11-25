@@ -266,7 +266,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
-				Column:   models.Position{Start: 50, End: 75},
+				Column:   models.Position{Start: 50, End: 55},
 				Filename: absoluteCsprojPath,
 			},
 		},

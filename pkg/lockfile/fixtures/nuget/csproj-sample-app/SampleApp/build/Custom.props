@@ -1,0 +1,12 @@
+<Project>
+  
+  <PropertyGroup>
+    <CustomBuildProperty>CustomValue</CustomBuildProperty>
+    <EnableCustomFeature>true</EnableCustomFeature>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <CustomFiles Include="config/*.json" />
+  </ItemGroup>
+  
+</Project>

@@ -3,8 +3,11 @@ package lockfile_test
 import (
 	"errors"
 	"io"
+	"os"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
 
 	"github.com/stretchr/testify/assert"
 
@@ -34,37 +37,17 @@ var _ lockfile.DepFile = TestDepFile{}
 func TestFindExtractor(t *testing.T) {
 	t.Parallel()
 
-	lockfiles := map[string]string{
-		"buildscript-gradle.lockfile":      "gradle.lockfile",
-		"Cargo.lock":                       "Cargo.lock",
-		"composer.lock":                    "composer.lock",
-		"Gemfile.lock":                     "Gemfile.lock",
-		"go.mod":                           "go.mod",
-		"gradle/verification-metadata.xml": "gradle/verification-metadata.xml",
-		"gradle.lockfile":                  "gradle.lockfile",
-		"mix.lock":                         "mix.lock",
-		"pdm.lock":                         "pdm.lock",
-		"Pipfile.lock":                     "Pipfile.lock",
-		"package-lock.json":                "package-lock.json",
-		"packages.lock.json":               "packages.lock.json",
-		"pnpm-lock.yaml":                   "pnpm-lock.yaml",
-		"poetry.lock":                      "poetry.lock",
-		"pom.xml":                          "pom.xml",
-		"pubspec.lock":                     "pubspec.lock",
-		"renv.lock":                        "renv.lock",
-		"requirements.txt":                 "requirements.txt",
-		"yarn.lock":                        "yarn.lock",
-	}
+	lockfiles := filesToParsers()
 	enabledParsers := make(map[string]bool)
-	for file, extractAs := range lockfiles {
-		enabledParsers[extractAs] = true
+	for file, parserName := range lockfiles {
+		enabledParsers[parserName] = true
 		extractor, extractedAs := lockfile.FindExtractor("/path/to/my/"+file, enabledParsers)
 
 		if extractor == nil {
 			t.Errorf("Expected a extractor to be found for %s but did not", file)
 		}
 
-		if extractAs != extractedAs {
+		if parserName != extractedAs {
 			t.Errorf("Expected extractedAs to be %s but got %s instead", file, extractedAs)
 		}
 	}
@@ -73,37 +56,15 @@ func TestFindExtractor(t *testing.T) {
 func TestExtractDeps_FindsExpectedExtractor(t *testing.T) {
 	t.Parallel()
 
-	lockfiles := []string{
-		"buildscript-gradle.lockfile",
-		"Cargo.lock",
-		"composer.lock",
-		"conan.lock",
-		"Gemfile.lock",
-		"go.mod",
-		"gradle.lockfile",
-		"gradle/verification-metadata.xml",
-		"mix.lock",
-		"pdm.lock",
-		"Pipfile.lock",
-		"package-lock.json",
-		"packages.lock.json",
-		"pnpm-lock.yaml",
-		"poetry.lock",
-		"pom.xml",
-		"pubspec.lock",
-		"renv.lock",
-		"requirements.txt",
-		"yarn.lock",
-		"uv.lock",
-	}
+	lockfiles := filesToParsers()
 	enabledParsers := make(map[string]bool)
-	for _, name := range lockfiles {
-		enabledParsers[name] = true
+	for _, parserName := range lockfiles {
+		enabledParsers[parserName] = true
 	}
-	delete(enabledParsers, "buildscript-gradle.lockfile") // This extractor does not exists, it uses the gradle one
+	delete(enabledParsers, "buildscript-gradle.lockfile") // This extractor does not exist, it uses the gradle one
 	count := 0
 
-	for _, file := range lockfiles {
+	for file := range lockfiles {
 		_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"+file), enabledParsers)
 
 		if errors.Is(err, lockfile.ErrExtractorNotFound) {
@@ -154,6 +115,7 @@ func TestListExtractors(t *testing.T) {
 		"Cargo.lock",
 		"composer.lock",
 		"conan.lock",
+		"csproj",
 		"Gemfile.lock",
 		"go.mod",
 		"gradle.lockfile",
@@ -272,4 +234,59 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"invalid-language", "go"})
 	expected = []string{"go.mod", "invalid-language"}
 	assert.Equal(t, expected, result)
+}
+
+func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
+	t.Helper()
+
+	directories, err := os.ReadDir(".")
+
+	if err != nil {
+		t.Fatalf("unable to read current directory: ")
+	}
+
+	count := 0
+
+	for _, directory := range directories {
+		if strings.HasPrefix(directory.Name(), "parse-") &&
+			!strings.HasSuffix(directory.Name(), "_test.go") {
+			count++
+		}
+	}
+
+	if numberOfParsersCalled != count {
+		t.Errorf(
+			"Expected %d %s to have been called, but had %d",
+			count,
+			output.Form(count, "parser", "parsers"),
+			numberOfParsersCalled,
+		)
+	}
+}
+
+func filesToParsers() map[string]string {
+	return map[string]string{
+		"buildscript-gradle.lockfile":      "gradle.lockfile",
+		"Cargo.lock":                       "Cargo.lock",
+		"composer.lock":                    "composer.lock",
+		"conan.lock":                       "conan.lock",
+		"Gemfile.lock":                     "Gemfile.lock",
+		"Common.csproj":                    "csproj",
+		"go.mod":                           "go.mod",
+		"gradle/verification-metadata.xml": "gradle/verification-metadata.xml",
+		"gradle.lockfile":                  "gradle.lockfile",
+		"mix.lock":                         "mix.lock",
+		"pdm.lock":                         "pdm.lock",
+		"Pipfile.lock":                     "Pipfile.lock",
+		"package-lock.json":                "package-lock.json",
+		"packages.lock.json":               "packages.lock.json",
+		"pnpm-lock.yaml":                   "pnpm-lock.yaml",
+		"poetry.lock":                      "poetry.lock",
+		"pom.xml":                          "pom.xml",
+		"pubspec.lock":                     "pubspec.lock",
+		"renv.lock":                        "renv.lock",
+		"requirements-example.txt":         "requirements.txt",
+		"yarn.lock":                        "yarn.lock",
+		"uv.lock":                          "uv.lock",
+	}
 }

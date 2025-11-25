@@ -275,6 +275,11 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-npm/with-workspace/yarn.lock"},
 			exit: 0,
 		},
+		{
+			name: "Scan csproj project",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/csproj-sample-app"},
+			exit: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

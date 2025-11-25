@@ -111,7 +111,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 			PackageManager: models.NuGet,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
-				Column:   models.Position{Start: 3, End: 70},
+				Column:   models.Position{Start: 3, End: 90},
 				Filename: sourceFilePath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -124,7 +124,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 30, End: 50},
 				Filename: sourceFilePath,
 			},
-			DepGroups: []string{string(models.DepGroupProd)},
+			DepGroups: []string{string(models.DepGroupDev)},
 		},
 		{
 			Name:           "Test.Core",
