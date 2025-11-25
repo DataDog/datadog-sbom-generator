@@ -77,7 +77,7 @@ func TestExtractDeps_FindsExpectedExtractor(t *testing.T) {
 	t.Parallel()
 
 	lockfiles := []string{
-		"*.csproj",
+		"csproj",
 		"buildscript-gradle.lockfile",
 		"Cargo.lock",
 		"composer.lock",
@@ -155,7 +155,7 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
-		"*.csproj",
+		".csproj",
 		"composer.lock",
 		"conan.lock",
 		"Gemfile.lock",

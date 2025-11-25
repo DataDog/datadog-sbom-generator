@@ -108,8 +108,8 @@ NPM, Yarn and PNPM have workspace support
 
 #### Nuget
 
-- This tool only supports extracting packages from `packages.lock.json`.
-- This tool only supports package information enrichment from `*.csproj`.
+data- This tool supports extracting packages from `packages.lock.json` and `*.csproj`.
+- This tool only supports package information enrichment from `*.csproj` when parsing `packages.lock.json`.
 - Inside a `.csproj` file:
   - Templatization is not supported.
   - Including other csproj is not supported.

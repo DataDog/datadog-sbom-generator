@@ -276,7 +276,7 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
-			name: "Scan *.csproj project",
+			name: "Scan csproj project",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/csproj-sample-app"},
 			exit: 0,
 		},

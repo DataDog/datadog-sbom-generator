@@ -195,7 +195,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 ---
 
-[TestRun/Scan_*.csproj_project - 1]
+[TestRun/Scan_csproj_project - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
@@ -418,7 +418,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 ---
 
-[TestRun/Scan_*.csproj_project - 2]
+[TestRun/Scan_csproj_project - 2]
 Scanning directory './fixtures/integration-nuget/csproj-sample-app', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app'
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj file and found 2 packages
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj file and found 2 packages
@@ -10256,7 +10256,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 +------------+-----------------+----------------------------------+
 | LANGUAGE   | PACKAGE MANAGER | LOCKFILE PARSERS                 |
 +------------+-----------------+----------------------------------+
-| .NET       | NuGet           | *.csproj                         |
+| .NET       | NuGet           | csproj                           |
 | .NET       | NuGet           | packages.lock.json               |
 | C++        | Conan           | conan.lock                       |
 | Go         | Golang          | go.mod                           |
