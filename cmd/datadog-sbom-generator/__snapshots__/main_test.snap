@@ -10041,6 +10041,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Python     | Requirements    | requirements.txt                 |
 | Python     | uv              | uv.lock                          |
 | Ruby       | Bundler         | Gemfile.lock                     |
+| Rust       | Crates          | Cargo.lock                       |
 +------------+-----------------+----------------------------------+
 
 ---
@@ -10388,6 +10389,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         {
           "name": "osv-scanner:package",
           "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:cargo/addr2line@0.15.2",
+      "type": "library",
+      "name": "addr2line",
+      "version": "0.15.2",
+      "purl": "pkg:cargo/addr2line@0.15.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
         }
       ]
     },
@@ -15222,6 +15236,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       ]
     },
     {
+      "bom-ref": "pkg:cargo/addr2line@0.15.2",
+      "type": "library",
+      "name": "addr2line",
+      "version": "0.15.2",
+      "purl": "pkg:cargo/addr2line@0.15.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:composer/ably/ably-php@1.1.10",
       "type": "library",
       "name": "ably/ably-php",
@@ -19980,6 +20007,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         {
           "name": "osv-scanner:package",
           "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:cargo/addr2line@0.15.2",
+      "type": "library",
+      "name": "addr2line",
+      "version": "0.15.2",
+      "purl": "pkg:cargo/addr2line@0.15.2",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
         }
       ]
     },
