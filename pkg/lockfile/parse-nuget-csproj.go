@@ -267,7 +267,7 @@ func substituteProperties(value string, properties map[string]string) string {
 	limit := 10
 	newValue := value
 
-	for i := 0; i < limit; i++ {
+	for range limit {
 		variable, isVariable := extractNugetVariable(newValue)
 		if !isVariable {
 			// Property isn't a variable
