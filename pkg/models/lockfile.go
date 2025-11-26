@@ -1,65 +1,5 @@
 package models
 
-// Standard lockfile names used by extractors
-const (
-// APKInstalled              = "/lib/apk/db/installed"
-// BuildscriptGradleLockfile = "buildscript-gradle.lockfile"
-// CargoLock                 = "Cargo.lock"
-// ComposerLock              = "composer.lock"
-// ConanLock                 = "conan.lock"
-//CSProj                    = ".csproj"
-//DpkgStatus                = "/var/lib/dpkg/status"
-//GemfileLock               = "Gemfile.lock"
-//GoBinary                  = "go-binary"
-//GoLock                    = "go.sum"
-//GoMod                     = "go.mod"
-//GradleLockfile            = "gradle.lockfile"
-//GradleVerificationMetadata = "gradle-verification-metadata.xml"
-//GradleVerificationXML     = "gradle/verification-metadata.xml"
-//MavenLock                 = "maven-lock"
-//MixLock                   = "mix.lock"
-//NodeModules               = "node_modules"
-//NugetCsProjFile           = "csproj"
-//NugetLock                 = "packages.lock.json"
-//PackageLockJSON           = "package-lock.json"
-//PackagesLockJSON          = "packages.lock.json"
-//PdmLock                   = "pdm.lock"
-//PipenvLock                = "Pipfile.lock"
-//PipfileLock               = "Pipfile.lock"
-//PnpmLockYAML              = "pnpm-lock.yaml"
-//PoetryLock                = "poetry.lock"
-//PomXML                    = "pom.xml"
-//PubspecLock               = "pubspec.lock"
-//RenvLock                  = "renv.lock"
-//RequirementsTxt           = "requirements.txt"
-//RequirementsTXT           = "requirements.txt"
-//UvLock                    = "uv.lock"
-//YarnLock                  = "yarn.lock"
-
-// BuildscriptGradleLockfile = "buildscript-gradle.lockfile"
-// CargoLock                 = "Cargo.lock"
-// ComposerLock              = "composer.lock"
-// ConanLock                 = "conan.lock"
-// GemfileLock               = "Gemfile.lock"
-// GoMod                     = "go.mod"
-// GradleLockfile            = "gradle.lockfile"
-// GradleVerificationXML     = "gradle/verification-metadata.xml"
-// MixLock                   = "mix.lock"
-// NugetCsProjFile           = "csproj"
-// PackageLockJSON           = "package-lock.json"
-// PackagesLockJSON          = "packages.lock.json"
-// PdmLock                   = "pdm.lock"
-// PipfileLock               = "Pipfile.lock"
-// PnpmLockYAML              = "pnpm-lock.yaml"
-// PoetryLock                = "poetry.lock"
-// PomXML                    = "pom.xml"
-// PubspecLock               = "pubspec.lock"
-// RenvLock                  = "renv.lock"
-// RequirementsTXT           = "requirements.txt"
-// UvLock                    = "uv.lock"
-// YarnLock = "yarn.lock"
-)
-
 type ParsedFilePath string
 
 // String returns the string representation of the ParsedFilePath
@@ -67,6 +7,7 @@ func (p ParsedFilePath) String() string {
 	return string(p)
 }
 
+// Standard lockfile names used by extractors
 const (
 	ApkFilePath                ParsedFilePath = "/lib/apk/db/installed"
 	BundlerFilePath            ParsedFilePath = "Gemfile.lock"
