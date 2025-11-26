@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -17,13 +18,24 @@ const (
 )
 
 type NugetCsProj struct {
-	XMLName    xml.Name    `xml:"Project"`
-	ItemGroups []ItemGroup `xml:"ItemGroup"`
+	XMLName        xml.Name        `xml:"Project"`
+	ItemGroups     []ItemGroup     `xml:"ItemGroup"`
+	PropertyGroups []PropertyGroup `xml:"PropertyGroup"`
 }
 
 type ItemGroup struct {
 	XMLName           xml.Name           `xml:"ItemGroup"`
 	PackageReferences []PackageReference `xml:"PackageReference"`
+}
+
+type PropertyGroup struct {
+	XMLName    xml.Name
+	Properties []Property `xml:",any"`
+}
+
+type Property struct {
+	XMLName xml.Name
+	Value   string `xml:",chardata"`
 }
 
 type PackageReference struct {
@@ -35,6 +47,11 @@ type PackageReference struct {
 	PrivateAssetsAttr *string  `xml:"PrivateAssets,attr"`
 	PrivateAssets     *string  `xml:"PrivateAssets"`
 	models.FilePosition
+}
+
+type ParsedCsProj struct {
+	PackagesByName   map[string]PackageReference
+	PropertiesByName map[string]string
 }
 
 func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
@@ -100,7 +117,7 @@ DecodingLoop:
 
 // ParseNugetCsProj parses a .csproj file and returns a map of package references by package name.
 // This is shared logic used by both the extractor and matcher.
-func ParseNugetCsProj(content []byte) (map[string]PackageReference, error) {
+func ParseNugetCsProj(content []byte) (*ParsedCsProj, error) {
 	var project NugetCsProj
 	err := xml.Unmarshal(content, &project)
 	if err != nil {
@@ -117,7 +134,13 @@ func ParseNugetCsProj(content []byte) (map[string]PackageReference, error) {
 		}
 	}
 
-	return packageReferenceByInclude, nil
+	// Build property map from PropertyGroups
+	properties := buildPropertyMap(project.PropertyGroups)
+
+	return &ParsedCsProj{
+		PackagesByName:   packageReferenceByInclude,
+		PropertiesByName: properties,
+	}, nil
 }
 
 type NuGetCsprojExtractor struct{}
@@ -136,16 +159,18 @@ func (e NuGetCsprojExtractor) Extract(f DepFile) ([]PackageDetails, error) {
 		return nil, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
-	packageReferences, err := ParseNugetCsProj(content)
+	parsedCsProj, err := ParseNugetCsProj(content)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
+	packageReferences := parsedCsProj.PackagesByName
+	fileProperties := parsedCsProj.PropertiesByName
 
 	lines := fileposition.BytesToLines(content)
 	details := make([]PackageDetails, 0, len(packageReferences))
 
 	for name, pkgRef := range packageReferences {
-		version := GetVersion(pkgRef)
+		version := GetVersion(pkgRef, fileProperties)
 		if version == "" {
 			// Skip packages without explicit versions - they might use
 			// centralized version management or other mechanisms
@@ -198,22 +223,67 @@ func GetInclude(pr PackageReference) string {
 	return ""
 }
 
-// GetVersion returns the Version value from a PackageReference
-func GetVersion(pr PackageReference) string {
+// GetVersion returns the Version value from a PackageReference with property substitution applied
+func GetVersion(pr PackageReference, properties map[string]string) string {
+	var version string
 	if pr.Version != nil {
-		return *pr.Version
-	}
-	if pr.VersionAttr != nil {
-		return *pr.VersionAttr
+		version = *pr.Version
+	} else if pr.VersionAttr != nil {
+		version = *pr.VersionAttr
+	} else {
+		return ""
 	}
 
-	return ""
+	// Substitute version from properties if available
+	_, exists := extractNugetVariable(version)
+	if exists && len(properties) > 0 {
+		version = substituteProperties(version, properties)
+	}
+
+	return version
 }
 
 // IsDevDependency checks if a PackageReference is a dev dependency (PrivateAssets="all")
 func IsDevDependency(pr PackageReference) bool {
 	return (pr.PrivateAssetsAttr != nil && strings.Contains(strings.ToLower(*pr.PrivateAssetsAttr), "all")) ||
 		(pr.PrivateAssets != nil && strings.Contains(strings.ToLower(*pr.PrivateAssets), "all"))
+}
+
+// buildPropertyMap creates a map of property names to their values from PropertyGroup elements
+func buildPropertyMap(propertyGroups []PropertyGroup) map[string]string {
+	properties := make(map[string]string)
+	for _, group := range propertyGroups {
+		for _, prop := range group.Properties {
+			properties[prop.XMLName.Local] = prop.Value
+		}
+	}
+
+	return properties
+}
+
+// substituteProperties replaces property references like $(PropertyName) with their actual values
+// It handles nested references by iterating until no more substitutions are possible
+func substituteProperties(value string, properties map[string]string) string {
+	limit := 10
+	newValue := value
+
+	for range limit {
+		variable, isVariable := extractNugetVariable(newValue)
+		if !isVariable {
+			// Property isn't a variable
+			break
+		}
+
+		substitute, substituteExists := properties[variable]
+		if !substituteExists {
+			// We cannot find a substitute to the variable
+			break
+		}
+
+		newValue = substitute
+	}
+
+	return newValue
 }
 
 // extractPackageNameLocation extracts the file position of a package name from a block of lines
@@ -237,6 +307,18 @@ func extractPackageVersionLocation(block []string, lineStart int, filename strin
 	}
 
 	return versionLocation
+}
+
+// Matches strings like: "$(PropertyName)" and extract "PropertyName"
+var variableRegexp = cachedregexp.MustCompile(`^\$\((.*)\)$`)
+
+func extractNugetVariable(value string) (string, bool) {
+	matches := variableRegexp.FindStringSubmatch(value)
+	if len(matches) == 2 {
+		return matches[1], true
+	}
+
+	return "", false
 }
 
 var _ Extractor = NuGetCsprojExtractor{}

@@ -44,6 +44,7 @@
   <!-- Custom properties and imported targets -->
   <PropertyGroup>
     <SerilogVersion>3.1.1</SerilogVersion>
+    <DapperVersion>$(GlobalVersion)</DapperVersion>
   </PropertyGroup>
 
   <Import Project="build/Custom.props" Condition="Exists('build/Custom.props')" />
@@ -53,5 +54,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Package using multi level property substitution -->
+    <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+  </ItemGroup>
 
 </Project>

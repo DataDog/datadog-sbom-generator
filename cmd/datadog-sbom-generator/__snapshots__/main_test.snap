@@ -215,6 +215,30 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
   },
   "components": [
     {
+      "bom-ref": "pkg:nuget/Dapper@$%28GlobalVersion%29",
+      "type": "library",
+      "name": "Dapper",
+      "version": "$(GlobalVersion)",
+      "purl": "pkg:nuget/Dapper@$%28GlobalVersion%29",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":5,/"column_end/":69},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":32,/"column_end/":38},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":49,/"column_end/":65}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/Microsoft.CodeAnalysis.CSharp@4.9.0",
       "type": "library",
       "name": "Microsoft.CodeAnalysis.CSharp",
@@ -287,30 +311,6 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
-      "bom-ref": "pkg:nuget/Serilog@$%28SerilogVersion%29",
-      "type": "library",
-      "name": "Serilog",
-      "version": "$(SerilogVersion)",
-      "purl": "pkg:nuget/Serilog@$%28SerilogVersion%29",
-      "properties": [
-        {
-          "name": "osv-scanner:is-direct",
-          "value": "true"
-        },
-        {
-          "name": "osv-scanner:package-manager",
-          "value": "NuGet"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":5,/"column_end/":71},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":50,/"column_end/":67}}"
-          }
-        ]
-      }
-    },
-    {
       "bom-ref": "pkg:nuget/Serilog@3.1.1",
       "type": "library",
       "name": "Serilog",
@@ -333,6 +333,9 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
           },
           {
             "location": "{/"block/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":59},/"name/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":50,/"column_end/":55}}"
+          },
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":5,/"column_end/":71},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":50,/"column_end/":67}}"
           }
         ]
       }
@@ -422,7 +425,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 Scanning directory './fixtures/integration-nuget/csproj-sample-app', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app'
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj file and found 2 packages
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj file and found 2 packages
-Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 5 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 6 packages
 [reachability] Reachability analysis is disabled
 ---
 
