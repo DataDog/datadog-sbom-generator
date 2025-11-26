@@ -274,173 +274,6 @@
 ]
 ---
 
-[TestPackageJSONMatcher_Match_TransitiveDependencies - 1]
-[
-  {
-    "Source": {
-      "path": ""
-    },
-    "name": "commander",
-    "version": "",
-    "targetVersions": [
-      "~2.0.0"
-    ],
-    "blockLocation": {
-      "line": {
-        "start": 0,
-        "end": 0
-      },
-      "column": {
-        "start": 0,
-        "end": 0
-      },
-      "file_name": ""
-    },
-    "packageManager": "NPM",
-    "isDirect": true
-  },
-  {
-    "Source": {
-      "path": ""
-    },
-    "name": "debug",
-    "version": "",
-    "targetVersions": [
-      "^0.7",
-      "~0.7.2"
-    ],
-    "depGroups": [
-      "prod"
-    ],
-    "blockLocation": {
-      "line": {
-        "start": 5,
-        "end": 5
-      },
-      "column": {
-        "start": 5,
-        "end": 20
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "versionLocation": {
-      "line": {
-        "start": 5,
-        "end": 5
-      },
-      "column": {
-        "start": 15,
-        "end": 19
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "nameLocation": {
-      "line": {
-        "start": 5,
-        "end": 5
-      },
-      "column": {
-        "start": 6,
-        "end": 11
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "isDirect": true
-  },
-  {
-    "Source": {
-      "path": ""
-    },
-    "name": "jear",
-    "version": "",
-    "targetVersions": [
-      "^0.1.4"
-    ],
-    "depGroups": [
-      "prod"
-    ],
-    "blockLocation": {
-      "line": {
-        "start": 4,
-        "end": 4
-      },
-      "column": {
-        "start": 5,
-        "end": 21
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "versionLocation": {
-      "line": {
-        "start": 4,
-        "end": 4
-      },
-      "column": {
-        "start": 14,
-        "end": 20
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "nameLocation": {
-      "line": {
-        "start": 4,
-        "end": 4
-      },
-      "column": {
-        "start": 6,
-        "end": 10
-      },
-      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
-    },
-    "isDirect": true
-  },
-  {
-    "Source": {
-      "path": ""
-    },
-    "name": "shelljs",
-    "version": "",
-    "targetVersions": [
-      "~0.1.4"
-    ],
-    "blockLocation": {
-      "line": {
-        "start": 0,
-        "end": 0
-      },
-      "column": {
-        "start": 0,
-        "end": 0
-      },
-      "file_name": ""
-    },
-    "isDirect": true
-  },
-  {
-    "Source": {
-      "path": ""
-    },
-    "name": "velocityjs",
-    "version": "",
-    "targetVersions": [
-      "~0.3.15"
-    ],
-    "blockLocation": {
-      "line": {
-        "start": 0,
-        "end": 0
-      },
-      "column": {
-        "start": 0,
-        "end": 0
-      },
-      "file_name": ""
-    },
-    "isDirect": true
-  }
-]
----
-
 [TestPackageJSONMatcher_Match_Target_Version - 1]
 [
   {
@@ -1232,6 +1065,173 @@
       "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/multiple-versions/package.json"
     },
     "packageManager": "NPM",
+    "isDirect": true
+  }
+]
+---
+
+[TestPackageJSONMatcher_Match_TransitiveDependencies - 1]
+[
+  {
+    "Source": {
+      "path": ""
+    },
+    "name": "commander",
+    "version": "",
+    "targetVersions": [
+      "~2.0.0"
+    ],
+    "blockLocation": {
+      "line": {
+        "start": 0,
+        "end": 0
+      },
+      "column": {
+        "start": 0,
+        "end": 0
+      },
+      "file_name": ""
+    },
+    "packageManager": "NPM",
+    "isDirect": true
+  },
+  {
+    "Source": {
+      "path": ""
+    },
+    "name": "debug",
+    "version": "",
+    "targetVersions": [
+      "^0.7",
+      "~0.7.2"
+    ],
+    "depGroups": [
+      "prod"
+    ],
+    "blockLocation": {
+      "line": {
+        "start": 5,
+        "end": 5
+      },
+      "column": {
+        "start": 5,
+        "end": 20
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "versionLocation": {
+      "line": {
+        "start": 5,
+        "end": 5
+      },
+      "column": {
+        "start": 15,
+        "end": 19
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "nameLocation": {
+      "line": {
+        "start": 5,
+        "end": 5
+      },
+      "column": {
+        "start": 6,
+        "end": 11
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "isDirect": true
+  },
+  {
+    "Source": {
+      "path": ""
+    },
+    "name": "jear",
+    "version": "",
+    "targetVersions": [
+      "^0.1.4"
+    ],
+    "depGroups": [
+      "prod"
+    ],
+    "blockLocation": {
+      "line": {
+        "start": 4,
+        "end": 4
+      },
+      "column": {
+        "start": 5,
+        "end": 21
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "versionLocation": {
+      "line": {
+        "start": 4,
+        "end": 4
+      },
+      "column": {
+        "start": 14,
+        "end": 20
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "nameLocation": {
+      "line": {
+        "start": 4,
+        "end": 4
+      },
+      "column": {
+        "start": 6,
+        "end": 10
+      },
+      "file_name": "<rootdir>/pkg/lockfile/fixtures/package-json/transitive/package.json"
+    },
+    "isDirect": true
+  },
+  {
+    "Source": {
+      "path": ""
+    },
+    "name": "shelljs",
+    "version": "",
+    "targetVersions": [
+      "~0.1.4"
+    ],
+    "blockLocation": {
+      "line": {
+        "start": 0,
+        "end": 0
+      },
+      "column": {
+        "start": 0,
+        "end": 0
+      },
+      "file_name": ""
+    },
+    "isDirect": true
+  },
+  {
+    "Source": {
+      "path": ""
+    },
+    "name": "velocityjs",
+    "version": "",
+    "targetVersions": [
+      "~0.3.15"
+    ],
+    "blockLocation": {
+      "line": {
+        "start": 0,
+        "end": 0
+      },
+      "column": {
+        "start": 0,
+        "end": 0
+      },
+      "file_name": ""
+    },
     "isDirect": true
   }
 ]
