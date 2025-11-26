@@ -11,21 +11,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const gemfileFilename = "Gemfile"
-
-type gemMetadata struct {
-	name          string
-	groups        []string
-	blockLine     models.Position
-	blockColumn   models.Position
-	nameLine      models.Position
-	nameColumn    models.Position
-	versionLine   *models.Position
-	versionColumn *models.Position
-}
-
-type GemfileMatcher struct{}
-
 func (matcher GemfileMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile.DepFile, error) {
 	lockfileDir := filepath.Dir(sourceFile.Path())
 	sourceFilePath := filepath.Join(lockfileDir, gemfileFilename)

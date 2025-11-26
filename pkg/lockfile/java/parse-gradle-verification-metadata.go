@@ -9,23 +9,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	gradleVerificationPackageManager      = models.Gradle
-	gradleVerificationOfficiallySupported = true
-)
-
-type GradleVerificationMetadataFile struct {
-	Components []struct {
-		Group   string `xml:"group,attr"`
-		Name    string `xml:"name,attr"`
-		Version string `xml:"version,attr"`
-	} `xml:"components>component"`
-}
-
-type GradleVerificationMetadataExtractor struct {
-	lockfile.WithMatcher
-}
-
 func (e GradleVerificationMetadataExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(filepath.Dir(path)) == "gradle" && filepath.Base(path) == "verification-metadata.xml"
 }

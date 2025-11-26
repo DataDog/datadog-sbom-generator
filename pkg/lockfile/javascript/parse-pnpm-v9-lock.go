@@ -17,52 +17,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type PnpmLockPackageResolution struct {
-	Tarball string `yaml:"tarball"`
-	Commit  string `yaml:"commit"`
-	Repo    string `yaml:"repo"`
-	Type    string `yaml:"type"`
-}
-
-type PnpmLockDependency struct {
-	Specifier string `yaml:"specifier"`
-	Version   string `yaml:"version"`
-}
-
-type PnpmPackage struct {
-	Resolution map[string]string `yaml:"resolution"`
-	Version    string            `yaml:"version"`
-}
-
-type (
-	PnpmLockPackages map[string]PnpmPackage
-	PnpmDependencies map[string]PnpmLockDependency
-)
-
-type PnpmImporters struct {
-	Dependencies         PnpmDependencies `yaml:"dependencies,omitempty"`
-	OptionalDependencies PnpmDependencies `yaml:"optionalDependencies,omitempty"`
-	DevDependencies      PnpmDependencies `yaml:"devDependencies,omitempty"`
-}
-
-type PnpmSnapshot struct {
-	Dependencies         map[string]string `yaml:"dependencies"`
-	OptionalDependencies map[string]string `yaml:"optionalDependencies"`
-}
-
-type PnpmLockfile struct {
-	Version   string                   `yaml:"lockfileVersion"`
-	Importers map[string]PnpmImporters `yaml:"importers,omitempty"`
-	Packages  PnpmLockPackages         `yaml:"packages,omitempty"`
-	Snapshots map[string]PnpmSnapshot  `yaml:"snapshots,omitempty"`
-}
-
-type PnpmDirectDependency struct {
-	Pkg           lockfile.PackageDetails
-	Dep           PnpmLockDependency
-	WorkspacePath string
-}
-
 func getCleanedVersion(sourceFile PnpmLockfile, name, version string) string {
 	if strings.HasPrefix(version, "https://codeload.github.com") {
 		// This is a link to a tarball, not a version we need to check the resolved version in the package section

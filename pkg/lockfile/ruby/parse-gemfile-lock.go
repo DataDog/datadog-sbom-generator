@@ -12,45 +12,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	gemfilePackageManager      = models.Bundler
-	gemfileOfficiallySupported = true
-)
-
-const (
-	lockfileSectionBUNDLED      = "BUNDLED WITH"
-	lockfileSectionDEPENDENCIES = "DEPENDENCIES"
-	lockfileSectionPLATFORMS    = "PLATFORMS"
-	lockfileSectionRUBY         = "RUBY VERSION"
-	lockfileSectionGIT          = "GIT"
-	lockfileSectionGEM          = "GEM"
-	lockfileSectionPATH         = "PATH"
-	lockfileSectionPLUGIN       = "PLUGIN SOURCE"
-)
-
-type parserState string
-
-const (
-	parserStateSource      parserState = "source"
-	parserStateDependency  parserState = "dependency"
-	parserStatePlatform    parserState = "platform"
-	parserStateRuby        parserState = "ruby"
-	parserStateBundledWith parserState = "bundled_with"
-)
-
-type gemfileLockfileParser struct {
-	state          parserState
-	dependencies   []lockfile.PackageDetails
-	bundlerVersion string
-	rubyVersion    string
-
-	// holds the commit of the gem that is currently being parsed, if found
-	currentGemCommit string
-
-	// whether or not the parser is in the `DEPENDENCIES` section
-	isInDepSection bool
-}
-
 // This function returns whether or not the given line section is a source section.
 func (parser *gemfileLockfileParser) isSourceSection(line string) bool {
 	if strings.Contains(line, lockfileSectionDEPENDENCIES) {
@@ -207,10 +168,6 @@ func (parser *gemfileLockfileParser) parse(line string) {
 			parser.parseLineBasedOnState(line)
 		}
 	}
-}
-
-type GemfileLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e GemfileLockExtractor) ShouldExtract(path string) bool {

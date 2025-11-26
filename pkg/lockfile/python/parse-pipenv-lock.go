@@ -12,24 +12,6 @@ import (
 	"maps"
 )
 
-const (
-	pipenvPackageManager      = models.Pipfile
-	pipenvOfficiallySupported = true
-)
-
-type PipenvPackage struct {
-	Version string `json:"version"`
-}
-
-type PipenvLock struct {
-	Packages    map[string]PipenvPackage `json:"default"`
-	PackagesDev map[string]PipenvPackage `json:"develop"`
-}
-
-type PipenvLockExtractor struct {
-	lockfile.WithMatcher
-}
-
 func (e PipenvLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.PipfileFilePath.String()
 }

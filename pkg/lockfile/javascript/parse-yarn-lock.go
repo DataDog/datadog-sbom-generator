@@ -13,30 +13,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	yarnPackageManager            = models.Yarn
-	yarnFilePath                  = models.YarnFilePath
-	yarnOfficiallySupported       = true
-	yarnLocalVersionMarker        = "-use.local"
-	yarnWorkspaceResolutionMarker = "@workspace:"
-	yarnWorkspaceVersionMarker    = "workspace:"
-)
-
-type YarnDependency struct {
-	Name     string
-	Version  string
-	Registry string
-}
-
-type YarnPackage struct {
-	Name          string
-	Version       string
-	TargetVersion string
-	Resolution    string
-	Dependencies  []YarnDependency
-	WorkspacePath string
-}
-
 func shouldSkipYarnLine(line string) bool {
 	return line == "" || strings.HasPrefix(line, "#")
 }
@@ -379,10 +355,6 @@ func indexByNameAndVersions(packages []lockfile.PackageDetails) map[string]*lock
 	}
 
 	return result
-}
-
-type YarnLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e YarnLockExtractor) ShouldExtract(path string) bool {

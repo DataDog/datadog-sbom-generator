@@ -10,23 +10,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const (
-	cargoPackageManager      = models.Crates
-	cargoOfficiallySupported = true
-)
-
-type CargoLockPackage struct {
-	Name    string `toml:"name"`
-	Version string `toml:"version"`
-}
-
-type CargoLockFile struct {
-	Version  int                `toml:"version"`
-	Packages []CargoLockPackage `toml:"package"`
-}
-
-type CargoLockExtractor struct{}
-
 func (e CargoLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.CratesFilePath.String()
 }

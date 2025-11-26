@@ -13,27 +13,6 @@ import (
 	"maps"
 )
 
-const (
-	nugetPackageManager      = models.NuGet
-	nugetOfficiallySupported = true
-)
-
-type NuGetLockPackage struct {
-	Resolved string `json:"resolved"`
-	Type     string `json:"type"`
-}
-
-// NuGetLockfile contains the required dependency information as defined in
-// https://github.com/NuGet/NuGet.Client/blob/6.5.0.136/src/NuGet.Core/NuGet.ProjectModel/ProjectLockFile/PackagesLockFileFormat.cs
-type NuGetLockfile struct {
-	Version      int                                    `json:"version"`
-	Dependencies map[string]map[string]NuGetLockPackage `json:"dependencies"`
-}
-
-const (
-	projectDependencyType string = "Project"
-)
-
 func parseNuGetLockDependencies(dependencies map[string]NuGetLockPackage) map[string]lockfile.PackageDetails {
 	details := map[string]lockfile.PackageDetails{}
 
@@ -64,10 +43,6 @@ func parseNuGetLock(file NuGetLockfile) ([]lockfile.PackageDetails, error) {
 	}
 
 	return slices.Collect(maps.Values(details)), nil
-}
-
-type NuGetLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e NuGetLockExtractor) ShouldExtract(path string) bool {

@@ -14,43 +14,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-type NugetCsProj struct {
-	XMLName        xml.Name        `xml:"Project"`
-	ItemGroups     []ItemGroup     `xml:"ItemGroup"`
-	PropertyGroups []PropertyGroup `xml:"PropertyGroup"`
-}
-
-type ItemGroup struct {
-	XMLName           xml.Name           `xml:"ItemGroup"`
-	PackageReferences []PackageReference `xml:"PackageReference"`
-}
-
-type PropertyGroup struct {
-	XMLName    xml.Name
-	Properties []Property `xml:",any"`
-}
-
-type Property struct {
-	XMLName xml.Name
-	Value   string `xml:",chardata"`
-}
-
-type PackageReference struct {
-	XMLName           xml.Name `xml:"PackageReference"`
-	IncludeAttr       *string  `xml:"Include,attr"`
-	Include           *string  `xml:"Include"`
-	VersionAttr       *string  `xml:"Version,attr"`
-	Version           *string  `xml:"Version"`
-	PrivateAssetsAttr *string  `xml:"PrivateAssets,attr"`
-	PrivateAssets     *string  `xml:"PrivateAssets"`
-	models.FilePosition
-}
-
-type ParsedCsProj struct {
-	PackagesByName   map[string]PackageReference
-	PropertiesByName map[string]string
-}
-
 func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
 	if !strings.HasSuffix(path, "."+models.NuGetCsProjFilePath.String()) {
 		return false
@@ -139,8 +102,6 @@ func ParseNugetCsProj(content []byte) (*ParsedCsProj, error) {
 		PropertiesByName: properties,
 	}, nil
 }
-
-type NuGetCsprojExtractor struct{}
 
 func (e NuGetCsprojExtractor) IsOfficiallySupported() bool {
 	return nugetOfficiallySupported

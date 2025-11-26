@@ -10,16 +10,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	gradlePackageManager      = models.Gradle
-	gradleOfficiallySupported = true
-)
-
-const (
-	gradleLockFileCommentPrefix = "#"
-	gradleLockFileEmptyPrefix   = "empty="
-)
-
 func isGradleLockFileDepLine(line string) bool {
 	ret := strings.HasPrefix(line, gradleLockFileCommentPrefix) ||
 		strings.HasPrefix(line, gradleLockFileEmptyPrefix)
@@ -48,10 +38,6 @@ func parseToGradlePackageDetail(line string) (lockfile.PackageDetails, error) {
 		DepGroups:      scopes,
 		Ecosystem:      models.EcosystemMaven,
 	}, nil
-}
-
-type GradleLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e GradleLockExtractor) ShouldExtract(path string) bool {

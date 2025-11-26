@@ -12,49 +12,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const (
-	uvPackageManager      = models.Uv
-	uvOfficiallySupported = true
-)
-
-type UvLockPackageSource struct {
-	Registry string `toml:"registry,omitempty"`
-	Git      string `toml:"git,omitempty"`
-	Virtual  string `toml:"virtual,omitempty"`
-	Editable string `toml:"editable,omitempty"`
-}
-
-type uvDependency struct {
-	Name string `toml:"name"`
-}
-
-type uvPackageMetadata struct {
-	RequiresDist []uvMetadata `toml:"requires-dist"`
-}
-
-type uvMetadata struct {
-	Name      string `toml:"name"`
-	Specifier string `toml:"specifier"`
-}
-
-type UvLockPackage struct {
-	Name            string                    `toml:"name"`
-	Version         string                    `toml:"version"`
-	Source          UvLockPackageSource       `toml:"source"`
-	Dependencies    []uvDependency            `toml:"dependencies"`
-	DevDependencies map[string][]uvDependency `toml:"dev-dependencies"`
-}
-
-type UvLockFile struct {
-	Version  int               `toml:"version"`
-	Packages []*UvLockPackage  `toml:"package"`
-	Metadata uvPackageMetadata `toml:"package.metadata"`
-}
-
-type UvLockExtractor struct {
-	lockfile.WithMatcher
-}
-
 func (e UvLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.UvFilePath.String()
 }

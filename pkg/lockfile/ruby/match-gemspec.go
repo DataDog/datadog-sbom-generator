@@ -13,21 +13,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const gemspecFileSuffix = ".gemspec"
-
-type gemspecMetadata struct {
-	name          string
-	isDev         bool
-	blockLine     models.Position
-	blockColumn   models.Position
-	nameLine      models.Position
-	nameColumn    models.Position
-	versionLine   *models.Position
-	versionColumn *models.Position
-}
-
-type GemspecFileMatcher struct{}
-
 func (matcher GemspecFileMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile.DepFile, error) {
 	var dir = filepath.Dir(sourceFile.Path())
 

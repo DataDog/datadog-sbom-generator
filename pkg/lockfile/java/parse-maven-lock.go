@@ -23,18 +23,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const MavenCentral = "https://repo.maven.apache.org/maven2"
-
-const (
-	mavenPackageManager      = models.Maven
-	mavenOfficiallySupported = true
-)
-
-type MavenRegistryProject struct {
-	io.ReadCloser
-	path string
-}
-
 var errAPIFailed = errors.New("API query failed")
 
 func NewMavenRegistryAPIClient(url string) (lockfile.DepFile, error) {
@@ -77,35 +65,6 @@ func (m *MavenRegistryProject) Open(_ string) (lockfile.DepFile, error) {
 
 func (m *MavenRegistryProject) Path() string {
 	return m.path
-}
-
-type MavenLockDependency struct {
-	XMLName    xml.Name                  `xml:"dependency"`
-	GroupID    models.StringWithPosition `xml:"groupId"`
-	ArtifactID models.StringWithPosition `xml:"artifactId"`
-	Version    models.StringWithPosition `xml:"version"`
-	Scope      string                    `xml:"scope"`
-	Exclusions []MavenLockExclusion      `xml:"exclusions>exclusion"`
-	SourceFile string
-	models.FilePosition
-}
-
-type MavenLockParent struct {
-	XMLName      xml.Name `xml:"parent"`
-	RelativePath string   `xml:"relativePath"`
-	GroupID      string   `xml:"groupId"`
-	ArtifactID   string   `xml:"artifactId"`
-	Version      string   `xml:"version"`
-}
-
-type MavenLockExclusion struct {
-	XMLName    xml.Name                  `xml:"exclusion"`
-	GroupID    models.StringWithPosition `xml:"groupId"`
-	ArtifactID models.StringWithPosition `xml:"artifactId"`
-}
-
-type MavenLockDependencyHolder struct {
-	Dependencies []MavenLockDependency `xml:"dependency"`
 }
 
 func buildProjectProperties(lockfile MavenLockFile) map[string]models.StringWithPosition {
@@ -222,29 +181,6 @@ func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile) (string, m
 	return mld.resolvePropertiesValue(lockfile, mld.GroupID.Value)
 }
 
-type MavenLockFile struct {
-	XMLName                  xml.Name                  `xml:"project"`
-	Parent                   MavenLockParent           `xml:"parent"`
-	Version                  models.StringWithPosition `xml:"version"`
-	ModelVersion             models.StringWithPosition `xml:"modelVersion"`
-	GroupID                  models.StringWithPosition `xml:"groupId"`
-	ArtifactID               models.StringWithPosition `xml:"artifactId"`
-	Properties               MavenLockProperties       `xml:"properties"`
-	Dependencies             MavenLockDependencyHolder `xml:"dependencies"`
-	ManagedDependencies      MavenLockDependencyHolder `xml:"dependencyManagement>dependencies"`
-	MainSourceFile           string
-	ProjectVersionSourceFile string
-}
-
-type MavenLockProperty struct {
-	Property   models.StringWithPosition
-	SourceFile string
-}
-
-type MavenLockProperties struct {
-	m map[string]MavenLockProperty
-}
-
 func (p *MavenLockProperties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	p.m = map[string]MavenLockProperty{}
 
@@ -304,10 +240,6 @@ DecodingLoop:
 	}
 
 	return nil
-}
-
-type MavenLockExtractor struct {
-	lockfile.ArtifactExtractor
 }
 
 func (e MavenLockExtractor) ShouldExtract(path string) bool {

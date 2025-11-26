@@ -10,32 +10,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const (
-	poetryPackageManager      = models.Poetry
-	poetryOfficiallySupported = true
-)
-
-type PoetryLockPackageSource struct {
-	Type   string `toml:"type"`
-	Commit string `toml:"resolved_reference"`
-}
-
-type PoetryLockPackage struct {
-	Name     string                  `toml:"name"`
-	Version  string                  `toml:"version"`
-	Optional bool                    `toml:"optional"`
-	Source   PoetryLockPackageSource `toml:"source"`
-}
-
-type PoetryLockFile struct {
-	Version  int                  `toml:"version"`
-	Packages []*PoetryLockPackage `toml:"package"`
-}
-
-type PoetryLockExtractor struct {
-	lockfile.WithMatcher
-}
-
 func (e PoetryLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.PoetryFilePath.String()
 }

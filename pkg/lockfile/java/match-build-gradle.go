@@ -11,13 +11,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	buildGradleFilename    = "build.gradle"
-	buildGradleKtsFilename = "build.gradle.kts"
-)
-
-type BuildGradleMatcher struct{}
-
 func (m BuildGradleMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile.DepFile, error) {
 	// lockfile (default, groovy)
 	sourcefile, err := sourceFile.Open(buildGradleFilename)

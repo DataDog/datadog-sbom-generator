@@ -19,14 +19,6 @@ import (
 	"golang.org/x/mod/module"
 )
 
-const (
-	goPackageManager      = models.Golang
-	goFilePath            = models.GolangFilePath
-	goOfficiallySupported = true
-)
-
-const unknownVersion = "v0.0.0-unresolved-version"
-
 func deduplicatePackages(packages map[string]lockfile.PackageDetails) map[string]lockfile.PackageDetails {
 	details := map[string]lockfile.PackageDetails{}
 
@@ -36,8 +28,6 @@ func deduplicatePackages(packages map[string]lockfile.PackageDetails) map[string
 
 	return details
 }
-
-type GoLockExtractor struct{}
 
 func defaultNonCanonicalVersions(path, version string) (string, error) {
 	resolvedVersion := module.CanonicalVersion(version)

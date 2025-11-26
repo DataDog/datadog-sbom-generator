@@ -15,71 +15,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	pnpmPackageManager      = models.Pnpm
-	pnpmOfficiallySupported = true
-)
-
-type PnpmLegacyLockPackageResolution struct {
-	Tarball string `yaml:"tarball"`
-	Commit  string `yaml:"commit"`
-	Repo    string `yaml:"repo"`
-	Type    string `yaml:"type"`
-}
-
-type PnpmLegacyLockPackage struct {
-	Resolution PnpmLegacyLockPackageResolution `yaml:"resolution"`
-	Name       string                          `yaml:"name"`
-	Version    string                          `yaml:"version"`
-	Dev        bool                            `yaml:"dev"`
-}
-
-type PnpmLegacyLockDependency struct {
-	Specifier string `yaml:"specifier"`
-	Version   string `yaml:"version"`
-}
-
-type (
-	PnpmLegacyLockPackages map[string]PnpmLegacyLockPackage
-	PnpmLegacySpecifiers   map[string]string
-	PnpmLegacyDependencies map[string]PnpmLegacyLockDependency
-)
-
-type PnpmLegacyLockfile struct {
-	Version              string                 `yaml:"lockfileVersion"`
-	Packages             PnpmLegacyLockPackages `yaml:"packages,omitempty"`
-	Specifiers           PnpmLegacySpecifiers   `yaml:"specifiers,omitempty"`
-	Dependencies         PnpmLegacyDependencies `yaml:"dependencies,omitempty"`
-	OptionalDependencies PnpmLegacyDependencies `yaml:"optionalDependencies,omitempty"`
-	DevDependencies      PnpmLegacyDependencies `yaml:"devDependencies,omitempty"`
-}
-
-func (pnpmDependencies *PnpmLegacyDependencies) UnmarshalYAML(value *yaml.Node) error {
-	if *pnpmDependencies == nil {
-		*pnpmDependencies = make(map[string]PnpmLegacyLockDependency)
-	}
-
-	for i := 0; i < len(value.Content); i += 2 {
-		var pnpmLockDependency PnpmLegacyLockDependency
-
-		keyNode := value.Content[i]
-		valueNode := value.Content[i+1]
-
-		// lockfileVersion 6.0
-		if valueNode.Kind == yaml.MappingNode {
-			if err := valueNode.Decode(&pnpmLockDependency); err != nil {
-				return err
-			}
-		} else {
-			pnpmLockDependency.Version = valueNode.Value
-		}
-
-		(*pnpmDependencies)[keyNode.Value] = pnpmLockDependency
-	}
-
-	return nil
-}
-
 func startsWithNumber(str string) bool {
 	matcher := cachedregexp.MustCompile(`^\d`)
 
@@ -264,10 +199,6 @@ func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile) []lockfile.PackageDetail
 	}
 
 	return packages
-}
-
-type PnpmLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e PnpmLockExtractor) ShouldExtract(path string) bool {

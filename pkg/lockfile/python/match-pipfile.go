@@ -9,8 +9,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-type PipfileMatcher struct{}
-
 func (m PipfileMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFile, error) {
 	return lockfile.Open("Pipfile")
 }

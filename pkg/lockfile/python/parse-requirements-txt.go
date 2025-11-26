@@ -15,40 +15,6 @@ import (
 	"maps"
 )
 
-// CommentType represents the type of dependency comment
-type CommentType int
-
-const (
-	// CommentTypeNone represents a comment that doesn't have any special meaning,
-	// and signifies we're parsing a multiline comment.
-	CommentTypeNone CommentType = iota
-
-	// CommentTypeIndirect represents a comment that signifies a package is an
-	// indirect dependency.
-	CommentTypeIndirect
-
-	// CommentTypeDirect represents a comment that signifies a package is a direct
-	// dependency.
-	CommentTypeDirect
-)
-
-const (
-	requirementsPackageManager      = models.Requirements
-	requirementsOfficiallySupported = true
-)
-
-// Comment represents a parsed requirements.txt comment
-type Comment struct {
-	Content string
-	Type    CommentType
-}
-
-// CommentParser handles parsing of requirements.txt comments
-type CommentParser struct {
-	currentComments []*Comment
-	multiline       bool
-}
-
 // ParseComment parses a single comment line and returns the parsed comment
 func (p *CommentParser) ParseComment(line string) *Comment {
 	// Early return if not a comment
@@ -286,8 +252,6 @@ func extractVersionFromWheelURL(wheelURL string) string {
 
 	return parts[1]
 }
-
-type RequirementsTxtExtractor struct{}
 
 func (e RequirementsTxtExtractor) ShouldExtract(path string) bool {
 	baseFilepath := filepath.Base(path)

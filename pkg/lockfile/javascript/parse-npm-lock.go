@@ -19,25 +19,6 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
-const (
-	npmPackageManager      = models.NPM
-	npmOfficiallySupported = true
-	nodeModulesPath        = "node_modules/"
-)
-
-type NpmLockDependency struct {
-	// For an aliased package, Version is like "npm:[name]@[version]"
-	Version      string                        `json:"version"`
-	Dependencies map[string]*NpmLockDependency `json:"dependencies,omitempty"`
-
-	Dev      bool `json:"dev,omitempty"`
-	Optional bool `json:"optional,omitempty"`
-
-	Requires map[string]string `json:"requires,omitempty"`
-
-	models.FilePosition
-}
-
 func (dep *NpmLockDependency) GetNestedDependencies() map[string]*models.FilePosition {
 	result := make(map[string]*models.FilePosition)
 	for key, value := range dep.Dependencies {
@@ -46,39 +27,6 @@ func (dep *NpmLockDependency) GetNestedDependencies() map[string]*models.FilePos
 
 	return result
 }
-
-type NpmLockPackage struct {
-	// For an aliased package, Name is the real package name
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Resolved string `json:"resolved"`
-
-	Dependencies         map[string]string `json:"dependencies,omitempty"`
-	DevDependencies      map[string]string `json:"devDependencies,omitempty"`
-	OptionalDependencies map[string]string `json:"optionalDependencies,omitempty"`
-	PeerDependencies     map[string]string `json:"peerDependencies,omitempty"`
-
-	Workspaces []string `json:"workspaces,omitempty"`
-
-	Dev         bool `json:"dev,omitempty"`
-	DevOptional bool `json:"devOptional,omitempty"`
-	Optional    bool `json:"optional,omitempty"`
-
-	Link bool `json:"link,omitempty"`
-
-	models.FilePosition
-}
-
-type NpmLockfile struct {
-	Version    int `json:"lockfileVersion"`
-	SourceFile string
-	// npm v1- lockfiles use "dependencies"
-	Dependencies map[string]*NpmLockDependency `json:"dependencies"`
-	// npm v2+ lockfiles use "packages"
-	Packages map[string]*NpmLockPackage `json:"packages,omitempty"`
-}
-
-type npmPackageDetailsMap map[string]lockfile.PackageDetails
 
 // mergeNpmDepsGroups handles merging the dependency groups of packages within the
 // NPM ecosystem, since they can appear multiple times in the same dependency tree
@@ -518,10 +466,6 @@ func getWorkspaceDependencyKey(pkgName string, pkgVersion string, workspace stri
 	}
 
 	return key
-}
-
-type NpmLockExtractor struct {
-	lockfile.WithMatcher
 }
 
 func (e NpmLockExtractor) ShouldExtract(path string) bool {

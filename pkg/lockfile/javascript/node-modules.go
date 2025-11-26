@@ -7,13 +7,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-const (
-	nodeModulesPackageManager      = models.NPM
-	nodeModulesOfficiallySupported = false
-)
-
-type NodeModulesExtractor struct{}
-
 func (e NodeModulesExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(filepath.Dir(path)) == "node_modules" && filepath.Base(path) == ".package-lock.json"
 }

@@ -10,25 +10,6 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const (
-	pdmPackageManager      = models.Pdm
-	pdmOfficiallySupported = true
-)
-
-type PdmLockPackage struct {
-	Name     string   `toml:"name"`
-	Version  string   `toml:"version"`
-	Groups   []string `toml:"groups"`
-	Revision string   `toml:"revision"`
-}
-
-type PdmLockFile struct {
-	Version  string           `toml:"lock-version"`
-	Packages []PdmLockPackage `toml:"package"`
-}
-
-type PdmLockExtractor struct{}
-
 func (p PdmLockExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.PdmFilePath.String()
 }

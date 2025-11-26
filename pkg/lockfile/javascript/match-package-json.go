@@ -15,35 +15,6 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
-const (
-	typeDependencies = iota
-	typeDevDependencies
-	typeOptionalDependencies
-)
-
-type PackageJSONMatcher struct {
-	// Used to store the patterns for workspaces in a given root package.json
-	WorkspacePatterns []string
-}
-
-type WorkspacePackageJSON struct {
-	Workspaces []string `json:"workspaces"`
-}
-
-/*
-packageJSONDependencyMap is here to have access to all lockfile.MatcherDependencyMap methods and at the same time having
-a different type to have a clear UnmarshallJSON method for the json decoder and avoid overlaps with other matchers.
-*/
-type packageJSONDependencyMap struct {
-	lockfile.MatcherDependencyMap
-}
-
-type packageJSONFile struct {
-	Dependencies         packageJSONDependencyMap `json:"dependencies"`
-	DevDependencies      packageJSONDependencyMap `json:"devDependencies"`
-	OptionalDependencies packageJSONDependencyMap `json:"optionalDependencies"`
-}
-
 func (m PackageJSONMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFile, error) {
 	return lockfile.Open("package.json")
 }

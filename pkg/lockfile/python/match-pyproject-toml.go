@@ -2,8 +2,6 @@ package python
 
 import "github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 
-type PyprojectTOMLMatcher struct{}
-
 func (m PyprojectTOMLMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFile, error) {
 	return lockfile.Open("pyproject.toml")
 }
