@@ -3,7 +3,7 @@ package lockfile_test
 import (
 	"errors"
 	"io"
-	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/parsers" // Register all extractors
 )
 
 type TestDepFile struct {
@@ -239,17 +240,15 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
 	t.Helper()
 
-	directories, err := os.ReadDir(".")
-
+	// Find all parse-*.go files excluding test files
+	files, err := filepath.Glob("*/parse-*.go")
 	if err != nil {
-		t.Fatalf("unable to read current directory: ")
+		t.Fatalf("unable to glob parse files: %v", err)
 	}
 
 	count := 0
-
-	for _, directory := range directories {
-		if strings.HasPrefix(directory.Name(), "parse-") &&
-			!strings.HasSuffix(directory.Name(), "_test.go") {
+	for _, file := range files {
+		if !strings.HasSuffix(file, "_test.go") {
 			count++
 		}
 	}

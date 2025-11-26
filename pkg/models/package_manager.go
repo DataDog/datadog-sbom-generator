@@ -25,32 +25,6 @@ const (
 	Yarn         PackageManager = "Yarn"
 )
 
-const (
-	ApkFilePath               string = "/lib/apk/db/installed"
-	BundlerFilePath           string = "Gemfile.lock"
-	ComposerFilePath          string = "composer.lock"
-	ConanFilePath             string = "conan.lock"
-	CratesFilePath            string = "Cargo.lock"
-	DpkgFilePath              string = "/var/lib/dpkg/status"
-	GolangFilePath            string = "go.mod"
-	GradleBuildScriptFilePath string = "buildscript-gradle.lockfile"
-	GradleFilePath            string = "gradle.lockfile"
-	HexFilePath               string = "mix.lock"
-	MavenFilePath             string = "pom.xml"
-	NpmFilePath               string = "package-lock.json"
-	NuGetCsProjFilePath       string = ".csproj"
-	NugetLockFilePath         string = "packages.lock.json"
-	PdmFilePath               string = "pdm.lock"
-	PipfileFilePath           string = "Pipfile.lock"
-	PnpmFilePath              string = "pnpm-lock.yaml"
-	PoetryFilePath            string = "poetry.lock"
-	PubFilePath               string = "pubspec.lock"
-	RenvFilePath              string = "renv.lock"
-	RequirementsFilePath      string = "requirements.txt"
-	UvFilePath                string = "uv.lock"
-	YarnFilePath              string = "yarn.lock"
-)
-
 var PackageManagerToLanguage = map[PackageManager]Language{
 	Maven:        Java,
 	Gradle:       Java,

@@ -1,0 +1,329 @@
+package dotnet_test
+
+import (
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/dotnet"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+)
+
+func TestNuGetCsprojExtractor_ShouldExtract(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		path          string
+		shouldExtract bool
+	}{
+		{
+			name:          "empty path",
+			path:          "",
+			shouldExtract: false,
+		},
+		{
+			name:          "simple csproj file",
+			path:          "project.csproj",
+			shouldExtract: true,
+		},
+		{
+			name:          "csproj with path",
+			path:          "path/to/my/project.csproj",
+			shouldExtract: true,
+		},
+		{
+			name:          "not a csproj file",
+			path:          "path/to/my/project.vbproj",
+			shouldExtract: false,
+		},
+		{
+			name:          "csproj in filename but not extension",
+			path:          "path.csproj.file",
+			shouldExtract: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			e := dotnet.NuGetCsprojExtractor{}
+			got := e.ShouldExtract(tt.path)
+			assert.Equal(t, tt.shouldExtract, got)
+		})
+	}
+}
+
+func TestNuGetCsprojExtractor_SkipsWhenLockfileExists(t *testing.T) {
+	t.Parallel()
+
+	// This directory has both .csproj and packages.lock.json
+	// The extractor should NOT extract the .csproj
+	path := "../fixtures/nuget/one-framework-one-package-with-csproj/project.csproj"
+
+	e := dotnet.NuGetCsprojExtractor{}
+	shouldExtract := e.ShouldExtract(path)
+	assert.False(t, shouldExtract, "ShouldExtract() should return false when packages.lock.json exists in the same directory")
+}
+
+func TestParseNuGetCsproj_Common(t *testing.T) {
+	t.Parallel()
+
+	path := "../fixtures/nuget/csproj-sample-app/Common/Common.csproj"
+	packages, err := dotnet.ParseNuGetCsproj(path)
+	if err != nil {
+		t.Errorf("ParseNuGetCsproj() error = %v", err)
+		return
+	}
+
+	absoluteCsprojPath, err := filepath.Abs(path)
+	if err != nil {
+		t.Errorf("filepath.Abs() error = %v", err)
+		return
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "System.Text.Json",
+			Version:        "8.0.4",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 68},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 32, End: 48},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 59, End: 64},
+				Filename: absoluteCsprojPath,
+			},
+		},
+	})
+}
+
+func TestParseNuGetCsproj_Logging(t *testing.T) {
+	t.Parallel()
+
+	path := "../fixtures/nuget/csproj-sample-app/Logging/Logging.csproj"
+	packages, _ := dotnet.ParseNuGetCsproj(path)
+	absoluteCsprojPath, _ := filepath.Abs(path)
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "Microsoft.Extensions.Logging.Abstractions",
+			Version:        "8.0.1",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 93},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 32, End: 73},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 84, End: 89},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Serilog",
+			Version:        "3.1.1",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 5, End: 59},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 32, End: 39},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 50, End: 55},
+				Filename: absoluteCsprojPath,
+			},
+		},
+	})
+}
+
+func TestParseNuGetCsproj_SampleApp(t *testing.T) {
+	t.Parallel()
+
+	path := "../fixtures/nuget/csproj-sample-app/SampleApp/SampleApp.csproj"
+	packages, _ := dotnet.ParseNuGetCsproj(path)
+	absoluteCsprojPath, _ := filepath.Abs(path)
+
+	// Expected packages:
+	// - Newtonsoft.Json 13.0.3
+	// - Serilog 3.1.1  - property substitution
+	// - xunit 2.5.0
+	// - coverlet.collector 3.2.0 (PrivateAssets=All, should be dev)
+	// - Microsoft.CodeAnalysis.CSharp 4.9.0
+	// - Dapper $(GlobalVersion) - multi level property substitution
+	//
+	// Skipped packages:
+	// - Microsoft.Extensions.Logging - no version specified, skipped
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "Newtonsoft.Json",
+			Version:        "13.0.3",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 5, End: 68},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 32, End: 47},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 58, End: 64},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Serilog",
+			Version:        "3.1.1",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 26, End: 26},
+				Column:   models.Position{Start: 5, End: 71},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 26, End: 26},
+				Column:   models.Position{Start: 32, End: 39},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 26, End: 26},
+				Column:   models.Position{Start: 50, End: 67},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "xunit",
+			Version:        "2.5.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 32, End: 32},
+				Column:   models.Position{Start: 5, End: 99},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 32, End: 32},
+				Column:   models.Position{Start: 32, End: 37},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 32, End: 32},
+				Column:   models.Position{Start: 48, End: 53},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "coverlet.collector",
+			Version:        "3.2.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupDev)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 35, End: 35},
+				Column:   models.Position{Start: 5, End: 90},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 35, End: 35},
+				Column:   models.Position{Start: 32, End: 50},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 35, End: 35},
+				Column:   models.Position{Start: 61, End: 66},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Microsoft.CodeAnalysis.CSharp",
+			Version:        "4.9.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 38, End: 38},
+				Column:   models.Position{Start: 5, End: 105},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 38, End: 38},
+				Column:   models.Position{Start: 32, End: 61},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 38, End: 38},
+				Column:   models.Position{Start: 72, End: 77},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Dapper",
+			Version:        "$(GlobalVersion)",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 5, End: 69},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 32, End: 38},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 60, End: 60},
+				Column:   models.Position{Start: 49, End: 65},
+				Filename: absoluteCsprojPath,
+			},
+		},
+	})
+}
