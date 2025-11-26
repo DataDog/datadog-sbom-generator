@@ -101,7 +101,7 @@ func TestFilePaths(t *testing.T) {
 
 			actual, exists := actualFilePaths[key]
 			assert.True(t, exists, "Key %s should exist", key)
-			assert.Equal(t, expected, actual, "Value for %s does not match", key)
+			assert.Equal(t, expected, actual.String(), "Value for %s does not match", key)
 		})
 	}
 }
