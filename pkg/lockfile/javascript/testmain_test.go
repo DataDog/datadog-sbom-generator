@@ -1,4 +1,4 @@
-package lockfile_test
+package javascript_test
 
 import (
 	"os"
