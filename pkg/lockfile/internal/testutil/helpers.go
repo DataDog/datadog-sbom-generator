@@ -161,21 +161,3 @@ func ExpectPackagesWithoutLocations(t *testing.T, actualPackages []lockfile.Pack
 
 	InnerExpectPackages(t, actualPackages, expectedPackages, true)
 }
-
-// Deprecated: Use ExpectPackagesWithoutLocations instead
-func ExpectPackagesWithoutSource(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails) {
-	t.Helper()
-
-	opts := []cmp.Option{
-		cmpopts.IgnoreFields(lockfile.PackageDetails{}, "Source"),
-		cmpopts.EquateEmpty(),
-	}
-
-	if diff := cmp.Diff(expectedPackages, actualPackages, opts...); diff != "" {
-		t.Errorf("Packages mismatch (-want +got):\n%s", diff)
-	}
-}
-
-func AsPointer[T any](v T) *T {
-	return &v
-}
