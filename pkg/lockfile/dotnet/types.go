@@ -1,0 +1,94 @@
+package dotnet
+
+import (
+	"encoding/xml"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+)
+
+// ============================================================================
+// Package Metadata Constants
+// ============================================================================
+
+const (
+	nugetPackageManager      = models.NuGet
+	nugetOfficiallySupported = true
+)
+
+// ============================================================================
+// Dependency Type Constants
+// ============================================================================
+
+const (
+	projectDependencyType string = "Project"
+)
+
+// ============================================================================
+// NuGet .csproj Types
+// ============================================================================
+
+type NugetCsProj struct {
+	XMLName        xml.Name        `xml:"Project"`
+	ItemGroups     []ItemGroup     `xml:"ItemGroup"`
+	PropertyGroups []PropertyGroup `xml:"PropertyGroup"`
+}
+
+type ItemGroup struct {
+	XMLName           xml.Name           `xml:"ItemGroup"`
+	PackageReferences []PackageReference `xml:"PackageReference"`
+}
+
+type PropertyGroup struct {
+	XMLName    xml.Name
+	Properties []Property `xml:",any"`
+}
+
+type Property struct {
+	XMLName xml.Name
+	Value   string `xml:",chardata"`
+}
+
+type PackageReference struct {
+	XMLName           xml.Name `xml:"PackageReference"`
+	IncludeAttr       *string  `xml:"Include,attr"`
+	Include           *string  `xml:"Include"`
+	VersionAttr       *string  `xml:"Version,attr"`
+	Version           *string  `xml:"Version"`
+	PrivateAssetsAttr *string  `xml:"PrivateAssets,attr"`
+	PrivateAssets     *string  `xml:"PrivateAssets"`
+	models.FilePosition
+}
+
+type ParsedCsProj struct {
+	PackagesByName   map[string]PackageReference
+	PropertiesByName map[string]string
+}
+
+type NuGetCsprojExtractor struct{}
+
+// ============================================================================
+// NuGet packages.lock.json Types
+// ============================================================================
+
+type NuGetLockPackage struct {
+	Resolved string `json:"resolved"`
+	Type     string `json:"type"`
+}
+
+// NuGetLockfile contains the required dependency information as defined in
+// https://github.com/NuGet/NuGet.Client/blob/6.5.0.136/src/NuGet.Core/NuGet.ProjectModel/ProjectLockFile/PackagesLockFileFormat.cs
+type NuGetLockfile struct {
+	Version      int                                    `json:"version"`
+	Dependencies map[string]map[string]NuGetLockPackage `json:"dependencies"`
+}
+
+type NuGetLockExtractor struct {
+	lockfile.WithMatcher
+}
+
+// ============================================================================
+// Matcher Types
+// ============================================================================
+
+type NugetCsprojMatcher struct{}

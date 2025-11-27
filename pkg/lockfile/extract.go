@@ -12,12 +12,14 @@ import (
 
 var lockfileExtractors = map[string]Extractor{}
 
-func registerExtractor(name string, extractor Extractor) {
-	if _, ok := lockfileExtractors[name]; ok {
-		panic("an extractor is already registered as " + name)
+// RegisterExtractor registers an extractor for a specific lockfile type.
+// This is called by language-specific packages during initialization.
+func RegisterExtractor(name models.ParsedFilePath, extractor Extractor) {
+	if _, ok := lockfileExtractors[name.String()]; ok {
+		panic("an extractor is already registered as " + name.String())
 	}
 
-	lockfileExtractors[name] = extractor
+	lockfileExtractors[name.String()] = extractor
 }
 
 func FindExtractor(path string, enabledParsers map[string]bool) (Extractor, string) {

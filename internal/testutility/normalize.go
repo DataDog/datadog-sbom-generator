@@ -21,22 +21,49 @@ func normalizeFilePaths(t *testing.T, output string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(output, "\\\\", "/"), "\\", "/")
 }
 
-// normalizeRootDirectory attempts to replace references to the current working
-// directory with "<rootdir>", in order to reduce the noise of the cmp diff
-func normalizeRootDirectory(t *testing.T, str string) string {
+// findProjectRoot walks up from the current directory to find the project root
+// by looking for the .git directory
+func findProjectRoot(t *testing.T) string {
 	t.Helper()
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Errorf("could not get cwd (%v) - results and diff might be inaccurate!", err)
+		return cwd
 	}
 
-	cwd = normalizeFilePaths(t, cwd)
+	dir := cwd
+	for {
+		// Check if .git exists in the current directory
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+			return dir
+		}
+
+		// Move up one directory
+		parent := filepath.Dir(dir)
+
+		// If we've reached the root without finding .git, return the original cwd
+		if parent == dir {
+			t.Logf("could not find project root (.git), using cwd: %s", cwd)
+			return cwd
+		}
+
+		dir = parent
+	}
+}
+
+// normalizeRootDirectory attempts to replace references to the project root
+// directory with "<rootdir>", in order to reduce the noise of the cmp diff
+func normalizeRootDirectory(t *testing.T, str string) string {
+	t.Helper()
+
+	projectRoot := findProjectRoot(t)
+	projectRoot = normalizeFilePaths(t, projectRoot)
 
 	// file uris with Windows end up with three slashes, so we normalize that too
-	str = strings.ReplaceAll(str, "file:///"+cwd, "file://<rootdir>")
+	str = strings.ReplaceAll(str, "file:///"+projectRoot, "file://<rootdir>")
 
-	return strings.ReplaceAll(str, cwd, "<rootdir>")
+	return strings.ReplaceAll(str, projectRoot, "<rootdir>")
 }
 
 // normalizeUserCacheDirectory attempts to replace references to the current working

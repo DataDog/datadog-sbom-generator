@@ -70,7 +70,7 @@ func TestFilePaths(t *testing.T) {
 		"DpkgFilePath":              "/var/lib/dpkg/status",
 	}
 
-	actualFilePaths := map[string]string{
+	actualFilePaths := map[string]ParsedFilePath{
 		"NpmFilePath":               NpmFilePath,
 		"YarnFilePath":              YarnFilePath,
 		"PnpmFilePath":              PnpmFilePath,
@@ -101,7 +101,7 @@ func TestFilePaths(t *testing.T) {
 
 			actual, exists := actualFilePaths[key]
 			assert.True(t, exists, "Key %s should exist", key)
-			assert.Equal(t, expected, actual, "Value for %s does not match", key)
+			assert.Equal(t, expected, actual.String(), "Value for %s does not match", key)
 		})
 	}
 }
