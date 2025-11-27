@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <!-- Central package management versions -->
+    <!-- Central package management versions are ignored -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.App" Version="8.0.0" />

@@ -32,7 +32,7 @@
     <PackageReference Include="xunit" Version="2.5.0" Condition="'$(Configuration)' == 'Debug'" />
 
     <!-- Dev-only dependency -->
-    <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="All" />
+    <PackageReference Include="coverlet.collector" Version="$(CoverletVersion)" PrivateAssets="All" />
 
     <!-- Excluded asset types -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.0" ExcludeAssets="runtime" />
@@ -49,6 +49,8 @@
 
   <Import Project="build/Custom.props" Condition="Exists('build/Custom.props')" />
   <Import Project="build/Custom.targets" Condition="Exists('build/Custom.targets')" />
+  <Import Project="..\Common.props" Condition="Exists('..\Common.props')" />
+
 
   <!-- Conditional target frameworks -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

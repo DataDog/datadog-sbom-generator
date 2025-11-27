@@ -215,11 +215,11 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
   },
   "components": [
     {
-      "bom-ref": "pkg:nuget/Dapper@$%28GlobalVersion%29",
+      "bom-ref": "pkg:nuget/Dapper@2.1.28",
       "type": "library",
       "name": "Dapper",
-      "version": "$(GlobalVersion)",
-      "purl": "pkg:nuget/Dapper@$%28GlobalVersion%29",
+      "version": "2.1.28",
+      "purl": "pkg:nuget/Dapper@2.1.28",
       "properties": [
         {
           "name": "osv-scanner:is-direct",
@@ -233,7 +233,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":5,/"column_end/":69},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":32,/"column_end/":38},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":60,/"line_end/":60,/"column_start/":49,/"column_end/":65}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":5,/"column_end/":69},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":32,/"column_end/":38},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":49,/"column_end/":65}}"
           }
         ]
       }
@@ -311,6 +311,30 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
+      "bom-ref": "pkg:nuget/Serilog@2.10.0",
+      "type": "library",
+      "name": "Serilog",
+      "version": "2.10.0",
+      "purl": "pkg:nuget/Serilog@2.10.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":71},/"name/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":50,/"column_end/":67}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/Serilog@3.1.1",
       "type": "library",
       "name": "Serilog",
@@ -328,9 +352,6 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       ],
       "evidence": {
         "occurrences": [
-          {
-            "location": "{/"block/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":59},/"name/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":50,/"column_end/":55}}"
-          },
           {
             "location": "{/"block/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":59},/"name/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39},/"version/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":50,/"column_end/":55}}"
           },
@@ -387,7 +408,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":5,/"column_end/":90},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":32,/"column_end/":50},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":61,/"column_end/":66}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":5,/"column_end/":103},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":32,/"column_end/":50},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":61,/"column_end/":79}}"
           }
         ]
       }
