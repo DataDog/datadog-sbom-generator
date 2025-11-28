@@ -32,52 +32,9 @@ func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
 	return true
 }
 
-// UnmarshalXML implements xml.Unmarshaler to capture line and column positions for each PackageReference.
-// This custom unmarshaler is necessary because the standard xml.Unmarshal doesn't provide file position
-// information. By manually iterating through XML tokens and calling decoder.InputPos(), we can record
-// where each PackageReference appears in the file.
-func (itemGroup *ItemGroup) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-DecodingLoop:
-	for {
-		lineStart, columnStart := decoder.InputPos()
-		token, err := decoder.Token()
-		if err != nil {
-			return err
-		}
-
-		switch elem := token.(type) {
-		case xml.StartElement:
-			if elem.Name.Local != "PackageReference" {
-				continue
-			}
-
-			packageReference := PackageReference{}
-			packageReference.SetLineStart(lineStart)
-			packageReference.SetColumnStart(columnStart)
-
-			err := decoder.DecodeElement(&packageReference, &elem)
-			if err != nil {
-				return err
-			}
-
-			lineEnd, columnEnd := decoder.InputPos()
-			packageReference.SetLineEnd(lineEnd)
-			packageReference.SetColumnEnd(columnEnd)
-			itemGroup.PackageReferences = append(itemGroup.PackageReferences, packageReference)
-
-		case xml.EndElement:
-			if elem.Name == start.Name {
-				break DecodingLoop
-			}
-		}
-	}
-
-	return nil
-}
-
 // ParseNugetCsProj parses a .csproj file and returns a map of package references by package name.
 // This is shared logic used by both the extractor and matcher.
-func ParseNugetCsProj(content []byte) (*ParsedCsProj, error) {
+func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) {
 	var project NugetCsProj
 	err := xml.Unmarshal(content, &project)
 	if err != nil {
@@ -94,12 +51,15 @@ func ParseNugetCsProj(content []byte) (*ParsedCsProj, error) {
 		}
 	}
 
-	// Build property map from PropertyGroups
-	properties := buildPropertyMap(project.PropertyGroups)
+	// Build property map from the PropertyGroups of the current .csproj
+	localProperties := buildPropertyMap(project.PropertyGroups)
+
+	// Discover and parse .props files recursively, merging properties as we go
+	mergedProperties := traverseAndMergePropsFiles(csprojPath, project.Imports, localProperties)
 
 	return &ParsedCsProj{
 		PackagesByName:   packageReferenceByInclude,
-		PropertiesByName: properties,
+		PropertiesByName: mergedProperties,
 	}, nil
 }
 
@@ -117,18 +77,19 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDet
 		return nil, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
-	parsedCsProj, err := ParseNugetCsProj(content)
+	parsedCsProj, err := ParseNugetCsProj(content, f.Path())
 	if err != nil {
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
 	packageReferences := parsedCsProj.PackagesByName
-	fileProperties := parsedCsProj.PropertiesByName
+	allProperties := parsedCsProj.PropertiesByName
 
 	lines := fileposition.BytesToLines(content)
 	details := make([]lockfile.PackageDetails, 0, len(packageReferences))
 
 	for name, pkgRef := range packageReferences {
-		version := GetVersion(pkgRef, fileProperties)
+		version := GetVersion(pkgRef, allProperties)
+
 		if version == "" {
 			// Skip packages without explicit versions - they might use
 			// centralized version management or other mechanisms
@@ -280,6 +241,138 @@ func extractNugetVariable(value string) (string, bool) {
 }
 
 var _ lockfile.Extractor = NuGetCsprojExtractor{}
+
+// traverseAndMergePropsFiles discovers .props files recursively and merges their properties
+// in a single pass to avoid reading the same file multiple times.
+// Returns merged properties with correct precedence order.
+func traverseAndMergePropsFiles(csprojPath string, csprojImports []Import, localProperties map[string]string) map[string]string {
+	allProperties := make(map[string]string)
+	processedFiles := make(map[string]bool)
+	csprojDir := filepath.Dir(csprojPath)
+
+	// Process convention-based files first (Directory.Build.props has the lowest priority)
+	conventionFiles := []string{buildPropsFile, packagesPropsFile}
+	for _, fileName := range conventionFiles {
+		if path, exists := findFileInParentDirs(csprojDir, fileName); exists {
+			propsFileProperties := processPropsFile(path, processedFiles)
+
+			// Merge new properties with all properties
+			for key, value := range propsFileProperties {
+				allProperties[key] = value
+			}
+		}
+	}
+
+	// Process explicit imports from .csproj (have precedence over the default Build/Packages files)
+	importProperties := readPropertiesFromPropsFilesImports(csprojImports, csprojDir, processedFiles)
+	for key, value := range importProperties {
+		allProperties[key] = value
+	}
+
+	// Finally, use local properties from .csproj which have the highest priority
+	for key, value := range localProperties {
+		allProperties[key] = value
+	}
+
+	return allProperties
+}
+
+// processPropsFile recursively processes a .props file and returns its properties
+// Returns a map containing properties from this file and all its imports
+func processPropsFile(propsPath string, processedFiles map[string]bool) map[string]string {
+	// Skip if already processed
+	if processedFiles[propsPath] {
+		return make(map[string]string)
+	}
+	processedFiles[propsPath] = true
+
+	// Parse the .props file
+	content, err := os.ReadFile(propsPath)
+	if err != nil {
+		return make(map[string]string)
+	}
+	var propsFile PropsFile
+	if err := xml.Unmarshal(content, &propsFile); err != nil {
+		return make(map[string]string)
+	}
+
+	// Accumulate properties from nested imports
+	properties := make(map[string]string)
+
+	// First, recursively process any imports in this .props file
+	propsFileDir := filepath.Dir(propsPath)
+	importProperties := readPropertiesFromPropsFilesImports(propsFile.Imports, propsFileDir, processedFiles)
+	for key, value := range importProperties {
+		properties[key] = value
+	}
+
+	// Then merge properties from this file (later imports override earlier ones)
+	fileProperties := buildPropertyMap(propsFile.PropertyGroups)
+	for key, value := range fileProperties {
+		properties[key] = value
+	}
+
+	return properties
+}
+
+// readPropertiesFromPropsFilesImports processes a list of imports and merges their properties
+// Returns a map of all properties found in the imports
+func readPropertiesFromPropsFilesImports(imports []Import, baseDir string, processedFiles map[string]bool) map[string]string {
+	allProperties := make(map[string]string)
+
+	for _, imp := range imports {
+		if !isPropsFile(imp.Project) {
+			continue
+		}
+
+		// Make sure to standardize the path separator. We could find both `\` or `/` in the import path.
+		importPath := strings.ReplaceAll(imp.Project, "\\", string(os.PathSeparator))
+
+		if !filepath.IsAbs(importPath) {
+			importPath = filepath.Clean(filepath.Join(baseDir, importPath))
+		}
+
+		if _, err := os.Stat(importPath); err == nil {
+			propsFileProperties := processPropsFile(importPath, processedFiles)
+			for key, value := range propsFileProperties {
+				allProperties[key] = value
+			}
+		}
+	}
+
+	return allProperties
+}
+
+// findFileInParentDirs searches for a file by walking up the directory tree
+func findFileInParentDirs(startDir string, fileName string) (string, bool) {
+	currentDir := startDir
+
+	for {
+		testPath := filepath.Join(currentDir, fileName)
+		if _, err := os.Stat(testPath); err == nil {
+			absPath, err := filepath.Abs(testPath)
+			if err != nil {
+				return testPath, true
+			}
+
+			return absPath, true
+		}
+
+		// Move to parent directory
+		parentDir := filepath.Dir(currentDir)
+		if parentDir == currentDir {
+			// Reached root directory
+			break
+		}
+		currentDir = parentDir
+	}
+
+	return "", false
+}
+
+func isPropsFile(path string) bool {
+	return strings.HasSuffix(path, propsFileSuffix)
+}
 
 //nolint:gochecknoinits
 func init() {

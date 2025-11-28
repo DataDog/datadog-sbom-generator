@@ -110,7 +110,7 @@ func TestParseNuGetCsproj_Common(t *testing.T) {
 		},
 		{
 			Name:           "Serilog",
-			Version:        "$(SerilogVersion)",
+			Version:        "2.10.0",
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
@@ -205,7 +205,6 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 	// - coverlet.collector 3.2.0 (PrivateAssets=All, should be dev)
 	// - Microsoft.CodeAnalysis.CSharp 4.9.0
 	// - Dapper 2.1.28 - multi level property substitution from Directory.Packages.props
-	// - Microsoft.Extensions.Logging 8.0.0 - from Central Package Management (PackageVersion)
 	//
 	// Note: With .props file support, packages that previously had no version
 	// can now be resolved from Directory.Packages.props
@@ -282,7 +281,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 		},
 		{
 			Name:           "coverlet.collector",
-			Version:        "$(CoverletVersion)",
+			Version:        "3.2.0",
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
@@ -328,7 +327,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 		},
 		{
 			Name:           "Dapper",
-			Version:        "$(GlobalVersion)",
+			Version:        "2.1.28",
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
