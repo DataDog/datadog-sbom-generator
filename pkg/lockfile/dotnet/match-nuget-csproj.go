@@ -11,8 +11,9 @@ import (
 
 // NugetCsprojMatcher matches the source file of a Nuget lockfile
 // https://learn.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files#locking-dependencies
-func (m NugetCsprojMatcher) GetSourceFile(lock lockfile.DepFile) (lockfile.DepFile, error) {
-	var dir = filepath.Dir(lock.Path())
+
+func (m NugetCsprojMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile.DepFile, error) {
+	var dir = filepath.Dir(sourceFile.Path())
 
 	var dirs, err = os.ReadDir(dir)
 	if err != nil {

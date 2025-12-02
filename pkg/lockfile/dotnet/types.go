@@ -22,6 +22,9 @@ const (
 
 const (
 	projectDependencyType string = "Project"
+	propsFileSuffix       string = ".props"
+	buildPropsFile        string = "Directory.Build.props"
+	packagesPropsFile     string = "Directory.Packages.props"
 )
 
 // ============================================================================
@@ -32,11 +35,25 @@ type NugetCsProj struct {
 	XMLName        xml.Name        `xml:"Project"`
 	ItemGroups     []ItemGroup     `xml:"ItemGroup"`
 	PropertyGroups []PropertyGroup `xml:"PropertyGroup"`
+	Imports        []Import        `xml:"Import"`
+}
+
+type PropsFile struct {
+	XMLName        xml.Name        `xml:"Project"`
+	ItemGroups     []ItemGroup     `xml:"ItemGroup"`
+	PropertyGroups []PropertyGroup `xml:"PropertyGroup"`
+	Imports        []Import        `xml:"Import"`
 }
 
 type ItemGroup struct {
 	XMLName           xml.Name           `xml:"ItemGroup"`
 	PackageReferences []PackageReference `xml:"PackageReference"`
+}
+
+type Import struct {
+	XMLName   xml.Name `xml:"Import"`
+	Project   string   `xml:"Project,attr"`
+	Condition string   `xml:"Condition,attr"`
 }
 
 type PropertyGroup struct {

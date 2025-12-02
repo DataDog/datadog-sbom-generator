@@ -1,0 +1,46 @@
+package dotnet
+
+import "encoding/xml"
+
+// UnmarshalXML implements xml.Unmarshaler to capture line and column positions for each PackageReference.
+// This custom unmarshaler is necessary because the standard xml.Unmarshal doesn't provide file position
+// information. By manually iterating through XML tokens and calling decoder.InputPos(), we can record
+// where each PackageReference appears in the file.
+func (itemGroup *ItemGroup) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+DecodingLoop:
+	for {
+		lineStart, columnStart := decoder.InputPos()
+		token, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+
+		switch elem := token.(type) {
+		case xml.StartElement:
+			if elem.Name.Local != "PackageReference" {
+				continue
+			}
+
+			packageReference := PackageReference{}
+			packageReference.SetLineStart(lineStart)
+			packageReference.SetColumnStart(columnStart)
+
+			err := decoder.DecodeElement(&packageReference, &elem)
+			if err != nil {
+				return err
+			}
+
+			lineEnd, columnEnd := decoder.InputPos()
+			packageReference.SetLineEnd(lineEnd)
+			packageReference.SetColumnEnd(columnEnd)
+			itemGroup.PackageReferences = append(itemGroup.PackageReferences, packageReference)
+
+		case xml.EndElement:
+			if elem.Name == start.Name {
+				break DecodingLoop
+			}
+		}
+	}
+
+	return nil
+}

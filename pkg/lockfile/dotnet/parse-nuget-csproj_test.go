@@ -108,6 +108,29 @@ func TestParseNuGetCsproj_Common(t *testing.T) {
 				Filename: absoluteCsprojPath,
 			},
 		},
+		{
+			Name:           "Serilog",
+			Version:        "2.10.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 5, End: 71},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 32, End: 39},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 50, End: 67},
+				Filename: absoluteCsprojPath,
+			},
+		},
 	})
 }
 
@@ -181,10 +204,10 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 	// - xunit 2.5.0
 	// - coverlet.collector 3.2.0 (PrivateAssets=All, should be dev)
 	// - Microsoft.CodeAnalysis.CSharp 4.9.0
-	// - Dapper $(GlobalVersion) - multi level property substitution
+	// - Dapper 2.1.28 - multi level property substitution from Directory.Packages.props
 	//
-	// Skipped packages:
-	// - Microsoft.Extensions.Logging - no version specified, skipped
+	// Note: With .props file support, packages that previously had no version
+	// can now be resolved from Directory.Packages.props
 
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
@@ -265,7 +288,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 			DepGroups:      []string{string(models.DepGroupDev)},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
-				Column:   models.Position{Start: 5, End: 90},
+				Column:   models.Position{Start: 5, End: 103},
 				Filename: absoluteCsprojPath,
 			},
 			NameLocation: &models.FilePosition{
@@ -275,7 +298,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
-				Column:   models.Position{Start: 61, End: 66},
+				Column:   models.Position{Start: 61, End: 79},
 				Filename: absoluteCsprojPath,
 			},
 		},
@@ -304,23 +327,23 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 		},
 		{
 			Name:           "Dapper",
-			Version:        "$(GlobalVersion)",
+			Version:        "2.1.28",
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
 			DepGroups:      []string{string(models.DepGroupProd)},
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 60, End: 60},
+				Line:     models.Position{Start: 62, End: 62},
 				Column:   models.Position{Start: 5, End: 69},
 				Filename: absoluteCsprojPath,
 			},
 			NameLocation: &models.FilePosition{
-				Line:     models.Position{Start: 60, End: 60},
+				Line:     models.Position{Start: 62, End: 62},
 				Column:   models.Position{Start: 32, End: 38},
 				Filename: absoluteCsprojPath,
 			},
 			VersionLocation: &models.FilePosition{
-				Line:     models.Position{Start: 60, End: 60},
+				Line:     models.Position{Start: 62, End: 62},
 				Column:   models.Position{Start: 49, End: 65},
 				Filename: absoluteCsprojPath,
 			},
