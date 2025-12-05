@@ -1,0 +1,11 @@
+[project]
+name = "test-project"
+version = "1.0.0"
+dependencies = [
+    "numpy==1.23.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.0.0",
+]

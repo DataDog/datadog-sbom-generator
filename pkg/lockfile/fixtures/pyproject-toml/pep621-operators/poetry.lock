@@ -1,0 +1,11 @@
+[[package]]
+name = "numpy"
+version = "1.23.3"
+
+[[package]]
+name = "ray"
+version = "2.4.0"
+
+[[package]]
+name = "pandas"
+version = "1.5.0"
