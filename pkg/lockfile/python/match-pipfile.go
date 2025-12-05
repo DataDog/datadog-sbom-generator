@@ -73,16 +73,4 @@ func (m PipfileMatcher) Match(sourcefile lockfile.DepFile, packages []lockfile.P
 	return nil
 }
 
-// isTable checks if the line is a table in the Pipfile format.
-func isTable(line string) bool {
-	trimmedLine := strings.TrimSpace(strings.ToLower(line))
-	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
-}
-
-// isDevTable checks if the line is a dev dependency table for Poetry, since the implementation is shared as both tools use toml files.
-func isDevTable(line string) bool {
-	trimmedLine := strings.TrimSpace(strings.ToLower(line))
-	return trimmedLine == "[tool.poetry.dev-dependencies]" || trimmedLine == "[tool.poetry.group.dev.dependencies]"
-}
-
 var _ lockfile.Matcher = PipfileMatcher{}
