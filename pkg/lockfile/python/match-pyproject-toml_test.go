@@ -212,3 +212,205 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+func TestPyprojectTomlMatcher_Match_PEP621_Basic(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-basic/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "flask",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "flask",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 12, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestPyprojectTomlMatcher_Match_PEP621_Operators(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-operators/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+		},
+		{
+			Name:           "ray",
+			PackageManager: models.Uv,
+		},
+		{
+			Name:           "pandas",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 21},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 12, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "ray",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 8},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "pandas",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 5, End: 21},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 5, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 13, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestPyprojectTomlMatcher_Match_PEP621_Dev(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-dev/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+		},
+		{
+			Name:           "pytest",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 21},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 12, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "pytest",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 5, End: 21},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 5, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 13, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+	})
+}
