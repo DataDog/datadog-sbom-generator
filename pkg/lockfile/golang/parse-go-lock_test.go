@@ -135,8 +135,18 @@ func TestParseGoLock_WithPathMajor(t *testing.T) {
 			PackageManager: models.Golang,
 			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 0, End: 0},
-				Column:   models.Position{Start: 0, End: 0},
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 4, End: 8},
 				Filename: path,
 			},
 			IsDirect: true,
@@ -181,8 +191,18 @@ func TestParseGoLock_WithoutSupportedVersioning(t *testing.T) {
 			PackageManager: models.Golang,
 			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 0, End: 0},
-				Column:   models.Position{Start: 0, End: 0},
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 4, End: 8},
 				Filename: path,
 			},
 			IsDirect: true,
@@ -293,8 +313,18 @@ func TestParseGoLock_TwoPackages(t *testing.T) {
 			PackageManager: models.Golang,
 			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 0, End: 0},
-				Column:   models.Position{Start: 0, End: 0},
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 4, End: 8},
 				Filename: path,
 			},
 			IsDirect: true,
@@ -432,8 +462,18 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 			PackageManager: models.Golang,
 			Ecosystem:      models.EcosystemGo,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 0, End: 0},
-				Column:   models.Position{Start: 0, End: 0},
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: path,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 4, End: 8},
 				Filename: path,
 			},
 			IsDirect: true,

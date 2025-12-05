@@ -14586,7 +14586,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "osv-scanner:package-manager",
           "value": "Golang"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":10},/"name/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":3},/"version/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":4,/"column_end/":10}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
@@ -19382,7 +19389,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "osv-scanner:package-manager",
           "value": "Golang"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":10},/"name/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":3},/"version/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":4,/"column_end/":10}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
@@ -24157,7 +24171,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "osv-scanner:package-manager",
           "value": "Golang"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":10},/"name/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":1,/"column_end/":3},/"version/":{/"file_name/":/"go.mod/",/"line_start/":3,/"line_end/":3,/"column_start/":4,/"column_end/":10}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
