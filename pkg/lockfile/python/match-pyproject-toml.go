@@ -39,8 +39,9 @@ func (m PyprojectTOMLMatcher) Match(sourcefile lockfile.DepFile, packages []lock
 			inPEP621DepsArray = false
 			inPEP621DevDepsArray = false
 
-			// Check for PEP 621 [project.optional-dependencies]
-			if strings.HasPrefix(trimmedLine, "[project.optional-dependencies") {
+			// Check for PEP 621 [project.optional-dependencies.dev]
+			// Only mark as dev if the section is explicitly "dev"
+			if strings.HasPrefix(trimmedLine, "[project.optional-dependencies.dev") {
 				inPEP621DevDepsArray = true
 			}
 		}
@@ -50,6 +51,13 @@ func (m PyprojectTOMLMatcher) Match(sourcefile lockfile.DepFile, packages []lock
 		if strings.HasPrefix(trimmedLine, "dependencies") && strings.Contains(trimmedLine, "[") {
 			inPEP621DepsArray = true
 			inPEP621DevDepsArray = false
+		}
+
+		// Check for PEP 621 optional dependencies in format: dev = [...]
+		// Only mark as dev if the key is explicitly "dev"
+		if strings.HasPrefix(trimmedLine, "dev") && strings.Contains(trimmedLine, "[") {
+			inPEP621DevDepsArray = true
+			inPEP621DepsArray = false
 		}
 
 		// Check if we've exited an array
@@ -88,10 +96,11 @@ func (m PyprojectTOMLMatcher) Match(sourcefile lockfile.DepFile, packages []lock
 	return nil
 }
 
-// matchPEP621Dependency matches dependencies in PEP 621 format: "package==version" or "package>=version"
+// matchPEP621Dependency matches dependencies in PEP 621 format following PEP 508 spec
+// Supports: "package", "package[extras]", "package==version", "package[extras]>=version"
 func matchPEP621Dependency(lowerName, originalLine string, lineNumber int, sourcefile lockfile.DepFile, key int, packages []lockfile.PackageDetails) bool {
-	// PEP 621 format uses strings like "flask==0.12" or "ray>=2.4.0"
-	// The package name and version are in a single quoted string
+	// PEP 621 format uses strings like "flask==0.12", "ray>=2.4.0", "requests", "uvicorn[standard]"
+	// The package name and optional version are in a single quoted string
 	re := cachedregexp.MustCompile(`["']([^"']+)["']`)
 	matches := re.FindAllStringSubmatch(originalLine, -1)
 
@@ -109,14 +118,16 @@ func matchPEP621Dependency(lowerName, originalLine string, lineNumber int, sourc
 		}
 
 		// Parse the dependency string to extract name and version
-		// Support formats: package==version, package>=version, package~=version, package<version, etc.
-		versionRe := cachedregexp.MustCompile(`^([a-zA-Z0-9_-]+)(==|>=|<=|~=|!=|>|<)(.+)$`)
+		// Support formats: package, package[extras], package==version, package[extras]>=version, etc.
+		// PEP 508 spec: name[extras] (==|>=|<=|~=|!=|>|<)version
+		versionRe := cachedregexp.MustCompile(`^([a-zA-Z0-9_-]+)(\[[^\]]+\])?(==|>=|<=|~=|!=|>|<)?(.*)$`)
 		versionMatches := versionRe.FindStringSubmatch(depString)
 
-		if len(versionMatches) == 4 {
+		if len(versionMatches) >= 2 {
 			parsedName := versionMatches[1]
-			versionOperator := versionMatches[2]
-			version := versionMatches[3]
+			extras := versionMatches[2]          // e.g., "[standard]" or empty
+			versionOperator := versionMatches[3] // e.g., "==" or empty
+			version := versionMatches[4]         // e.g., "0.12" or empty
 
 			// Verify the parsed name matches our package (case-insensitive)
 			if strings.ToLower(parsedName) != lowerName {
@@ -145,14 +156,16 @@ func matchPEP621Dependency(lowerName, originalLine string, lineNumber int, sourc
 					Filename: sourcefile.Path(),
 				}
 
-				// Find the position of the version
-				versionStart := nameEnd + len(versionOperator)
-				versionEnd := versionStart + len(version)
+				// Find the position of the version if it exists
+				if versionOperator != "" && version != "" {
+					versionStart := nameEnd + len(extras) + len(versionOperator)
+					versionEnd := versionStart + len(version)
 
-				packages[key].VersionLocation = &models.FilePosition{
-					Line:     models.Position{Start: lineNumber, End: lineNumber},
-					Column:   models.Position{Start: versionStart, End: versionEnd},
-					Filename: sourcefile.Path(),
+					packages[key].VersionLocation = &models.FilePosition{
+						Line:     models.Position{Start: lineNumber, End: lineNumber},
+						Column:   models.Position{Start: versionStart, End: versionEnd},
+						Filename: sourcefile.Path(),
+					}
 				}
 			}
 
