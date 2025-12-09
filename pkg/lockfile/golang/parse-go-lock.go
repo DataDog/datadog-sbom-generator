@@ -3,6 +3,7 @@ package golang
 import (
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,8 +13,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-
-	"maps"
 
 	"golang.org/x/mod/modfile"
 	"golang.org/x/mod/module"
@@ -179,15 +178,20 @@ func (e GoLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails,
 	}
 
 	if parsedLockfile.Go != nil && parsedLockfile.Go.Version != "" {
+		start := parsedLockfile.Go.Syntax.Start
+		end := parsedLockfile.Go.Syntax.End
+		block := lines[start.Line-1 : end.Line]
+		blockLocation, nameLocation, versionLocation := extractLocations(block, start, end, f.Path(), "go", parsedLockfile.Go.Version)
+
 		packages["stdlib"] = lockfile.PackageDetails{
-			Name:           "stdlib",
-			Version:        parsedLockfile.Go.Version,
-			PackageManager: goPackageManager,
-			Ecosystem:      models.EcosystemGo,
-			BlockLocation: models.FilePosition{
-				Filename: f.Path(),
-			},
-			IsDirect: true,
+			Name:            "stdlib",
+			Version:         parsedLockfile.Go.Version,
+			PackageManager:  goPackageManager,
+			Ecosystem:       models.EcosystemGo,
+			BlockLocation:   blockLocation,
+			NameLocation:    nameLocation,
+			VersionLocation: versionLocation,
+			IsDirect:        true,
 		}
 	}
 
