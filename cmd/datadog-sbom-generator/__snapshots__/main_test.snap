@@ -233,7 +233,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":5,/"column_end/":69},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":32,/"column_end/":38},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":62,/"line_end/":62,/"column_start/":49,/"column_end/":65}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":71,/"line_end/":71,/"column_start/":5,/"column_end/":69},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":71,/"line_end/":71,/"column_start/":32,/"column_end/":38},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":71,/"line_end/":71,/"column_start/":49,/"column_end/":65}}"
           }
         ]
       }
@@ -257,7 +257,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":5,/"column_end/":105},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":32,/"column_end/":61},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":72,/"column_end/":77}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":41,/"line_end/":41,/"column_start/":5,/"column_end/":105},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":41,/"line_end/":41,/"column_start/":32,/"column_end/":61},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":41,/"line_end/":41,/"column_start/":72,/"column_end/":77}}"
           }
         ]
       }
@@ -362,6 +362,30 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
+      "bom-ref": "pkg:nuget/System.ServiceModel.Http@4.10.3",
+      "type": "library",
+      "name": "System.ServiceModel.Http",
+      "version": "4.10.3",
+      "purl": "pkg:nuget/System.ServiceModel.Http@4.10.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":50,/"line_end/":50,/"column_start/":5,/"column_end/":77},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":50,/"line_end/":50,/"column_start/":32,/"column_end/":56},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":50,/"line_end/":50,/"column_start/":67,/"column_end/":73}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/System.Text.Json@8.0.4",
       "type": "library",
       "name": "System.Text.Json",
@@ -408,7 +432,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":5,/"column_end/":103},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":32,/"column_end/":50},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":61,/"column_end/":79}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":5,/"column_end/":103},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":32,/"column_end/":50},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":38,/"line_end/":38,/"column_start/":61,/"column_end/":79}}"
           }
         ]
       }
@@ -432,7 +456,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":32,/"line_end/":32,/"column_start/":5,/"column_end/":99},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":32,/"line_end/":32,/"column_start/":32,/"column_end/":37},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":32,/"line_end/":32,/"column_start/":48,/"column_end/":53}}"
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":5,/"column_end/":99},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":32,/"column_end/":37},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":48,/"column_end/":53}}"
           }
         ]
       }
@@ -446,7 +470,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 Scanning directory './fixtures/integration-nuget/csproj-sample-app', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app'
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj file and found 2 packages
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj file and found 2 packages
-Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 6 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 7 packages
 [reachability] Reachability analysis is disabled
 ---
 
