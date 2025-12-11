@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Local properties -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>SampleApp</AssemblyName>
+    <Version>1.0.0</Version>
+    <Company>ExampleCorp</Company>
+  </PropertyGroup>
+
+  <!-- Project references (monorepo structure) -->
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Logging\Logging.csproj" />
+  </ItemGroup>
+
+  <!-- Direct package dependencies -->
+  <ItemGroup>
+    <!-- Basic package reference -->
+    <PackageReference Include="Newtonsoft.Json" />
+
+    <!-- Package using property substitution -->
+    <PackageReference Include="Serilog" />
+
+    <!-- Central package management reference without explicit version -->
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <!-- Conditional dependency -->
+    <PackageReference Include="xunit" Condition="'$(Configuration)' == 'Debug'" />
+
+    <!-- Dev-only dependency -->
+    <PackageReference Include="coverlet.collector" PrivateAssets="All" />
+
+    <!-- Excluded asset types -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="runtime" />
+
+    <!-- Non-existent package for testing -->
+    <!-- <PackageReference Include="NonExistent.TestPackage" Version="1.2.3" /> -->
+  </ItemGroup>
+
+  <!-- Custom properties and imported targets -->
+  <PropertyGroup>
+    <SerilogVersion>3.1.1</SerilogVersion>
+    <DapperVersion>$(GlobalVersion)</DapperVersion>
+  </PropertyGroup>
+
+  <Import Project="build/Custom.props" Condition="Exists('build/Custom.props')" />
+  <Import Project="build/Custom.targets" Condition="Exists('build/Custom.targets')" />
+  <Import Project="..\Common.props" Condition="Exists('..\Common.props')" />
+
+
+  <!-- Conditional target frameworks -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TargetFramework>net7.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Package using multi level property substitution -->
+    <PackageReference Include="Dapper" />
+  </ItemGroup>
+
+</Project>

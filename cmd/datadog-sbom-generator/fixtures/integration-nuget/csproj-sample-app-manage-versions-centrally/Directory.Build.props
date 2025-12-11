@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <SerilogVersion>2.10.0</SerilogVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <CustomBuildProperty>CustomValue</CustomBuildProperty>
+    <EnableCustomFeature>true</EnableCustomFeature>
+    <CoverletVersion>6.0.4</CoverletVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CustomFiles Include="config/*.json" />
+  </ItemGroup>
+
+</Project>

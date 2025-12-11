@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <GlobalCoverletVersion>3.2.0</GlobalCoverletVersion>
+  </PropertyGroup>
+
+</Project>
