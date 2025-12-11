@@ -386,6 +386,30 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
+      "bom-ref": "pkg:nuget/System.ServiceModel.Http@8.1.0",
+      "type": "library",
+      "name": "System.ServiceModel.Http",
+      "version": "8.1.0",
+      "purl": "pkg:nuget/System.ServiceModel.Http@8.1.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":29,/"line_end/":29,/"column_start/":5,/"column_end/":76},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":29,/"line_end/":29,/"column_start/":32,/"column_end/":56},/"version/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":29,/"line_end/":29,/"column_start/":67,/"column_end/":72}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/System.Text.Json@8.0.4",
       "type": "library",
       "name": "System.Text.Json",
@@ -470,7 +494,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 Scanning directory './fixtures/integration-nuget/csproj-sample-app', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app'
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj file and found 2 packages
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj file and found 2 packages
-Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 7 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 8 packages
 [reachability] Reachability analysis is disabled
 ---
 

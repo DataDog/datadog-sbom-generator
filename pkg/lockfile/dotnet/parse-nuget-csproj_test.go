@@ -371,5 +371,28 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Filename: absoluteCsprojPath,
 			},
 		},
+		{
+			Name:           "System.ServiceModel.Http",
+			Version:        "8.1.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 29, End: 29},
+				Column:   models.Position{Start: 5, End: 76},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 29, End: 29},
+				Column:   models.Position{Start: 32, End: 56},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 29, End: 29},
+				Column:   models.Position{Start: 67, End: 72},
+				Filename: absoluteCsprojPath,
+			},
+		},
 	})
 }
