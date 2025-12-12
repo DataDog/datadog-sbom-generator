@@ -159,7 +159,7 @@ func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
 			for _, matcher := range matchers {
 				matchError := matchWithFile(f, packages, matcher, context)
 				if matchError != nil {
-					//_, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", f.Path(), matchError.Error())
+					// _, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", f.Path(), matchError.Error())
 					context.Reporter.Warnf("Failed to match the source file of %s: %s, it leads to incomplete enrichment components\n", f.Path(), matchError.Error())
 				}
 			}
