@@ -54,6 +54,7 @@ func Test_scanDir(t *testing.T) {
 	mockReporter := reporter.NewMockReporter(ctrl)
 	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
 	mockReporter.EXPECT().Verbosef(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
 	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
 
 	// Call scanDir without exclusion
