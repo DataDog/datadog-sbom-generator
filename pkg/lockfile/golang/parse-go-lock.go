@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -40,8 +39,6 @@ func defaultNonCanonicalVersions(path, version string) (string, error) {
 	}
 
 	if resolvedVersion == "" {
-		// If it is still not resolved, we default on 0.0.0 as we do with other package managers
-		_, _ = fmt.Fprintf(os.Stderr, "%s@%s is not a canonical path, defaulting to %s\n", path, resolvedVersion, unknownVersion)
 		return unknownVersion, nil
 	}
 
@@ -151,6 +148,8 @@ func (e GoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 			name := replace.New.Path
 
 			if replace.New.Version == unknownVersion {
+				// If it is still not resolved, we default on 0.0.0 as we do with other package managers
+				context.Reporter.Warnf("%s@%s is not a canonical path, defaulting to %s\n", replace.Old.Path, replace.Old.Version, version)
 				version = ""
 			}
 

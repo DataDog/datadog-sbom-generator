@@ -374,7 +374,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibSameVersion(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -455,7 +455,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibDifferentVersion(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -562,7 +562,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

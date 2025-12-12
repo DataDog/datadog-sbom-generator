@@ -3,6 +3,7 @@ package testutil
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func ExpectErrContaining(t *testing.T, err error, str string) {
@@ -160,4 +162,9 @@ func ExpectPackagesWithoutLocations(t *testing.T, actualPackages []lockfile.Pack
 	t.Helper()
 
 	InnerExpectPackages(t, actualPackages, expectedPackages, true)
+}
+
+func GetTestContext() lockfile.ScanContext {
+	r, _ := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
+	return lockfile.ScanContext{Reporter: r}
 }

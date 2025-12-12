@@ -80,7 +80,7 @@ func buildProjectProperties(lockfile MavenLockFile) map[string]models.StringWith
  * You can see the interpolationReg working here : https://regex101.com/r/inAPiN/2
  * You can see the isMixedReg working here : https://regex101.com/r/KG4tS6/1
  */
-func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fieldToResolve string) (string, models.FilePosition) {
+func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fieldToResolve string, context lockfile.ScanContext) (string, models.FilePosition) {
 	var position models.FilePosition
 	variablesCount := 0
 
@@ -123,7 +123,7 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 				if interpolationReg.MatchString(property.Value) {
 					// Property uses other properties
 					var propertyStr string
-					propertyStr, position = mld.resolvePropertiesValue(lockfile, property.Value)
+					propertyStr, position = mld.resolvePropertiesValue(lockfile, property.Value, context)
 					property = models.StringWithPosition{
 						Value: propertyStr,
 					}
@@ -140,8 +140,7 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 		}
 
 		if !ok {
-			fmt.Fprintf(
-				os.Stderr,
+			context.Reporter.Warnf(
 				"Failed to resolve a property. fieldToResolve \"%s\" could not be found for \"%s\" (%s)\n",
 				string(bytes),
 				lockfile.GroupID.Value+":"+lockfile.ArtifactID.Value,
@@ -161,9 +160,9 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 	return string(result), position
 }
 
-func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile) (string, models.FilePosition) {
+func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile, context lockfile.ScanContext) (string, models.FilePosition) {
 	versionRequirementReg := cachedregexp.MustCompile(`[[(]?(.*?)(?:,|[)\]]|$)`)
-	version, position := mld.resolvePropertiesValue(lockfile, mld.Version.Value)
+	version, position := mld.resolvePropertiesValue(lockfile, mld.Version.Value, context)
 	results := versionRequirementReg.FindStringSubmatch(version)
 
 	if results == nil || results[1] == "" {
@@ -173,12 +172,12 @@ func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile) (string, m
 	return results[1], position
 }
 
-func (mld MavenLockDependency) ResolveArtifactID(lockfile MavenLockFile) (string, models.FilePosition) {
-	return mld.resolvePropertiesValue(lockfile, mld.ArtifactID.Value)
+func (mld MavenLockDependency) ResolveArtifactID(lockfile MavenLockFile, context lockfile.ScanContext) (string, models.FilePosition) {
+	return mld.resolvePropertiesValue(lockfile, mld.ArtifactID.Value, context)
 }
 
-func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile) (string, models.FilePosition) {
-	return mld.resolvePropertiesValue(lockfile, mld.GroupID.Value)
+func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile, context lockfile.ScanContext) (string, models.FilePosition) {
+	return mld.resolvePropertiesValue(lockfile, mld.GroupID.Value, context)
 }
 
 func (p *MavenLockProperties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -332,7 +331,7 @@ func (e MavenLockExtractor) enrichProperties(path string, properties map[string]
 	return MavenLockProperties{m: properties}
 }
 
-func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, currentPath string) string {
+func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, currentPath string, context lockfile.ScanContext) string {
 	// If a parent is defined, use its relative path to find the File, then recurse to decode it properly and enrich its dependencies
 	// If the relativePath is not defined, default to ../pom.xml
 	parentRelativePath := parent.RelativePath
@@ -357,7 +356,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 				fmt.Sprintf("%s-%s.pom", parent.ArtifactID, parent.Version),
 			)
 			if err != nil {
-				_, _ = fmt.Fprintf(os.Stderr, "Failed to construct remote path: %s\n", err)
+				context.Reporter.Warnf("Failed to construct remote path: %s\n", err)
 				return ""
 			}
 
@@ -371,7 +370,7 @@ func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, curren
 	return filepath.FromSlash(filepath.Join(filepath.Dir(currentPath), parentRelativePath))
 }
 
-func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visitedPath map[string]bool) (*MavenLockFile, error) {
+func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visitedPath map[string]bool, context lockfile.ScanContext) (*MavenLockFile, error) {
 	var parsedLockfile *MavenLockFile
 
 	// Decoding the original lockfile and enrich its dependencies
@@ -400,11 +399,11 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 		return parsedLockfile, nil
 	}
 
-	parentPath := e.resolveParentFilename(parsedLockfile.Parent, f.Path())
+	parentPath := e.resolveParentFilename(parsedLockfile.Parent, f.Path(), context)
 
 	if ok := visitedPath[parentPath]; ok || parentPath == "" {
 		// Parent has already been visited or is empty, lets stop there
-		fmt.Fprintf(os.Stdout, "Already visited parent path, stopping there to avoid a circular dependency %s\n", parentPath)
+		context.Reporter.Verbosef("Already visited parent path, stopping there to avoid a circular dependency %s\n", parentPath)
 		return parsedLockfile, nil
 	}
 
@@ -419,12 +418,12 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 		mavenRegistryClient, clientErr := NewMavenRegistryAPIClient(parentPath)
 		// If the remote pom does not exist, we can't do anything.
 		if clientErr != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Failed to fetch parent pom from remote repository: %s\n", parentPath)
+			context.Reporter.Warnf("Failed to fetch parent pom from remote repository: %s\n", parentPath)
 			//nolint:nilerr // we don't want to consider a network request failing for the parent as being unable to handle the lockfile
 			return parsedLockfile, nil
 		}
 
-		parentLockfile, err = e.decodeMavenFile(mavenRegistryClient, depth+1, visitedPath)
+		parentLockfile, err = e.decodeMavenFile(mavenRegistryClient, depth+1, visitedPath, context)
 		if err != nil {
 			return nil, err
 		}
@@ -432,7 +431,7 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 		parentFilePath = parentPath
 	} else if _, err = os.Stat(parentPath); errors.Is(err, os.ErrNotExist) {
 		// If the parent pom does not exist and is not a remote file, we can't do anything.
-		_, _ = fmt.Fprintf(os.Stderr, "Maven lockfile parser couldn't reach the parent because it is not locally defined: %s\n", parentPath)
+		context.Reporter.Warnf("Maven lockfile parser couldn't reach the parent because it is not locally defined: %s\n", parentPath)
 
 		return parsedLockfile, nil
 	} else {
@@ -440,7 +439,7 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 		if err != nil {
 			return nil, err
 		}
-		parentLockfile, parentErr = e.decodeMavenFile(parentFile, depth+1, visitedPath)
+		parentLockfile, parentErr = e.decodeMavenFile(parentFile, depth+1, visitedPath, context)
 		if parentErr != nil {
 			return nil, parentErr
 		}
@@ -459,7 +458,7 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	visitedPath := make(map[string]bool)
 	visitedPath[f.Path()] = true
-	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath)
+	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath, context)
 	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
@@ -467,9 +466,9 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 	details := map[string]lockfile.PackageDetails{}
 
 	for _, lockPackage := range parsedLockfile.Dependencies.Dependencies {
-		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile)
-		resolvedArtifactID, artifactPosition := lockPackage.ResolveArtifactID(*parsedLockfile)
-		resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile)
+		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile, context)
+		resolvedArtifactID, artifactPosition := lockPackage.ResolveArtifactID(*parsedLockfile, context)
+		resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
 		finalName := resolvedGroupID + ":" + resolvedArtifactID
 
 		blockLocation := models.FilePosition{
@@ -516,8 +515,8 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 
 	// If a dependency is declared and have not specified its version, then use the one declared in the managed dependencies
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
-		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile)
-		resolvedArtifactID, _ := lockPackage.ResolveArtifactID(*parsedLockfile)
+		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile, context)
+		resolvedArtifactID, _ := lockPackage.ResolveArtifactID(*parsedLockfile, context)
 		finalName := resolvedGroupID + ":" + resolvedArtifactID
 		pkgDetails, pkgExists := details[finalName]
 		if !pkgExists {
@@ -525,7 +524,7 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 		}
 
 		if pkgDetails.IsVersionEmpty() {
-			resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile)
+			resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
 
 			// A position is null after resolving the Value in case the Value is directly defined in the block
 			if versionPosition == (models.FilePosition{}) {
@@ -549,7 +548,7 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 func (e MavenLockExtractor) GetArtifact(f lockfile.DepFile, context lockfile.ScanContext) (*models.ScannedArtifact, error) {
 	visitedPath := make(map[string]bool)
 	visitedPath[f.Path()] = true
-	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath)
+	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath, context)
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +569,7 @@ func (e MavenLockExtractor) GetArtifact(f lockfile.DepFile, context lockfile.Sca
 		artifact.DependsOn = &models.ArtifactDetail{
 			Name:      parentArtifact,
 			Version:   parsedLockfile.Parent.Version,
-			Filename:  e.resolveParentFilename(parsedLockfile.Parent, f.Path()),
+			Filename:  e.resolveParentFilename(parsedLockfile.Parent, f.Path(), context),
 			Ecosystem: models.EcosystemMaven,
 		}
 	}

@@ -3,7 +3,6 @@ package elixir
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -55,8 +54,7 @@ func (e MixLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 		})
 
 		if len(fields) < 4 {
-			_, _ = fmt.Fprintf(
-				os.Stderr,
+			context.Reporter.Errorf(
 				"Found less than four fields when parsing a line that looks like a dependency in a mix.lock - please report this!\n",
 			)
 

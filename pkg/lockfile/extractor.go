@@ -1,12 +1,12 @@
 package lockfile
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
@@ -102,7 +102,13 @@ func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetai
 
 	// Extracting directly a single file is used in tests environments.
 	// Thus, we require a complete context to pass a context to it.
-	context := ScanContext{}
+	r, err := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
+	context := ScanContext{Reporter: r}
+
+	if err != nil {
+		return []PackageDetails{}, err
+	}
+
 	packages, err := extractor.Extract(f, context)
 	if err != nil {
 		return []PackageDetails{}, err
@@ -114,7 +120,8 @@ func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetai
 			for _, matcher := range matchers {
 				matchError := matchWithFile(f, packages, matcher, context)
 				if matchError != nil {
-					_, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
+					//_, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
+					context.Reporter.Errorf("there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
 				}
 			}
 		}

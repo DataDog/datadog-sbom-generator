@@ -854,7 +854,7 @@ func TestParseYarnLock_v1_WorkspacesSameLibSameVersion(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -912,7 +912,7 @@ func TestParseYarnLock_v1_WorkspacesSameLibDifferentVersion(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -1022,7 +1022,7 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

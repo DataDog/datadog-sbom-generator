@@ -1298,7 +1298,7 @@ func TestMavenLockDependency_ResolveVersion(t *testing.T) {
 			mld := java.MavenLockDependency{
 				Version: tt.fields.Version,
 			}
-			if got, _ := mld.ResolveVersion(tt.args.lockfile); got != tt.want {
+			if got, _ := mld.ResolveVersion(tt.args.lockfile, testutil.GetTestContext()); got != tt.want {
 				t.Errorf("ResolveVersion() = %v, want %v", got, tt.want)
 			}
 		})
