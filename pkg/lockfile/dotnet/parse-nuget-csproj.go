@@ -271,10 +271,7 @@ var _ lockfile.Extractor = NuGetCsprojExtractor{}
 // in a single pass to avoid reading the same file multiple times.
 // Returns ParsedProperties with merged properties, package versions, and whether central package management is enabled.
 func extractProperties(csprojPath string, csproj NugetCsProj) ParsedProperties {
-	result := ParsedProperties{
-		PropertiesByName:      make(map[string]string),
-		VersionsByPackageName: make(map[string][]PackageVersionInfo),
-	}
+	result := newParsedProperties()
 
 	processedFiles := make(map[string]bool)
 	csprojDir := filepath.Dir(csprojPath)
@@ -327,33 +324,21 @@ func extractProperties(csprojPath string, csproj NugetCsProj) ParsedProperties {
 func processPropsFile(propsPath string, processedFiles map[string]bool) ParsedProperties {
 	// Skip if already processed
 	if processedFiles[propsPath] {
-		return ParsedProperties{
-			PropertiesByName:      make(map[string]string),
-			VersionsByPackageName: make(map[string][]PackageVersionInfo),
-		}
+		return newParsedProperties()
 	}
 	processedFiles[propsPath] = true
 
 	// Parse the .props file
 	content, err := os.ReadFile(propsPath)
 	if err != nil {
-		return ParsedProperties{
-			PropertiesByName:      make(map[string]string),
-			VersionsByPackageName: make(map[string][]PackageVersionInfo),
-		}
+		return newParsedProperties()
 	}
 	var propsFile PropsFile
 	if err := xml.Unmarshal(content, &propsFile); err != nil {
-		return ParsedProperties{
-			PropertiesByName:      make(map[string]string),
-			VersionsByPackageName: make(map[string][]PackageVersionInfo),
-		}
+		return newParsedProperties()
 	}
 
-	result := ParsedProperties{
-		PropertiesByName:      make(map[string]string),
-		VersionsByPackageName: make(map[string][]PackageVersionInfo),
-	}
+	result := newParsedProperties()
 
 	// First, recursively process any imports in this .props file
 	propsFileDir := filepath.Dir(propsPath)
@@ -387,10 +372,7 @@ func processPropsFile(propsPath string, processedFiles map[string]bool) ParsedPr
 // readPropertiesFromPropsFilesImports processes a list of imports and merges their properties and package versions
 // Returns a ParsedProperties with all properties and package versions found in the imports
 func readPropertiesFromPropsFilesImports(imports []Import, baseDir string, processedFiles map[string]bool) ParsedProperties {
-	result := ParsedProperties{
-		PropertiesByName:      make(map[string]string),
-		VersionsByPackageName: make(map[string][]PackageVersionInfo),
-	}
+	result := newParsedProperties()
 
 	for _, imp := range imports {
 		if !isPropsFile(imp.Project) {
@@ -471,6 +453,12 @@ func convertToPackageVersionInfo(pv PackageVersion) PackageVersionInfo {
 	return info
 }
 
+func newParsedProperties() ParsedProperties {
+	return ParsedProperties{
+		PropertiesByName:      make(map[string]string),
+		VersionsByPackageName: make(map[string][]PackageVersionInfo),
+	}
+}
 func isPropsFile(path string) bool {
 	return strings.HasSuffix(path, propsFileSuffix)
 }
