@@ -98,10 +98,10 @@ type PackageVersionInfo struct {
 
 type ParsedCsProj struct {
 	PackagesByConditionAndName map[string]map[string]PackageReference // map[condition]map[packageName]PackageReference
-	MSBuildProperties          ParsedProperties
+	MSBuildProperties          ParsedMSBuildProperties
 }
 
-type ParsedProperties struct {
+type ParsedMSBuildProperties struct {
 	PropertiesByName               map[string]string
 	VersionsByPackageName          map[string][]PackageVersionInfo
 	ManagePackageVersionsCentrally bool
