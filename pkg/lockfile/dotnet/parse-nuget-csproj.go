@@ -35,8 +35,8 @@ func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
 // ParseNugetCsProj parses a .csproj file and returns a map of package references by package name.
 // This is shared logic used by both the extractor and matcher.
 func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) {
-	var project NugetCsProj
-	err := xml.Unmarshal(content, &project)
+	var csProj NugetCsProj
+	err := xml.Unmarshal(content, &csProj)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) 
 	// We index by condition, as a given package can be declared multiple times
 	// with different versions based on conditions (like targetFramework).
 	packagesByConditionAndName := make(map[string]map[string]PackageReference)
-	for _, itemGroup := range project.ItemGroups {
+	for _, itemGroup := range csProj.ItemGroups {
 		conditionKey := getConditionKey(itemGroup.ConditionAttr)
 
 		// Initialize the inner map if it doesn't exist
@@ -60,15 +60,12 @@ func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) 
 		}
 	}
 
-	// Build property map from the PropertyGroups of the current .csproj
-	localProperties := buildPropertyMap(project.PropertyGroups)
-
-	// Discover and parse .props files recursively, merging properties as we go
-	mergedProperties := traverseAndMergePropsFiles(csprojPath, project.Imports, localProperties)
+	// Discover and parse .props files recursively, merging properties and collecting PackageVersions
+	propsData := extractProperties(csprojPath, csProj)
 
 	return &ParsedCsProj{
 		PackagesByConditionAndName: packagesByConditionAndName,
-		PropertiesByName:           mergedProperties,
+		MSBuildProperties:          propsData,
 	}, nil
 }
 
@@ -90,20 +87,16 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 	if err != nil {
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
-	packagesByConditionAndName := parsedCsProj.PackagesByConditionAndName
-	allProperties := parsedCsProj.PropertiesByName
 
 	lines := fileposition.BytesToLines(content)
 	details := make([]lockfile.PackageDetails, 0)
 
 	// Iterate over all conditions and their packages
-	// We currently do not have logic around the conditions, but it could be added.
-	for _, packagesByName := range packagesByConditionAndName {
+	for _, packagesByName := range parsedCsProj.PackagesByConditionAndName {
 		for name, pkgRef := range packagesByName {
-			version := GetVersion(pkgRef, allProperties)
-			if version == "" {
-				// Skip packages without explicit versions - they might use
-				// centralized version management or other mechanisms
+			versions := GetVersions(pkgRef, parsedCsProj.MSBuildProperties)
+			if len(versions) == 0 {
+				// Skip packages without versions - they couldn't be resolved
 				continue
 			}
 
@@ -123,19 +116,21 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 			nameLocation := extractPackageNameLocation(block, name, pkgRef.Line.Start, f.Path())
 			versionLocation := extractPackageVersionLocation(block, pkgRef.Line.Start, f.Path())
 
-			pkg := lockfile.PackageDetails{
-				Name:            name,
-				Version:         version,
-				PackageManager:  nugetPackageManager,
-				Ecosystem:       models.EcosystemNuGet,
-				IsDirect:        true, // .csproj only contains direct dependencies
-				DepGroups:       []string{string(depGroup)},
-				BlockLocation:   blockLocation,
-				NameLocation:    nameLocation,
-				VersionLocation: versionLocation,
-			}
+			for _, version := range versions {
+				pkg := lockfile.PackageDetails{
+					Name:            name,
+					Version:         version,
+					PackageManager:  nugetPackageManager,
+					Ecosystem:       models.EcosystemNuGet,
+					IsDirect:        true, // .csproj only contains direct dependencies
+					DepGroups:       []string{string(depGroup)},
+					BlockLocation:   blockLocation,
+					NameLocation:    nameLocation,
+					VersionLocation: versionLocation,
+				}
 
-			details = append(details, pkg)
+				details = append(details, pkg)
+			}
 		}
 	}
 
@@ -154,24 +149,33 @@ func GetInclude(pr PackageReference) string {
 	return ""
 }
 
-// GetVersion returns the Version value from a PackageReference with property substitution applied
-func GetVersion(pr PackageReference, properties map[string]string) string {
-	var version string
+// GetVersions returns the Versions from a PackageReference with property substitution applied
+// If no version is found in the PackageReference, it looks up the version from PackageVersions (central package management)
+// A package can have multiple versions depending on the targetFramework used to build the application.
+func GetVersions(pr PackageReference, properties ParsedProperties) []string {
+	versions := make([]string, 0)
 	if pr.Version != nil {
-		version = *pr.Version
+		versions = append(versions, *pr.Version)
 	} else if pr.VersionAttr != nil {
-		version = *pr.VersionAttr
-	} else {
-		return ""
+		versions = append(versions, *pr.VersionAttr)
+	} else if properties.ManagePackageVersionsCentrally {
+		packageName := GetInclude(pr)
+		if versionsInfo, exists := properties.VersionsByPackageName[packageName]; exists {
+			for _, versionInfo := range versionsInfo {
+				versions = append(versions, versionInfo.Version)
+			}
+		}
 	}
 
-	// Substitute version from properties if available
-	_, exists := extractNugetVariable(version)
-	if exists && len(properties) > 0 {
-		version = substituteProperties(version, properties)
+	for index, version := range versions {
+		// Substitute version from properties if the version was a variable
+		_, exists := extractNugetVariable(version)
+		if exists && len(properties.PropertiesByName) > 0 {
+			versions[index] = substituteProperties(version, properties.PropertiesByName)
+		}
 	}
 
-	return version
+	return versions
 }
 
 // IsDevDependency checks if a PackageReference is a dev dependency (PrivateAssets="all")
@@ -263,11 +267,15 @@ func getConditionKey(condition *string) string {
 
 var _ lockfile.Extractor = NuGetCsprojExtractor{}
 
-// traverseAndMergePropsFiles discovers .props files recursively and merges their properties
+// extractProperties discovers .props files recursively and merges their properties
 // in a single pass to avoid reading the same file multiple times.
-// Returns merged properties with correct precedence order.
-func traverseAndMergePropsFiles(csprojPath string, csprojImports []Import, localProperties map[string]string) map[string]string {
-	allProperties := make(map[string]string)
+// Returns ParsedProperties with merged properties, package versions, and whether central package management is enabled.
+func extractProperties(csprojPath string, csproj NugetCsProj) ParsedProperties {
+	result := ParsedProperties{
+		PropertiesByName:      make(map[string]string),
+		VersionsByPackageName: make(map[string][]PackageVersionInfo),
+	}
+
 	processedFiles := make(map[string]bool)
 	csprojDir := filepath.Dir(csprojPath)
 
@@ -275,71 +283,114 @@ func traverseAndMergePropsFiles(csprojPath string, csprojImports []Import, local
 	conventionFiles := []string{buildPropsFile, packagesPropsFile}
 	for _, fileName := range conventionFiles {
 		if path, exists := findFileInParentDirs(csprojDir, fileName); exists {
-			propsFileProperties := processPropsFile(path, processedFiles)
+			propsFileData := processPropsFile(path, processedFiles)
 
-			// Merge new properties with all properties
-			for key, value := range propsFileProperties {
-				allProperties[key] = value
+			// Merge properties
+			for key, value := range propsFileData.PropertiesByName {
+				result.PropertiesByName[key] = value
+			}
+
+			// Merge package versions
+			for pkgName, versions := range propsFileData.VersionsByPackageName {
+				result.VersionsByPackageName[pkgName] = append(result.VersionsByPackageName[pkgName], versions...)
 			}
 		}
 	}
 
-	// Process explicit imports from .csproj (have precedence over the default Build/Packages files)
-	importProperties := readPropertiesFromPropsFilesImports(csprojImports, csprojDir, processedFiles)
-	for key, value := range importProperties {
-		allProperties[key] = value
+	// Process explicit imports (have precedence over the default Build/Packages files)
+	importedProps := readPropertiesFromPropsFilesImports(csproj.Imports, csprojDir, processedFiles)
+	for key, value := range importedProps.PropertiesByName {
+		result.PropertiesByName[key] = value
+	}
+
+	// Merge package versions from imports
+	for pkgName, versions := range importedProps.VersionsByPackageName {
+		result.VersionsByPackageName[pkgName] = append(result.VersionsByPackageName[pkgName], versions...)
 	}
 
 	// Finally, use local properties from .csproj which have the highest priority
+	localProperties := buildPropertyMap(csproj.PropertyGroups)
 	for key, value := range localProperties {
-		allProperties[key] = value
+		result.PropertiesByName[key] = value
 	}
 
-	return allProperties
+	// Check if central package management is enabled by looking at the merged properties
+	if managedValue, exists := result.PropertiesByName["ManagePackageVersionsCentrally"]; exists {
+		result.ManagePackageVersionsCentrally = strings.EqualFold(managedValue, "true")
+	}
+
+	return result
 }
 
-// processPropsFile recursively processes a .props file and returns its properties
-// Returns a map containing properties from this file and all its imports
-func processPropsFile(propsPath string, processedFiles map[string]bool) map[string]string {
+// processPropsFile recursively processes a .props file and returns its properties and package versions
+// Returns a ParsedProperties containing properties and package versions from this file and all its imports
+func processPropsFile(propsPath string, processedFiles map[string]bool) ParsedProperties {
 	// Skip if already processed
 	if processedFiles[propsPath] {
-		return make(map[string]string)
+		return ParsedProperties{
+			PropertiesByName:      make(map[string]string),
+			VersionsByPackageName: make(map[string][]PackageVersionInfo),
+		}
 	}
 	processedFiles[propsPath] = true
 
 	// Parse the .props file
 	content, err := os.ReadFile(propsPath)
 	if err != nil {
-		return make(map[string]string)
+		return ParsedProperties{
+			PropertiesByName:      make(map[string]string),
+			VersionsByPackageName: make(map[string][]PackageVersionInfo),
+		}
 	}
 	var propsFile PropsFile
 	if err := xml.Unmarshal(content, &propsFile); err != nil {
-		return make(map[string]string)
+		return ParsedProperties{
+			PropertiesByName:      make(map[string]string),
+			VersionsByPackageName: make(map[string][]PackageVersionInfo),
+		}
 	}
 
-	// Accumulate properties from nested imports
-	properties := make(map[string]string)
+	result := ParsedProperties{
+		PropertiesByName:      make(map[string]string),
+		VersionsByPackageName: make(map[string][]PackageVersionInfo),
+	}
 
 	// First, recursively process any imports in this .props file
 	propsFileDir := filepath.Dir(propsPath)
-	importProperties := readPropertiesFromPropsFilesImports(propsFile.Imports, propsFileDir, processedFiles)
-	for key, value := range importProperties {
-		properties[key] = value
+	importedProps := readPropertiesFromPropsFilesImports(propsFile.Imports, propsFileDir, processedFiles)
+	for key, value := range importedProps.PropertiesByName {
+		result.PropertiesByName[key] = value
+	}
+	for pkgName, versions := range importedProps.VersionsByPackageName {
+		result.VersionsByPackageName[pkgName] = append(result.VersionsByPackageName[pkgName], versions...)
 	}
 
 	// Then merge properties from this file (later imports override earlier ones)
 	fileProperties := buildPropertyMap(propsFile.PropertyGroups)
 	for key, value := range fileProperties {
-		properties[key] = value
+		result.PropertiesByName[key] = value
 	}
 
-	return properties
+	// Extract PackageVersion entries from ItemGroups and convert to PackageVersionInfo
+	for _, itemGroup := range propsFile.ItemGroups {
+		for _, pkgVersion := range itemGroup.PackageVersions {
+			info := convertToPackageVersionInfo(pkgVersion)
+			if info.Name != "" {
+				result.VersionsByPackageName[info.Name] = append(result.VersionsByPackageName[info.Name], info)
+			}
+		}
+	}
+
+	return result
 }
 
-// readPropertiesFromPropsFilesImports processes a list of imports and merges their properties
-// Returns a map of all properties found in the imports
-func readPropertiesFromPropsFilesImports(imports []Import, baseDir string, processedFiles map[string]bool) map[string]string {
-	allProperties := make(map[string]string)
+// readPropertiesFromPropsFilesImports processes a list of imports and merges their properties and package versions
+// Returns a ParsedProperties with all properties and package versions found in the imports
+func readPropertiesFromPropsFilesImports(imports []Import, baseDir string, processedFiles map[string]bool) ParsedProperties {
+	result := ParsedProperties{
+		PropertiesByName:      make(map[string]string),
+		VersionsByPackageName: make(map[string][]PackageVersionInfo),
+	}
 
 	for _, imp := range imports {
 		if !isPropsFile(imp.Project) {
@@ -354,14 +405,17 @@ func readPropertiesFromPropsFilesImports(imports []Import, baseDir string, proce
 		}
 
 		if _, err := os.Stat(importPath); err == nil {
-			propsFileProperties := processPropsFile(importPath, processedFiles)
-			for key, value := range propsFileProperties {
-				allProperties[key] = value
+			propsFileData := processPropsFile(importPath, processedFiles)
+			for key, value := range propsFileData.PropertiesByName {
+				result.PropertiesByName[key] = value
+			}
+			for pkgName, versions := range propsFileData.VersionsByPackageName {
+				result.VersionsByPackageName[pkgName] = append(result.VersionsByPackageName[pkgName], versions...)
 			}
 		}
 	}
 
-	return allProperties
+	return result
 }
 
 // findFileInParentDirs searches for a file by walking up the directory tree
@@ -389,6 +443,32 @@ func findFileInParentDirs(startDir string, fileName string) (string, bool) {
 	}
 
 	return "", false
+}
+
+// convertToPackageVersionInfo converts a PackageVersion XML element to a simplified PackageVersionInfo
+func convertToPackageVersionInfo(pv PackageVersion) PackageVersionInfo {
+	info := PackageVersionInfo{}
+
+	// Extract name
+	if pv.Include != nil {
+		info.Name = *pv.Include
+	} else if pv.IncludeAttr != nil {
+		info.Name = *pv.IncludeAttr
+	}
+
+	// Extract version
+	if pv.Version != nil {
+		info.Version = *pv.Version
+	} else if pv.VersionAttr != nil {
+		info.Version = *pv.VersionAttr
+	}
+
+	// Extract condition (optional)
+	if pv.ConditionAttr != nil {
+		info.Condition = *pv.ConditionAttr
+	}
+
+	return info
 }
 
 func isPropsFile(path string) bool {

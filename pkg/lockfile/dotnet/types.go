@@ -48,6 +48,7 @@ type PropsFile struct {
 type ItemGroup struct {
 	XMLName           xml.Name           `xml:"ItemGroup"`
 	PackageReferences []PackageReference `xml:"PackageReference"`
+	PackageVersions   []PackageVersion   `xml:"PackageVersion"`
 	ConditionAttr     *string            `xml:"Condition,attr"`
 }
 
@@ -78,9 +79,32 @@ type PackageReference struct {
 	models.FilePosition
 }
 
+type PackageVersion struct {
+	XMLName       xml.Name `xml:"PackageVersion"`
+	IncludeAttr   *string  `xml:"Include,attr"`
+	Include       *string  `xml:"Include"`
+	VersionAttr   *string  `xml:"Version,attr"`
+	Version       *string  `xml:"Version"`
+	ConditionAttr *string  `xml:"Condition,attr"`
+	models.FilePosition
+}
+
+// PackageVersionInfo is a simplified representation of a package version for central package management
+type PackageVersionInfo struct {
+	Name      string
+	Version   string
+	Condition string // Optional condition (e.g., "'$(TargetFramework)' == 'net6.0'")
+}
+
 type ParsedCsProj struct {
 	PackagesByConditionAndName map[string]map[string]PackageReference // map[condition]map[packageName]PackageReference
-	PropertiesByName           map[string]string
+	MSBuildProperties          ParsedProperties
+}
+
+type ParsedProperties struct {
+	PropertiesByName               map[string]string
+	VersionsByPackageName          map[string][]PackageVersionInfo
+	ManagePackageVersionsCentrally bool
 }
 
 type NuGetCsprojExtractor struct{}

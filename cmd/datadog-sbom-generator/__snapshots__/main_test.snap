@@ -498,6 +498,288 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_csproj_project_with_central_version_management - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:nuget/Dapper@2.1.28",
+      "type": "library",
+      "name": "Dapper",
+      "version": "2.1.28",
+      "purl": "pkg:nuget/Dapper@2.1.28",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":59,/"line_end/":59,/"column_start/":5,/"column_end/":42},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":59,/"line_end/":59,/"column_start/":32,/"column_end/":38}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.CodeAnalysis.CSharp@4.9.0",
+      "type": "library",
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "version": "4.9.0",
+      "purl": "pkg:nuget/Microsoft.CodeAnalysis.CSharp@4.9.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":5,/"column_end/":89},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":35,/"line_end/":35,/"column_start/":32,/"column_end/":61}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.Extensions.Logging.Abstractions@8.0.1",
+      "type": "library",
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "8.0.1",
+      "purl": "pkg:nuget/Microsoft.Extensions.Logging.Abstractions@8.0.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":5,/"column_end/":77},/"name/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":32,/"column_end/":73}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.Extensions.Logging@8.0.0",
+      "type": "library",
+      "name": "Microsoft.Extensions.Logging",
+      "version": "8.0.0",
+      "purl": "pkg:nuget/Microsoft.Extensions.Logging@8.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":5,/"column_end/":64},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":26,/"line_end/":26,/"column_start/":32,/"column_end/":60}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "type": "library",
+      "name": "Newtonsoft.Json",
+      "version": "13.0.3",
+      "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":20,/"line_end/":20,/"column_start/":5,/"column_end/":51},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":20,/"line_end/":20,/"column_start/":32,/"column_end/":47}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Serilog@3.1.1",
+      "type": "library",
+      "name": "Serilog",
+      "version": "3.1.1",
+      "purl": "pkg:nuget/Serilog@3.1.1",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":43},/"name/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39}}"
+          },
+          {
+            "location": "{/"block/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":5,/"column_end/":43},/"name/":{/"file_name/":/"Logging/Logging.csproj/",/"line_start/":12,/"line_end/":12,/"column_start/":32,/"column_end/":39}}"
+          },
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":23,/"line_end/":23,/"column_start/":5,/"column_end/":43},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":23,/"line_end/":23,/"column_start/":32,/"column_end/":39}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/System.Text.Json@6.0.0",
+      "type": "library",
+      "name": "System.Text.Json",
+      "version": "6.0.0",
+      "purl": "pkg:nuget/System.Text.Json@6.0.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":5,/"column_end/":52},/"name/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":32,/"column_end/":48}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/System.Text.Json@8.0.4",
+      "type": "library",
+      "name": "System.Text.Json",
+      "version": "8.0.4",
+      "purl": "pkg:nuget/System.Text.Json@8.0.4",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":5,/"column_end/":52},/"name/":{/"file_name/":/"Common/Common.csproj/",/"line_start/":11,/"line_end/":11,/"column_start/":32,/"column_end/":48}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/coverlet.collector@3.2.0",
+      "type": "library",
+      "name": "coverlet.collector",
+      "version": "3.2.0",
+      "purl": "pkg:nuget/coverlet.collector@3.2.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":32,/"line_end/":32,/"column_start/":5,/"column_end/":74},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":32,/"line_end/":32,/"column_start/":32,/"column_end/":50}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit@2.5.0",
+      "type": "library",
+      "name": "xunit",
+      "version": "2.5.0",
+      "purl": "pkg:nuget/xunit@2.5.0",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":29,/"line_end/":29,/"column_start/":5,/"column_end/":83},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":29,/"line_end/":29,/"column_start/":32,/"column_end/":37}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_csproj_project_with_central_version_management - 2]
+Scanning directory './fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally'
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally/Common/Common.csproj file and found 3 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally/Logging/Logging.csproj file and found 2 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally/SampleApp/SampleApp.csproj file and found 7 packages
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_locks-many - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",

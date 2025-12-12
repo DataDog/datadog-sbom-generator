@@ -27,23 +27,37 @@ DecodingLoop:
 
 		switch elem := token.(type) {
 		case xml.StartElement:
-			if elem.Name.Local != "PackageReference" {
-				continue
+			switch elem.Name.Local {
+			case "PackageReference":
+				packageReference := PackageReference{}
+				packageReference.SetLineStart(lineStart)
+				packageReference.SetColumnStart(columnStart)
+
+				err := decoder.DecodeElement(&packageReference, &elem)
+				if err != nil {
+					return err
+				}
+
+				lineEnd, columnEnd := decoder.InputPos()
+				packageReference.SetLineEnd(lineEnd)
+				packageReference.SetColumnEnd(columnEnd)
+				itemGroup.PackageReferences = append(itemGroup.PackageReferences, packageReference)
+
+			case "PackageVersion":
+				packageVersion := PackageVersion{}
+				packageVersion.SetLineStart(lineStart)
+				packageVersion.SetColumnStart(columnStart)
+
+				err := decoder.DecodeElement(&packageVersion, &elem)
+				if err != nil {
+					return err
+				}
+
+				lineEnd, columnEnd := decoder.InputPos()
+				packageVersion.SetLineEnd(lineEnd)
+				packageVersion.SetColumnEnd(columnEnd)
+				itemGroup.PackageVersions = append(itemGroup.PackageVersions, packageVersion)
 			}
-
-			packageReference := PackageReference{}
-			packageReference.SetLineStart(lineStart)
-			packageReference.SetColumnStart(columnStart)
-
-			err := decoder.DecodeElement(&packageReference, &elem)
-			if err != nil {
-				return err
-			}
-
-			lineEnd, columnEnd := decoder.InputPos()
-			packageReference.SetLineEnd(lineEnd)
-			packageReference.SetColumnEnd(columnEnd)
-			itemGroup.PackageReferences = append(itemGroup.PackageReferences, packageReference)
 
 		case xml.EndElement:
 			if elem.Name == start.Name {
