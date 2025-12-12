@@ -52,7 +52,7 @@ func testParsingNodeModules(t *testing.T, fixture string) ([]lockfile.PackageDet
 
 	defer f.Close()
 
-	packages, err := javascript.NodeModulesExtractor{}.Extract(f)
+	packages, err := javascript.NodeModulesExtractor{}.Extract(f, lockfile.ScanContext{})
 
 	return packages, err
 }

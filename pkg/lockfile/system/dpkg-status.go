@@ -123,7 +123,7 @@ func (e DpkgStatusExtractor) PackageManager() models.PackageManager {
 	return dpkgPackageManager
 }
 
-func (e DpkgStatusExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e DpkgStatusExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 	packageGroups := groupDpkgPackageLines(scanner)
 

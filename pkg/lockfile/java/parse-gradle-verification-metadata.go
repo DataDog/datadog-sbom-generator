@@ -21,7 +21,7 @@ func (e GradleVerificationMetadataExtractor) PackageManager() models.PackageMana
 	return gradleVerificationPackageManager
 }
 
-func (e GradleVerificationMetadataExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e GradleVerificationMetadataExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *GradleVerificationMetadataFile
 
 	err := xml.NewDecoder(f).Decode(&parsedLockfile)

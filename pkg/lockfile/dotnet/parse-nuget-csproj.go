@@ -71,7 +71,7 @@ func (e NuGetCsprojExtractor) PackageManager() models.PackageManager {
 	return nugetPackageManager
 }
 
-func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	content, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("could not read %s: %w", f.Path(), err)

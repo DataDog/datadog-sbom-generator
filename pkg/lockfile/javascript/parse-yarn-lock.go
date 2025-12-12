@@ -369,7 +369,7 @@ func (e YarnLockExtractor) PackageManager() models.PackageManager {
 	return yarnPackageManager
 }
 
-func (e YarnLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 
 	yarnPackages := groupYarnPackageLines(scanner)

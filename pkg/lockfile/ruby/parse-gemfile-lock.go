@@ -182,7 +182,7 @@ func (e GemfileLockExtractor) PackageManager() models.PackageManager {
 	return gemfilePackageManager
 }
 
-func (e GemfileLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e GemfileLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parser gemfileLockfileParser
 
 	scanner := bufio.NewScanner(f)

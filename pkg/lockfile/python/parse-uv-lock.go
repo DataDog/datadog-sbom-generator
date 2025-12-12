@@ -59,7 +59,7 @@ func findRootPackage(allPackages []*UvLockPackage) (*UvLockPackage, error) {
 	return rootPackage[0], nil
 }
 
-func (e UvLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *UvLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)

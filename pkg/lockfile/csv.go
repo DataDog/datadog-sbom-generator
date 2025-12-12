@@ -102,7 +102,7 @@ func (e CSVExtractor) PackageManager() models.PackageManager {
 	return csvPackageManager
 }
 
-func (e CSVExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e CSVExtractor) Extract(f DepFile, context ScanContext) ([]PackageDetails, error) {
 	return fromCSV(f)
 }
 

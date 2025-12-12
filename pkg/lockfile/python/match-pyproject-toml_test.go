@@ -65,7 +65,7 @@ func TestPyprojectTomlMatcher_Match_OnePackage(t *testing.T) {
 			PackageManager: models.Poetry,
 		},
 	}
-	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -108,7 +108,7 @@ func TestPyprojectTomlMatcher_Match_OnePackageDev(t *testing.T) {
 			PackageManager: models.Poetry,
 		},
 	}
-	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -160,7 +160,7 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 			PackageManager: models.Poetry,
 		},
 	}
-	err = pyprojectTOMLMatcher.Match(sourceFile, packages)
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

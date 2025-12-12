@@ -86,7 +86,7 @@ func (e PubspecLockExtractor) PackageManager() models.PackageManager {
 	return pubsecPackageManager
 }
 
-func (e PubspecLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e PubspecLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PubspecLockfile
 
 	err := yaml.NewDecoder(f).Decode(&parsedLockfile)

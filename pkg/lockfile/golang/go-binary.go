@@ -48,7 +48,7 @@ func (e GoBinaryExtractor) PackageManager() models.PackageManager {
 	return goBinaryPackageManager
 }
 
-func (e GoBinaryExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e GoBinaryExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var readerAt io.ReaderAt
 	if fileWithReaderAt, ok := f.(io.ReaderAt); ok {
 		readerAt = fileWithReaderAt
@@ -92,6 +92,10 @@ func (e GoBinaryExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetail
 var _ lockfile.Extractor = GoBinaryExtractor{}
 
 var GoBinaryExtractorInstance = GoBinaryExtractor{}
+
+func ParseGoBinaryLock(pathToLockfile string) ([]lockfile.PackageDetails, error) {
+	return lockfile.ExtractFromFile(pathToLockfile, GoBinaryExtractor{})
+}
 
 //nolint:gochecknoinits
 func init() {

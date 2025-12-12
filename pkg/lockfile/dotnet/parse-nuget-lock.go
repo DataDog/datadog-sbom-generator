@@ -57,7 +57,7 @@ func (e NuGetLockExtractor) PackageManager() models.PackageManager {
 	return nugetPackageManager
 }
 
-func (e NuGetLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e NuGetLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *NuGetLockfile
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)

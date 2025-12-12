@@ -187,7 +187,7 @@ func getPnpmDependencyKey(pkg lockfile.PackageDetails) string {
 	return getWorkspaceDependencyKey(pkg.Name, pkg.Version, "") // this has no workspace path
 }
 
-func (e PnpmLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e PnpmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PnpmLockfile
 
 	err := yaml.NewDecoder(f).Decode(&parsedLockfile)

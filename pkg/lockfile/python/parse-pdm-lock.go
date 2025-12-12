@@ -22,7 +22,7 @@ func (p PdmLockExtractor) PackageManager() models.PackageManager {
 	return pdmPackageManager
 }
 
-func (p PdmLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (p PdmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockFile *PdmLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockFile)

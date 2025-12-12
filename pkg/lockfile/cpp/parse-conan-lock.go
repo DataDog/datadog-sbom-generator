@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	lockfilepkg "github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -103,11 +103,11 @@ func parseConanRenference(ref string) ConanReference {
 	return reference
 }
 
-func parseConanV1Lock(lockfile ConanLockFile) []lockfilepkg.PackageDetails {
+func parseConanV1Lock(sourceFile ConanLockFile) []lockfile.PackageDetails {
 	var reference ConanReference
-	packages := make([]lockfilepkg.PackageDetails, 0, len(lockfile.GraphLock.Nodes))
+	packages := make([]lockfile.PackageDetails, 0, len(sourceFile.GraphLock.Nodes))
 
-	for _, node := range lockfile.GraphLock.Nodes {
+	for _, node := range sourceFile.GraphLock.Nodes {
 		if node.Path != "" {
 			// a local "conanfile.txt", skip
 			continue
@@ -126,7 +126,7 @@ func parseConanV1Lock(lockfile ConanLockFile) []lockfilepkg.PackageDetails {
 		if reference.Name == "" {
 			continue
 		}
-		packages = append(packages, lockfilepkg.PackageDetails{
+		packages = append(packages, lockfile.PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: conanPackageManager,
@@ -137,7 +137,7 @@ func parseConanV1Lock(lockfile ConanLockFile) []lockfilepkg.PackageDetails {
 	return packages
 }
 
-func parseConanRequires(packages *[]lockfilepkg.PackageDetails, requires []string, group string) {
+func parseConanRequires(packages *[]lockfile.PackageDetails, requires []string, group string) {
 	for _, ref := range requires {
 		reference := parseConanRenference(ref)
 		// skip entries with no name, they are most likely consumer's conanfiles
@@ -146,7 +146,7 @@ func parseConanRequires(packages *[]lockfilepkg.PackageDetails, requires []strin
 			continue
 		}
 
-		*packages = append(*packages, lockfilepkg.PackageDetails{
+		*packages = append(*packages, lockfile.PackageDetails{
 			Name:           reference.Name,
 			Version:        reference.Version,
 			PackageManager: conanPackageManager,
@@ -156,21 +156,21 @@ func parseConanRequires(packages *[]lockfilepkg.PackageDetails, requires []strin
 	}
 }
 
-func parseConanV2Lock(lockfile ConanLockFile) []lockfilepkg.PackageDetails {
+func parseConanV2Lock(sourceFile ConanLockFile) []lockfile.PackageDetails {
 	packages := make(
-		[]lockfilepkg.PackageDetails,
+		[]lockfile.PackageDetails,
 		0,
-		uint64(len(lockfile.Requires))+uint64(len(lockfile.BuildRequires))+uint64(len(lockfile.PythonRequires)),
+		uint64(len(sourceFile.Requires))+uint64(len(sourceFile.BuildRequires))+uint64(len(sourceFile.PythonRequires)),
 	)
 
-	parseConanRequires(&packages, lockfile.Requires, "requires")
-	parseConanRequires(&packages, lockfile.BuildRequires, "build-requires")
-	parseConanRequires(&packages, lockfile.PythonRequires, "python-requires")
+	parseConanRequires(&packages, sourceFile.Requires, "requires")
+	parseConanRequires(&packages, sourceFile.BuildRequires, "build-requires")
+	parseConanRequires(&packages, sourceFile.PythonRequires, "python-requires")
 
 	return packages
 }
 
-func parseConanLock(lockfile ConanLockFile) []lockfilepkg.PackageDetails {
+func parseConanLock(lockfile ConanLockFile) []lockfile.PackageDetails {
 	if lockfile.GraphLock.Nodes != nil {
 		return parseConanV1Lock(lockfile)
 	}
@@ -192,24 +192,24 @@ func (e ConanLockExtractor) PackageManager() models.PackageManager {
 	return conanPackageManager
 }
 
-func (e ConanLockExtractor) Extract(f lockfilepkg.DepFile) ([]lockfilepkg.PackageDetails, error) {
+func (e ConanLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *ConanLockFile
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)
 	if err != nil {
-		return []lockfilepkg.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
 	return parseConanLock(*parsedLockfile), nil
 }
 
-var _ lockfilepkg.Extractor = ConanLockExtractor{}
+var _ lockfile.Extractor = ConanLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	lockfilepkg.RegisterExtractor(models.ConanFilePath, ConanLockExtractor{})
+	lockfile.RegisterExtractor(models.ConanFilePath, ConanLockExtractor{})
 }
 
-func ParseConanLock(pathToLockfile string) ([]lockfilepkg.PackageDetails, error) {
-	return lockfilepkg.ExtractFromFile(pathToLockfile, ConanLockExtractor{})
+func ParseConanLock(pathToLockfile string) ([]lockfile.PackageDetails, error) {
+	return lockfile.ExtractFromFile(pathToLockfile, ConanLockExtractor{})
 }

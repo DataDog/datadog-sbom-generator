@@ -43,7 +43,7 @@ func (e ComposerLockExtractor) PackageManager() models.PackageManager {
 	return composerPackageManager
 }
 
-func (e ComposerLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e ComposerLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *ComposerLock
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)

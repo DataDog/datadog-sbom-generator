@@ -136,7 +136,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 			PackageManager: models.Gradle,
 		},
 	}
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
@@ -181,7 +181,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 			PackageManager: models.Gradle,
 		},
 	}
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
@@ -226,7 +226,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 			PackageManager: models.Gradle,
 		},
 	}
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
@@ -271,7 +271,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 			PackageManager: models.Gradle,
 		},
 	}
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexepcted error: %v", err)
 	}
@@ -317,7 +317,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 			DepGroups:      []string{"testRuntimeClasspath"},
 		},
 	}
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -379,7 +379,7 @@ func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
 		},
 	}
 
-	err = buildGradleMatcher.Match(sourceFile, packages)
+	err = buildGradleMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

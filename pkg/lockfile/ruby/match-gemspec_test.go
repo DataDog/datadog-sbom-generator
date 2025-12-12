@@ -5,10 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/ruby"
-
 	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/ruby"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
@@ -103,7 +102,7 @@ func TestGemspecFileMatcher_Match(t *testing.T) {
 		},
 	}
 
-	err = gemspecFileMatcher.Match(sourceFile, packages)
+	err = gemspecFileMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -127,7 +126,7 @@ func TestGemfileMatcher_Filter_Not_In_Lockfile(t *testing.T) {
 		},
 	}
 
-	err = gemfileMatcher.Match(sourceFile, packages)
+	err = gemfileMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -151,7 +150,7 @@ func TestGemspecFileMatcher_NotInLockfile(t *testing.T) {
 		},
 	}
 
-	err = gemspecFileMatcher.Match(sourceFile, packages)
+	err = gemspecFileMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

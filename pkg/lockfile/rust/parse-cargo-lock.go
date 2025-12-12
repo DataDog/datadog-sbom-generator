@@ -22,7 +22,7 @@ func (e CargoLockExtractor) PackageManager() models.PackageManager {
 	return cargoPackageManager
 }
 
-func (e CargoLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e CargoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *CargoLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)

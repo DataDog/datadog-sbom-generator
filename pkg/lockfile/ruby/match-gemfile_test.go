@@ -69,7 +69,7 @@ func TestGemfileMatcher_Match_OnePackage(t *testing.T) {
 			PackageManager: models.Bundler,
 		},
 	}
-	err = gemfileMatcher.Match(sourceFile, packages)
+	err = gemfileMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestGemfileMatcher_Match_Groups(t *testing.T) {
 		},
 	}
 
-	err = gemfileMatcher.Match(sourceFile, packages)
+	err = gemfileMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -130,14 +132,22 @@ func ExpandLanguagesAndPackageManagersToExtractors(parsers []string) []string {
 
 var ErrExtractorNotFound = errors.New("could not determine extractor")
 
-func ExtractDeps(f DepFile, enabledParsers map[string]bool) (Lockfile, error) {
-	extractor, extractedAs := FindExtractor(f.Path(), enabledParsers)
+// ScanContext is used to pass context to extractors
+// It is passed to extractors to allow them to access the root directory of the scan as well as the reporter
+type ScanContext struct {
+	EnabledParsers map[string]bool
+	RootDir        string
+	Reporter       reporter.Reporter
+}
+
+func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
+	extractor, extractedAs := FindExtractor(f.Path(), context.EnabledParsers)
 
 	if extractor == nil {
 		return Lockfile{}, fmt.Errorf("%w for %s", ErrExtractorNotFound, f.Path())
 	}
 
-	packages, err := extractor.Extract(f)
+	packages, err := extractor.Extract(f, context)
 
 	if err != nil && extractedAs != "" {
 		//nolint:all
@@ -148,7 +158,7 @@ func ExtractDeps(f DepFile, enabledParsers map[string]bool) (Lockfile, error) {
 	if e, ok := extractor.(ExtractorWithMatcher); ok {
 		if matchers := e.GetMatchers(); len(matchers) > 0 {
 			for _, matcher := range matchers {
-				matchError := matchWithFile(f, packages, matcher)
+				matchError := matchWithFile(f, packages, matcher, context)
 				if matchError != nil {
 					_, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", f.Path(), matchError.Error())
 				}
@@ -176,7 +186,7 @@ func ExtractDeps(f DepFile, enabledParsers map[string]bool) (Lockfile, error) {
 	}
 	defer depFile.Close()
 	if e, ok := extractor.(ArtifactExtractor); ok {
-		artifact, err := e.GetArtifact(depFile)
+		artifact, err := e.GetArtifact(depFile, context)
 		if err == nil {
 			parsedLockfile.Artifact = artifact
 		}

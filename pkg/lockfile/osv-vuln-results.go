@@ -31,7 +31,7 @@ func (e OSVScannerResultsExtractor) PackageManager() models.PackageManager {
 	return osvVulnPackageManager
 }
 
-func (e OSVScannerResultsExtractor) Extract(f DepFile) ([]PackageDetails, error) {
+func (e OSVScannerResultsExtractor) Extract(f DepFile, context ScanContext) ([]PackageDetails, error) {
 	parsedResults := models.VulnerabilityResults{}
 	err := json.NewDecoder(f).Decode(&parsedResults)
 

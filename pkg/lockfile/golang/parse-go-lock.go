@@ -80,7 +80,7 @@ func (e GoLockExtractor) PackageManager() models.PackageManager {
 	return goPackageManager
 }
 
-func (e GoLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e GoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *modfile.File
 
 	b, err := io.ReadAll(f)

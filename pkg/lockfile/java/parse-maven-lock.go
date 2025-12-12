@@ -456,7 +456,7 @@ func (e MavenLockExtractor) decodeMavenFile(f lockfile.DepFile, depth int, visit
 	return e.mergeLockfiles(parsedLockfile, parentLockfile), nil
 }
 
-func (e MavenLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	visitedPath := make(map[string]bool)
 	visitedPath[f.Path()] = true
 	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath)
@@ -546,7 +546,7 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetai
 	return slices.Collect(maps.Values(details)), nil
 }
 
-func (e MavenLockExtractor) GetArtifact(f lockfile.DepFile) (*models.ScannedArtifact, error) {
+func (e MavenLockExtractor) GetArtifact(f lockfile.DepFile, context lockfile.ScanContext) (*models.ScannedArtifact, error) {
 	visitedPath := make(map[string]bool)
 	visitedPath[f.Path()] = true
 	parsedLockfile, err := e.decodeMavenFile(f, 0, visitedPath)

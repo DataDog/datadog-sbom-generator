@@ -69,7 +69,7 @@ func TestPackageJSONMatcher_Match_OnePackage(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages)
+	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestPackageJSONMatcher_Match_TransitiveDependencies(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages)
+	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -142,7 +142,7 @@ func TestPackageJSONMatcher_Match_NameConflict(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages)
+	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -179,7 +179,7 @@ func TestPackageJSONMatcher_Match_Resolutions(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages)
+	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -316,7 +316,7 @@ func TestPackageJSONMatcher_Match_Target_Version(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = packageJSONMatcher.Match(sourceFile, packages)
+	err = packageJSONMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

@@ -19,10 +19,10 @@ func (e NodeModulesExtractor) PackageManager() models.PackageManager {
 	return nodeModulesPackageManager
 }
 
-func (e NodeModulesExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e NodeModulesExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	extractor := NpmLockExtractor{}
 
-	return extractor.Extract(f)
+	return extractor.Extract(f, context)
 }
 
 var _ lockfile.Extractor = NodeModulesExtractor{}

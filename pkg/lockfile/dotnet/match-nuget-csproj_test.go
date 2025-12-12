@@ -74,7 +74,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 			PackageManager: models.NuGet,
 		},
 	}
-	err = nugetCsprojMatcher.Match(sourceFile, packages)
+	err = nugetCsprojMatcher.Match(sourceFile, packages, lockfile.ScanContext{})
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

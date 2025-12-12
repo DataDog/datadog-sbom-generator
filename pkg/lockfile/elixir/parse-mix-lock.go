@@ -31,7 +31,7 @@ func (e MixLockExtractor) PackageManager() models.PackageManager {
 	return mixPackageManager
 }
 
-func (e MixLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e MixLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	re := cachedregexp.MustCompile(`^ +"(\w+)": \{.+,$`)
 
 	scanner := bufio.NewScanner(f)

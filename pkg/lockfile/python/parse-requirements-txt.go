@@ -266,7 +266,7 @@ func (e RequirementsTxtExtractor) PackageManager() models.PackageManager {
 	return requirementsPackageManager
 }
 
-func (e RequirementsTxtExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e RequirementsTxtExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	return parseRequirementsTxt(f, map[string]struct{}{})
 }
 
