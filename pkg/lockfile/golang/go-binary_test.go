@@ -1,6 +1,8 @@
 package golang_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/golang"
@@ -74,12 +76,17 @@ func TestGoBinaryExtractor_ShouldExtract(t *testing.T) {
 func TestExtractGoBinary_NoPackages(t *testing.T) {
 	t.Parallel()
 
-	file, err := lockfile.OpenLocalDepFile("../fixtures/go/binaries/just-go")
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/go/binaries/just-go"))
+
 	if err != nil {
 		t.Fatalf("could not open file %v", err)
 	}
 
-	packages, err := golang.GoBinaryExtractor{}.Extract(file)
+	packages, err := golang.ParseGoBinaryLock(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -102,7 +109,7 @@ func TestExtractGoBinary_OnePackage(t *testing.T) {
 		t.Fatalf("could not open file %v", err)
 	}
 
-	packages, err := golang.GoBinaryExtractor{}.Extract(file)
+	packages, err := golang.GoBinaryExtractor{}.Extract(file, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -131,7 +138,7 @@ func TestExtractGoBinary_NotAGoBinary(t *testing.T) {
 		t.Fatalf("could not open file %v", err)
 	}
 
-	packages, err := golang.GoBinaryExtractor{}.Extract(file)
+	packages, err := golang.GoBinaryExtractor{}.Extract(file, testutil.GetTestContext())
 	if err == nil {
 		t.Errorf("did not get expected error when extracting")
 	}

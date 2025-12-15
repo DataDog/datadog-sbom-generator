@@ -33,7 +33,7 @@ func (m BuildGradleMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile
 	return sourcefile, err
 }
 
-func (m BuildGradleMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails) error {
+func (m BuildGradleMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	// First, try to match against the main build.gradle file
 	content, err := io.ReadAll(sourceFile)
 	if err != nil {

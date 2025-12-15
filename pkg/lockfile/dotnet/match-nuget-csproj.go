@@ -29,9 +29,9 @@ func (m NugetCsprojMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfile
 	return nil, errors.New("no csproj file found")
 }
 
-func (m NugetCsprojMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails) error {
+func (m NugetCsprojMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	// Extract all package details from the csproj file using the extractor
-	extractedPackages, err := NuGetCsprojExtractor{}.Extract(sourceFile)
+	extractedPackages, err := NuGetCsprojExtractor{}.Extract(sourceFile, context)
 	if err != nil {
 		return err
 	}

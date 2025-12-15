@@ -22,7 +22,7 @@ func (e PoetryLockExtractor) PackageManager() models.PackageManager {
 	return poetryPackageManager
 }
 
-func (e PoetryLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e PoetryLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PoetryLockFile
 
 	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)

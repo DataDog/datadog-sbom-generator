@@ -13,8 +13,8 @@ func (m PipfileMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFi
 	return lockfile.Open("Pipfile")
 }
 
-func (m PipfileMatcher) Match(sourcefile lockfile.DepFile, packages []lockfile.PackageDetails) error {
-	content, err := io.ReadAll(sourcefile)
+func (m PipfileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
+	content, err := io.ReadAll(sourceFile)
 	if err != nil {
 		return err
 	}
@@ -46,18 +46,18 @@ func (m PipfileMatcher) Match(sourcefile lockfile.DepFile, packages []lockfile.P
 				packages[key].BlockLocation = models.FilePosition{
 					Line:     models.Position{Start: lineNumber, End: lineNumber},
 					Column:   models.Position{Start: startColumn, End: endColumn},
-					Filename: sourcefile.Path(),
+					Filename: sourceFile.Path(),
 				}
 
 				nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerName, lineNumber)
 				if nameLocation != nil {
-					nameLocation.Filename = sourcefile.Path()
+					nameLocation.Filename = sourceFile.Path()
 					packages[key].NameLocation = nameLocation
 				}
 
 				versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
 				if versionLocation != nil {
-					versionLocation.Filename = sourcefile.Path()
+					versionLocation.Filename = sourceFile.Path()
 					packages[key].VersionLocation = versionLocation
 				}
 

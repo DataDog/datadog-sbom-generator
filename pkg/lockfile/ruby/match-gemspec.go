@@ -31,7 +31,7 @@ func (matcher GemspecFileMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lo
 	return nil, nil
 }
 
-func (matcher GemspecFileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails) error {
+func (matcher GemspecFileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	packagesByName := indexPackages(packages)
 
 	treeResult, err := lockfile.ParseFile(sourceFile, lockfile.Ruby)

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/javascript"
 )
 
@@ -52,7 +53,7 @@ func testParsingNodeModules(t *testing.T, fixture string) ([]lockfile.PackageDet
 
 	defer f.Close()
 
-	packages, err := javascript.NodeModulesExtractor{}.Extract(f)
+	packages, err := javascript.NodeModulesExtractor{}.Extract(f, testutil.GetTestContext())
 
 	return packages, err
 }

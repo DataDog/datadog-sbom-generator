@@ -24,7 +24,7 @@ func (e PipenvLockExtractor) PackageManager() models.PackageManager {
 	return pipenvPackageManager
 }
 
-func (e PipenvLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e PipenvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PipenvLock
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)

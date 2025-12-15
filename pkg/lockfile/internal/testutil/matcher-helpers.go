@@ -33,7 +33,7 @@ func (m SuccessfulMatcher) GetSourceFile(_ lockfile.DepFile) (lockfile.DepFile, 
 	return nil, nil
 }
 
-func (m SuccessfulMatcher) Match(_ lockfile.DepFile, _ []lockfile.PackageDetails) error {
+func (m SuccessfulMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	return nil
 }
 
@@ -47,7 +47,7 @@ func (m FailingMatcher) GetSourceFile(f lockfile.DepFile) (lockfile.DepFile, err
 	return f, nil
 }
 
-func (m FailingMatcher) Match(_ lockfile.DepFile, _ []lockfile.PackageDetails) error {
+func (m FailingMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	return m.Error
 }
 

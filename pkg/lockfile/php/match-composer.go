@@ -71,7 +71,7 @@ To work around this limitation, we are pre-filling the structure with all the fi
   - The line offset to be able to compute the line of any found dependencies in the file
   - And a list of pointer to the original lockfile.PackageDetails extracted by the parser to be able to modify them with the json section content
 */
-func (matcher ComposerMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails) error {
+func (matcher ComposerMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	content, err := io.ReadAll(sourceFile)
 	if err != nil {
 		return err

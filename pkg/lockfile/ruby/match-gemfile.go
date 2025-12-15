@@ -19,7 +19,7 @@ func (matcher GemfileMatcher) GetSourceFile(sourceFile lockfile.DepFile) (lockfi
 	return file, err
 }
 
-func (matcher GemfileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails) error {
+func (matcher GemfileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.PackageDetails, context lockfile.ScanContext) error {
 	packagesByName := indexPackages(packages)
 
 	treeResult, err := lockfile.ParseFile(sourceFile, lockfile.Ruby)

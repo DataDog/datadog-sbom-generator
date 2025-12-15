@@ -480,7 +480,7 @@ func (e NpmLockExtractor) PackageManager() models.PackageManager {
 	return npmPackageManager
 }
 
-func (e NpmLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e NpmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *NpmLockfile
 
 	contentBytes, err := io.ReadAll(f)

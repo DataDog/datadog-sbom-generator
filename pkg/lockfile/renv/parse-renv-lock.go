@@ -38,7 +38,7 @@ func (e RenvLockExtractor) PackageManager() models.PackageManager {
 	return renvPackageManager
 }
 
-func (e RenvLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e RenvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *RenvLockfile
 
 	err := json.NewDecoder(f).Decode(&parsedLockfile)

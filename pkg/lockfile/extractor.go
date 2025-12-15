@@ -1,12 +1,12 @@
 package lockfile
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/unicode"
@@ -18,7 +18,6 @@ import (
 type DepFile interface {
 	io.Reader
 	io.Closer
-
 	// Open opens an DepFile based on the path of the
 	// current DepFile if the provided path is relative.
 	//
@@ -31,7 +30,7 @@ type DepFile interface {
 type Extractor interface {
 	// ShouldExtract checks if the Extractor should be used for the given path.
 	ShouldExtract(path string) bool
-	Extract(f DepFile) ([]PackageDetails, error)
+	Extract(f DepFile, context ScanContext) ([]PackageDetails, error)
 	// IsOfficiallySupported returns true if the extractor is officially supported by Datadog SCA E2E
 	IsOfficiallySupported() bool
 	PackageManager() models.PackageManager
@@ -47,7 +46,7 @@ type ExtractorWithMatcher interface {
 }
 
 type ArtifactExtractor interface {
-	GetArtifact(f DepFile) (*models.ScannedArtifact, error)
+	GetArtifact(f DepFile, context ScanContext) (*models.ScannedArtifact, error)
 }
 
 func (e WithMatcher) GetMatchers() []Matcher {
@@ -101,7 +100,16 @@ func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetai
 
 	defer f.Close()
 
-	packages, err := extractor.Extract(f)
+	// Extracting directly a single file is used in tests environments.
+	// Thus, we require a complete context to pass a context to it.
+	r, err := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
+	context := ScanContext{Reporter: r}
+
+	if err != nil {
+		return []PackageDetails{}, err
+	}
+
+	packages, err := extractor.Extract(f, context)
 	if err != nil {
 		return []PackageDetails{}, err
 	}
@@ -110,9 +118,10 @@ func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetai
 	if e, ok := extractor.(ExtractorWithMatcher); ok {
 		if matchers := e.GetMatchers(); len(matchers) > 0 {
 			for _, matcher := range matchers {
-				matchError := matchWithFile(f, packages, matcher)
+				matchError := matchWithFile(f, packages, matcher, context)
 				if matchError != nil {
-					_, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
+					// _, _ = fmt.Fprintf(os.Stderr, "there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
+					context.Reporter.Errorf("there was an error matching the source file %s: %s\n", pathToLockfile, matchError.Error())
 				}
 			}
 		}

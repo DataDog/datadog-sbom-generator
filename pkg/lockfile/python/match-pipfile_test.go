@@ -65,7 +65,7 @@ func TestPipfileMatcher_Match_OnePackage(t *testing.T) {
 			PackageManager: models.Requirements,
 		},
 	}
-	err = pipfileMatcher.Match(sourceFile, packages)
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 			PackageManager: models.Requirements,
 		},
 	}
-	err = pipfileMatcher.Match(sourceFile, packages)
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

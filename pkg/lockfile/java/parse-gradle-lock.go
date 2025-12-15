@@ -60,7 +60,7 @@ func (e GradleLockExtractor) PackageManager() models.PackageManager {
 	return gradlePackageManager
 }
 
-func (e GradleLockExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e GradleLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	pkgs := make([]lockfile.PackageDetails, 0)
 	scanner := bufio.NewScanner(f)
 

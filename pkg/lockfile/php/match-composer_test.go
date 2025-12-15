@@ -69,7 +69,7 @@ func TestComposerMatcher_Match_OnePackage(t *testing.T) {
 			IsDirect:       true,
 		},
 	}
-	err = composerMatcher.Match(sourceFile, packages)
+	err = composerMatcher.Match(sourceFile, packages, testutil.GetTestContext())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}

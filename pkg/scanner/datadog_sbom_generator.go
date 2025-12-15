@@ -135,7 +135,8 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 					return nil
 				}
 
-				pkgs, artifact, err := scanLockfile(r, path, enabledParsers)
+				context := lockfile.ScanContext{EnabledParsers: enabledParsers, RootDir: dir, Reporter: r}
+				pkgs, artifact, err := scanLockfile(path, context)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
 				}
@@ -189,22 +190,21 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(r reporter.Reporter, path string, enabledParsers map[string]bool) (lockfile.Packages, *models.ScannedArtifact, error) {
+func scanLockfile(path string, context lockfile.ScanContext) (lockfile.Packages, *models.ScannedArtifact, error) {
 	var err error
 	var parsedLockfile lockfile.Lockfile
 
 	file, err := lockfile.OpenLocalDepFile(path)
 
 	if err == nil {
-		parsedLockfile, err = lockfile.ExtractDeps(file, enabledParsers)
+		parsedLockfile, err = lockfile.ExtractDeps(file, context)
 	}
 	defer file.Close()
 
 	if err != nil {
 		return nil, nil, err
 	}
-
-	r.Verbosef(
+	context.Reporter.Verbosef(
 		"Scanned %s file and found %d %s\n",
 		path,
 		len(parsedLockfile.Packages),

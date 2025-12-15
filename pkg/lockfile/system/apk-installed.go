@@ -77,7 +77,7 @@ func (e ApkInstalledExtractor) IsOfficiallySupported() bool {
 	return apkOfficiallySupported
 }
 
-func (e ApkInstalledExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
+func (e ApkInstalledExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	scanner := bufio.NewScanner(f)
 
 	packageGroups := groupApkPackageLines(scanner)

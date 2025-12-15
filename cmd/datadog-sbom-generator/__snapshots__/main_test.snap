@@ -636,6 +636,7 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
 
 [TestRun/Scan_locks-many_with_exclusion - 2]
 Scanning directory './fixtures/locks-many', resolved absolute path '<rootdir>/fixtures/locks-many'
+Failed to match the source file of <rootdir>/fixtures/locks-many/Gemfile.lock: open <rootdir>/fixtures/locks-many/Gemfile: no such file or directory, it leads to incomplete enrichment components
 Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
 Skipping <rootdir>/fixtures/locks-many/composer.lock with exclusion rule: *composer.lock
 Skipping <rootdir>/fixtures/locks-many/package-lock.json with exclusion rule: *package-lock.json
@@ -2494,6 +2495,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
 
 [TestRun/verbosity_level_=_verbose - 2]
 Scanning directory './fixtures/locks-many/composer.lock', resolved absolute path '<rootdir>/fixtures/locks-many/composer.lock'
+Failed to match the source file of <rootdir>/fixtures/locks-many/composer.lock: open <rootdir>/fixtures/locks-many/composer.json: no such file or directory, it leads to incomplete enrichment components
 Scanned <rootdir>/fixtures/locks-many/composer.lock file and found 1 package
 [reachability] Reachability analysis is disabled
 ---

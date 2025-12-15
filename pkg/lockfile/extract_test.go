@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/output"
-
 	"github.com/stretchr/testify/assert"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/parsers" // Register all extractors
 )
 
@@ -66,7 +66,9 @@ func TestExtractDeps_FindsExpectedExtractor(t *testing.T) {
 	count := 0
 
 	for file := range lockfiles {
-		_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"+file), enabledParsers)
+		context := testutil.GetTestContext()
+		context.EnabledParsers = enabledParsers
+		_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"+file), context)
 
 		if errors.Is(err, lockfile.ErrExtractorNotFound) {
 			t.Errorf("No extractor was found for %s", file)
@@ -84,7 +86,7 @@ func TestExtractDeps_FindsExpectedExtractor(t *testing.T) {
 func TestExtractDeps_ExtractorNotFound(t *testing.T) {
 	t.Parallel()
 
-	_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"), map[string]bool{})
+	_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"), testutil.GetTestContext())
 
 	if err == nil {
 		t.Errorf("Expected to get an error but did not")
@@ -98,7 +100,7 @@ func TestExtractDeps_ExtractorNotFound(t *testing.T) {
 func TestExtractDeps_ExtractorNotFound_WithExplicitExtractAs(t *testing.T) {
 	t.Parallel()
 
-	_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"), map[string]bool{})
+	_, err := lockfile.ExtractDeps(openTestDepFile("/path/to/my/"), testutil.GetTestContext())
 
 	if err == nil {
 		t.Errorf("Expected to get an error but did not")
