@@ -41,12 +41,21 @@ func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) 
 		return nil, err
 	}
 
-	packageReferenceByInclude := make(map[string]PackageReference)
+	// We index by condition, as a given package can be declared multiple times
+	// with different versions based on conditions (like targetFramework).
+	packagesByConditionAndName := make(map[string]map[string]PackageReference)
 	for _, itemGroup := range project.ItemGroups {
+		conditionKey := getConditionKey(itemGroup.ConditionAttr)
+
+		// Initialize the inner map if it doesn't exist
+		if packagesByConditionAndName[conditionKey] == nil {
+			packagesByConditionAndName[conditionKey] = make(map[string]PackageReference)
+		}
+
 		for _, packageReference := range itemGroup.PackageReferences {
 			include := GetInclude(packageReference)
 			if include != "" {
-				packageReferenceByInclude[include] = packageReference
+				packagesByConditionAndName[conditionKey][include] = packageReference
 			}
 		}
 	}
@@ -58,8 +67,8 @@ func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) 
 	mergedProperties := traverseAndMergePropsFiles(csprojPath, project.Imports, localProperties)
 
 	return &ParsedCsProj{
-		PackagesByName:   packageReferenceByInclude,
-		PropertiesByName: mergedProperties,
+		PackagesByConditionAndName: packagesByConditionAndName,
+		PropertiesByName:           mergedProperties,
 	}, nil
 }
 
@@ -81,50 +90,53 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile) ([]lockfile.PackageDet
 	if err != nil {
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
-	packageReferences := parsedCsProj.PackagesByName
+	packagesByConditionAndName := parsedCsProj.PackagesByConditionAndName
 	allProperties := parsedCsProj.PropertiesByName
 
 	lines := fileposition.BytesToLines(content)
-	details := make([]lockfile.PackageDetails, 0, len(packageReferences))
+	details := make([]lockfile.PackageDetails, 0)
 
-	for name, pkgRef := range packageReferences {
-		version := GetVersion(pkgRef, allProperties)
+	// Iterate over all conditions and their packages
+	// We currently do not have logic around the conditions, but it could be added.
+	for _, packagesByName := range packagesByConditionAndName {
+		for name, pkgRef := range packagesByName {
+			version := GetVersion(pkgRef, allProperties)
+			if version == "" {
+				// Skip packages without explicit versions - they might use
+				// centralized version management or other mechanisms
+				continue
+			}
 
-		if version == "" {
-			// Skip packages without explicit versions - they might use
-			// centralized version management or other mechanisms
-			continue
+			depGroup := models.DepGroupProd
+			if IsDevDependency(pkgRef) {
+				depGroup = models.DepGroupDev
+			}
+
+			block := lines[pkgRef.Line.Start-1 : pkgRef.Line.End]
+
+			blockLocation := models.FilePosition{
+				Line:     models.Position{Start: pkgRef.Line.Start, End: pkgRef.Line.End},
+				Column:   models.Position{Start: pkgRef.Column.Start, End: pkgRef.Column.End},
+				Filename: f.Path(),
+			}
+
+			nameLocation := extractPackageNameLocation(block, name, pkgRef.Line.Start, f.Path())
+			versionLocation := extractPackageVersionLocation(block, pkgRef.Line.Start, f.Path())
+
+			pkg := lockfile.PackageDetails{
+				Name:            name,
+				Version:         version,
+				PackageManager:  nugetPackageManager,
+				Ecosystem:       models.EcosystemNuGet,
+				IsDirect:        true, // .csproj only contains direct dependencies
+				DepGroups:       []string{string(depGroup)},
+				BlockLocation:   blockLocation,
+				NameLocation:    nameLocation,
+				VersionLocation: versionLocation,
+			}
+
+			details = append(details, pkg)
 		}
-
-		depGroup := models.DepGroupProd
-		if IsDevDependency(pkgRef) {
-			depGroup = models.DepGroupDev
-		}
-
-		block := lines[pkgRef.Line.Start-1 : pkgRef.Line.End]
-
-		blockLocation := models.FilePosition{
-			Line:     models.Position{Start: pkgRef.Line.Start, End: pkgRef.Line.End},
-			Column:   models.Position{Start: pkgRef.Column.Start, End: pkgRef.Column.End},
-			Filename: f.Path(),
-		}
-
-		nameLocation := extractPackageNameLocation(block, name, pkgRef.Line.Start, f.Path())
-		versionLocation := extractPackageVersionLocation(block, pkgRef.Line.Start, f.Path())
-
-		pkg := lockfile.PackageDetails{
-			Name:            name,
-			Version:         version,
-			PackageManager:  nugetPackageManager,
-			Ecosystem:       models.EcosystemNuGet,
-			IsDirect:        true, // .csproj only contains direct dependencies
-			DepGroups:       []string{string(depGroup)},
-			BlockLocation:   blockLocation,
-			NameLocation:    nameLocation,
-			VersionLocation: versionLocation,
-		}
-
-		details = append(details, pkg)
 	}
 
 	return details, nil
@@ -238,6 +250,15 @@ func extractNugetVariable(value string) (string, bool) {
 	}
 
 	return "", false
+}
+
+// getConditionKey returns the condition string or empty string if nil
+func getConditionKey(condition *string) string {
+	if condition != nil {
+		return *condition
+	}
+
+	return ""
 }
 
 var _ lockfile.Extractor = NuGetCsprojExtractor{}

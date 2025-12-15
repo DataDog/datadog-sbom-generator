@@ -7,6 +7,16 @@ import "encoding/xml"
 // information. By manually iterating through XML tokens and calling decoder.InputPos(), we can record
 // where each PackageReference appears in the file.
 func (itemGroup *ItemGroup) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	// Extract Condition attribute from the ItemGroup element
+	for _, attr := range start.Attr {
+		if attr.Name.Local == "Condition" {
+			conditionValue := attr.Value
+			itemGroup.ConditionAttr = &conditionValue
+
+			break
+		}
+	}
+
 DecodingLoop:
 	for {
 		lineStart, columnStart := decoder.InputPos()

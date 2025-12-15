@@ -48,6 +48,7 @@ type PropsFile struct {
 type ItemGroup struct {
 	XMLName           xml.Name           `xml:"ItemGroup"`
 	PackageReferences []PackageReference `xml:"PackageReference"`
+	ConditionAttr     *string            `xml:"Condition,attr"`
 }
 
 type Import struct {
@@ -78,8 +79,8 @@ type PackageReference struct {
 }
 
 type ParsedCsProj struct {
-	PackagesByName   map[string]PackageReference
-	PropertiesByName map[string]string
+	PackagesByConditionAndName map[string]map[string]PackageReference // map[condition]map[packageName]PackageReference
+	PropertiesByName           map[string]string
 }
 
 type NuGetCsprojExtractor struct{}

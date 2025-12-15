@@ -2,7 +2,7 @@
 
   <!-- Local properties -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net462;net8.0</TargetFrameworks>
     <AssemblyName>SampleApp</AssemblyName>
     <Version>1.0.0</Version>
     <Company>ExampleCorp</Company>
@@ -17,13 +17,16 @@
     <ProjectReference Include="..\Logging\Logging.csproj" />
   </ItemGroup>
 
-  <!-- Direct package dependencies -->
-  <ItemGroup>
+  <!-- Direct package dependencies for net8.0 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <!-- Basic package reference -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
     <!-- Package using property substitution -->
     <PackageReference Include="Serilog" Version="$(SerilogVersion)" />
+
+    <!-- Package reference with version different based on target framework -->
+    <PackageReference Include="System.ServiceModel.Http" Version="8.1.0" />
 
     <!-- Central package management reference without explicit version -->
     <PackageReference Include="Microsoft.Extensions.Logging" />
@@ -39,6 +42,12 @@
 
     <!-- Non-existent package for testing -->
     <!-- <PackageReference Include="NonExistent.TestPackage" Version="1.2.3" /> -->
+  </ItemGroup>
+
+  <!-- Direct package dependencies for net462 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <!-- Package reference with version different based on target framework -->
+    <PackageReference Include="System.ServiceModel.Http" Version="4.10.3" />
   </ItemGroup>
 
   <!-- Custom properties and imported targets -->
