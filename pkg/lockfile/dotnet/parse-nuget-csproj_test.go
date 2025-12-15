@@ -1,6 +1,7 @@
 package dotnet_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/dotnet"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func TestNuGetCsprojExtractor_ShouldExtract(t *testing.T) {
@@ -606,4 +608,108 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestParseNuGetCsproj_Common_CentralVersionManagement_MultipleBuild(t *testing.T) {
+	t.Parallel()
+	r, err := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
+	if err != nil {
+		t.Errorf("Failed to create reporter = %v", err)
+		return
+	}
+	rootDir, err := filepath.Abs("../fixtures/nuget/csproj-sample-app-multiple-build-props")
+	if err != nil {
+		t.Errorf("Failed to get absolute path = %v", err)
+		return
+	}
+
+	context := lockfile.ScanContext{Reporter: r, RootDir: rootDir}
+	path := "../fixtures/nuget/csproj-sample-app-multiple-build-props/com/Common/Common.csproj"
+	packages, err := dotnet.ParseNuGetCsprojWithContext(path, context)
+	if err != nil {
+		t.Errorf("ParseNuGetCsprojWithContext() error = %v", err)
+		return
+	}
+
+	absoluteCsprojPath, err := filepath.Abs(path)
+	if err != nil {
+		t.Errorf("filepath.Abs() error = %v", err)
+		return
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "System.Text.Json",
+			Version:        "6.0.0",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 52},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 32, End: 48},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "System.Text.Json",
+			Version:        "8.0.4",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 5, End: 52},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 32, End: 48},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Serilog",
+			Version:        "3.1.1",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 5, End: 43},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 32, End: 39},
+				Filename: absoluteCsprojPath,
+			},
+		},
+	})
+
+	// Now let's define a rootDir (which serve the upper bound of the scanner to traverse back, looking for .props files)
+	// This should yield no results, as the rootDir is inside the csproj directory and thus no .props files are found
+	otherRootDir, err := filepath.Abs("../fixtures/nuget/csproj-sample-app-multiple-build-props/com/Common")
+	if err != nil {
+		t.Errorf("Failed to get absolute path = %v", err)
+		return
+	}
+
+	context = lockfile.ScanContext{Reporter: r, RootDir: otherRootDir}
+	packages, err = dotnet.ParseNuGetCsprojWithContext(path, context)
+	if err != nil {
+		t.Errorf("ParseNuGetCsprojWithContext() error = %v", err)
+		return
+	}
+
+	// No .props files should be found, which means no versions would be reported.
+	// And without versions, we wouldn't report packages.
+	assert.Empty(t, packages)
 }

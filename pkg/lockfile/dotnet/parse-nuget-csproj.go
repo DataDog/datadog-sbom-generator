@@ -10,6 +10,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/sliceutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -34,7 +35,8 @@ func (e NuGetCsprojExtractor) ShouldExtract(path string) bool {
 
 // ParseNugetCsProj parses a .csproj file and returns a map of package references by package name.
 // This is shared logic used by both the extractor and matcher.
-func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) {
+// rootDir is optional - if provided, limits parent directory traversal to this directory
+func ParseNugetCsProj(content []byte, csprojPath string, rootDir string) (*ParsedCsProj, error) {
 	var csProj NugetCsProj
 	err := xml.Unmarshal(content, &csProj)
 	if err != nil {
@@ -61,7 +63,7 @@ func ParseNugetCsProj(content []byte, csprojPath string) (*ParsedCsProj, error) 
 	}
 
 	// Discover and parse .props files recursively, merging properties and collecting PackageVersions
-	propsData := extractBuildPropertiesFromCsproj(csprojPath, csProj)
+	propsData := extractBuildPropertiesFromCsproj(csprojPath, csProj, rootDir)
 
 	return &ParsedCsProj{
 		PackagesByConditionAndName: packagesByConditionAndName,
@@ -83,7 +85,7 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 		return nil, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
-	parsedCsProj, err := ParseNugetCsProj(content, f.Path())
+	parsedCsProj, err := ParseNugetCsProj(content, f.Path(), context.RootDir)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
@@ -299,16 +301,19 @@ var _ lockfile.Extractor = NuGetCsprojExtractor{}
 // extractBuildPropertiesFromCsproj discovers .props files recursively and merges their build properties
 // in a single pass to avoid reading the same file multiple times.
 // Returns ParsedMSBuildProperties with merged properties, package versions, and whether central package management is enabled.
-func extractBuildPropertiesFromCsproj(csprojPath string, csproj NugetCsProj) ParsedMSBuildProperties {
+// rootDir is optional - if provided, limits parent directory traversal to this directory
+func extractBuildPropertiesFromCsproj(csprojPath string, csproj NugetCsProj, rootDir string) ParsedMSBuildProperties {
 	result := newMSBuildProperties()
 
 	processedFiles := make(map[string]bool)
 	csprojDir := filepath.Dir(csprojPath)
 
 	// Process convention-based files first (Directory.Build.props has the lowest priority)
+	// Files are returned from furthest to nearest, so they are merged in the correct priority order
 	conventionFiles := []string{buildPropsFile, packagesPropsFile}
 	for _, fileName := range conventionFiles {
-		if path, exists := findFileInParentDirs(csprojDir, fileName); exists {
+		paths := findFileInParentDirs(csprojDir, fileName, rootDir)
+		for _, path := range paths {
 			propsFileData := extractPropertiesFromPropsFile(path, processedFiles)
 			result.merge(propsFileData)
 		}
@@ -392,31 +397,53 @@ func extractPropertiesFromImports(imports []Import, baseDir string, processedFil
 	return result
 }
 
-// findFileInParentDirs searches for a file by walking up the directory tree
-func findFileInParentDirs(startDir string, fileName string) (string, bool) {
+// findFileInParentDirs searches for a file by walking up the directory tree and returns ALL matches
+// rootDir is optional - if provided (as absolute path), stops traversal at this directory
+// Returns files in order from furthest (closest to rootDir) to nearest (closest to startDir)
+func findFileInParentDirs(startDir string, fileName string, rootDir string) []string {
+	var foundPaths []string
 	currentDir := startDir
 
 	for {
+		// Check if we've reached the rootDir boundary before checking for the file
+		reachedRootDir := false
+		if rootDir != "" {
+			absCurrentDir, err := filepath.Abs(currentDir)
+			if err == nil && absCurrentDir == rootDir {
+				reachedRootDir = true
+			}
+		}
+
+		// Check if the file exists in the current directory
 		testPath := filepath.Join(currentDir, fileName)
 		if _, err := os.Stat(testPath); err == nil {
 			absPath, err := filepath.Abs(testPath)
 			if err != nil {
-				return testPath, true
+				foundPaths = append(foundPaths, testPath)
+			} else {
+				foundPaths = append(foundPaths, absPath)
 			}
+		}
 
-			return absPath, true
+		// Stop if we've reached the rootDir boundary
+		if reachedRootDir {
+			break
 		}
 
 		// Move to parent directory
 		parentDir := filepath.Dir(currentDir)
 		if parentDir == currentDir {
-			// Reached root directory
+			// Reached filesystem root directory
 			break
 		}
 		currentDir = parentDir
 	}
 
-	return "", false
+	// Reverse the order so files closest to rootDir come first (lowest priority)
+	// and files closest to startDir come last (highest priority)
+	sliceutil.Reverse(foundPaths)
+
+	return foundPaths
 }
 
 // convertToPackageVersionInfo converts a PackageVersion XML element to a simplified PackageVersionInfo
@@ -462,4 +489,8 @@ func init() {
 
 func ParseNuGetCsproj(pathToCsproj string) ([]lockfile.PackageDetails, error) {
 	return lockfile.ExtractFromFile(pathToCsproj, NuGetCsprojExtractor{})
+}
+
+func ParseNuGetCsprojWithContext(pathToCsproj string, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
+	return lockfile.ExtractFromFileWithContext(pathToCsproj, NuGetCsprojExtractor{}, context)
 }
