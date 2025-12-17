@@ -106,9 +106,10 @@ NPM, Yarn and PNPM have workspace support
 
 - This tool supports extracting packages from `packages.lock.json` and `*.csproj`.
 - This tool only supports package information enrichment from `*.csproj` when parsing `packages.lock.json`.
-- Inside a `.csproj` file:
-  - Templatization is not supported.
-  - Including other csproj is not supported.
+- Central and build configuration discovery:
+  - The tool automatically discovers `Directory.Packages.props` and `Directory.Build.props`.
+  - Discovery is performed in the limit of the scanned directory.
+  - Only configuration files found within the scan scope are considered; parent directories outside the scan root are intentionally ignored.
 
 ### Ruby
 

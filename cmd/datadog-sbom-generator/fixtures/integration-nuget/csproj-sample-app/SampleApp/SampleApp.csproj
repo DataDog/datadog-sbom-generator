@@ -69,6 +69,9 @@
   <ItemGroup>
     <!-- Package using multi level property substitution -->
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+
+    <!-- Package with version override substitution -->
+    <PackageReference Include="xunit.assert" VersionOverride="$(XUnitVersion)" />
   </ItemGroup>
 
 </Project>

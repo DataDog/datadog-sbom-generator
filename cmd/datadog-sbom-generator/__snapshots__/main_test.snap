@@ -462,6 +462,30 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
+      "bom-ref": "pkg:nuget/xunit.assert@$%28XUnitVersion%29",
+      "type": "library",
+      "name": "xunit.assert",
+      "version": "$(XUnitVersion)",
+      "purl": "pkg:nuget/xunit.assert@$%28XUnitVersion%29",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":74,/"line_end/":74,/"column_start/":5,/"column_end/":82},/"name/":{/"file_name/":/"SampleApp/SampleApp.csproj/",/"line_start/":74,/"line_end/":74,/"column_start/":32,/"column_end/":44}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/xunit@2.5.0",
       "type": "library",
       "name": "xunit",
@@ -494,7 +518,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 Scanning directory './fixtures/integration-nuget/csproj-sample-app', resolved absolute path '<rootdir>/fixtures/integration-nuget/csproj-sample-app'
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Common/Common.csproj file and found 2 packages
 Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/Logging/Logging.csproj file and found 2 packages
-Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 8 packages
+Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleApp.csproj file and found 9 packages
 [reachability] Reachability analysis is disabled
 ---
 
