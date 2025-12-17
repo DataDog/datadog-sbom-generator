@@ -396,6 +396,24 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Filename: absoluteCsprojPath,
 			},
 		},
+		{
+			Name:           "xunit.assert",
+			Version:        "$(XUnitVersion)",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			DepGroups:      []string{string(models.DepGroupProd)},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 74, End: 74},
+				Column:   models.Position{Start: 5, End: 82},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 74, End: 74},
+				Column:   models.Position{Start: 32, End: 44},
+				Filename: absoluteCsprojPath,
+			},
+		},
 	})
 }
 

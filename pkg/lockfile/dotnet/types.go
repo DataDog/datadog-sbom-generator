@@ -69,13 +69,15 @@ type Property struct {
 }
 
 type PackageReference struct {
-	XMLName           xml.Name `xml:"PackageReference"`
-	IncludeAttr       *string  `xml:"Include,attr"`
-	Include           *string  `xml:"Include"`
-	VersionAttr       *string  `xml:"Version,attr"`
-	Version           *string  `xml:"Version"`
-	PrivateAssetsAttr *string  `xml:"PrivateAssets,attr"`
-	PrivateAssets     *string  `xml:"PrivateAssets"`
+	XMLName             xml.Name `xml:"PackageReference"`
+	IncludeAttr         *string  `xml:"Include,attr"`
+	Include             *string  `xml:"Include"`
+	VersionAttr         *string  `xml:"Version,attr"`
+	Version             *string  `xml:"Version"`
+	VersionOverrideAttr *string  `xml:"VersionOverride,attr"`
+	VersionOverride     *string  `xml:"VersionOverride"`
+	PrivateAssetsAttr   *string  `xml:"PrivateAssets,attr"`
+	PrivateAssets       *string  `xml:"PrivateAssets"`
 	models.FilePosition
 }
 

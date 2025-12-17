@@ -156,11 +156,22 @@ func GetInclude(pr PackageReference) string {
 // A package can have multiple versions depending on the targetFramework used to build the application.
 func GetVersions(pr PackageReference, buildProperties ParsedMSBuildProperties) []string {
 	versions := make([]string, 0)
-	if pr.Version != nil {
-		versions = append(versions, *pr.Version)
-	} else if pr.VersionAttr != nil {
-		versions = append(versions, *pr.VersionAttr)
-	} else if buildProperties.ManagePackageVersionsCentrally {
+	versionCandidates := []*string{
+		pr.VersionOverride,
+		pr.VersionOverrideAttr,
+		pr.Version,
+		pr.VersionAttr,
+	}
+
+	for _, v := range versionCandidates {
+		if v != nil {
+			versions = append(versions, *v)
+			break // we keep the first match
+		}
+	}
+
+	// Fallback to centralized versions
+	if len(versions) == 0 && buildProperties.ManagePackageVersionsCentrally {
 		packageName := GetInclude(pr)
 		if versionsInfo, exists := buildProperties.VersionsByPackageName[packageName]; exists {
 			for _, versionInfo := range versionsInfo {
