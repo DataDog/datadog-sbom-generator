@@ -92,6 +92,19 @@ var _ DepFile = LocalFile{}
 var _ DepFile = LocalFile{}
 
 func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetails, error) {
+	// Extracting directly a single file is used in tests environments.
+	// Thus, we do not require a complete context to pass a context to it.
+	r, err := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
+	context := ScanContext{Reporter: r}
+
+	if err != nil {
+		return []PackageDetails{}, err
+	}
+
+	return ExtractFromFileWithContext(pathToLockfile, extractor, context)
+}
+
+func ExtractFromFileWithContext(pathToLockfile string, extractor Extractor, context ScanContext) ([]PackageDetails, error) {
 	f, err := OpenLocalDepFile(pathToLockfile)
 
 	if err != nil {
@@ -99,15 +112,6 @@ func ExtractFromFile(pathToLockfile string, extractor Extractor) ([]PackageDetai
 	}
 
 	defer f.Close()
-
-	// Extracting directly a single file is used in tests environments.
-	// Thus, we require a complete context to pass a context to it.
-	r, err := reporter.New("cyclonedx-1-5", os.Stdout, os.Stderr, reporter.ErrorLevel, true)
-	context := ScanContext{Reporter: r}
-
-	if err != nil {
-		return []PackageDetails{}, err
-	}
 
 	packages, err := extractor.Extract(f, context)
 	if err != nil {

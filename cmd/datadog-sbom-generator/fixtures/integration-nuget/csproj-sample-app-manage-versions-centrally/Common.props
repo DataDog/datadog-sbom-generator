@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="Global.props" Condition="Exists('Global.props')" />
+
+  <PropertyGroup>
+    <CoverletVersion>$(GlobalCoverletVersion)</CoverletVersion>
+  </PropertyGroup>
+
+</Project>

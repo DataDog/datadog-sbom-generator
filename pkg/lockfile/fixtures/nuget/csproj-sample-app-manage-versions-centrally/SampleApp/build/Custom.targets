@@ -1,0 +1,14 @@
+<Project>
+  
+  <Target Name="CustomBuildTarget" BeforeTargets="Build">
+    <Message Text="Running custom build target with property: $(CustomBuildProperty)" Importance="high" />
+  </Target>
+  
+  <Target Name="CopyCustomFiles" AfterTargets="Build">
+    <ItemGroup>
+      <FilesToCopy Include="@(CustomFiles)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+  
+</Project>

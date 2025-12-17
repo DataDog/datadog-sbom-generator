@@ -1,0 +1,17 @@
+<Project>
+  <ItemGroup>
+    <!-- Central package management versions -->
+    <!-- Packages from Common.csproj - framework-specific versions -->
+    <PackageVersion Include="System.Text.Json" Version="6.0.0" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.4" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageVersion Include="Serilog" Version="$(SerilogVersion)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GlobalVersion>2.1.28</GlobalVersion>
+    <SerilogVersion>3.1.1</SerilogVersion>
+    <DapperVersion>$(GlobalVersion)</DapperVersion>
+    <CoverletVersion>6.0.4</CoverletVersion>
+  </PropertyGroup>
+
+</Project>
