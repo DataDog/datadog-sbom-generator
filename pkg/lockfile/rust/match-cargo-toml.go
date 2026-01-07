@@ -4,10 +4,23 @@ import (
 	"io"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
+
+// CargoToml represents the structure of a Cargo.toml file
+type CargoToml struct {
+	Dependencies map[string]interface{} `toml:"dependencies"`
+	DevDeps      map[string]interface{} `toml:"dev-dependencies"`
+	BuildDeps    map[string]interface{} `toml:"build-dependencies"`
+	Workspace    *CargoWorkspace        `toml:"workspace"`
+}
+
+type CargoWorkspace struct {
+	Dependencies map[string]interface{} `toml:"dependencies"`
+}
 
 func (m CargoTomlMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFile, error) {
 	return lockfile.Open("Cargo.toml")
@@ -19,99 +32,96 @@ func (m CargoTomlMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile
 		return err
 	}
 
+	// Parse the TOML structure to understand what dependencies exist
+	var parsed CargoToml
+	if err := toml.Unmarshal(content, &parsed); err != nil {
+		return err
+	}
+
 	lines := fileposition.BytesToLines(content)
 
-	// Track which dependency section we're currently in
-	var currentSection string
+	// Process each dependency section
+	processDependencySection(parsed.Dependencies, packages, lines, sourceFile.Path(), "")
+	processDependencySection(parsed.DevDeps, packages, lines, sourceFile.Path(), "dev")
+	processDependencySection(parsed.BuildDeps, packages, lines, sourceFile.Path(), "build")
 
-	for index, line := range lines {
-		lineNumber := index + 1
-
-		// Check if this line starts a new TOML section
-		if isTomlSection(line) {
-			currentSection = getCargoSection(line)
-			continue
-		}
-
-		// Only process lines in dependency sections
-		if !isCargoDepSection(currentSection) {
-			continue
-		}
-
-		// Try to match packages against this line
-		for key, pkg := range packages {
-			lowerLine := strings.ToLower(line)
-			lowerName := strings.ToLower(pkg.Name)
-
-			// Check if this line contains the package name
-			// Handle both simple format: serde = "1.0"
-			// and table format: serde = { version = "1.0" }
-			// Must be an exact match: package name followed by whitespace and =
-			trimmedLine := strings.TrimSpace(lowerLine)
-			if strings.HasPrefix(trimmedLine, lowerName+" =") || strings.HasPrefix(trimmedLine, lowerName+"=") {
-				startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
-				endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
-
-				packages[key].BlockLocation = models.FilePosition{
-					Line:     models.Position{Start: lineNumber, End: lineNumber},
-					Column:   models.Position{Start: startColumn, End: endColumn},
-					Filename: sourceFile.Path(),
-				}
-
-				nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerName, lineNumber)
-				if nameLocation != nil {
-					nameLocation.Filename = sourceFile.Path()
-					packages[key].NameLocation = nameLocation
-				}
-
-				// Try to extract version location
-				// Handles both: serde = "1.0" and serde = { version = "1.0" }
-				versionLocation := extractCargoVersion([]string{lowerLine}, lineNumber)
-				if versionLocation != nil {
-					versionLocation.Filename = sourceFile.Path()
-					packages[key].VersionLocation = versionLocation
-				}
-
-				packages[key].IsDirect = true
-
-				// Set dependency groups based on the section
-				switch currentSection {
-				case "dev-dependencies":
-					packages[key].DepGroups = append(packages[key].DepGroups, "dev")
-				case "build-dependencies":
-					packages[key].DepGroups = append(packages[key].DepGroups, "build")
-				default:
-					// Regular dependencies - no special group
-				}
-			}
-		}
+	// Process workspace dependencies
+	if parsed.Workspace != nil {
+		processDependencySection(parsed.Workspace.Dependencies, packages, lines, sourceFile.Path(), "")
 	}
 
 	return nil
 }
 
-// isTomlSection checks if the line is a TOML section header like [dependencies]
-func isTomlSection(line string) bool {
-	trimmedLine := strings.TrimSpace(line)
-	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
+// processDependencySection processes a single dependency section from Cargo.toml
+func processDependencySection(deps map[string]interface{}, packages []lockfile.PackageDetails, lines []string, filePath string, depGroup string) {
+	if deps == nil {
+		return
+	}
+
+	// For each dependency in the TOML structure
+	for depName := range deps {
+		// Find matching package in our list
+		for key, pkg := range packages {
+			if !strings.EqualFold(pkg.Name, depName) {
+				continue
+			}
+
+			// Search for this package name in the raw content to get positions
+			if found := findPackagePositions(&packages[key], depName, lines, filePath); found {
+				packages[key].IsDirect = true
+
+				// Set dependency group if specified
+				if depGroup != "" {
+					packages[key].DepGroups = append(packages[key].DepGroups, depGroup)
+				}
+			}
+
+			break
+		}
+	}
 }
 
-// getCargoSection extracts the section name from a TOML section header
-func getCargoSection(line string) string {
-	trimmedLine := strings.TrimSpace(line)
-	// Remove [ and ]
-	section := strings.TrimPrefix(trimmedLine, "[")
-	section = strings.TrimSuffix(section, "]")
+// findPackagePositions searches for a package name in the lines and extracts position information
+func findPackagePositions(pkg *lockfile.PackageDetails, depName string, lines []string, filePath string) bool {
+	lowerDepName := strings.ToLower(depName)
 
-	return strings.ToLower(section)
-}
+	for index, line := range lines {
+		lineNumber := index + 1
+		lowerLine := strings.ToLower(line)
+		trimmedLine := strings.TrimSpace(lowerLine)
 
-// isCargoDepSection checks if the section is a Cargo dependency section
-func isCargoDepSection(section string) bool {
-	return section == "dependencies" ||
-		section == "dev-dependencies" ||
-		section == "build-dependencies" ||
-		section == "workspace.dependencies"
+		// Check if this line contains the dependency declaration
+		// Must be exact match: package name followed by whitespace and =
+		if strings.HasPrefix(trimmedLine, lowerDepName+" =") || strings.HasPrefix(trimmedLine, lowerDepName+"=") {
+			startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
+			endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
+
+			pkg.BlockLocation = models.FilePosition{
+				Line:     models.Position{Start: lineNumber, End: lineNumber},
+				Column:   models.Position{Start: startColumn, End: endColumn},
+				Filename: filePath,
+			}
+
+			nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerDepName, lineNumber)
+			if nameLocation != nil {
+				nameLocation.Filename = filePath
+				pkg.NameLocation = nameLocation
+			}
+
+			// Try to extract version location
+			// Handles both: serde = "1.0" and serde = { version = "1.0" }
+			versionLocation := extractCargoVersion([]string{lowerLine}, lineNumber)
+			if versionLocation != nil {
+				versionLocation.Filename = filePath
+				pkg.VersionLocation = versionLocation
+			}
+
+			return true
+		}
+	}
+
+	return false
 }
 
 // extractCargoVersion extracts the version string position from a Cargo.toml line
