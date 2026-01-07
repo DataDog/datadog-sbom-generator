@@ -45,16 +45,15 @@ func (e CargoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 	return packages, nil
 }
 
-var _ lockfile.Extractor = CargoLockExtractor{}
-
-//nolint:gochecknoinits
-func init() {
-	extractor := CargoLockExtractor{
-		lockfile.WithMatcher{Matchers: []lockfile.Matcher{&CargoTomlMatcher{}}},
-	}
-	lockfile.RegisterExtractor(models.CratesFilePath, extractor)
+var cargoExtractor = CargoLockExtractor{
+	lockfile.WithMatcher{Matchers: []lockfile.Matcher{&CargoTomlMatcher{}}},
 }
 
 func ParseCargoLock(pathToLockfile string) ([]lockfile.PackageDetails, error) {
-	return lockfile.ExtractFromFile(pathToLockfile, CargoLockExtractor{})
+	return lockfile.ExtractFromFile(pathToLockfile, cargoExtractor)
+}
+
+//nolint:gochecknoinits
+func init() {
+	lockfile.RegisterExtractor(models.CratesFilePath, cargoExtractor)
 }
