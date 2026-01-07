@@ -49,7 +49,10 @@ var _ lockfile.Extractor = CargoLockExtractor{}
 
 //nolint:gochecknoinits
 func init() {
-	lockfile.RegisterExtractor(models.CratesFilePath, CargoLockExtractor{})
+	extractor := CargoLockExtractor{
+		lockfile.WithMatcher{Matchers: []lockfile.Matcher{&CargoTomlMatcher{}}},
+	}
+	lockfile.RegisterExtractor(models.CratesFilePath, extractor)
 }
 
 func ParseCargoLock(pathToLockfile string) ([]lockfile.PackageDetails, error) {

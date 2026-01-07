@@ -1,6 +1,9 @@
 package rust
 
-import "github.com/DataDog/datadog-sbom-generator/pkg/models"
+import (
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+)
 
 // ============================================================================
 // Package Metadata Constants
@@ -25,4 +28,8 @@ type CargoLockFile struct {
 	Packages []CargoLockPackage `toml:"package"`
 }
 
-type CargoLockExtractor struct{}
+type CargoLockExtractor struct {
+	lockfile.WithMatcher
+}
+
+type CargoTomlMatcher struct{}
