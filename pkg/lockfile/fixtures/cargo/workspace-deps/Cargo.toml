@@ -1,0 +1,10 @@
+[workspace]
+members = ["crates/*"]
+
+[profile.release]
+opt-level = 3
+
+[workspace.dependencies]
+anyhow = "1.0.69"
+serde = "1.0.0"
+tokio = "1.43.0"

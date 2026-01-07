@@ -1,0 +1,352 @@
+package rust_test
+
+import (
+	"io/fs"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
+	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/rust"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/stretchr/testify/assert"
+)
+
+var cargoTomlMatcher = rust.CargoTomlMatcher{}
+
+func TestCargoTomlMatcher_GetSourceFile_FileDoesNotExist(t *testing.T) {
+	t.Parallel()
+
+	lockFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/no-toml/Cargo.lock")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := cargoTomlMatcher.GetSourceFile(lockFile)
+	testutil.ExpectErrIs(t, err, fs.ErrNotExist)
+	assert.Equal(t, "", sourceFile.Path())
+}
+
+func TestCargoTomlMatcher_GetSourceFile(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/cargo/one-package/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"Cargo.toml"))
+
+	lockFile, err := lockfile.OpenLocalDepFile(basePath + "Cargo.lock")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := cargoTomlMatcher.GetSourceFile(lockFile)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.Equal(t, sourcefilePath, sourceFile.Path())
+}
+
+func TestCargoTomlMatcher_Match_OnePackage(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/one-package/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_WorkspaceDependencies(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/workspace-deps/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "anyhow",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "tokio",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "anyhow",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 1, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 1, End: 7},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 11, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "tokio",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 10, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_SubstringNotMatched(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/substring-match/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "serde_json",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// serde should match on line 9, NOT serde_json on line 10
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "serde_json",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 21},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 15, End: 20},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/transitive/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "syn", // Transitive, not in Cargo.toml
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Only serde should be matched, syn remains unmatched (transitive)
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "syn",
+			PackageManager: models.Crates,
+			// No BlockLocation, NameLocation, or VersionLocation
+			// IsDirect remains false (default)
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_DevDependencies(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/dev-deps/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "criterion",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "criterion",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 20},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 14, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+	})
+}
