@@ -350,3 +350,174 @@ func TestCargoTomlMatcher_Match_DevDependencies(t *testing.T) {
 		},
 	})
 }
+
+func TestCargoTomlMatcher_Match_BuildDependencies(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/build-deps/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "cc",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "cc",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 7, End: 12},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"build"},
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/all-sections/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "tokio",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "criterion",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "cc",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "syn", // Transitive, not in Cargo.toml
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "tokio",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 10, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "criterion",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 20},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 14, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+		{
+			Name:           "cc",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 1, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 7, End: 12},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"build"},
+		},
+		{
+			Name:           "syn",
+			PackageManager: models.Crates,
+			// No BlockLocation, NameLocation, or VersionLocation
+			// IsDirect remains false (default)
+		},
+	})
+}
