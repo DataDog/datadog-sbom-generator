@@ -53,7 +53,14 @@ func (m CargoTomlMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile
 	return nil
 }
 
-// processDependencySection processes a single dependency section from Cargo.toml
+// processDependencySection cross-references a dependency section from Cargo.toml with the full
+// package list from Cargo.lock to add metadata to matching packages.
+//
+// For each dependency declared in the Cargo.toml section (e.g., [dependencies], [dev-dependencies]),
+// it searches through all packages and enriches matching ones with:
+//   - IsDirect = true (distinguishes from transitive dependencies)
+//   - File positions (BlockLocation, NameLocation, VersionLocation) for the declaration
+//   - Dependency group tag (e.g., "dev", "build")
 func processDependencySection(deps map[string]interface{}, packages []lockfile.PackageDetails, lines []string, filePath string, depGroup string) {
 	if deps == nil {
 		return
