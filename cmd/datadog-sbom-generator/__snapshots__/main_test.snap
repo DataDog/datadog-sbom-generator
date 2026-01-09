@@ -462,11 +462,11 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       }
     },
     {
-      "bom-ref": "pkg:nuget/xunit.assert@$%28XUnitVersion%29",
+      "bom-ref": "pkg:nuget/xunit.assert@%24%28XUnitVersion%29",
       "type": "library",
       "name": "xunit.assert",
       "version": "$(XUnitVersion)",
-      "purl": "pkg:nuget/xunit.assert@$%28XUnitVersion%29",
+      "purl": "pkg:nuget/xunit.assert@%24%28XUnitVersion%29",
       "properties": [
         {
           "name": "osv-scanner:is-direct",
