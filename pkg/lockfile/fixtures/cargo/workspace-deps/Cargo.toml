@@ -1,8 +1,5 @@
 [workspace]
-members = ["crates/*"]
-
-[profile.release]
-opt-level = 3
+members = ["member-crate"]
 
 [workspace.dependencies]
 anyhow = "1.0.69"

@@ -126,17 +126,17 @@ func TestCargoTomlMatcher_Match_WorkspaceDependencies(t *testing.T) {
 			Name:           "anyhow",
 			PackageManager: models.Crates,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 8, End: 8},
+				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 18},
 				Filename: sourceFile.Path(),
 			},
 			NameLocation: &models.FilePosition{
-				Line:     models.Position{Start: 8, End: 8},
+				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: sourceFile.Path(),
 			},
 			VersionLocation: &models.FilePosition{
-				Line:     models.Position{Start: 8, End: 8},
+				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 11, End: 17},
 				Filename: sourceFile.Path(),
 			},
@@ -146,17 +146,17 @@ func TestCargoTomlMatcher_Match_WorkspaceDependencies(t *testing.T) {
 			Name:           "serde",
 			PackageManager: models.Crates,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 9, End: 9},
+				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
 			NameLocation: &models.FilePosition{
-				Line:     models.Position{Start: 9, End: 9},
+				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: sourceFile.Path(),
 			},
 			VersionLocation: &models.FilePosition{
-				Line:     models.Position{Start: 9, End: 9},
+				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 10, End: 15},
 				Filename: sourceFile.Path(),
 			},
@@ -166,17 +166,17 @@ func TestCargoTomlMatcher_Match_WorkspaceDependencies(t *testing.T) {
 			Name:           "tokio",
 			PackageManager: models.Crates,
 			BlockLocation: models.FilePosition{
-				Line:     models.Position{Start: 10, End: 10},
+				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: sourceFile.Path(),
 			},
 			NameLocation: &models.FilePosition{
-				Line:     models.Position{Start: 10, End: 10},
+				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: sourceFile.Path(),
 			},
 			VersionLocation: &models.FilePosition{
-				Line:     models.Position{Start: 10, End: 10},
+				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 10, End: 16},
 				Filename: sourceFile.Path(),
 			},
