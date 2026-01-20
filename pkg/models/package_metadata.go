@@ -39,6 +39,7 @@ type packageMetadataTypeMulti string
 
 const (
 	ReachableSymbolLocationMetadata packageMetadataTypeMulti = "reachable-symbol-location"
+	TargetFrameworkMetadata         packageMetadataTypeMulti = "target-framework"
 )
 
 // WithValue returns a PackageMetadataType by appending the given value to the key.

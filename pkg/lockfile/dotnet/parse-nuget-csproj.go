@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
@@ -90,11 +91,26 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 		return nil, fmt.Errorf("could not parse csproj %s: %w", f.Path(), err)
 	}
 
+	// Extract project-level target frameworks
+	projectTargetFrameworks := extractProjectTargetFrameworks(parsedCsProj.MSBuildProperties)
+
 	lines := fileposition.BytesToLines(content)
-	details := make([]lockfile.PackageDetails, 0)
+
+	// packageKey tracks name+version combinations to merge target frameworks
+	type packageKey struct {
+		name    string
+		version string
+	}
+
+	// Track packages by name+version, collecting target frameworks
+	packageMap := make(map[packageKey]*lockfile.PackageDetails)
+	targetFrameworksMap := make(map[packageKey]map[string]struct{}) // Use map for deduplication
 
 	// Iterate over all conditions and their packages
-	for _, packagesByName := range parsedCsProj.PackagesByConditionAndName {
+	for condition, packagesByName := range parsedCsProj.PackagesByConditionAndName {
+		// Extract target framework from condition if present
+		targetFramework, hasTargetFramework := extractTargetFrameworkFromCondition(condition)
+
 		for name, pkgRef := range packagesByName {
 			versions := GetVersions(pkgRef, parsedCsProj.MSBuildProperties)
 			if len(versions) == 0 {
@@ -119,21 +135,52 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 			versionLocation := extractPackageVersionLocation(block, pkgRef.Line.Start, f.Path())
 
 			for _, version := range versions {
-				pkg := lockfile.PackageDetails{
-					Name:            name,
-					Version:         version,
-					PackageManager:  nugetPackageManager,
-					Ecosystem:       models.EcosystemNuGet,
-					IsDirect:        true, // .csproj only contains direct dependencies
-					DepGroups:       []string{string(depGroup)},
-					BlockLocation:   blockLocation,
-					NameLocation:    nameLocation,
-					VersionLocation: versionLocation,
+				key := packageKey{name: name, version: version}
+
+				// If this package+version doesn't exist yet, create it
+				if _, exists := packageMap[key]; !exists {
+					packageMap[key] = &lockfile.PackageDetails{
+						Name:            name,
+						Version:         version,
+						PackageManager:  nugetPackageManager,
+						Ecosystem:       models.EcosystemNuGet,
+						IsDirect:        true, // .csproj only contains direct dependencies
+						DepGroups:       []string{string(depGroup)},
+						BlockLocation:   blockLocation,
+						NameLocation:    nameLocation,
+						VersionLocation: versionLocation,
+					}
+					targetFrameworksMap[key] = make(map[string]struct{})
 				}
 
-				details = append(details, pkg)
+				// Add target framework(s)
+				if hasTargetFramework {
+					// Package has a specific target framework condition
+					targetFrameworksMap[key][targetFramework] = struct{}{}
+				} else if len(projectTargetFrameworks) > 0 {
+					// Package has no condition, apply all project target frameworks
+					for _, framework := range projectTargetFrameworks {
+						targetFrameworksMap[key][framework] = struct{}{}
+					}
+				}
 			}
 		}
+	}
+
+	// Convert map to slice and populate TargetFrameworks
+	details := make([]lockfile.PackageDetails, 0, len(packageMap))
+	for key, pkg := range packageMap {
+		// Convert target frameworks set to sorted slice
+		if len(targetFrameworksMap[key]) > 0 {
+			frameworks := make([]string, 0, len(targetFrameworksMap[key]))
+			for framework := range targetFrameworksMap[key] {
+				frameworks = append(frameworks, framework)
+			}
+			sort.Strings(frameworks)
+			pkg.TargetFrameworks = frameworks
+		}
+
+		details = append(details, *pkg)
 	}
 
 	return details, nil
@@ -296,6 +343,51 @@ func extractNugetVariable(value string) (string, bool) {
 	}
 
 	return "", false
+}
+
+// Matches conditions like: "'$(TargetFramework)' == 'net6.0'" and extracts "net6.0"
+// Also handles: "'$(TargetFramework)'=='net6.0'" (no spaces)
+var targetFrameworkConditionRegexp = cachedregexp.MustCompile(`'\$\(TargetFramework\)'\s*==\s*'([^']+)'`)
+
+// extractTargetFrameworkFromCondition extracts the target framework from a condition attribute
+// Returns the target framework value (e.g., "net6.0") and true if found, or "", false otherwise
+func extractTargetFrameworkFromCondition(condition string) (string, bool) {
+	if condition == "" {
+		return "", false
+	}
+
+	matches := targetFrameworkConditionRegexp.FindStringSubmatch(condition)
+	if len(matches) == 2 {
+		return matches[1], true
+	}
+
+	return "", false
+}
+
+// extractProjectTargetFrameworks extracts the target frameworks defined in the project properties
+// Returns a slice of target framework values (e.g., ["net462", "net8.0"])
+func extractProjectTargetFrameworks(buildProperties ParsedMSBuildProperties) []string {
+	// Check for TargetFrameworks (plural) first - this contains semicolon-separated values
+	if targetFrameworks, exists := buildProperties.PropertiesByName["TargetFrameworks"]; exists && targetFrameworks != "" {
+		// Split by semicolon and trim whitespace
+		frameworks := strings.Split(targetFrameworks, ";")
+		result := make([]string, 0, len(frameworks))
+		for _, framework := range frameworks {
+			trimmed := strings.TrimSpace(framework)
+			if trimmed != "" {
+				result = append(result, trimmed)
+			}
+		}
+
+		return result
+	}
+
+	// Check for TargetFramework (singular) as fallback
+	if targetFramework, exists := buildProperties.PropertiesByName["TargetFramework"]; exists && targetFramework != "" {
+		return []string{strings.TrimSpace(targetFramework)}
+	}
+
+	return []string{}
 }
 
 // getConditionKey returns the condition string or empty string if nil

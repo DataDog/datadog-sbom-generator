@@ -222,6 +222,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/Dapper@2.1.28",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -245,6 +253,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "4.9.0",
       "purl": "pkg:nuget/Microsoft.CodeAnalysis.CSharp@4.9.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -270,6 +282,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/Microsoft.Extensions.Logging.Abstractions@8.0.1",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -293,6 +313,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "13.0.3",
       "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -318,6 +342,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/Serilog@2.10.0",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -341,6 +373,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "3.1.1",
       "purl": "pkg:nuget/Serilog@3.1.1",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -369,6 +409,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/System.ServiceModel.Http@4.10.3",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -392,6 +436,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "8.1.0",
       "purl": "pkg:nuget/System.ServiceModel.Http@8.1.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -417,6 +465,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/System.Text.Json@8.0.4",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -440,6 +496,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "3.2.0",
       "purl": "pkg:nuget/coverlet.collector@3.2.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-dev",
           "value": "true"
@@ -469,6 +529,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:nuget/xunit.assert@$%28XUnitVersion%29",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -492,6 +560,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "2.5.0",
       "purl": "pkg:nuget/xunit@2.5.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -549,6 +621,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "purl": "pkg:nuget/Dapper@2.1.28",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -572,6 +648,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "version": "4.9.0",
       "purl": "pkg:nuget/Microsoft.CodeAnalysis.CSharp@4.9.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -597,6 +677,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "purl": "pkg:nuget/Microsoft.Extensions.Logging.Abstractions@8.0.1",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -620,6 +704,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "version": "8.0.0",
       "purl": "pkg:nuget/Microsoft.Extensions.Logging@8.0.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -645,6 +733,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -668,6 +760,18 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "version": "3.1.1",
       "purl": "pkg:nuget/Serilog@3.1.1",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net6.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -699,6 +803,14 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "purl": "pkg:nuget/System.Text.Json@6.0.0",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net6.0"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -723,6 +835,14 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "purl": "pkg:nuget/System.Text.Json@8.0.4",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net6.0"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -746,6 +866,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "version": "3.2.0",
       "purl": "pkg:nuget/coverlet.collector@3.2.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
         {
           "name": "osv-scanner:is-dev",
           "value": "true"
@@ -774,6 +898,10 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "version": "2.5.0",
       "purl": "pkg:nuget/xunit@2.5.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net7.0"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"

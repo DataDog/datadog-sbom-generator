@@ -134,6 +134,11 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 				Name:  "datadog-sbom-generator:" + string(metadataType),
 				Value: value,
 			})
+		} else if strings.HasPrefix(string(metadataType), string(models.TargetFrameworkMetadata)) {
+			properties = append(properties, cyclonedx.Property{
+				Name:  "datadog:" + string(models.TargetFrameworkMetadata),
+				Value: value,
+			})
 		} else if metadataType == models.ExclusionMetadata {
 			props := strings.Split(value, ",")
 			for _, prop := range props {
