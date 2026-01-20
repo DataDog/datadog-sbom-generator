@@ -762,7 +762,7 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
       "properties": [
         {
           "name": "datadog:target-framework",
-          "value": "net8.0"
+          "value": "net6.0"
         },
         {
           "name": "datadog:target-framework",
@@ -770,7 +770,7 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app/SampleApp/SampleA
         },
         {
           "name": "datadog:target-framework",
-          "value": "net6.0"
+          "value": "net8.0"
         },
         {
           "name": "osv-scanner:is-direct",
