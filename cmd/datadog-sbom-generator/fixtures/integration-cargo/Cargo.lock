@@ -106,6 +106,12 @@ checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
 name = "serde"
+version = "0.9.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f55c8e7d5d3b5e8c6d8b9f6c3e6e8e0a8b3e6b3b7e6e2e2e7e7e6e0e0e0e0e0"
+
+[[package]]
+name = "serde"
 version = "1.0.214"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f55c8e7d5d3b5e8c6d8b9f6c3e6e8e0a8b3e6b3b7e6e2e2e7e7e6e0e0e0e0e0"
