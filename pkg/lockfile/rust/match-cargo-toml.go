@@ -102,6 +102,7 @@ func extractVersionRequirement(depValue interface{}) string {
 			return version
 		}
 	}
+
 	return ""
 }
 

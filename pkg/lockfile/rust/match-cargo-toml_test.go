@@ -603,4 +603,3 @@ func TestCargoTomlMatcher_Match_TableForm(t *testing.T) {
 		},
 	})
 }
-

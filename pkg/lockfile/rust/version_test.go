@@ -43,6 +43,7 @@ func TestVersionMatches(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := versionMatches(tt.resolvedVersion, tt.requirement)
 			if result != tt.shouldMatch {
 				t.Errorf("versionMatches(%q, %q) = %v, want %v",
