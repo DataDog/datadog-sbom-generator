@@ -270,6 +270,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:cargo/criterion@0.5.1",
       "properties": [
         {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -332,6 +336,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "version": "0.13.1",
       "purl": "pkg:cargo/mockall@0.13.1",
       "properties": [
+        {
+          "name": "osv-scanner:is-dev",
+          "value": "true"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
