@@ -430,3 +430,177 @@ func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
 		},
 	})
 }
+
+func TestCargoTomlMatcher_Match_MultipleVersions(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/multi-version/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			Version:        "0.9.15",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "serde",
+			Version:        "1.0.214",
+			PackageManager: models.Crates,
+		},
+	}
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// serde 1.0.214 should match [dependencies] serde = "1.0" on line 9
+	// serde 0.9.15 should match [dev-dependencies] serde = "0.9" on line 12
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			Version:        "0.9.15",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 1, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 10, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+		{
+			Name:           "serde",
+			Version:        "1.0.214",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 10, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestCargoTomlMatcher_Match_TableForm(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/cargo/table-form/Cargo.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			Version:        "1.0.214",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "tokio",
+			Version:        "1.0.0",
+			PackageManager: models.Crates,
+		},
+		{
+			Name:           "criterion",
+			Version:        "0.5.1",
+			PackageManager: models.Crates,
+		},
+	}
+
+	err = cargoTomlMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "serde",
+			Version:        "1.0.214",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 51},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 22, End: 25},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "tokio",
+			Version:        "1.0.0",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 49},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 22, End: 25},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "criterion",
+			Version:        "0.5.1",
+			PackageManager: models.Crates,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 58},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 10},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 26, End: 29},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+	})
+}
+

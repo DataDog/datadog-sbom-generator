@@ -8,6 +8,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/Masterminds/semver/v3"
 )
 
 // CargoToml represents the structure of a Cargo.toml file
@@ -57,15 +58,24 @@ func processDependencySection(deps map[string]interface{}, packages []lockfile.P
 	}
 
 	// For each dependency in the TOML structure
-	for depName := range deps {
-		// Find matching package in our list
+	for depName, depValue := range deps {
+		// Extract version requirement from the dependency value
+		versionReq := extractVersionRequirement(depValue)
+
+		// Find matching package from Cargo.lock by name AND version
+		// (Cargo.lock can have multiple versions of the same package)
 		for key, pkg := range packages {
 			if !strings.EqualFold(pkg.Name, depName) {
 				continue
 			}
 
-			// Search for this package name in the raw content to get positions
-			if found := findPackagePositions(&packages[key], depName, lines, filePath); found {
+			// If we have a version requirement AND package version, check if they match
+			if versionReq != "" && pkg.Version != "" && !versionMatches(pkg.Version, versionReq) {
+				continue
+			}
+
+			// Search for this package name and version in the raw content to get positions
+			if found := findPackagePositions(&packages[key], depName, versionReq, lines, filePath); found {
 				packages[key].IsDirect = true
 
 				// Set dependency group if specified
@@ -79,8 +89,52 @@ func processDependencySection(deps map[string]interface{}, packages []lockfile.P
 	}
 }
 
-// findPackagePositions searches for a package name in the lines and extracts position information
-func findPackagePositions(pkg *lockfile.PackageDetails, depName string, lines []string, filePath string) bool {
+// extractVersionRequirement extracts the version requirement from a Cargo.toml dependency value.
+// The value can be either a string (e.g., "1.0") or a table (e.g., { version = "1.0", features = [...] }).
+func extractVersionRequirement(depValue interface{}) string {
+	switch v := depValue.(type) {
+	case string:
+		// Simple form: serde = "1.0"
+		return v
+	case map[string]interface{}:
+		// Table form: serde = { version = "1.0", features = [...] }
+		if version, ok := v["version"].(string); ok {
+			return version
+		}
+	}
+	return ""
+}
+
+// versionMatches checks if a resolved version from Cargo.lock matches a version requirement from Cargo.toml.
+// Uses proper semver matching following Cargo's rules. https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html
+func versionMatches(resolvedVersion, requirement string) bool {
+	// Parse the resolved version from Cargo.lock
+	version, err := semver.NewVersion(resolvedVersion)
+	if err != nil {
+		// If parsing fails, fall back to simple string comparison
+		return resolvedVersion == requirement
+	}
+
+	// Cargo treats bare versions like "1.2" as "^1.2" (caret requirement)
+	constraintStr := requirement
+	if len(requirement) == 0 || strings.IndexByte("^~=><", requirement[0]) == -1 {
+		constraintStr = "^" + requirement
+	}
+
+	// Parse the constraint from Cargo.toml
+	constraint, err := semver.NewConstraint(constraintStr)
+	if err != nil {
+		// If constraint parsing fails, try exact match as fallback
+		return resolvedVersion == requirement
+	}
+
+	// Check if the version satisfies the constraint
+	return constraint.Check(version)
+}
+
+// findPackagePositions searches for a package name in the lines and extracts position information.
+// If versionReq is provided, it ensures the line contains that specific version requirement.
+func findPackagePositions(pkg *lockfile.PackageDetails, depName string, versionReq string, lines []string, filePath string) bool {
 	lowerDepName := strings.ToLower(depName)
 
 	for index, line := range lines {
@@ -91,6 +145,12 @@ func findPackagePositions(pkg *lockfile.PackageDetails, depName string, lines []
 		// Check if this line contains the dependency declaration
 		// Must be exact match: package name followed by whitespace and =
 		if strings.HasPrefix(trimmedLine, lowerDepName+" =") || strings.HasPrefix(trimmedLine, lowerDepName+"=") {
+			// If we have a version requirement, check that this line contains it
+			if versionReq != "" && !strings.Contains(line, "\""+versionReq+"\"") {
+				// This line has the package name but different version requirement, keep searching
+				continue
+			}
+
 			startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
 			endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
 

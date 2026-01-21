@@ -1,0 +1,15 @@
+version = 3
+
+[[package]]
+name = "serde"
+version = "0.9.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "serde"
+version = "1.0.214"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "test-multi-version"
+version = "0.1.0"
