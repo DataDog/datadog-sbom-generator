@@ -15,11 +15,6 @@ type CargoToml struct {
 	Dependencies map[string]interface{} `toml:"dependencies"`
 	DevDeps      map[string]interface{} `toml:"dev-dependencies"`
 	BuildDeps    map[string]interface{} `toml:"build-dependencies"`
-	Workspace    *CargoWorkspace        `toml:"workspace"`
-}
-
-type CargoWorkspace struct {
-	Dependencies map[string]interface{} `toml:"dependencies"`
 }
 
 func (m CargoTomlMatcher) GetSourceFile(lockfile lockfile.DepFile) (lockfile.DepFile, error) {
@@ -44,11 +39,6 @@ func (m CargoTomlMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile
 	processDependencySection(parsed.Dependencies, packages, lines, sourceFile.Path(), "")
 	processDependencySection(parsed.DevDeps, packages, lines, sourceFile.Path(), "dev")
 	processDependencySection(parsed.BuildDeps, packages, lines, sourceFile.Path(), "build")
-
-	// Process workspace dependencies
-	if parsed.Workspace != nil {
-		processDependencySection(parsed.Workspace.Dependencies, packages, lines, sourceFile.Path(), "")
-	}
 
 	return nil
 }
