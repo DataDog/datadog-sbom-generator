@@ -145,6 +145,8 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 		}
 	}
 
+	// We do not only sort the properties by their attribute name, but also by their value.
+	// This is to ensure that the properties are in a deterministic order.
 	slices.SortFunc(properties, func(a, b cyclonedx.Property) int {
 		if comparison := strings.Compare(a.Name, b.Name); comparison != 0 {
 			return comparison
