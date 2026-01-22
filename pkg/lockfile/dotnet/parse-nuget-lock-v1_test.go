@@ -305,12 +305,12 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 	t.Parallel()
 
-	packages, err := dotnet.ParseNuGetLock("../fixtures/nuget/nondeterministic-location/packages.lock.json")
+	packages, err := dotnet.ParseNuGetLock("../fixtures/nuget/multiple-versions-with-lockfile/packages.lock.json")
 	if err != nil {
 		t.Errorf("Got unexpected error parsing lock file: %v", err)
 	}
 
-	absoluteCsprojPath, err := filepath.Abs("../fixtures/nuget/nondeterministic-location/test.csproj")
+	absoluteCsprojPath, err := filepath.Abs("../fixtures/nuget/multiple-versions-with-lockfile/test.csproj")
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
