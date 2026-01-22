@@ -10,8 +10,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
@@ -46,33 +46,34 @@ func PackageToString(pkg lockfile.PackageDetails) string {
 		commit = "<no commit>"
 	}
 
-	groups := strings.Join(pkg.DepGroups, ", ")
+	return fmt.Sprintf(
+		"%s@%s {ecosystem=%q targetVersions=%v packageManager=%q commit=%q depGroups=%v exclusions=%v targetFrameworks=%v isDirect=%t blockLocation=%s nameLocation=%s versionLocation=%s}",
+		pkg.Name,
+		pkg.Version,
+		pkg.Ecosystem,
+		pkg.TargetVersions,
+		pkg.PackageManager,
+		commit,
+		pkg.DepGroups,
+		pkg.Exclusions,
+		pkg.TargetFrameworks,
+		pkg.IsDirect,
+		formatLoc(pkg.BlockLocation),
+		formatLocPtr(pkg.NameLocation),
+		formatLocPtr(pkg.VersionLocation),
+	)
+}
 
-	if groups == "" {
-		groups = "<no groups>"
+func formatLoc(loc models.FilePosition) string {
+	return fmt.Sprintf("{Line:%d Column:%d Filename:%q}", loc.Line, loc.Column, loc.Filename)
+}
+
+func formatLocPtr(loc *models.FilePosition) string {
+	if loc == nil {
+		return "<nil>"
 	}
 
-	exclusions := strings.Join(pkg.Exclusions, ", ")
-
-	if exclusions == "" {
-		exclusions = "<no exclusions>"
-	}
-
-	blockLoc := fmt.Sprintf("BlockLocation{Line:%+v Column:%+v Filename:%s}", pkg.BlockLocation.Line, pkg.BlockLocation.Column, pkg.BlockLocation.Filename)
-
-	nameLoc := "<nil>"
-	if pkg.NameLocation != nil {
-		nameLoc = fmt.Sprintf("{Line:%+v Column:%+v Filename:%s}", pkg.NameLocation.Line, pkg.NameLocation.Column, pkg.NameLocation.Filename)
-	}
-
-	versionLoc := "<nil>"
-	if pkg.VersionLocation != nil {
-		versionLoc = fmt.Sprintf("{Line:%+v Column:%+v Filename:%s}", pkg.VersionLocation.Line, pkg.VersionLocation.Column, pkg.VersionLocation.Filename)
-	}
-
-	return fmt.Sprintf("%s@%s (%s, %s, %s, %s, %t, %s) %s NameLocation:%s VersionLocation:%s",
-		pkg.Name, pkg.Version, pkg.Ecosystem, commit, groups, pkg.PackageManager, pkg.IsDirect, exclusions,
-		blockLoc, nameLoc, versionLoc)
+	return fmt.Sprintf("{Line:%d Column:%d Filename:%q}", loc.Line, loc.Column, loc.Filename)
 }
 
 func HasPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg lockfile.PackageDetails, ignoreLocations bool) bool {
@@ -111,47 +112,96 @@ func ExpectPackage(t *testing.T, packages []lockfile.PackageDetails, pkg lockfil
 	InnerExpectPackage(t, packages, pkg, false)
 }
 
-func FindMissingPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails, ignoreLocations bool) []lockfile.PackageDetails {
-	t.Helper()
-	var missingPackages []lockfile.PackageDetails
-
-	for _, pkg := range actualPackages {
-		if !HasPackage(t, expectedPackages, pkg, ignoreLocations) {
-			missingPackages = append(missingPackages, pkg)
-		}
-	}
-
-	return missingPackages
-}
-
 func InnerExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails, ignoreLocations bool) {
 	t.Helper()
 
-	if len(expectedPackages) != len(actualPackages) {
-		t.Errorf(
-			"Expected to get %d %s, but got %d",
-			len(expectedPackages),
-			output.Form(len(expectedPackages), "package", "packages"),
-			len(actualPackages),
-		)
+	cmpOpts := cmpOptions(ignoreLocations)
+
+	// packages are index by 'name@version' - a give 'name@version' can be reported at several locations
+	expectedByKey := indexExpected(expectedPackages)
+
+	for _, pkg := range actualPackages {
+		matchAndReportOne(t, pkg, expectedByKey[packageKey(pkg)], cmpOpts)
 	}
 
-	missingActualPackages := FindMissingPackages(t, actualPackages, expectedPackages, ignoreLocations)
-	missingExpectedPackages := FindMissingPackages(t, expectedPackages, actualPackages, ignoreLocations)
+	reportMissingExpected(t, expectedByKey)
+}
 
-	if len(missingActualPackages) != 0 {
-		for _, unexpectedPackage := range missingActualPackages {
-			t.Errorf("Did not expect: %s", PackageToString(unexpectedPackage))
-		}
+func cmpOptions(ignoreLocations bool) []cmp.Option {
+	if !ignoreLocations {
+		return nil
 	}
 
-	if len(missingExpectedPackages) != 0 {
-		for _, unexpectedPackage := range missingExpectedPackages {
-			t.Errorf("Did not find:   %s", PackageToString(unexpectedPackage))
-		}
+	return []cmp.Option{
+		cmpopts.IgnoreFields(lockfile.PackageDetails{}, "BlockLocation", "NameLocation", "VersionLocation"),
 	}
 }
 
+type expectedEntry struct {
+	pkg     lockfile.PackageDetails
+	matched bool
+}
+
+func packageKey(p lockfile.PackageDetails) string {
+	return p.Name + "@" + p.Version
+}
+
+func indexExpected(expectedPackages []lockfile.PackageDetails) map[string][]*expectedEntry {
+	expectedByKey := make(map[string][]*expectedEntry, len(expectedPackages))
+	for _, ep := range expectedPackages {
+		e := &expectedEntry{pkg: ep}
+		k := packageKey(ep)
+		expectedByKey[k] = append(expectedByKey[k], e)
+	}
+
+	return expectedByKey
+}
+
+func matchAndReportOne(
+	t *testing.T,
+	pkg lockfile.PackageDetails,
+	candidates []*expectedEntry,
+	cmpOpts []cmp.Option,
+) {
+	t.Helper()
+
+	if len(candidates) == 0 {
+		t.Errorf("Did not expect: %s", PackageToString(pkg))
+		return
+	}
+
+	if len(candidates) == 1 {
+		c := candidates[0]
+		c.matched = true
+
+		if diff := cmp.Diff(c.pkg, pkg, cmpOpts...); diff != "" {
+			t.Errorf("Package mismatch for %s (-expected +actual): %s", packageKey(pkg), diff)
+		}
+
+		return
+	}
+
+	for _, c := range candidates {
+		if cmp.Equal(c.pkg, pkg, cmpOpts...) {
+			c.matched = true
+			return
+		}
+	}
+
+	t.Errorf("Did not expect: %s", PackageToString(pkg))
+}
+
+func reportMissingExpected(t *testing.T, expectedByKey map[string][]*expectedEntry) {
+	t.Helper()
+
+	for _, candidates := range expectedByKey {
+		for _, c := range candidates {
+			if !c.matched {
+				t.Errorf("Did not find:   %s", PackageToString(c.pkg))
+			}
+		}
+	}
+}
 func ExpectPackages(t *testing.T, actualPackages []lockfile.PackageDetails, expectedPackages []lockfile.PackageDetails) {
 	t.Helper()
 

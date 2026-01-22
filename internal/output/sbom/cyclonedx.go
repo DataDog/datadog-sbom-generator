@@ -128,33 +128,57 @@ func buildProperties(metadatas models.PackageMetadata) []cyclonedx.Property {
 		if len(value) == 0 {
 			continue
 		}
+
+		metadataKey := string(metadataType)
 		// TODO(daniel.strong) Remove this conditional when we support datadog-sbom-generator prefixes in all metadata keys.
-		if strings.HasPrefix(string(metadataType), string(models.ReachableSymbolLocationMetadata)) {
-			properties = append(properties, cyclonedx.Property{
-				Name:  "datadog-sbom-generator:" + string(metadataType),
-				Value: value,
-			})
+		if strings.HasPrefix(metadataKey, string(models.ReachableSymbolLocationMetadata)) {
+			properties = append(properties, buildDatadogSbomGeneratorProperty(metadataKey, value))
+		} else if strings.HasPrefix(metadataKey, string(models.TargetFrameworkMetadata)) {
+			properties = append(properties, buildDatadogProperty(string(models.TargetFrameworkMetadata), value))
 		} else if metadataType == models.ExclusionMetadata {
 			props := strings.Split(value, ",")
 			for _, prop := range props {
-				properties = append(properties, cyclonedx.Property{
-					Name:  "datadog-sbom-generator:" + string(metadataType),
-					Value: prop,
-				})
+				properties = append(properties, buildDatadogSbomGeneratorProperty(metadataKey, prop))
 			}
 		} else {
-			properties = append(properties, cyclonedx.Property{
-				Name:  "osv-scanner:" + string(metadataType),
-				Value: value,
-			})
+			properties = append(properties, buildOsvScannerProperty(metadataKey, value))
 		}
 	}
 
+	// We do not only sort the properties by their attribute name, but also by their value.
+	// This is to ensure that the properties are in a deterministic order.
 	slices.SortFunc(properties, func(a, b cyclonedx.Property) int {
-		return strings.Compare(a.Name, b.Name)
+		if comparison := strings.Compare(a.Name, b.Name); comparison != 0 {
+			return comparison
+		}
+
+		return strings.Compare(a.Value, b.Value)
 	})
 
 	return properties
+}
+
+func buildDatadogProperty(metadataKey string, value string) cyclonedx.Property {
+	return cyclonedx.Property{
+		Name:  datadogPrefix + ":" + metadataKey,
+		Value: value,
+	}
+}
+
+// Deprecated: Use buildDatadogProperty instead.
+func buildDatadogSbomGeneratorProperty(metadataKey string, value string) cyclonedx.Property {
+	return cyclonedx.Property{
+		Name:  datadogSBOMGeneratorPrefix + ":" + metadataKey,
+		Value: value,
+	}
+}
+
+// Deprecated: Use buildDatadogProperty instead.
+func buildOsvScannerProperty(metadataKey string, value string) cyclonedx.Property {
+	return cyclonedx.Property{
+		Name:  osvScannerPrefix + ":" + metadataKey,
+		Value: value,
+	}
 }
 
 func findArtifact(name string, version string, artifacts []models.ScannedArtifact) *models.ScannedArtifact {

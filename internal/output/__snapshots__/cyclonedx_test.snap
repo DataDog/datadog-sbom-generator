@@ -233,11 +233,11 @@
       "properties": [
         {
           "name": "datadog-sbom-generator:exclusion",
-          "value": "org.example:example-artifact1"
+          "value": "org.example:*"
         },
         {
           "name": "datadog-sbom-generator:exclusion",
-          "value": "org.example:*"
+          "value": "org.example:example-artifact1"
         },
         {
           "name": "osv-scanner:is-dev",
