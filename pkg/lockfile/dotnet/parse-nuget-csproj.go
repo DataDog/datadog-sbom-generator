@@ -132,7 +132,8 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 				key := packageKey{name: name, version: version}
 
 				// If this package+version doesn't exist yet, create it
-				if _, exists := packageMap[key]; !exists {
+				// If it does exist, keep the one with the lower line number for deterministic behavior
+				if existing, exists := packageMap[key]; !exists {
 					packageMap[key] = &lockfile.PackageDetails{
 						Name:            name,
 						Version:         version,
@@ -145,6 +146,12 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 						VersionLocation: versionLocation,
 					}
 					targetFrameworksMap[key] = make(map[string]struct{})
+				} else if pkgRef.Line.Start < existing.BlockLocation.Line.Start {
+					// Update to use the occurrence with the lower line number
+					// This ensures deterministic behavior when iterating over the map
+					existing.BlockLocation = blockLocation
+					existing.NameLocation = nameLocation
+					existing.VersionLocation = versionLocation
 				}
 
 				// Add target framework(s)
