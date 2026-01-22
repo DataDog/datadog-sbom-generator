@@ -195,15 +195,16 @@ func scanLockfile(path string, context lockfile.ScanContext) (lockfile.Packages,
 	var parsedLockfile lockfile.Lockfile
 
 	file, err := lockfile.OpenLocalDepFile(path)
-
-	if err == nil {
-		parsedLockfile, err = lockfile.ExtractDeps(file, context)
-	}
-	defer file.Close()
-
 	if err != nil {
 		return nil, nil, err
 	}
+	defer file.Close()
+
+	parsedLockfile, err = lockfile.ExtractDeps(file, context)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	context.Reporter.Verbosef(
 		"Scanned %s file and found %d %s\n",
 		path,
