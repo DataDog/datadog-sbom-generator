@@ -281,6 +281,11 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan csproj project with lockfile",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/multiple-versions-with-lockfile"},
+			exit: 0,
+		},
+		{
 			name: "Scan csproj project with central version management",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/csproj-sample-app-manage-versions-centrally"},
 			exit: 0,
