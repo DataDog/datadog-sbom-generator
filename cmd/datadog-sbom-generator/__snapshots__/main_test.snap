@@ -257,7 +257,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":13},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":3},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":26,/"line_end/":26,/"column_start/":7,/"column_end/":12}}"
+            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":13},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":3},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":7,/"column_end/":12}}"
           }
         ]
       }
@@ -285,7 +285,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":20},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":10},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":19,/"line_end/":19,/"column_start/":14,/"column_end/":19}}"
+            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":21,/"line_end/":21,/"column_start/":1,/"column_end/":20},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":21,/"line_end/":21,/"column_start/":1,/"column_end/":10},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":21,/"line_end/":21,/"column_start/":14,/"column_end/":19}}"
           }
         ]
       }
@@ -352,7 +352,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":20,/"line_end/":20,/"column_start/":1,/"column_end/":19},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":20,/"line_end/":20,/"column_start/":1,/"column_end/":8},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":20,/"line_end/":20,/"column_start/":12,/"column_end/":18}}"
+            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":1,/"column_end/":19},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":1,/"column_end/":8},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":12,/"column_end/":18}}"
           }
         ]
       }
@@ -389,7 +389,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":36},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":11},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":28,/"line_end/":28,/"column_start/":27,/"column_end/":33}}"
+            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":30,/"line_end/":30,/"column_start/":1,/"column_end/":36},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":30,/"line_end/":30,/"column_start/":1,/"column_end/":11},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":30,/"line_end/":30,/"column_start/":27,/"column_end/":33}}"
           }
         ]
       }
@@ -447,6 +447,45 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       ]
     },
     {
+      "bom-ref": "pkg:cargo/regex-automata@0.4.9",
+      "type": "library",
+      "name": "regex-automata",
+      "version": "0.4.9",
+      "purl": "pkg:cargo/regex-automata@0.4.9",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:cargo/regex-syntax@0.8.5",
+      "type": "library",
+      "name": "regex-syntax",
+      "version": "0.8.5",
+      "purl": "pkg:cargo/regex-syntax@0.8.5",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:cargo/regex@1.11.1",
+      "type": "library",
+      "name": "regex",
+      "version": "1.11.1",
+      "purl": "pkg:cargo/regex@1.11.1",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "Crates"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:cargo/ryu@1.0.18",
       "type": "library",
       "name": "ryu",
@@ -482,7 +521,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":22,/"line_end/":22,/"column_start/":10,/"column_end/":13}}"
+            "location": "{/"block/":{/"file_name/":/"Cargo.toml/",/"line_start/":24,/"line_end/":24,/"column_start/":1,/"column_end/":14},/"name/":{/"file_name/":/"Cargo.toml/",/"line_start/":24,/"line_end/":24,/"column_start/":1,/"column_end/":6},/"version/":{/"file_name/":/"Cargo.toml/",/"line_start/":24,/"line_end/":24,/"column_start/":10,/"column_end/":13}}"
           }
         ]
       }
@@ -618,7 +657,7 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 [TestRun/Scan_cargo_project_with_multiple_dependency_types - 2]
 Scanning directory './fixtures/integration-cargo', resolved absolute path '<rootdir>/fixtures/integration-cargo'
-Scanned <rootdir>/fixtures/integration-cargo/Cargo.lock file and found 22 packages
+Scanned <rootdir>/fixtures/integration-cargo/Cargo.lock file and found 25 packages
 [reachability] Reachability analysis is disabled
 ---
 
