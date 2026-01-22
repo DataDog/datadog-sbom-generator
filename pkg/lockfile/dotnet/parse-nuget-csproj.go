@@ -96,12 +96,6 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 
 	lines := fileposition.BytesToLines(content)
 
-	// packageKey tracks name+version combinations to merge target frameworks
-	type packageKey struct {
-		name    string
-		version string
-	}
-
 	// Track packages by name+version, collecting target frameworks
 	packageMap := make(map[packageKey]*lockfile.PackageDetails)
 	targetFrameworksMap := make(map[packageKey]map[string]struct{}) // Use map for deduplication

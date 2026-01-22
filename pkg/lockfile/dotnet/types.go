@@ -136,3 +136,9 @@ type NuGetLockExtractor struct {
 // ============================================================================
 
 type NugetCsprojMatcher struct{}
+
+// packageKey tracks name+version combinations to merge target frameworks
+type packageKey struct {
+	name    string
+	version string
+}
