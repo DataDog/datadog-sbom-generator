@@ -39,64 +39,61 @@ func (m NugetCsprojMatcher) Match(sourceFile lockfile.DepFile, packages []lockfi
 	// Create two maps for lookup:
 	// 1. By name+version (primary) - handles multiple versions of the same package
 	// 2. By name only (fallback) - for packages without version in lock file
-	extractedByNameAndVersion := make(map[packageKey]lockfile.PackageDetails)
-	extractedByName := make(map[string]lockfile.PackageDetails)
-	for _, pkg := range extractedPackages {
-		key := packageKey{name: pkg.Name, version: pkg.Version}
-
-		// For duplicate name+version combinations, keep the first occurrence (lowest line number)
-		// This ensures deterministic behavior when the same package appears multiple times
-		// That's necessary because a PackageDetails only support one location, and in the lockfile
-		// we do not report the multiple target-framework. So we pick the first location only.
-		if existing, exists := extractedByNameAndVersion[key]; exists {
-			// Keep the package with the lower line number
-			if pkg.BlockLocation.Line.Start < existing.BlockLocation.Line.Start {
-				extractedByNameAndVersion[key] = pkg
-			}
-		} else {
-			extractedByNameAndVersion[key] = pkg
-		}
-
-		// For name-only map, also keep the first occurrence by line number
-		// This maintains backward compatibility for packages without versions
-		if existing, exists := extractedByName[pkg.Name]; exists {
-			if pkg.BlockLocation.Line.Start < existing.BlockLocation.Line.Start {
-				extractedByName[pkg.Name] = pkg
-			}
-		} else {
-			extractedByName[pkg.Name] = pkg
-		}
-	}
+	extractedByNameAndVersion, extractedByName := indexCsprojPackages(extractedPackages)
 
 	// Match lockfile packages with extracted csproj packages
 	for key, pkg := range packages {
-		var extractedPkg lockfile.PackageDetails
-		var ok bool
-
-		// Try exact match by name+version first
-		if pkg.Version != "" {
-			lookupKey := packageKey{name: pkg.Name, version: pkg.Version}
-			extractedPkg, ok = extractedByNameAndVersion[lookupKey]
+		if matchingPkg, ok := findExtractedMatch(pkg, extractedByNameAndVersion, extractedByName); ok {
+			// Enrich packages found in the lockfile with information from the csproj
+			packages[key].DepGroups = matchingPkg.DepGroups
+			packages[key].TargetFrameworks = matchingPkg.TargetFrameworks
+			packages[key].BlockLocation = matchingPkg.BlockLocation
+			packages[key].NameLocation = matchingPkg.NameLocation
+			packages[key].VersionLocation = matchingPkg.VersionLocation
 		}
-
-		// Fall back to name-only match if version match failed or no version provided
-		if !ok {
-			extractedPkg, ok = extractedByName[pkg.Name]
-		}
-
-		if !ok {
-			continue
-		}
-
-		// Copy location and metadata from the extracted package
-		packages[key].DepGroups = extractedPkg.DepGroups
-		packages[key].BlockLocation = extractedPkg.BlockLocation
-		packages[key].NameLocation = extractedPkg.NameLocation
-		packages[key].VersionLocation = extractedPkg.VersionLocation
-		packages[key].TargetFrameworks = extractedPkg.TargetFrameworks
 	}
 
 	return nil
+}
+
+func indexCsprojPackages(extractedPkgs []lockfile.PackageDetails) (
+	map[packageKey]lockfile.PackageDetails,
+	map[string]lockfile.PackageDetails,
+) {
+	indexByNameAndVersion := make(map[packageKey]lockfile.PackageDetails, len(extractedPkgs))
+	indexByName := make(map[string]lockfile.PackageDetails, len(extractedPkgs))
+
+	for _, pkg := range extractedPkgs {
+		setIfEarlier(indexByNameAndVersion, packageKey{name: pkg.Name, version: pkg.Version}, pkg)
+		setIfEarlier(indexByName, pkg.Name, pkg)
+	}
+
+	return indexByNameAndVersion, indexByName
+}
+
+// Generic “keep the earliest occurrence by line number” helper.
+func setIfEarlier[K comparable](indexMap map[K]lockfile.PackageDetails, key K, pkg lockfile.PackageDetails) {
+	if existing, ok := indexMap[key]; !ok || pkg.BlockLocation.Line.Start < existing.BlockLocation.Line.Start {
+		indexMap[key] = pkg
+	}
+}
+
+func findExtractedMatch(
+	pkg lockfile.PackageDetails,
+	indexByNameAndVersion map[packageKey]lockfile.PackageDetails,
+	indexByName map[string]lockfile.PackageDetails,
+) (lockfile.PackageDetails, bool) {
+	// Prefer exact name+version when lockfile has a version.
+	if pkg.Version != "" {
+		key := packageKey{name: pkg.Name, version: pkg.Version}
+		if matchingPkg, ok := indexByNameAndVersion[key]; ok {
+			return matchingPkg, true
+		}
+	}
+	// Fallback: name-only match.
+	matchingPkg, ok := indexByName[pkg.Name]
+
+	return matchingPkg, ok
 }
 
 var _ lockfile.Matcher = NugetCsprojMatcher{}
