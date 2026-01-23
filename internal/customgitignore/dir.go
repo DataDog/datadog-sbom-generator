@@ -39,17 +39,6 @@ func readIgnoreFile(fs billy.Filesystem, path []string, ignoreFile string) (ps [
 	return
 }
 
-// ReadPatterns reads the .git/info/exclude and then the gitignore patterns
-// recursively traversing through the directory structure. The result is in
-// the ascending order of priority (last higher).
-func ReadPatterns(fs billy.Filesystem, path []string) (ps []gitignore.Pattern, err error) {
-	ps, _ = readIgnoreFile(fs, path, infoExcludeFile)
-	subps, err := ReadPatternsIgnoringDirs(fs, path, ps)
-	ps = append(ps, subps...)
-
-	return ps, err
-}
-
 // ReadPatternsIgnoringDirs keeps track of the patterns it has read so far,
 // and does not parse directories these match for efficiency.
 //

@@ -3,7 +3,6 @@ package output
 import (
 	"errors"
 	"io"
-	"testing"
 
 	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
@@ -16,11 +15,6 @@ func CreateCycloneDXBOM(tool sbom.Tool, vulnResult *models.VulnerabilityResults)
 	resultsByPurl, errs := purl.Group(vulnResult.Results)
 
 	return sbom.BuildCycloneDXBom(tool, resultsByPurl, vulnResult.Artifacts), errors.Join(errs...)
-}
-
-// PrintCycloneDXResults writes results to the provided writer in CycloneDX format
-func PrintCycloneDXResults(tool sbom.Tool, vulnResult *models.VulnerabilityResults, outputWriter io.Writer) error {
-	return PrintCycloneDXResultsWithPretty(tool, vulnResult, outputWriter, testing.Testing())
 }
 
 // PrintCycloneDXResultsWithPretty writes results to the provided writer in CycloneDX format with optional pretty printing
