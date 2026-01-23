@@ -228,12 +228,13 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
-			Name:           "Microsoft.TestPlatform.TestHost",
-			Version:        "17.12.0",
-			PackageManager: models.NuGet,
-			Ecosystem:      models.EcosystemNuGet,
-			IsDirect:       true,
-			DepGroups:      []string{string(models.DepGroupDev)},
+			Name:             "Microsoft.TestPlatform.TestHost",
+			Version:          "17.12.0",
+			PackageManager:   models.NuGet,
+			Ecosystem:        models.EcosystemNuGet,
+			IsDirect:         true,
+			DepGroups:        []string{string(models.DepGroupDev)},
+			TargetFrameworks: []string{"net6.0"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 13},
 				Column:   models.Position{Start: 3, End: 22},
@@ -251,12 +252,13 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			},
 		},
 		{
-			Name:           "Test.Core",
-			Version:        "6.0.5",
-			PackageManager: models.NuGet,
-			Ecosystem:      models.EcosystemNuGet,
-			IsDirect:       true,
-			DepGroups:      []string{string(models.DepGroupDev)},
+			Name:             "Test.Core",
+			Version:          "6.0.5",
+			PackageManager:   models.NuGet,
+			Ecosystem:        models.EcosystemNuGet,
+			IsDirect:         true,
+			DepGroups:        []string{string(models.DepGroupDev)},
+			TargetFrameworks: []string{"net6.0"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 3, End: 79},
@@ -274,12 +276,13 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 			},
 		},
 		{
-			Name:           "Test.System",
-			Version:        "0.13.0-beta4",
-			PackageManager: models.NuGet,
-			Ecosystem:      models.EcosystemNuGet,
-			IsDirect:       true,
-			DepGroups:      []string{string(models.DepGroupProd)},
+			Name:             "Test.System",
+			Version:          "0.13.0-beta4",
+			PackageManager:   models.NuGet,
+			Ecosystem:        models.EcosystemNuGet,
+			IsDirect:         true,
+			DepGroups:        []string{string(models.DepGroupProd)},
+			TargetFrameworks: []string{"net6.0"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 3, End: 68},
@@ -295,6 +298,87 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 				Column:   models.Position{Start: 52, End: 64},
 				Filename: absoluteCsprojPath,
 			},
+		},
+	})
+}
+
+func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
+	t.Parallel()
+
+	packages, err := dotnet.ParseNuGetLock("../fixtures/nuget/multiple-versions-with-lockfile/packages.lock.json")
+	if err != nil {
+		t.Errorf("Got unexpected error parsing lock file: %v", err)
+	}
+
+	absoluteCsprojPath, err := filepath.Abs("../fixtures/nuget/multiple-versions-with-lockfile/test.csproj")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:             "Newtonsoft.Json",
+			Version:          "13.0.3",
+			PackageManager:   models.NuGet,
+			Ecosystem:        models.EcosystemNuGet,
+			IsDirect:         true,
+			DepGroups:        []string{string(models.DepGroupProd)},
+			TargetFrameworks: []string{"net8.0"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 5, End: 68},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 32, End: 47},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 16, End: 16},
+				Column:   models.Position{Start: 58, End: 64},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Microsoft.NETFramework.ReferenceAssemblies",
+			Version:        "1.0.3",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       true,
+			BlockLocation:  models.FilePosition{},
+		},
+		{
+			Name:             "Newtonsoft.Json",
+			Version:          "12.0.3",
+			PackageManager:   models.NuGet,
+			Ecosystem:        models.EcosystemNuGet,
+			IsDirect:         true,
+			DepGroups:        []string{string(models.DepGroupProd)},
+			TargetFrameworks: []string{"net462", "net6.0"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 5, End: 68},
+				Filename: absoluteCsprojPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 32, End: 47},
+				Filename: absoluteCsprojPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 58, End: 64},
+				Filename: absoluteCsprojPath,
+			},
+		},
+		{
+			Name:           "Microsoft.NETFramework.ReferenceAssemblies.net462",
+			Version:        "1.0.3",
+			PackageManager: models.NuGet,
+			Ecosystem:      models.EcosystemNuGet,
+			IsDirect:       false,
+			BlockLocation:  models.FilePosition{},
 		},
 	})
 }

@@ -89,8 +89,9 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
-			Name:           "Downloader",
-			PackageManager: models.NuGet,
+			Name:             "Downloader",
+			PackageManager:   models.NuGet,
+			TargetFrameworks: []string{"net8.0-windows10.0.17763"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 3, End: 58},
@@ -109,8 +110,9 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 			DepGroups: []string{string(models.DepGroupProd)},
 		},
 		{
-			Name:           "MaterialDesignThemes",
-			PackageManager: models.NuGet,
+			Name:             "MaterialDesignThemes",
+			PackageManager:   models.NuGet,
+			TargetFrameworks: []string{"net8.0-windows10.0.17763"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 3, End: 90},
@@ -129,8 +131,9 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 			DepGroups: []string{string(models.DepGroupDev)},
 		},
 		{
-			Name:           "Test.Core",
-			PackageManager: models.NuGet,
+			Name:             "Test.Core",
+			PackageManager:   models.NuGet,
+			TargetFrameworks: []string{"net8.0-windows10.0.17763"},
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 13, End: 16},
 				Column:   models.Position{Start: 5, End: 24},

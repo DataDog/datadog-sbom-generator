@@ -932,6 +932,126 @@ Scanned <rootdir>/fixtures/integration-nuget/csproj-sample-app-manage-versions-c
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_csproj_project_with_lockfile - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:nuget/Microsoft.NETFramework.ReferenceAssemblies.net462@1.0.3",
+      "type": "library",
+      "name": "Microsoft.NETFramework.ReferenceAssemblies.net462",
+      "version": "1.0.3",
+      "purl": "pkg:nuget/Microsoft.NETFramework.ReferenceAssemblies.net462@1.0.3",
+      "properties": [
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.NETFramework.ReferenceAssemblies@1.0.3",
+      "type": "library",
+      "name": "Microsoft.NETFramework.ReferenceAssemblies",
+      "version": "1.0.3",
+      "purl": "pkg:nuget/Microsoft.NETFramework.ReferenceAssemblies@1.0.3",
+      "properties": [
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:nuget/Newtonsoft.Json@12.0.3",
+      "type": "library",
+      "name": "Newtonsoft.Json",
+      "version": "12.0.3",
+      "purl": "pkg:nuget/Newtonsoft.Json@12.0.3",
+      "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net462"
+        },
+        {
+          "name": "datadog:target-framework",
+          "value": "net6.0"
+        },
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"test.csproj/",/"line_start/":8,/"line_end/":8,/"column_start/":5,/"column_end/":68},/"name/":{/"file_name/":/"test.csproj/",/"line_start/":8,/"line_end/":8,/"column_start/":32,/"column_end/":47},/"version/":{/"file_name/":/"test.csproj/",/"line_start/":8,/"line_end/":8,/"column_start/":58,/"column_end/":64}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "type": "library",
+      "name": "Newtonsoft.Json",
+      "version": "13.0.3",
+      "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0"
+        },
+        {
+          "name": "osv-scanner:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "osv-scanner:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"test.csproj/",/"line_start/":16,/"line_end/":16,/"column_start/":5,/"column_end/":68},/"name/":{/"file_name/":/"test.csproj/",/"line_start/":16,/"line_end/":16,/"column_start/":32,/"column_end/":47},/"version/":{/"file_name/":/"test.csproj/",/"line_start/":16,/"line_end/":16,/"column_start/":58,/"column_end/":64}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_csproj_project_with_lockfile - 2]
+Scanning directory './fixtures/integration-nuget/multiple-versions-with-lockfile', resolved absolute path '<rootdir>/fixtures/integration-nuget/multiple-versions-with-lockfile'
+Scanned <rootdir>/fixtures/integration-nuget/multiple-versions-with-lockfile/packages.lock.json file and found 4 packages
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_locks-many - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -15552,6 +15672,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Downloader@3.1.2",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -15575,6 +15699,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.1.0",
       "purl": "pkg:nuget/MaterialDesignThemes@5.1.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -15600,6 +15728,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Test.Core@6.0.5",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -15623,6 +15755,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "6.0.6",
       "purl": "pkg:nuget/Test.Core@6.0.6",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -20334,6 +20470,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Downloader@3.1.2",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -20357,6 +20497,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.1.0",
       "purl": "pkg:nuget/MaterialDesignThemes@5.1.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -20382,6 +20526,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Test.Core@6.0.5",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -20405,6 +20553,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "6.0.6",
       "purl": "pkg:nuget/Test.Core@6.0.6",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -25116,6 +25268,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Downloader@3.1.2",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -25139,6 +25295,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "5.1.0",
       "purl": "pkg:nuget/MaterialDesignThemes@5.1.0",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
@@ -25164,6 +25324,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "purl": "pkg:nuget/Test.Core@6.0.5",
       "properties": [
         {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
+        {
           "name": "osv-scanner:is-direct",
           "value": "true"
         },
@@ -25187,6 +25351,10 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "version": "6.0.6",
       "purl": "pkg:nuget/Test.Core@6.0.6",
       "properties": [
+        {
+          "name": "datadog:target-framework",
+          "value": "net8.0-windows10.0.17763"
+        },
         {
           "name": "osv-scanner:is-direct",
           "value": "true"
