@@ -21,7 +21,7 @@ func TestPrintCycloneDX15Results_WithDependencies(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResultsWithPretty(defaultTool, args.vulnResult, outputWriter, true)
 
 		if err != nil {
 			t.Errorf("%v", err)
@@ -38,7 +38,7 @@ func TestPrintCycloneDX15Results_WithVulnerabilities(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResultsWithPretty(defaultTool, args.vulnResult, outputWriter, true)
 
 		if err != nil {
 			t.Errorf("%v", err)
@@ -55,7 +55,7 @@ func TestPrintCycloneDX15Results_WithMixedIssues(t *testing.T) {
 		t.Helper()
 
 		outputWriter := &bytes.Buffer{}
-		err := output.PrintCycloneDXResults(defaultTool, args.vulnResult, outputWriter)
+		err := output.PrintCycloneDXResultsWithPretty(defaultTool, args.vulnResult, outputWriter, true)
 
 		if err != nil {
 			t.Errorf("%v", err)
