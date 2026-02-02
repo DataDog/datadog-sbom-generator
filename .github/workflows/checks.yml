@@ -73,10 +73,6 @@ jobs:
     permissions:
       contents: read # to fetch code (actions/checkout)
     name: Run unit tests
-    outputs:
-      coverage_ubuntu-latest: ${{steps.test.outputs.coverage_ubuntu-latest}}
-      coverage_macos-latest: ${{steps.test.outputs.coverage_macos-latest}}
-      coverage_windows-latest: ${{steps.test.outputs.coverage_windows-latest}}
     strategy:
       fail-fast: false
       matrix:
@@ -93,87 +89,4 @@ jobs:
           go-version-file: .go-version
           check-latest: true
       - name: Run test action
-        id: test
         uses: ./.github/workflows/test-action
-        with:
-          upload_coverage: "true"
-  coverage:
-    permissions:
-      contents: read # to fetch code (actions/checkout)
-      pull-requests: write
-    needs: [tests]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          persist-credentials: false
-      - name: download coverages
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # 5.0.0
-        with:
-          merge-multiple: "true"
-      - name: download artifact (main.breakdown)
-        id: download-main-breakdown
-        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
-        # TODO : Remove this once the repository is public as it should be able to access the artifact
-        continue-on-error: true
-        with:
-          branch: main
-          workflow_conclusion: success
-          name: main.breakdown
-          if_no_artifact_found: warn
-      - name: check test coverage
-        uses: vladopajic/go-test-coverage@d4177aaab9307eb783516275d495c01254da2fb9 # 2.16.0
-        id: go-test-coverage
-        with:
-          profile: ubuntu-latest.cov,macos-latest.cov,windows-latest.cov
-
-          # Save current coverage breakdown if current branch is main. It will be
-          # uploaded as artifact in step below.
-          breakdown-file-name: ${{ github.ref_name == 'main' && 'main.breakdown' || '' }}
-
-          # If this is not main branch we want to show report including
-          # file coverage difference from main branch.
-          diff-base-breakdown-file-name: ${{ steps.download-main-breakdown.outputs.found_artifact == 'true' && 'main.breakdown' || '' }}
-      - name: upload artifact (main.breakdown)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # 4.6.2
-        if: github.ref_name == 'main'
-        with:
-          name: main.breakdown
-          path: main.breakdown # as specified via `breakdown-file-name`
-          if-no-files-found: error
-      # Post coverage report as comment (update existing or create new)
-      - name: post coverage report
-        if: ${{github.event_name == 'pull_request'}}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # 7.0.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const botCommentIdentifier = "## Go test coverage report";
-            const coverageReport = `${botCommentIdentifier}\n\n${{fromJSON(steps.go-test-coverage.outputs.report)}}`;
-
-            // Try to find an existing comment from the bot
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-
-            const botComment = comments.find(comment => comment.body.includes(botCommentIdentifier));
-
-            // Update existing comment or create a new one
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                comment_id: botComment.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: coverageReport
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: coverageReport
-              });
-            }
