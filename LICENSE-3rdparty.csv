@@ -137,6 +137,7 @@ core,github.com/kevinburke/ssh_config,MIT,"Copyright (c) 2013 - 2017 Thomas Pell
 core,github.com/kr/pretty,MIT,Copyright 2012 Keith Rarick
 core,github.com/kr/text,MIT,Copyright 2012 Keith Rarick
 core,github.com/maruel/natural,Apache-2.0,Copyright 2018 Marc-Antoine Ruel
+core,github.com/Masterminds/semver/v3,MIT,"Copyright (C) 2014-2019, Matt Butcher and Matt Farina"
 core,github.com/mattn/go-pointer,MIT,Copyright (c) 2019 Yasuhiro Matsumoto
 core,github.com/mattn/go-runewidth,MIT,Copyright (c) 2016 Yasuhiro Matsumoto
 core,github.com/package-url/packageurl-go,MIT,Copyright (c) the purl authors

@@ -36,7 +36,7 @@ func (sys Ecosystem) IsDevGroup(groups []string) bool {
 	switch sys {
 	case EcosystemNPM:
 		return sys.isNpmDevGroup(groups)
-	case EcosystemPackagist, EcosystemPyPI, EcosystemPub, EcosystemNuGet:
+	case EcosystemPackagist, EcosystemPyPI, EcosystemPub, EcosystemNuGet, EcosystemCratesIO:
 		return sys.isDevGroup(groups, string(DepGroupDev))
 	case EcosystemConanCenter:
 		return sys.isDevGroup(groups, "build-requires")
@@ -44,7 +44,7 @@ func (sys Ecosystem) IsDevGroup(groups []string) bool {
 		return sys.isMavenDevGroup(groups)
 	case EcosystemRubyGems:
 		return isBundlerDevGroup(groups)
-	case EcosystemGo, EcosystemOSSFuzz, EcosystemCratesIO, EcosystemLinux, EcosystemDebian, EcosystemAlpine, EcosystemHex, EcosystemAndroid, EcosystemGitHubActions, EcosystemRockyLinux, EcosystemAlmaLinux, EcosystemBitnami, EcosystemPhotonOS, EcosystemCRAN, EcosystemBioconductor, EcosystemSwiftURL:
+	case EcosystemGo, EcosystemOSSFuzz, EcosystemLinux, EcosystemDebian, EcosystemAlpine, EcosystemHex, EcosystemAndroid, EcosystemGitHubActions, EcosystemRockyLinux, EcosystemAlmaLinux, EcosystemBitnami, EcosystemPhotonOS, EcosystemCRAN, EcosystemBioconductor, EcosystemSwiftURL:
 		// Go does not have dev dependencies support
 		// Other package managers are unsupported
 		return false

@@ -131,6 +131,9 @@ NPM, Yarn and PNPM have workspace support
 #### Crates
 
 - This tool only supports extracting packages from `Cargo.lock`.
+- This tool supports package information enrichment from `Cargo.toml`, including dependencies declared in `[dependencies]`, `[dev-dependencies]`, and `[build-dependencies]` sections.
+- Workspace support is not currently available.
+- Renaming dependencies is not supported.
 
 ## Contributing
 
