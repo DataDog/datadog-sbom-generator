@@ -143,15 +143,37 @@ type MavenLockExtractor struct {
 // ============================================================================
 // Maven Install Types
 // ============================================================================
+//
+// maven_install.json is the lockfile for Bazel's rules_jvm_external.
+// Two lockfile formats exist:
+//
+// "Dependency tree" format (rules_jvm_external < 5.1, March 2023):
+//   Artifacts under dependency_tree.dependencies[] with "coord" strings.
+//   https://github.com/bazel-contrib/rules_jvm_external/blob/master/private/rules/v1_lock_file.bzl
+//
+// "Artifacts map" format (rules_jvm_external >= 5.1):
+//   Artifacts under a top-level "artifacts" map keyed by coordinate.
+//   https://github.com/bazel-contrib/rules_jvm_external/blob/master/private/rules/v3_lock_file.bzl
 
-type MavenInstallFile struct {
-	Artifacts map[string]*MavenInstallArtifact `json:"artifacts"`
-	// Dependencies is commented out since it isn't currently used.
-	// Dependencies map[string][]string `json:"dependencies"`
+// mavenInstallLockfile represents the "artifacts map" format (rules_jvm_external >= 5.1).
+type mavenInstallLockfile struct {
+	Artifacts map[string]*mavenInstallArtifact `json:"artifacts"`
 }
 
-type MavenInstallArtifact struct {
+type mavenInstallArtifact struct {
 	Version string `json:"version"`
+	models.FilePosition
+}
+
+// mavenInstallDepTreeLockfile represents the "dependency tree" format (rules_jvm_external < 5.1).
+type mavenInstallDepTreeLockfile struct {
+	DependencyTree struct {
+		Dependencies []mavenInstallDepTreeArtifact `json:"dependencies"`
+	} `json:"dependency_tree"`
+}
+
+type mavenInstallDepTreeArtifact struct {
+	Coord string `json:"coord"`
 	models.FilePosition
 }
 

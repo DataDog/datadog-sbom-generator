@@ -107,7 +107,7 @@ func TestParseMavenInstall_NullArtifact(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
 }
 
-func TestParseMavenInstall_V1FormatUnsupported(t *testing.T) {
+func TestParseMavenInstall_V1OnePackage(t *testing.T) {
 	t.Parallel()
 
 	dir, err := os.Getwd()
@@ -115,13 +115,50 @@ func TestParseMavenInstall_V1FormatUnsupported(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-format"))
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-one-pkg"))
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.google.guava:guava",
+			Version:        "31.1-jre",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+	})
+}
+
+func TestParseMavenInstall_V1MultiplePackages(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-multiple-pkgs"))
+	packages, err := java.ParseMavenInstall(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.google.guava:guava",
+			Version:        "31.1-jre",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
+			Name:           "org.slf4j:slf4j-api",
+			Version:        "1.7.36",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+	})
 }
 
 func TestParseMavenInstall_EmptyArtifacts(t *testing.T) {

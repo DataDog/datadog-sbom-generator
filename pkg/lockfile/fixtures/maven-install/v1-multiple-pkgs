@@ -1,0 +1,27 @@
+{
+  "dependency_tree": {
+    "version": "0.1.0",
+    "dependencies": [
+      {
+        "coord": "com.google.guava:guava:31.1-jre",
+        "dependencies": [
+          "org.slf4j:slf4j-api:1.7.36"
+        ],
+        "directDependencies": [
+          "org.slf4j:slf4j-api:1.7.36"
+        ],
+        "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
+        "sha256": "d5be94d65e87a914f58620a36b4429629f4e2023",
+        "url": "https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar"
+      },
+      {
+        "coord": "org.slf4j:slf4j-api:1.7.36",
+        "dependencies": [],
+        "directDependencies": [],
+        "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar",
+        "sha256": "b6d62b6c0e1b9ced5e32ab3e0e3b0f0e3e3a3b3c",
+        "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar"
+      }
+    ]
+  }
+}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -33,20 +32,23 @@ func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContex
 		return []lockfile.PackageDetails{}, fmt.Errorf("failed to read maven_install.json: %w", err)
 	}
 
-	var installFile MavenInstallFile
+	var installFile mavenInstallLockfile
 	if err := json.Unmarshal(contentBytes, &installFile); err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("failed to decode maven_install.json: %w", err)
 	}
+
 	if len(installFile.Artifacts) == 0 {
-		var raw map[string]json.RawMessage
-		if err := json.Unmarshal(contentBytes, &raw); err == nil {
-			if _, hasDepTree := raw["dependency_tree"]; hasDepTree {
-				log.Printf("maven_install.json uses unsupported v1 format (rules_jvm_external < 5.1), skipping: %s\n", f.Path())
-				return []lockfile.PackageDetails{}, nil
-			}
+		var depTreeFile mavenInstallDepTreeLockfile
+		if err := json.Unmarshal(contentBytes, &depTreeFile); err == nil && len(depTreeFile.DependencyTree.Dependencies) > 0 {
+			return extractMavenInstallDepTree(depTreeFile)
 		}
+		return []lockfile.PackageDetails{}, nil
 	}
 
+	return extractMavenInstallArtifacts(installFile, contentBytes, f.Path())
+}
+
+func extractMavenInstallArtifacts(installFile mavenInstallLockfile, contentBytes []byte, filePath string) ([]lockfile.PackageDetails, error) {
 	if err := validateMavenInstallArtifacts(installFile.Artifacts); err != nil {
 		return []lockfile.PackageDetails{}, err
 	}
@@ -63,31 +65,60 @@ func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContex
 	pkgs := make([]lockfile.PackageDetails, 0, len(installFile.Artifacts))
 	seen := make(map[string]struct{}, len(installFile.Artifacts))
 
-	for _, name := range artifactNames {
-		artifact := installFile.Artifacts[name]
-		artifact.FilePosition.Filename = f.Path()
+	for _, rawName := range artifactNames {
+		artifact := installFile.Artifacts[rawName]
+		artifact.FilePosition.Filename = filePath
 
-		pkg := lockfile.PackageDetails{
-			Name:           normalizeMavenInstallName(name),
-			Version:        artifact.Version,
-			PackageManager: mavenInstallPackageManager,
-			Ecosystem:      models.EcosystemMaven,
-			BlockLocation:  artifact.FilePosition,
-		}
-
-		pkgKey := pkg.Name + "@" + pkg.Version
-		if _, alreadySeen := seen[pkgKey]; alreadySeen {
+		name, _ := parseMavenCoord(rawName)
+		pkgKey := name + "@" + artifact.Version
+		if _, exists := seen[pkgKey]; exists {
 			continue
 		}
 		seen[pkgKey] = struct{}{}
 
-		pkgs = append(pkgs, pkg)
+		pkgs = append(pkgs, lockfile.PackageDetails{
+			Name:           name,
+			Version:        artifact.Version,
+			PackageManager: mavenInstallPackageManager,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation:  artifact.FilePosition,
+		})
 	}
 
 	return pkgs, nil
 }
 
-func validateMavenInstallArtifacts(artifacts map[string]*MavenInstallArtifact) error {
+func extractMavenInstallDepTree(depTreeFile mavenInstallDepTreeLockfile) ([]lockfile.PackageDetails, error) {
+	deps := depTreeFile.DependencyTree.Dependencies
+
+	sort.Slice(deps, func(i, j int) bool {
+		return deps[i].Coord < deps[j].Coord
+	})
+
+	pkgs := make([]lockfile.PackageDetails, 0, len(deps))
+	seen := make(map[string]struct{}, len(deps))
+
+	for _, dep := range deps {
+		name, version := parseMavenCoord(dep.Coord)
+
+		pkgKey := name + "@" + version
+		if _, exists := seen[pkgKey]; exists {
+			continue
+		}
+		seen[pkgKey] = struct{}{}
+
+		pkgs = append(pkgs, lockfile.PackageDetails{
+			Name:           name,
+			Version:        version,
+			PackageManager: mavenInstallPackageManager,
+			Ecosystem:      models.EcosystemMaven,
+		})
+	}
+
+	return pkgs, nil
+}
+
+func validateMavenInstallArtifacts(artifacts map[string]*mavenInstallArtifact) error {
 	for name, artifact := range artifacts {
 		if artifact == nil {
 			return fmt.Errorf("invalid maven_install.json: artifact %q is null", name)
@@ -97,13 +128,26 @@ func validateMavenInstallArtifacts(artifacts map[string]*MavenInstallArtifact) e
 	return nil
 }
 
-func normalizeMavenInstallName(name string) string {
-	parts := strings.SplitN(name, ":", 3)
-	if len(parts) >= 2 {
-		return parts[0] + ":" + parts[1]
+// parseMavenCoord extracts the group:artifact name and version from a Maven coordinate.
+// Coordinates can be "group:artifact", "group:artifact:version",
+// "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
+// The name is always "group:artifact". The version is the last segment when 3+ parts exist.
+func parseMavenCoord(coord string) (name string, version string) {
+	parts := strings.SplitN(coord, ":", 3)
+	if len(parts) < 2 {
+		return coord, ""
 	}
-
-	return name
+	name = parts[0] + ":" + parts[1]
+	if len(parts) == 2 {
+		return name, ""
+	}
+	// parts[2] may be "version", "packaging:version", or "packaging:classifier:version".
+	// In all cases the version is the last colon-separated segment.
+	rest := parts[2]
+	if idx := strings.LastIndex(rest, ":"); idx >= 0 {
+		return name, rest[idx+1:]
+	}
+	return name, rest
 }
 
 func ParseMavenInstall(pathToLockfile string) ([]lockfile.PackageDetails, error) {
