@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "com.google.guava:guava": {
+      "version": "31.1-jre",
+      "shasums": {
+        "jar": "d5be94d65e87a914f58620a36b4429629f4e2023"
+      }
+    },
+    "org.graalvm.js:js-community:pom": {
+      "version": "24.2.2",
+      "shasums": {
+        "jar": "0000000000000000000000000000000000000000"
+      }
+    }
+  }
+}

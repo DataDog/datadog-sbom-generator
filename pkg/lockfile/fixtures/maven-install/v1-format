@@ -1,0 +1,15 @@
+{
+  "dependency_tree": {
+    "version": "0.1.0",
+    "dependencies": [
+      {
+        "coord": "com.google.guava:guava:31.1-jre",
+        "dependencies": [],
+        "directDependencies": [],
+        "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
+        "sha256": "d5be94d65e87a914f58620a36b4429629f4e2023",
+        "url": "https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar"
+      }
+    ]
+  }
+}

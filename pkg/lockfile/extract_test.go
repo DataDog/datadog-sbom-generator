@@ -123,6 +123,7 @@ func TestListExtractors(t *testing.T) {
 		"go.mod",
 		"gradle.lockfile",
 		"gradle/verification-metadata.xml",
+		"maven_install.json",
 		"package-lock.json",
 		"packages.lock.json",
 		"pdm.lock",
@@ -230,7 +231,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 
 	// Test case expand package manager and language while remove duplicates
 	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"java", "gradle"})
-	expected = []string{"gradle.lockfile", "gradle/verification-metadata.xml", "pom.xml"}
+	expected = []string{"gradle.lockfile", "gradle/verification-metadata.xml", "maven_install.json", "pom.xml"}
 	assert.Equal(t, expected, result)
 
 	// Test invalid language/parser names (should be still be passed - validation is not done here)
@@ -276,6 +277,7 @@ func filesToParsers() map[string]string {
 		"go.mod":                           "go.mod",
 		"gradle/verification-metadata.xml": "gradle/verification-metadata.xml",
 		"gradle.lockfile":                  "gradle.lockfile",
+		"maven_install.json":               "maven_install.json",
 		"mix.lock":                         "mix.lock",
 		"pdm.lock":                         "pdm.lock",
 		"Pipfile.lock":                     "Pipfile.lock",

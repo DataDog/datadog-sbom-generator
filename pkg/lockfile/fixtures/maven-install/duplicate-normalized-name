@@ -1,0 +1,10 @@
+{
+  "artifacts": {
+    "com.example:demo": {
+      "version": "1.0.0"
+    },
+    "com.example:demo:pom": {
+      "version": "1.0.0"
+    }
+  }
+}

@@ -22,6 +22,7 @@ const (
 	GradleFilePath             ParsedFilePath = "gradle.lockfile"
 	HexFilePath                ParsedFilePath = "mix.lock"
 	MavenFilePath              ParsedFilePath = "pom.xml"
+	MavenInstallFilePath       ParsedFilePath = "maven_install.json"
 	NodeModulesPath            ParsedFilePath = "node_modules"
 	NpmFilePath                ParsedFilePath = "package-lock.json"
 	NuGetCsProjFilePath        ParsedFilePath = "csproj"

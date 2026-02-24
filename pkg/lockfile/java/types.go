@@ -21,6 +21,9 @@ const (
 
 	mavenPackageManager      = models.Maven
 	mavenOfficiallySupported = true
+
+	mavenInstallPackageManager      = models.Maven
+	mavenInstallOfficiallySupported = true
 )
 
 // ============================================================================
@@ -136,6 +139,23 @@ type MavenLockProperties struct {
 type MavenLockExtractor struct {
 	lockfile.ArtifactExtractor
 }
+
+// ============================================================================
+// Maven Install Types
+// ============================================================================
+
+type MavenInstallFile struct {
+	Artifacts map[string]*MavenInstallArtifact `json:"artifacts"`
+	// Dependencies is commented out since it isn't currently used.
+	// Dependencies map[string][]string `json:"dependencies"`
+}
+
+type MavenInstallArtifact struct {
+	Version string `json:"version"`
+	models.FilePosition
+}
+
+type MavenInstallExtractor struct{}
 
 // ============================================================================
 // Matcher Types

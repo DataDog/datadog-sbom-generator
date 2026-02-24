@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "com.google.guava:guava": {
+      "version": "31.1-jre",
+      "shasums": {
+        "jar": "d5be94d65e87a914f58620a36b4429629f4e2023"
+      }
+    }
+  },
+  "dependencies": {
+    "com.google.guava:guava": [
+      "com.google.code.findbugs:jsr305",
+      "com.google.guava:failureaccess"
+    ]
+  }
+}

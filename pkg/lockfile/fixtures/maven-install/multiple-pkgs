@@ -1,0 +1,31 @@
+{
+  "artifacts": {
+    "com.google.guava:guava": {
+      "version": "31.1-jre",
+      "shasums": {
+        "jar": "d5be94d65e87a914f58620a36b4429629f4e2023"
+      }
+    },
+    "org.slf4j:slf4j-api": {
+      "version": "1.7.36",
+      "shasums": {
+        "jar": "b6d62b6c0e1b9ced5e32ab3e0e3b0f0e3e3a3b3c"
+      }
+    },
+    "com.fasterxml.jackson.core:jackson-databind": {
+      "version": "2.14.2",
+      "shasums": {
+        "jar": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+      }
+    }
+  },
+  "dependencies": {
+    "com.google.guava:guava": [
+      "com.google.code.findbugs:jsr305"
+    ],
+    "com.fasterxml.jackson.core:jackson-databind": [
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.core:jackson-annotations"
+    ]
+  }
+}
