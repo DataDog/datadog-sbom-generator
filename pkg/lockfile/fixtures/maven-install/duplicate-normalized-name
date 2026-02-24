@@ -1,10 +1,17 @@
 {
   "artifacts": {
     "com.example:demo": {
+      "shasums": {
+        "jar": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+      },
       "version": "1.0.0"
     },
     "com.example:demo:pom": {
+      "shasums": {
+        "jar": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"
+      },
       "version": "1.0.0"
     }
-  }
+  },
+  "version": "2"
 }

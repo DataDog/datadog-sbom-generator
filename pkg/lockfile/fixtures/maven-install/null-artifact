@@ -1,5 +1,6 @@
 {
   "artifacts": {
     "com.example:demo": null
-  }
+  },
+  "version": "2"
 }

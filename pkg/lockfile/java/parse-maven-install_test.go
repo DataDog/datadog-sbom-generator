@@ -147,8 +147,20 @@ func TestParseMavenInstall_V1MultiplePackages(t *testing.T) {
 
 	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
+			Name:           "com.fasterxml.jackson.core:jackson-databind",
+			Version:        "2.14.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
 			Name:           "com.google.guava:guava",
 			Version:        "31.1-jre",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
+			Name:           "io.netty:netty-tcnative-boringssl-static",
+			Version:        "2.0.61.Final",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 		},
@@ -200,7 +212,7 @@ func TestParseMavenInstall_OnePackage(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Filename: path,
-				Line:     models.Position{Start: 3, End: 8},
+				Line:     models.Position{Start: 4, End: 10},
 				Column:   models.Position{Start: 5, End: 6},
 			},
 		},
@@ -223,13 +235,24 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
+			Name:           "com.fasterxml.jackson.core:jackson-databind",
+			Version:        "2.14.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Filename: path,
+				Line:     models.Position{Start: 4, End: 10},
+				Column:   models.Position{Start: 5, End: 6},
+			},
+		},
+		{
 			Name:           "com.google.guava:guava",
 			Version:        "31.1-jre",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Filename: path,
-				Line:     models.Position{Start: 3, End: 8},
+				Line:     models.Position{Start: 11, End: 17},
 				Column:   models.Position{Start: 5, End: 6},
 			},
 		},
@@ -240,18 +263,7 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 			BlockLocation: models.FilePosition{
 				Filename: path,
-				Line:     models.Position{Start: 9, End: 14},
-				Column:   models.Position{Start: 5, End: 6},
-			},
-		},
-		{
-			Name:           "com.fasterxml.jackson.core:jackson-databind",
-			Version:        "2.14.2",
-			PackageManager: models.Maven,
-			Ecosystem:      models.EcosystemMaven,
-			BlockLocation: models.FilePosition{
-				Filename: path,
-				Line:     models.Position{Start: 15, End: 20},
+				Line:     models.Position{Start: 18, End: 24},
 				Column:   models.Position{Start: 5, End: 6},
 			},
 		},
@@ -276,6 +288,12 @@ func TestParseMavenInstall_WithClassifier(t *testing.T) {
 		{
 			Name:           "com.google.guava:guava",
 			Version:        "31.1-jre",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
+			Name:           "io.netty:netty-tcnative-boringssl-static",
+			Version:        "2.0.61.Final",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 		},
