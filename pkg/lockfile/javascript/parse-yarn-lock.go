@@ -144,17 +144,31 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 }
 
 func determineYarnPackageVersion(group []string) string {
-	re := cachedregexp.MustCompile(`^ {2}"?version"?:? "?([\w-.+]+)"?$`)
+	// Updated regex to handle empty versions (changed + to * for zero or more characters)
+	re := cachedregexp.MustCompile(`^ {2}"?version"?:? "?([\w-.+]*)"?$`)
 
 	for _, s := range group {
 		matched := re.FindStringSubmatch(s)
 
 		if matched != nil {
-			return matched[1]
+			version := matched[1]
+			// If version is empty, try to extract from resolution (for git-based packages)
+			if version == "" {
+				resolution := determineYarnPackageResolution(group)
+				if resolution != "" {
+					commit := tryExtractCommit(resolution)
+					if commit != "" {
+						// Use the commit hash as the version for git-based packages
+						return commit
+					}
+				}
+			}
+			
+			return version
 		}
 	}
 
-	// todo: decide what to do here - maybe panic...?
+	// Version field not found in the package block
 	return ""
 }
 

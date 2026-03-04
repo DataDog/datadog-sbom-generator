@@ -830,6 +830,51 @@ func TestParseYarnLock_v1_WithResolution(t *testing.T) {
 	testutil.ExpectPackagesWithoutLocations(t, packages, expected)
 }
 
+func TestParseYarnLock_v1_WithEmptyVersions(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/yarn/empty-version.v1.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	expected := []lockfile.PackageDetails{
+		{
+			Name:           "d3",
+			Version:        "abc123def456789",
+			TargetVersions: []string{"~3.5.6"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Commit:         "abc123def456789",
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+		{
+			Name:           "lodash",
+			Version:        "4a2b9e1e5f6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e",
+			TargetVersions: []string{"^4.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Commit:         "4a2b9e1e5f6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e",
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+		{
+			Name:           "normal-package",
+			Version:        "1.0.0",
+			TargetVersions: []string{"^1.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, expected)
+}
+
 // Test case: workspace-same-lib-and-version demonstrates shared dependencies:
 // Root: no dependencies
 // workspace-1: semver ^7.3.2
