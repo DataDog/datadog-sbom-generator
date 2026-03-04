@@ -223,6 +223,25 @@ type YarnLockExtractor struct {
 	lockfile.WithMatcher
 }
 
+// YarnBerryJSON represents the Yarn v4+ JSON lockfile format (version 9+)
+type YarnBerryJSON struct {
+	Metadata struct {
+		Version int `json:"version"`
+	} `json:"__metadata"`
+	Entries map[string]YarnBerryEntry `json:"entries"`
+}
+
+type YarnBerryEntry struct {
+	Checksum   string              `json:"checksum"`
+	Resolution YarnBerryResolution `json:"resolution"`
+}
+
+type YarnBerryResolution struct {
+	Resolution   string            `json:"resolution"`
+	Version      string            `json:"version"`
+	Dependencies map[string]string `json:"dependencies,omitempty"`
+}
+
 // ============================================================================
 // Package.json Matcher Constants
 // ============================================================================

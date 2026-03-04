@@ -1276,3 +1276,38 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 		},
 	})
 }
+
+func TestParseYarnLock_JSON_v9(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/yarn/json-format.v9.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	expected := []lockfile.PackageDetails{
+		{
+			Name:           "@aashutoshrathi/word-wrap",
+			Version:        "1.2.6",
+			TargetVersions: []string{"^1.2.3"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+		{
+			Name:           "@actions/core",
+			Version:        "1.10.1",
+			TargetVersions: []string{"1.10.1"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, expected)
+}

@@ -2,7 +2,9 @@ package javascript
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -383,18 +385,89 @@ func (e YarnLockExtractor) PackageManager() models.PackageManager {
 	return yarnPackageManager
 }
 
-func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
-	scanner := bufio.NewScanner(f)
+// isJSONFormat checks if the content starts with { to detect JSON format
+func isJSONFormat(content []byte) bool {
+	// Check if content starts with '{'
+	trimmed := strings.TrimSpace(string(content))
+	return strings.HasPrefix(trimmed, "{")
+}
 
-	yarnPackages := groupYarnPackageLines(scanner)
-	yarnPackageIndex := indexByTargetVersion(yarnPackages)
-
-	// Use this index to build all subtrees (trees from each package)
-	// Then use all this in the matcher to know is-dev / is-direct and propagate it everywhere
-
-	if err := scanner.Err(); err != nil {
-		return []lockfile.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+// parseYarnBerryJSON parses Yarn v4+ JSON lockfile format
+func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
+	var berryJSON YarnBerryJSON
+	if err := json.Unmarshal(content, &berryJSON); err != nil {
+		return nil, fmt.Errorf("failed to parse yarn.lock JSON: %w", err)
 	}
+
+	packages := make([]YarnPackage, 0, len(berryJSON.Entries))
+
+	for entryKey, entry := range berryJSON.Entries {
+		// Parse entry key: "package@registry:targetVersion"
+		name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(entryKey + ":")
+
+		version := entry.Resolution.Version
+		resolution := entry.Resolution.Resolution
+
+		// Convert dependencies map to YarnDependency slice
+		dependencies := make([]YarnDependency, 0, len(entry.Resolution.Dependencies))
+		for depName, depVersion := range entry.Resolution.Dependencies {
+			// Parse registry from version if present (e.g., "npm:^1.0.0")
+			registry := "npm"
+			cleanVersion := depVersion
+			if strings.Contains(depVersion, ":") {
+				parts := strings.SplitN(depVersion, ":", 2)
+				registry = parts[0]
+				cleanVersion = parts[1]
+			}
+
+			dependencies = append(dependencies, YarnDependency{
+				Name:     depName,
+				Version:  cleanVersion,
+				Registry: registry,
+			})
+		}
+
+		// Create one YarnPackage per target version
+		for _, targetVersion := range targetVersions {
+			packages = append(packages, YarnPackage{
+				Name:          name,
+				Version:       version,
+				TargetVersion: targetVersion,
+				Resolution:    resolution,
+				Dependencies:  dependencies,
+				WorkspacePath: workspacePath,
+			})
+		}
+	}
+
+	return packages, nil
+}
+
+func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
+	// Read entire file to determine format
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock: %w", err)
+	}
+
+	var yarnPackages []YarnPackage
+	if isJSONFormat(content) {
+		// Parse JSON format (Yarn v4+)
+		yarnPackages, err = parseYarnBerryJSON(content)
+		if err != nil {
+			return []lockfile.PackageDetails{}, err
+		}
+	} else {
+		// Parse YAML format (Yarn v1-3) using scanner
+		scanner := bufio.NewScanner(strings.NewReader(string(content)))
+		yarnPackages = groupYarnPackageLines(scanner)
+
+		if err := scanner.Err(); err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		}
+	}
+
+	yarnPackageIndex := indexByTargetVersion(yarnPackages)
 
 	// Separate workspace packages from root packages
 	workspaces := make([]YarnPackage, 0)
