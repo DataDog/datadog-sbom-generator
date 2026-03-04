@@ -163,7 +163,7 @@ func determineYarnPackageVersion(group []string) string {
 					}
 				}
 			}
-			
+
 			return version
 		}
 	}
