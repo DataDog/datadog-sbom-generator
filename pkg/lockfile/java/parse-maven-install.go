@@ -42,6 +42,7 @@ func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContex
 		if err := json.Unmarshal(contentBytes, &depTreeFile); err == nil && len(depTreeFile.DependencyTree.Dependencies) > 0 {
 			return extractMavenInstallDepTree(depTreeFile)
 		}
+
 		return []lockfile.PackageDetails{}, nil
 	}
 
@@ -147,6 +148,7 @@ func parseMavenCoord(coord string) (name string, version string) {
 	if idx := strings.LastIndex(rest, ":"); idx >= 0 {
 		return name, rest[idx+1:]
 	}
+
 	return name, rest
 }
 
