@@ -145,6 +145,23 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 	return name, targetVersions, workspacePath
 }
 
+// extractVersionFromGitResolution attempts to extract a version from git-based package resolution.
+// This is used as a fallback when the version field is empty (common with Bower packages and git dependencies).
+// Returns the git commit hash if found, or empty string otherwise.
+func extractVersionFromGitResolution(group []string) string {
+	resolution := determineYarnPackageResolution(group)
+	if resolution == "" {
+		return ""
+	}
+
+	commit := tryExtractCommit(resolution)
+	if commit != "" {
+		return commit
+	}
+
+	return ""
+}
+
 func determineYarnPackageVersion(group []string) string {
 	// Updated regex to handle empty versions (changed + to * for zero or more characters)
 	re := cachedregexp.MustCompile(`^ {2}"?version"?:? "?([\w-.+]*)"?$`)
@@ -156,14 +173,7 @@ func determineYarnPackageVersion(group []string) string {
 			version := matched[1]
 			// If version is empty, try to extract from resolution (for git-based packages)
 			if version == "" {
-				resolution := determineYarnPackageResolution(group)
-				if resolution != "" {
-					commit := tryExtractCommit(resolution)
-					if commit != "" {
-						// Use the commit hash as the version for git-based packages
-						return commit
-					}
-				}
+				return extractVersionFromGitResolution(group)
 			}
 
 			return version
@@ -385,10 +395,23 @@ func (e YarnLockExtractor) PackageManager() models.PackageManager {
 	return yarnPackageManager
 }
 
-// isJSONFormat checks if the content is Yarn v4+ JSON format
+// isJSONFormat detects whether the yarn.lock content is in JSON format (Yarn v4+) or YAML format (Yarn v1-3).
+//
+// Yarn v4+ introduced a new JSON lockfile format with version 9+, which has a different structure:
+//   - JSON format: {"__metadata": {"version": 9}, "entries": {...}}
+//   - YAML format: # yarn lockfile v1
+//
+// This function checks for JSON by:
+//  1. Verifying the content starts with '{' after trimming whitespace
+//  2. Checking for the presence of "__metadata" field within the first 200 bytes
+//
+// This approach is more robust than checking for exact prefixes because it handles:
+//   - Files with leading whitespace/newlines
+//   - Pretty-printed JSON with varying indentation
+//   - Minified JSON
+//
+// The function only examines the first 200 bytes for performance when called during format detection.
 func isJSONFormat(content []byte) bool {
-	// Check if content starts with '{' and contains '__metadata' early in the file
-	// This detects JSON format more reliably than checking for exact prefix
 	trimmed := strings.TrimSpace(string(content))
 	if !strings.HasPrefix(trimmed, "{") {
 		return false
@@ -404,7 +427,38 @@ func min(a, b int) int {
 	return b
 }
 
-// parseYarnBerryJSON parses Yarn v4+ JSON lockfile format
+// parseYarnBerryJSON parses Yarn v4+ JSON lockfile format (version 9+) into YarnPackage structures.
+//
+// Yarn Berry (v4+) introduced a new JSON-based lockfile format to improve parsing performance and reliability.
+// The format structure is:
+//
+//	{
+//	  "__metadata": {
+//	    "version": 9,
+//	    "cacheKey": "..."
+//	  },
+//	  "entries": {
+//	    "package@npm:^1.0.0": {
+//	      "version": "1.0.0",
+//	      "resolution": { "version": "1.0.0" },
+//	      "dependencies": { "dep": "npm:^2.0.0" },
+//	      "checksum": "..."
+//	    }
+//	  }
+//	}
+//
+// This function:
+//  1. Unmarshals the JSON into the YarnBerryJSON type structure
+//  2. Iterates through all entries in the lockfile
+//  3. Extracts package name, target versions, and workspace paths from entry keys
+//  4. Converts the JSON dependency map into YarnDependency slices
+//  5. Creates one YarnPackage per target version (handles multi-version resolution)
+//
+// Entry keys follow the format: "package@npm:targetVersion" or "package@targetVersion"
+// Dependencies are stored as maps with registry-prefixed versions: {"dep": "npm:^1.0.0"}
+//
+// Returns a slice of YarnPackage structs compatible with the existing YAML parser output,
+// allowing the rest of the extraction logic to work identically for both formats.
 func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
 	var berryJSON YarnBerryJSON
 	if err := json.Unmarshal(content, &berryJSON); err != nil {
