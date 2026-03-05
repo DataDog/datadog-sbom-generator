@@ -1311,3 +1311,40 @@ func TestParseYarnLock_JSON_v9(t *testing.T) {
 
 	testutil.ExpectPackagesWithoutLocations(t, packages, expected)
 }
+
+func TestParseYarnLock_v1_WithEmptyVersionNoGit(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/yarn/empty-version-no-git.v1.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// broken-package has empty version with no git commit in resolution
+	// It should still be parsed but with empty version (triggering warning at runtime)
+	expected := []lockfile.PackageDetails{
+		{
+			Name:           "broken-package",
+			Version:        "", // Empty - no git commit to extract
+			TargetVersions: []string{"^1.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+		{
+			Name:           "working-package",
+			Version:        "2.0.0",
+			TargetVersions: []string{"^2.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+			PackageManager: models.Yarn,
+			Dependencies:   make([]*lockfile.PackageDetails, 0),
+		},
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, expected)
+}

@@ -385,11 +385,23 @@ func (e YarnLockExtractor) PackageManager() models.PackageManager {
 	return yarnPackageManager
 }
 
-// isJSONFormat checks if the content starts with { to detect JSON format
+// isJSONFormat checks if the content is Yarn v4+ JSON format
 func isJSONFormat(content []byte) bool {
-	// Check if content starts with '{'
+	// Check if content starts with '{' and contains '__metadata' early in the file
+	// This detects JSON format more reliably than checking for exact prefix
 	trimmed := strings.TrimSpace(string(content))
-	return strings.HasPrefix(trimmed, "{")
+	if !strings.HasPrefix(trimmed, "{") {
+		return false
+	}
+	// Check if __metadata appears in the first 200 bytes (after any whitespace)
+	return strings.Contains(trimmed[:min(200, len(trimmed))], `"__metadata"`)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // parseYarnBerryJSON parses Yarn v4+ JSON lockfile format
@@ -444,22 +456,40 @@ func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
 }
 
 func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
-	// Read entire file to determine format
-	content, err := io.ReadAll(f)
-	if err != nil {
+	// Peek first bytes to detect format without loading entire file into memory
+	buf := make([]byte, 200)
+	n, err := f.Read(buf)
+	if err != nil && err != io.EOF {
 		return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock: %w", err)
 	}
 
+	// Try to reset file position for streaming
+	var reader io.Reader = f
+	if seeker, ok := f.(io.Seeker); ok {
+		if _, err := seeker.Seek(0, 0); err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error seeking yarn.lock: %w", err)
+		}
+	} else {
+		// If we can't seek, prepend the peeked bytes back to the reader
+		reader = io.MultiReader(strings.NewReader(string(buf[:n])), f)
+	}
+
 	var yarnPackages []YarnPackage
-	if isJSONFormat(content) {
+	if isJSONFormat(buf[:n]) {
 		// Parse JSON format (Yarn v4+)
+		// JSON requires loading entire file into memory for parsing
+		content, err := io.ReadAll(reader)
+		if err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock JSON: %w", err)
+		}
 		yarnPackages, err = parseYarnBerryJSON(content)
 		if err != nil {
 			return []lockfile.PackageDetails{}, err
 		}
 	} else {
-		// Parse YAML format (Yarn v1-3) using scanner
-		scanner := bufio.NewScanner(strings.NewReader(string(content)))
+		// Parse YAML format (Yarn v1-3) using streaming scanner
+		// This avoids loading the entire file into memory
+		scanner := bufio.NewScanner(reader)
 		yarnPackages = groupYarnPackageLines(scanner)
 
 		if err := scanner.Err(); err != nil {
