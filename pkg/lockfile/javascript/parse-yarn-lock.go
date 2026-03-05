@@ -3,6 +3,7 @@ package javascript
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -155,11 +156,8 @@ func extractVersionFromGitResolution(group []string) string {
 	}
 
 	commit := tryExtractCommit(resolution)
-	if commit != "" {
-		return commit
-	}
 
-	return ""
+	return commit
 }
 
 func determineYarnPackageVersion(group []string) string {
@@ -420,13 +418,6 @@ func isJSONFormat(content []byte) bool {
 	return strings.Contains(trimmed[:min(200, len(trimmed))], `"__metadata"`)
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // parseYarnBerryJSON parses Yarn v4+ JSON lockfile format (version 9+) into YarnPackage structures.
 //
 // Yarn Berry (v4+) introduced a new JSON-based lockfile format to improve parsing performance and reliability.
@@ -513,7 +504,7 @@ func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCont
 	// Peek first bytes to detect format without loading entire file into memory
 	buf := make([]byte, 200)
 	n, err := f.Read(buf)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock: %w", err)
 	}
 
