@@ -205,6 +205,51 @@
 
 ---
 
+[TestPrintCycloneDX15Results_WithDependencies/one_source_with_one_package,_reachable_symbol_location - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "1.0.1"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/org.apache.maven/maven-artifact@1.2.1",
+      "type": "library",
+      "name": "org.apache.maven:maven-artifact",
+      "version": "1.2.1",
+      "purl": "pkg:maven/org.apache.maven/maven-artifact@1.2.1",
+      "properties": [
+        {
+          "name": "datadog:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:reachable-symbol-location:ADV-123",
+          "value": "[{\"file_name\":\"pom.xml\",\"line_start\":0,\"line_end\":0,\"column_start\":0,\"column_end\":0,\"symbol\":\"foo\"}]"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
 [TestPrintCycloneDX15Results_WithDependencies/one_source_with_one_package,_two_exclusions - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -232,15 +277,15 @@
       "purl": "pkg:maven/org.apache.maven/maven-artifact@1.2.1",
       "properties": [
         {
-          "name": "datadog-sbom-generator:exclusion",
+          "name": "datadog:exclusion",
           "value": "org.example:*"
         },
         {
-          "name": "datadog-sbom-generator:exclusion",
+          "name": "datadog:exclusion",
           "value": "org.example:example-artifact1"
         },
         {
-          "name": "osv-scanner:is-dev",
+          "name": "datadog:is-dev",
           "value": "true"
         }
       ]
