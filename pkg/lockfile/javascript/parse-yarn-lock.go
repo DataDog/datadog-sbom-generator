@@ -2,7 +2,10 @@ package javascript
 
 import (
 	"bufio"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -143,18 +146,39 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 	return name, targetVersions, workspacePath
 }
 
+// extractVersionFromGitResolution attempts to extract a version from git-based package resolution.
+// This is used as a fallback when the version field is empty (common with Bower packages and git dependencies).
+// Returns the git commit hash if found, or empty string otherwise.
+func extractVersionFromGitResolution(group []string) string {
+	resolution := determineYarnPackageResolution(group)
+	if resolution == "" {
+		return ""
+	}
+
+	commit := tryExtractCommit(resolution)
+
+	return commit
+}
+
 func determineYarnPackageVersion(group []string) string {
-	re := cachedregexp.MustCompile(`^ {2}"?version"?:? "?([\w-.+]+)"?$`)
+	// Updated regex to handle empty versions (changed + to * for zero or more characters)
+	re := cachedregexp.MustCompile(`^ {2}"?version"?:? "?([\w-.+]*)"?$`)
 
 	for _, s := range group {
 		matched := re.FindStringSubmatch(s)
 
 		if matched != nil {
-			return matched[1]
+			version := matched[1]
+			// If version is empty, try to extract from resolution (for git-based packages)
+			if version == "" {
+				return extractVersionFromGitResolution(group)
+			}
+
+			return version
 		}
 	}
 
-	// todo: decide what to do here - maybe panic...?
+	// Version field not found in the package block
 	return ""
 }
 
@@ -369,18 +393,156 @@ func (e YarnLockExtractor) PackageManager() models.PackageManager {
 	return yarnPackageManager
 }
 
-func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
-	scanner := bufio.NewScanner(f)
-
-	yarnPackages := groupYarnPackageLines(scanner)
-	yarnPackageIndex := indexByTargetVersion(yarnPackages)
-
-	// Use this index to build all subtrees (trees from each package)
-	// Then use all this in the matcher to know is-dev / is-direct and propagate it everywhere
-
-	if err := scanner.Err(); err != nil {
-		return []lockfile.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+// isJSONFormat detects whether the yarn.lock content is in JSON format (Yarn v4+) or YAML format (Yarn v1-3).
+//
+// Yarn v4+ introduced a new JSON lockfile format with version 9+, which has a different structure:
+//   - JSON format: {"__metadata": {"version": 9}, "entries": {...}}
+//   - YAML format: # yarn lockfile v1
+//
+// This function checks for JSON by:
+//  1. Verifying the content starts with '{' after trimming whitespace
+//  2. Checking for the presence of "__metadata" field within the first 200 bytes
+//
+// This approach is more robust than checking for exact prefixes because it handles:
+//   - Files with leading whitespace/newlines
+//   - Pretty-printed JSON with varying indentation
+//   - Minified JSON
+//
+// The function only examines the first 200 bytes for performance when called during format detection.
+func isJSONFormat(content []byte) bool {
+	trimmed := strings.TrimSpace(string(content))
+	if !strings.HasPrefix(trimmed, "{") {
+		return false
 	}
+	// Check if __metadata appears in the first 200 bytes (after any whitespace)
+	return strings.Contains(trimmed[:min(200, len(trimmed))], `"__metadata"`)
+}
+
+// parseYarnBerryJSON parses Yarn v4+ JSON lockfile format (version 9+) into YarnPackage structures.
+//
+// Yarn Berry (v4+) introduced a new JSON-based lockfile format to improve parsing performance and reliability.
+// The format structure is:
+//
+//	{
+//	  "__metadata": {
+//	    "version": 9,
+//	    "cacheKey": "..."
+//	  },
+//	  "entries": {
+//	    "package@npm:^1.0.0": {
+//	      "version": "1.0.0",
+//	      "resolution": { "version": "1.0.0" },
+//	      "dependencies": { "dep": "npm:^2.0.0" },
+//	      "checksum": "..."
+//	    }
+//	  }
+//	}
+//
+// This function:
+//  1. Unmarshals the JSON into the YarnBerryJSON type structure
+//  2. Iterates through all entries in the lockfile
+//  3. Extracts package name, target versions, and workspace paths from entry keys
+//  4. Converts the JSON dependency map into YarnDependency slices
+//  5. Creates one YarnPackage per target version (handles multi-version resolution)
+//
+// Entry keys follow the format: "package@npm:targetVersion" or "package@targetVersion"
+// Dependencies are stored as maps with registry-prefixed versions: {"dep": "npm:^1.0.0"}
+//
+// Returns a slice of YarnPackage structs compatible with the existing YAML parser output,
+// allowing the rest of the extraction logic to work identically for both formats.
+func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
+	var berryJSON YarnBerryJSON
+	if err := json.Unmarshal(content, &berryJSON); err != nil {
+		return nil, fmt.Errorf("failed to parse yarn.lock JSON: %w", err)
+	}
+
+	packages := make([]YarnPackage, 0, len(berryJSON.Entries))
+
+	for entryKey, entry := range berryJSON.Entries {
+		// Parse entry key: "package@registry:targetVersion"
+		name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(entryKey + ":")
+
+		version := entry.Resolution.Version
+		resolution := entry.Resolution.Resolution
+
+		// Convert dependencies map to YarnDependency slice
+		dependencies := make([]YarnDependency, 0, len(entry.Resolution.Dependencies))
+		for depName, depVersion := range entry.Resolution.Dependencies {
+			// Parse registry from version if present (e.g., "npm:^1.0.0")
+			registry := "npm"
+			cleanVersion := depVersion
+			if strings.Contains(depVersion, ":") {
+				parts := strings.SplitN(depVersion, ":", 2)
+				registry = parts[0]
+				cleanVersion = parts[1]
+			}
+
+			dependencies = append(dependencies, YarnDependency{
+				Name:     depName,
+				Version:  cleanVersion,
+				Registry: registry,
+			})
+		}
+
+		// Create one YarnPackage per target version
+		for _, targetVersion := range targetVersions {
+			packages = append(packages, YarnPackage{
+				Name:          name,
+				Version:       version,
+				TargetVersion: targetVersion,
+				Resolution:    resolution,
+				Dependencies:  dependencies,
+				WorkspacePath: workspacePath,
+			})
+		}
+	}
+
+	return packages, nil
+}
+
+func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
+	// Peek first bytes to detect format without loading entire file into memory
+	buf := make([]byte, 200)
+	n, err := f.Read(buf)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock: %w", err)
+	}
+
+	// Try to reset file position for streaming
+	var reader io.Reader = f
+	if seeker, ok := f.(io.Seeker); ok {
+		if _, err := seeker.Seek(0, 0); err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error seeking yarn.lock: %w", err)
+		}
+	} else {
+		// If we can't seek, prepend the peeked bytes back to the reader
+		reader = io.MultiReader(strings.NewReader(string(buf[:n])), f)
+	}
+
+	var yarnPackages []YarnPackage
+	if isJSONFormat(buf[:n]) {
+		// Parse JSON format (Yarn v4+)
+		// JSON requires loading entire file into memory for parsing
+		content, err := io.ReadAll(reader)
+		if err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock JSON: %w", err)
+		}
+		yarnPackages, err = parseYarnBerryJSON(content)
+		if err != nil {
+			return []lockfile.PackageDetails{}, err
+		}
+	} else {
+		// Parse YAML format (Yarn v1-3) using streaming scanner
+		// This avoids loading the entire file into memory
+		scanner := bufio.NewScanner(reader)
+		yarnPackages = groupYarnPackageLines(scanner)
+
+		if err := scanner.Err(); err != nil {
+			return []lockfile.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
+		}
+	}
+
+	yarnPackageIndex := indexByTargetVersion(yarnPackages)
 
 	// Separate workspace packages from root packages
 	workspaces := make([]YarnPackage, 0)

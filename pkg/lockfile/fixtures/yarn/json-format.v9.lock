@@ -1,0 +1,25 @@
+{
+  "__metadata": {
+    "version": 9
+  },
+  "entries": {
+    "@aashutoshrathi/word-wrap@npm:^1.2.3": {
+      "checksum": "08eb536be89ef5112219f46e86ac3c515eaf06caea65d23080f876c3255d9c39db96f5fca1c0b8565aab0d00967cfba3c4f4d91e3b3b3175aebb4ddb5d557589",
+      "resolution": {
+        "resolution": "@aashutoshrathi/word-wrap@npm:1.2.6",
+        "version": "1.2.6"
+      }
+    },
+    "@actions/core@npm:1.10.1": {
+      "checksum": "576cf602959acee2ee522fac8c2772290cf2352b6de654f6d2ea75ba2072a34cdad9da50c1cbd37eabb847f74a0b6edfb782dc188032ccaf2128c6ecc8970102",
+      "resolution": {
+        "resolution": "@actions/core@npm:1.10.1",
+        "version": "1.10.1",
+        "dependencies": {
+          "@actions/http-client": "^2.0.1",
+          "uuid": "^8.3.2"
+        }
+      }
+    }
+  }
+}
