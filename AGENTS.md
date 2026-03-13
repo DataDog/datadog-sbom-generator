@@ -1,0 +1,3 @@
+# Further instructions
+
+@./CLAUDE.md
