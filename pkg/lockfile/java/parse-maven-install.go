@@ -25,7 +25,10 @@ func (e MavenInstallExtractor) PackageManager() models.PackageManager {
 	return mavenInstallPackageManager
 }
 
-// IsDirect is not set: it would require parsing maven_install.bzl (Starlark) to resolve which artifacts are direct.
+// IsDirect is not set. For v1/v2 lockfiles, determining which artifacts are direct requires
+// cross-referencing WORKSPACE/MODULE.bazel declarations. For v3, direct deps could be derived
+// from the per-artifact __INPUT_ARTIFACTS_HASH dict (its non-"repositories" keys), but this
+// is left as a future improvement.
 func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	contentBytes, err := io.ReadAll(f)
 	if err != nil {
