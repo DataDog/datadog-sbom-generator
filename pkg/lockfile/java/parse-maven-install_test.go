@@ -21,37 +21,37 @@ func TestMavenInstallExtractor_ShouldExtract(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "",
+			name: "empty path",
 			path: "",
 			want: false,
 		},
 		{
-			name: "",
+			name: "filename only",
 			path: "maven_install.json",
 			want: true,
 		},
 		{
-			name: "",
+			name: "nested path",
 			path: "path/to/my/maven_install.json",
 			want: true,
 		},
 		{
-			name: "",
+			name: "filename is directory component",
 			path: "path/to/my/maven_install.json/file",
 			want: false,
 		},
 		{
-			name: "",
+			name: "backup extension",
 			path: "path/to/my/maven_install.json.bak",
 			want: false,
 		},
 		{
-			name: "",
+			name: "dot-separated path",
 			path: "path.to.my.maven_install.json",
 			want: false,
 		},
 		{
-			name: "",
+			name: "wrong extension",
 			path: "maven_install.lock",
 			want: false,
 		},
@@ -88,7 +88,7 @@ func TestParseMavenInstall_InvalidJSON(t *testing.T) {
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/invalid"))
 	packages, err := java.ParseMavenInstall(path)
 
-	testutil.ExpectErrContaining(t, err, "failed to decode maven_install.json")
+	testutil.ExpectErrContaining(t, err, "could not decode")
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
 }
 

@@ -174,7 +174,6 @@ type mavenInstallDepTreeLockfile struct {
 
 type mavenInstallDepTreeArtifact struct {
 	Coord string `json:"coord"`
-	models.FilePosition
 }
 
 type MavenInstallExtractor struct{}

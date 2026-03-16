@@ -29,12 +29,12 @@ func (e MavenInstallExtractor) PackageManager() models.PackageManager {
 func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	contentBytes, err := io.ReadAll(f)
 	if err != nil {
-		return []lockfile.PackageDetails{}, fmt.Errorf("failed to read maven_install.json: %w", err)
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
 	var installFile mavenInstallLockfile
 	if err := json.Unmarshal(contentBytes, &installFile); err != nil {
-		return []lockfile.PackageDetails{}, fmt.Errorf("failed to decode maven_install.json: %w", err)
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not decode %s: %w", f.Path(), err)
 	}
 
 	if len(installFile.Artifacts) == 0 {
