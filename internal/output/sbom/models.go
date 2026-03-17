@@ -12,10 +12,6 @@ const (
 
 const (
 	datadogPrefix = "datadog"
-	// Deprecated: Use datadogPrefix instead.
-	osvScannerPrefix = "osv-scanner"
-	// Deprecated: Use datadogPrefix instead.
-	datadogSBOMGeneratorPrefix = "datadog-sbom-generator"
 )
 
 const (
