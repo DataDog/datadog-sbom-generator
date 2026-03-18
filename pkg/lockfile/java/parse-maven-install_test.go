@@ -173,6 +173,42 @@ func TestParseMavenInstall_V1MultiplePackages(t *testing.T) {
 	})
 }
 
+func TestParseMavenInstall_V1WithAtPackaging(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-at-packaging"))
+	packages, err := java.ParseMavenInstall(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.example:pom-coord",
+			Version:        "1.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
+			Name:           "com.example:simple",
+			Version:        "1.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
+			Name:           "com.example:with-classifier",
+			Version:        "1.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+	})
+}
+
 func TestParseMavenInstall_EmptyArtifacts(t *testing.T) {
 	t.Parallel()
 

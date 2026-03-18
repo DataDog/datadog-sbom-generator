@@ -133,10 +133,24 @@ func validateMavenInstallArtifacts(artifacts map[string]*mavenInstallArtifact) e
 }
 
 // parseMavenCoord extracts the group:artifact name and version from a Maven coordinate.
-// Coordinates can be "group:artifact", "group:artifact:version",
-// "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
-// The name is always "group:artifact". The version is the last segment when 3+ parts exist.
+//
+// Two formats are supported:
+//
+//   - Maven form (no "@" suffix): "group:artifact", "group:artifact:version",
+//     "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
+//     The version is the last colon-separated segment.
+//
+//   - Gradle external form (has "@ext" suffix): "group:artifact:version@ext" or
+//     "group:artifact:version:classifier@ext".
+//     The "@ext" suffix is stripped and the version is the first segment after group:artifact.
 func parseMavenCoord(coord string) (name string, version string) {
+	gradleExternalForm := strings.Contains(coord, "@")
+	if gradleExternalForm {
+		if idx := strings.Index(coord, "@"); idx >= 0 {
+			coord = coord[:idx]
+		}
+	}
+
 	parts := strings.SplitN(coord, ":", 3)
 	if len(parts) < 2 {
 		return coord, ""
@@ -145,9 +159,18 @@ func parseMavenCoord(coord string) (name string, version string) {
 	if len(parts) == 2 {
 		return name, ""
 	}
-	// parts[2] may be "version", "packaging:version", or "packaging:classifier:version".
-	// In all cases the version is the last colon-separated segment.
 	rest := parts[2]
+
+	if gradleExternalForm {
+		// g:a:version or g:a:version:classifier — version is the first segment.
+		if idx := strings.Index(rest, ":"); idx >= 0 {
+			return name, rest[:idx]
+		}
+
+		return name, rest
+	}
+
+	// Maven form: g:a[:packaging[:classifier]]:version — version is the last segment.
 	if idx := strings.LastIndex(rest, ":"); idx >= 0 {
 		return name, rest[idx+1:]
 	}
