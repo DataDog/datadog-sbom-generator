@@ -25,6 +25,7 @@ jobs:
           curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" && chmod +x /usr/local/bin/datadog-ci
 
       - name: Upload coverage reports to Datadog
+        if: env.DD_API_KEY != ''
         run: datadog-ci coverage upload --format=go-coverprofile coverage.out
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
