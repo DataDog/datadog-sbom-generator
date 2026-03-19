@@ -112,6 +112,10 @@ func extractMavenInstallDepTree(depTreeFile mavenInstallDepTreeLockfile) ([]lock
 	for _, dep := range deps {
 		name, version := parseMavenCoord(dep.Coord)
 
+		// Normalise to group:artifact@version. v1 lockfiles can list both a
+		// base coordinate and classifier variants (e.g. "g:a:version" and
+		// "g:a:jar:sources:version"), but all variants map to the same
+		// pkg:maven PURL and represent the same component for SCA purposes.
 		pkgKey := name + "@" + version
 		if _, exists := seen[pkgKey]; exists {
 			continue
