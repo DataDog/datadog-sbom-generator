@@ -14,7 +14,10 @@ import (
 )
 
 func (e MavenInstallExtractor) ShouldExtract(path string) bool {
-	return filepath.Base(path) == models.MavenInstallFilePath.String()
+	// Accept "maven_install.json" and any "{name}_maven_install.json" variant.
+	// rules_jvm_external recommends naming custom lock files after their
+	// maven_install repository name (e.g. "foo_maven_install.json").
+	return strings.HasSuffix(filepath.Base(path), models.MavenInstallFilePath.String())
 }
 
 func (e MavenInstallExtractor) IsOfficiallySupported() bool {

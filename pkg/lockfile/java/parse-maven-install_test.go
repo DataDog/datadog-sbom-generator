@@ -48,12 +48,22 @@ func TestMavenInstallExtractor_ShouldExtract(t *testing.T) {
 		{
 			name: "dot-separated path",
 			path: "path.to.my.maven_install.json",
-			want: false,
+			want: true,
 		},
 		{
 			name: "wrong extension",
 			path: "maven_install.lock",
 			want: false,
+		},
+		{
+			name: "custom repo name prefix",
+			path: "foo_maven_install.json",
+			want: true,
+		},
+		{
+			name: "custom repo name prefix nested",
+			path: "path/to/bar_maven_install.json",
+			want: true,
 		},
 	}
 	for _, tt := range tests {
