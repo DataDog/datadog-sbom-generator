@@ -80,7 +80,7 @@ func extractMavenInstallArtifacts(installFile mavenInstallLockfile, contentBytes
 		artifact := installFile.Artifacts[rawName]
 		artifact.FilePosition.Filename = filePath
 
-		name, _ := parseMavenCoord(rawName)
+		name, _ := parseMavenCoord(rawName) // version comes from artifact.Version, not the coordinate
 		// Normalise to group:artifact@version. The artifacts map can contain
 		// multiple keys for the same component (e.g. "g:a" and "g:a:pom"), but
 		// all packaging/extension variants share the same version field and
@@ -147,23 +147,49 @@ func validateMavenInstallArtifacts(artifacts map[string]*mavenInstallArtifact) e
 	return nil
 }
 
+// mavenPackagingTypes is the set of well-known Maven packaging (extension) values.
+// Used to disambiguate 4-part coordinates without an "@ext" suffix: if the third
+// segment is a recognised packaging type the coord is g:a:packaging:version (Maven
+// form); otherwise it is the short Gradle form g:a:version:classifier.
+//
+// This list is intentionally conservative. Any real packaging type absent from this
+// set will be misidentified as a version when the coordinate is 4 parts with no "@".
+// Add entries here when new packaging types are encountered in the wild.
+var mavenPackagingTypes = map[string]bool{
+	"aar":             true,
+	"bundle":          true,
+	"ear":             true,
+	"hk2-jar":         true,
+	"jar":             true,
+	"maven-archetype": true,
+	"maven-plugin":    true,
+	"nbm":             true,
+	"pom":             true,
+	"test-jar":        true,
+	"war":             true,
+	"zip":             true,
+}
+
 // parseMavenCoord extracts the group:artifact name and version from a Maven coordinate.
 //
-// Two formats are supported:
+// Three formats are supported, matched in this order:
 //
-//   - Maven form (no "@" suffix): "group:artifact", "group:artifact:version",
-//     "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
-//     The version is the last colon-separated segment.
-//
-//   - Gradle external form (has "@ext" suffix): "group:artifact:version@ext" or
+//  1. Gradle external form (has "@ext" suffix): "group:artifact:version@ext" or
 //     "group:artifact:version:classifier@ext".
-//     The "@ext" suffix is stripped and the version is the first segment after group:artifact.
+//     The "@ext" suffix is stripped; version is the first segment after group:artifact.
+//
+//  2. Short Gradle form (no "@", third segment not a known packaging type, remainder
+//     after the third segment contains no further colons):
+//     "group:artifact:version:classifier". Version is the third segment.
+//
+//  3. Maven form (no "@"): "group:artifact", "group:artifact:version",
+//     "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
+//     Version is the last colon-separated segment.
 func parseMavenCoord(coord string) (name string, version string) {
-	gradleExternalForm := strings.Contains(coord, "@")
-	if gradleExternalForm {
-		if idx := strings.Index(coord, "@"); idx >= 0 {
-			coord = coord[:idx]
-		}
+	gradleExternalForm := false
+	if idx := strings.Index(coord, "@"); idx >= 0 {
+		coord = coord[:idx]
+		gradleExternalForm = true
 	}
 
 	parts := strings.SplitN(coord, ":", 3)
@@ -183,6 +209,15 @@ func parseMavenCoord(coord string) (name string, version string) {
 		}
 
 		return name, rest
+	}
+
+	// Short Gradle form: g:a:version:classifier — no "@", third segment is not a known
+	// packaging type, no fifth segment. Version is the third segment.
+	if idx := strings.Index(rest, ":"); idx >= 0 {
+		thirdSegment := rest[:idx]
+		if thirdSegment != "" && !mavenPackagingTypes[thirdSegment] && !strings.Contains(rest[idx+1:], ":") {
+			return name, thirdSegment
+		}
 	}
 
 	// Maven form: g:a[:packaging[:classifier]]:version — version is the last segment.

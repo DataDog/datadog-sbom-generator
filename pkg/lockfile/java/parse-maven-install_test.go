@@ -222,6 +222,12 @@ func TestParseMavenInstall_V1WithAtPackaging(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 		},
 		{
+			Name:           "com.example:short-classifier",
+			Version:        "2.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+		},
+		{
 			Name:           "com.example:simple",
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
