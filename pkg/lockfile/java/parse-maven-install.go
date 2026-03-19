@@ -1,6 +1,7 @@
 package java
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,7 +39,7 @@ func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContex
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
-	if len(strings.TrimSpace(string(contentBytes))) == 0 {
+	if len(bytes.TrimSpace(contentBytes)) == 0 {
 		return []lockfile.PackageDetails{}, nil
 	}
 
@@ -155,19 +156,19 @@ func validateMavenInstallArtifacts(artifacts map[string]*mavenInstallArtifact) e
 // This list is intentionally conservative. Any real packaging type absent from this
 // set will be misidentified as a version when the coordinate is 4 parts with no "@".
 // Add entries here when new packaging types are encountered in the wild.
-var mavenPackagingTypes = map[string]bool{
-	"aar":             true,
-	"bundle":          true,
-	"ear":             true,
-	"hk2-jar":         true,
-	"jar":             true,
-	"maven-archetype": true,
-	"maven-plugin":    true,
-	"nbm":             true,
-	"pom":             true,
-	"test-jar":        true,
-	"war":             true,
-	"zip":             true,
+var mavenPackagingTypes = map[string]struct{}{
+	"aar":             {},
+	"bundle":          {},
+	"ear":             {},
+	"hk2-jar":         {},
+	"jar":             {},
+	"maven-archetype": {},
+	"maven-plugin":    {},
+	"nbm":             {},
+	"pom":             {},
+	"test-jar":        {},
+	"war":             {},
+	"zip":             {},
 }
 
 // parseMavenCoord extracts the group:artifact name and version from a Maven coordinate.
@@ -215,7 +216,8 @@ func parseMavenCoord(coord string) (name string, version string) {
 	// packaging type, no fifth segment. Version is the third segment.
 	if idx := strings.Index(rest, ":"); idx >= 0 {
 		thirdSegment := rest[:idx]
-		if thirdSegment != "" && !mavenPackagingTypes[thirdSegment] && !strings.Contains(rest[idx+1:], ":") {
+		_, isKnownPackaging := mavenPackagingTypes[thirdSegment]
+		if thirdSegment != "" && !isKnownPackaging && !strings.Contains(rest[idx+1:], ":") {
 			return name, thirdSegment
 		}
 	}

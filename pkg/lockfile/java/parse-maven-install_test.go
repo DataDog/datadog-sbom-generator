@@ -92,10 +92,10 @@ func TestParseMavenInstall_EmptyFile(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/empty-file"))
+	path := filepath.Join(dir, "../fixtures/maven-install/empty-file")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -109,10 +109,10 @@ func TestParseMavenInstall_InvalidJSON(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/invalid"))
+	path := filepath.Join(dir, "../fixtures/maven-install/invalid")
 	packages, err := java.ParseMavenInstall(path)
 
 	testutil.ExpectErrContaining(t, err, "could not decode")
@@ -124,10 +124,10 @@ func TestParseMavenInstall_NullArtifact(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/null-artifact"))
+	path := filepath.Join(dir, "../fixtures/maven-install/null-artifact")
 	packages, err := java.ParseMavenInstall(path)
 
 	testutil.ExpectErrContaining(t, err, "invalid maven_install.json: artifact")
@@ -139,10 +139,10 @@ func TestParseMavenInstall_V1OnePackage(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-one-pkg"))
+	path := filepath.Join(dir, "../fixtures/maven-install/v1-one-pkg")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -163,10 +163,10 @@ func TestParseMavenInstall_V1MultiplePackages(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-multiple-pkgs"))
+	path := filepath.Join(dir, "../fixtures/maven-install/v1-multiple-pkgs")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -205,10 +205,10 @@ func TestParseMavenInstall_V1WithAtPackaging(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/v1-at-packaging"))
+	path := filepath.Join(dir, "../fixtures/maven-install/v1-at-packaging")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -247,10 +247,10 @@ func TestParseMavenInstall_EmptyArtifacts(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/empty"))
+	path := filepath.Join(dir, "../fixtures/maven-install/empty")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -264,10 +264,10 @@ func TestParseMavenInstall_OnePackage(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/one-pkg"))
+	path := filepath.Join(dir, "../fixtures/maven-install/one-pkg")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -293,10 +293,10 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/multiple-pkgs"))
+	path := filepath.Join(dir, "../fixtures/maven-install/multiple-pkgs")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -344,10 +344,10 @@ func TestParseMavenInstall_WithClassifier(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/with-classifier"))
+	path := filepath.Join(dir, "../fixtures/maven-install/with-classifier")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -380,10 +380,10 @@ func TestParseMavenInstall_DuplicateNormalizedName(t *testing.T) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
+		t.Fatalf("Got unexpected error: %v", err)
 	}
 
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/duplicate-normalized-name"))
+	path := filepath.Join(dir, "../fixtures/maven-install/duplicate-normalized-name")
 	packages, err := java.ParseMavenInstall(path)
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
