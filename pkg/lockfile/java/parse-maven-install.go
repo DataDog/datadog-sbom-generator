@@ -148,29 +148,6 @@ func validateMavenInstallArtifacts(artifacts map[string]*mavenInstallArtifact) e
 	return nil
 }
 
-// mavenPackagingTypes is the set of well-known Maven packaging (extension) values.
-// Used to disambiguate 4-part coordinates without an "@ext" suffix: if the third
-// segment is a recognised packaging type the coord is g:a:packaging:version (Maven
-// form); otherwise it is the short Gradle form g:a:version:classifier.
-//
-// This list is intentionally conservative. Any real packaging type absent from this
-// set will be misidentified as a version when the coordinate is 4 parts with no "@".
-// Add entries here when new packaging types are encountered in the wild.
-var mavenPackagingTypes = map[string]struct{}{
-	"aar":             {},
-	"bundle":          {},
-	"ear":             {},
-	"hk2-jar":         {},
-	"jar":             {},
-	"maven-archetype": {},
-	"maven-plugin":    {},
-	"nbm":             {},
-	"pom":             {},
-	"test-jar":        {},
-	"war":             {},
-	"zip":             {},
-}
-
 // parseMavenCoord extracts the group:artifact name and version from a Maven coordinate.
 //
 // Three formats are supported, matched in this order:
@@ -179,9 +156,12 @@ var mavenPackagingTypes = map[string]struct{}{
 //     "group:artifact:version:classifier@ext".
 //     The "@ext" suffix is stripped; version is the first segment after group:artifact.
 //
-//  2. Short Gradle form (no "@", third segment not a known packaging type, remainder
-//     after the third segment contains no further colons):
-//     "group:artifact:version:classifier". Version is the third segment.
+//  2. Short Gradle form (no "@", exactly 4 colon-separated parts, third segment starts
+//     with a digit): "group:artifact:version:classifier". Version is the third segment.
+//     Maven packaging types never start with a digit, so this rule correctly identifies
+//     version strings (e.g. "1.0", "2.0.61.Final") while leaving arbitrary packaging
+//     values (jar, pom, dll, dylib, so, …) to fall through to the Maven form below.
+//     This mirrors the digit-based fallback in rules_jvm_external coordinates.bzl.
 //
 //  3. Maven form (no "@"): "group:artifact", "group:artifact:version",
 //     "group:artifact:packaging:version", or "group:artifact:packaging:classifier:version".
@@ -212,12 +192,11 @@ func parseMavenCoord(coord string) (name string, version string) {
 		return name, rest
 	}
 
-	// Short Gradle form: g:a:version:classifier — no "@", third segment is not a known
-	// packaging type, no fifth segment. Version is the third segment.
+	// Short Gradle form: g:a:version:classifier — no "@", third segment starts with a
+	// digit, no fifth segment. Version is the third segment.
 	if idx := strings.Index(rest, ":"); idx >= 0 {
 		thirdSegment := rest[:idx]
-		_, isKnownPackaging := mavenPackagingTypes[thirdSegment]
-		if thirdSegment != "" && !isKnownPackaging && !strings.Contains(rest[idx+1:], ":") {
+		if len(thirdSegment) > 0 && thirdSegment[0] >= '0' && thirdSegment[0] <= '9' && !strings.Contains(rest[idx+1:], ":") {
 			return name, thirdSegment
 		}
 	}
