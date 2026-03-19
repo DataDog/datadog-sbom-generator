@@ -87,6 +87,23 @@ func TestParseMavenInstall_FileDoesNotExist(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
 }
 
+func TestParseMavenInstall_EmptyFile(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven-install/empty-file"))
+	packages, err := java.ParseMavenInstall(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
+}
+
 func TestParseMavenInstall_InvalidJSON(t *testing.T) {
 	t.Parallel()
 

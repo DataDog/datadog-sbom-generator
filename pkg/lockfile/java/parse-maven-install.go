@@ -38,6 +38,10 @@ func (e MavenInstallExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContex
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
 	}
 
+	if len(strings.TrimSpace(string(contentBytes))) == 0 {
+		return []lockfile.PackageDetails{}, nil
+	}
+
 	var installFile mavenInstallLockfile
 	if err := json.Unmarshal(contentBytes, &installFile); err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not decode %s: %w", f.Path(), err)
