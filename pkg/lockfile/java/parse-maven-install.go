@@ -77,6 +77,10 @@ func extractMavenInstallArtifacts(installFile mavenInstallLockfile, contentBytes
 		artifact.FilePosition.Filename = filePath
 
 		name, _ := parseMavenCoord(rawName)
+		// Normalise to group:artifact@version. The artifacts map can contain
+		// multiple keys for the same component (e.g. "g:a" and "g:a:pom"), but
+		// all packaging/extension variants share the same version field and
+		// collapse to the same pkg:maven PURL, so emitting them once is intentional.
 		pkgKey := name + "@" + artifact.Version
 		if _, exists := seen[pkgKey]; exists {
 			continue
