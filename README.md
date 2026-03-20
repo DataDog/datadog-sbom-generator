@@ -34,17 +34,17 @@ datadog-sbom-generator scan --help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
-| Language   | Package Manager                       |
-| ---------- | ------------------------------------- |
-| .NET       | Nuget                                 |
-| C++        | Conan                                 |
-| Go         | Golang                                |
-| Java       | Gradle, Maven                         |
-| JavaScript | NPM, PNPM, Yarn                       |
-| PHP        | Composer                              |
-| Python     | Pdm, Pipenv, Poetry, Requirements, uv |
-| Ruby       | Bundler                               |
-| Rust       | Crates                                |
+| Language   | Package Manager                           |
+| ---------- | ----------------------------------------- |
+| .NET       | Nuget                                     |
+| C++        | Conan                                     |
+| Go         | Golang                                    |
+| Java       | Gradle, Maven, Bazel (rules_jvm_external) |
+| JavaScript | NPM, PNPM, Yarn                           |
+| PHP        | Composer                                  |
+| Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
+| Ruby       | Bundler                                   |
+| Rust       | Crates                                    |
 
 ## Limitations
 
@@ -80,6 +80,12 @@ This tool only supports enriching information from the following package manager
 
 - This tool only supports extracting packages from `gradle.lockfile`.
 - This tool only supports package information enrichment from `build.gradle` and `gradle/verification-metadata.xml` files.
+
+#### Bazel
+
+- This tool supports extracting packages from `maven_install.json` (and any `{name}_maven_install.json` variant) produced by [`rules_jvm_external`](https://github.com/bazel-contrib/rules_jvm_external).
+- Both the v1 `dependency_tree` format (rules_jvm_external < 5.1) and the v2/v3 `artifacts` map format (rules_jvm_external ≥ 5.1) are supported.
+- `IsDirect` is not set; distinguishing direct from transitive dependencies would require parsing the Bazel workspace files.
 
 ### Javascript and Typescript
 

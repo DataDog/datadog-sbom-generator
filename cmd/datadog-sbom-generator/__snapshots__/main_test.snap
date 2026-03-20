@@ -11356,6 +11356,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Go         | Golang          | go.mod                           |
 | Java       | Gradle          | gradle.lockfile                  |
 | Java       | Gradle          | gradle/verification-metadata.xml |
+| Java       | Maven           | maven_install.json               |
 | Java       | Maven           | pom.xml                          |
 | Javascript | NPM             | package-lock.json                |
 | Javascript | Pnpm            | pnpm-lock.yaml                   |
