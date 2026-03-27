@@ -165,7 +165,9 @@ type UvLockExtractor struct {
 // Requirements.txt Types
 // ============================================================================
 
-type RequirementsTxtExtractor struct{}
+type RequirementsTxtExtractor struct {
+	lockfile.WithMatcher
+}
 
 // ============================================================================
 // Matcher Types
@@ -174,3 +176,5 @@ type RequirementsTxtExtractor struct{}
 type PipfileMatcher struct{}
 
 type PyprojectTOMLMatcher struct{}
+
+type RequirementsInMatcher struct{}
