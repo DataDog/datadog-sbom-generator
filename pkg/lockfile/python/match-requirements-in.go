@@ -43,6 +43,11 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 		packagesByName[key] = append(packagesByName[key], i)
 	}
 
+	// claimed tracks which package indices have already been mapped to a .in line.
+	// This prevents a later duplicate-name entry (e.g. two marker-specific pins for
+	// the same package) from overwriting a location that was already correctly set.
+	claimed := make(map[int]bool, len(packages))
+
 	for index, line := range lines {
 		lineNumber := index + 1
 		trimmedLine := strings.TrimSpace(line)
@@ -67,10 +72,36 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 			continue
 		}
 
+		// When the same package name appears more than once in the .in file
+		// (e.g. marker-specific pins for different Python versions), select which
+		// packages this line should claim using a preference order:
+		//   1. Unclaimed packages whose resolved version appears literally in this line
+		//      (handles exact-pinned duplicates like "requests==2.0" / "requests==3.5").
+		//   2. Any remaining unclaimed packages (handles range constraints).
+		//   3. Skip — all candidates are already claimed by an earlier line.
+		var toUpdate []int
+		for _, idx := range indices {
+			if !claimed[idx] && packages[idx].Version != "" && strings.Contains(trimmedLine, packages[idx].Version) {
+				toUpdate = append(toUpdate, idx)
+			}
+		}
+		if len(toUpdate) == 0 {
+			for _, idx := range indices {
+				if !claimed[idx] {
+					toUpdate = append(toUpdate, idx)
+				}
+			}
+		}
+		if len(toUpdate) == 0 {
+			continue
+		}
+
 		startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(line)
 		endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(line)
 
-		for _, key := range indices {
+		for _, key := range toUpdate {
+			claimed[key] = true
+
 			packages[key].BlockLocation = models.FilePosition{
 				Line:     models.Position{Start: lineNumber, End: lineNumber},
 				Column:   models.Position{Start: startColumn, End: endColumn},

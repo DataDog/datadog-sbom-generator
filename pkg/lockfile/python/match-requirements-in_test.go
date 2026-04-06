@@ -216,6 +216,87 @@ func TestRequirementsInMatcher_Match_TransitiveDependencies(t *testing.T) {
 	})
 }
 
+func TestRequirementsInMatcher_Match_DuplicateNameDifferentVersions(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-duplicate-names/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "requests",
+			Version:        "2.0",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "requests",
+			Version:        "3.5",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// requests==2.0 on line 1 — must not be overwritten by the line-2 entry
+			Name:           "requests",
+			Version:        "2.0",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 14},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: sourcefilePath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 11, End: 14},
+				Filename: sourcefilePath,
+			},
+			IsDirect: true,
+		},
+		{
+			// requests==3.5 on line 2
+			Name:           "requests",
+			Version:        "3.5",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 14},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: sourcefilePath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 11, End: 14},
+				Filename: sourcefilePath,
+			},
+			IsDirect: true,
+		},
+	})
+}
+
 func TestRequirementsInMatcher_Match_DirectURLReference(t *testing.T) {
 	t.Parallel()
 
