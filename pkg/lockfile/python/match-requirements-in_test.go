@@ -215,3 +215,103 @@ func TestRequirementsInMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+func TestRequirementsInMatcher_Match_DirectURLReference(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-url/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "pyroxy",
+			Version:        "",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// pyroxy @ git+https://... in .in (line 1) → URL direct reference must not be skipped
+			Name:           "pyroxy",
+			Version:        "",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 52},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 7},
+				Filename: sourcefilePath,
+			},
+			// VersionLocation is nil: empty version string
+			IsDirect: true,
+		},
+	})
+}
+
+func TestRequirementsInMatcher_Match_EnvironmentMarkerOnly(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-markers/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "aa",
+			Version:        "1.0",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// aa; python_version=='2.7' in .in (line 1) → semicolon must not be included in name
+			Name:           "aa",
+			Version:        "1.0",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 26},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 3},
+				Filename: sourcefilePath,
+			},
+			// VersionLocation is nil: "1.0" not present in the .in line
+			IsDirect: true,
+		},
+	})
+}

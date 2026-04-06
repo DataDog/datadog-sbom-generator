@@ -47,8 +47,11 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 		lineNumber := index + 1
 		trimmedLine := strings.TrimSpace(line)
 
-		// Skip comments, blanks, options (-r, --index-url, etc.), and URLs
-		if trimmedLine == "" || isComment(line) || strings.HasPrefix(trimmedLine, "-") || strings.Contains(trimmedLine, "://") {
+		// Skip comments, blanks, options (-r, --index-url, etc.), and bare URLs.
+		// Do NOT skip PEP 508 direct references like "pkg @ https://..." — those start
+		// with the package name, not a URL scheme.
+		if trimmedLine == "" || isComment(line) || strings.HasPrefix(trimmedLine, "-") ||
+			strings.HasPrefix(trimmedLine, "http://") || strings.HasPrefix(trimmedLine, "https://") {
 			continue
 		}
 
@@ -103,7 +106,11 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 // Example: "redis[hiredis]==3.5.3" → "redis"
 func extractPackageNameFromRequirementsLine(line string) string {
 	for i, c := range line {
-		if c == '=' || c == '>' || c == '<' || c == '!' || c == '~' || c == '[' || c == '@' {
+		// Stop at version specifiers, extras, direct-reference (@), or environment
+		// marker separator (;).  The semicolon must be checked before '=' so that a
+		// line like "aa; python_version=='2.7'" returns "aa" rather than
+		// "aa; python_version".
+		if c == ';' || c == '=' || c == '>' || c == '<' || c == '!' || c == '~' || c == '[' || c == '@' {
 			return strings.TrimSpace(line[:i])
 		}
 	}
