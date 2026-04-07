@@ -148,7 +148,7 @@ func extractPackageNameFromRequirementsLine(line string) string {
 		// marker separator (;).  The semicolon must be checked before '=' so that a
 		// line like "aa; python_version=='2.7'" returns "aa" rather than
 		// "aa; python_version".
-		if c == ';' || c == '=' || c == '>' || c == '<' || c == '!' || c == '~' || c == '[' || c == '@' {
+		if c == '#' || c == ';' || c == '=' || c == '>' || c == '<' || c == '!' || c == '~' || c == '[' || c == '@' {
 			return strings.TrimSpace(line[:i])
 		}
 	}

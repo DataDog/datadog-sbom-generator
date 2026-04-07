@@ -488,6 +488,67 @@ func TestRequirementsInMatcher_Match_DirectURLReference(t *testing.T) {
 	})
 }
 
+func TestRequirementsInMatcher_Match_InlineComments(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-inline-comments/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "requests",
+			Version:        "2.32.3",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "urllib3",
+			Version:        "2.2.3",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// "requests  # direct dep" in .in (line 1) — # must terminate the name
+			Name:           "requests",
+			Version:        "2.32.3",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 23},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: sourcefilePath,
+			},
+			// VersionLocation nil: "2.32.3" not present in the .in line
+			IsDirect: true,
+		},
+		{
+			// urllib3 not in .in → untouched
+			Name:           "urllib3",
+			Version:        "2.2.3",
+			PackageManager: models.Requirements,
+		},
+	})
+}
+
 func TestRequirementsInMatcher_Match_EnvironmentMarkerOnly(t *testing.T) {
 	t.Parallel()
 

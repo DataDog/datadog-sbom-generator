@@ -1,0 +1,2 @@
+requests  # direct dep
+certifi  # pinned transitively but also listed here
