@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -250,34 +249,23 @@ func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[
 	return result
 }
 
-// fetchConfigExclusions fetches exclusion paths from the unified configuration system.
-// It reads the local code-security.datadog.yaml, calls the Get Merged endpoint if auth is available,
-// and returns the ignore-paths from the merged (or local) config.
 func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure bool, r reporter.Reporter) ([]string, error) {
-	// Read local config file
+	hasAuth := ddhttp.HasDatadogAuth(ddEnvVars.JwtToken)
+
 	localContents, err := config.ReadConfigFile(dir)
 	hasLocalConfig := err == nil
 
-	// Check if we can make API calls
-	hasAuth := ddhttp.HasDatadogAuth(ddEnvVars.JwtToken)
-
-	// Get repository URL for API call
-	repoURL, repoErr := config.GetRepositoryURL(dir)
-	hasRepo := repoErr == nil
-
-	// If no auth and no local config, nothing to do
 	if !hasAuth && !hasLocalConfig {
 		return nil, nil
 	}
 
-	// If we have a local config but can't make API calls, use local only
 	if !hasAuth {
 		r.Infof("[config] No Datadog authentication available, using local configuration only\n")
 		return parseIgnorePaths(localContents, r)
 	}
 
-	// If we have auth but no repo URL, fall back to local config
-	if !hasRepo {
+	repoURL, err := config.GetRepositoryURL(dir)
+	if err != nil {
 		if hasLocalConfig {
 			r.Infof("[config] No git remote found, using local configuration only\n")
 			return parseIgnorePaths(localContents, r)
@@ -285,16 +273,13 @@ func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure 
 		return nil, nil
 	}
 
-	// Build request: base64-encode local config if present
-	var configBase64 *string
+	var localConfig *string
 	if hasLocalConfig {
-		encoded := base64.StdEncoding.EncodeToString([]byte(localContents))
-		configBase64 = &encoded
+		localConfig = &localContents
 	}
 
-	// Call Get Merged endpoint
 	r.Infof("[config] Fetching merged configuration for %s\n", repoURL)
-	resp, err := ddhttp.PostGetMergedConfig(repoURL, configBase64, ddEnvVars.BaseURL, ddEnvVars.JwtToken)
+	mergedConfig, err := ddhttp.PostGetMergedConfig(repoURL, localConfig, ddEnvVars.BaseURL, ddEnvVars.JwtToken)
 	if err != nil {
 		if exitOnConfigFailure {
 			return nil, fmt.Errorf("failed to fetch merged configuration: %w", ErrAPIFailed)
@@ -307,20 +292,9 @@ func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure 
 		return nil, nil
 	}
 
-	// Decode and parse merged config
-	decoded, err := base64.StdEncoding.DecodeString(resp.ConfigBase64)
-	if err != nil {
-		r.Warnf("[config] Failed to decode merged configuration: %v\n", err)
-		if hasLocalConfig {
-			return parseIgnorePaths(localContents, r)
-		}
-		return nil, nil
-	}
-
-	return parseIgnorePaths(string(decoded), r)
+	return parseIgnorePaths(mergedConfig, r)
 }
 
-// parseIgnorePaths extracts sca.ignore-paths from a config file's YAML contents.
 func parseIgnorePaths(contents string, r reporter.Reporter) ([]string, error) {
 	cfg, err := config.ParseConfig(contents)
 	if err != nil {

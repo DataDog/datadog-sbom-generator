@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,8 +26,27 @@ type GetMergedConfigResponse struct {
 	ConfigBase64 string `json:"config_base64" jsonapi:"attribute"`
 }
 
-func PostGetMergedConfig(repoURL string, configBase64 *string, ddBaseURL string, ddJwtToken string) (GetMergedConfigResponse, error) {
-	return postGetMergedConfig(repoURL, configBase64, getDatadogBaseURL(ddBaseURL), ddJwtToken)
+// PostGetMergedConfig calls the Get Merged endpoint with the repository URL and optional
+// local config file contents. It handles base64 encoding/decoding of the config.
+// Returns the decoded merged config string.
+func PostGetMergedConfig(repoURL string, localConfig *string, ddBaseURL string, ddJwtToken string) (string, error) {
+	var configBase64 *string
+	if localConfig != nil {
+		encoded := base64.StdEncoding.EncodeToString([]byte(*localConfig))
+		configBase64 = &encoded
+	}
+
+	resp, err := postGetMergedConfig(repoURL, configBase64, getDatadogBaseURL(ddBaseURL), ddJwtToken)
+	if err != nil {
+		return "", err
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(resp.ConfigBase64)
+	if err != nil {
+		return "", fmt.Errorf("[PostGetMergedConfig] failed to decode response: %w", err)
+	}
+
+	return string(decoded), nil
 }
 
 func postGetMergedConfig(repoURL string, configBase64 *string, baseURL string, ddJwtToken string) (GetMergedConfigResponse, error) {

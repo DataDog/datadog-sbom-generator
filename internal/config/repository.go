@@ -8,7 +8,6 @@ import (
 
 const remoteName = "origin"
 
-// GetRepositoryURL opens the git repository at dir and returns the URL of the "origin" remote.
 func GetRepositoryURL(dir string) (string, error) {
 	repo, err := git.PlainOpen(dir)
 	if err != nil {
