@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -8,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/config"
 	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
+	ddhttp "github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
@@ -36,14 +39,15 @@ import (
 )
 
 type ScannerActions struct {
-	DirectoryPaths []string
-	ExcludePaths   []string
-	Recursive      bool
-	NoIgnore       bool
-	Reachability   bool
-	Debug          bool
-	EnableParsers  []string
-	DDEnvVars      DDEnvVars
+	DirectoryPaths      []string
+	ExcludePaths        []string
+	Recursive           bool
+	NoIgnore            bool
+	Reachability        bool
+	Debug               bool
+	EnableParsers       []string
+	DDEnvVars           DDEnvVars
+	ExitOnConfigFailure bool
 }
 
 type DDEnvVars struct {
@@ -246,6 +250,86 @@ func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[
 	return result
 }
 
+// fetchConfigExclusions fetches exclusion paths from the unified configuration system.
+// It reads the local code-security.datadog.yaml, calls the Get Merged endpoint if auth is available,
+// and returns the ignore-paths from the merged (or local) config.
+func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure bool, r reporter.Reporter) ([]string, error) {
+	// Read local config file
+	localContents, err := config.ReadConfigFile(dir)
+	hasLocalConfig := err == nil
+
+	// Check if we can make API calls
+	hasAuth := ddhttp.HasDatadogAuth(ddEnvVars.JwtToken)
+
+	// Get repository URL for API call
+	repoURL, repoErr := config.GetRepositoryURL(dir)
+	hasRepo := repoErr == nil
+
+	// If no auth and no local config, nothing to do
+	if !hasAuth && !hasLocalConfig {
+		return nil, nil
+	}
+
+	// If we have a local config but can't make API calls, use local only
+	if !hasAuth {
+		r.Infof("[config] No Datadog authentication available, using local configuration only\n")
+		return parseIgnorePaths(localContents, r)
+	}
+
+	// If we have auth but no repo URL, fall back to local config
+	if !hasRepo {
+		if hasLocalConfig {
+			r.Infof("[config] No git remote found, using local configuration only\n")
+			return parseIgnorePaths(localContents, r)
+		}
+		return nil, nil
+	}
+
+	// Build request: base64-encode local config if present
+	var configBase64 *string
+	if hasLocalConfig {
+		encoded := base64.StdEncoding.EncodeToString([]byte(localContents))
+		configBase64 = &encoded
+	}
+
+	// Call Get Merged endpoint
+	r.Infof("[config] Fetching merged configuration for %s\n", repoURL)
+	resp, err := ddhttp.PostGetMergedConfig(repoURL, configBase64, ddEnvVars.BaseURL, ddEnvVars.JwtToken)
+	if err != nil {
+		if exitOnConfigFailure {
+			return nil, fmt.Errorf("failed to fetch merged configuration: %w", ErrAPIFailed)
+		}
+		r.Warnf("[config] Failed to fetch merged configuration: %v\n", err)
+		r.Warnf("[config] Continuing with local configuration\n")
+		if hasLocalConfig {
+			return parseIgnorePaths(localContents, r)
+		}
+		return nil, nil
+	}
+
+	// Decode and parse merged config
+	decoded, err := base64.StdEncoding.DecodeString(resp.ConfigBase64)
+	if err != nil {
+		r.Warnf("[config] Failed to decode merged configuration: %v\n", err)
+		if hasLocalConfig {
+			return parseIgnorePaths(localContents, r)
+		}
+		return nil, nil
+	}
+
+	return parseIgnorePaths(string(decoded), r)
+}
+
+// parseIgnorePaths extracts sca.ignore-paths from a config file's YAML contents.
+func parseIgnorePaths(contents string, r reporter.Reporter) ([]string, error) {
+	cfg, err := config.ParseConfig(contents)
+	if err != nil {
+		r.Warnf("[config] Failed to parse configuration: %v\n", err)
+		return nil, nil
+	}
+	return cfg.SCA.IgnorePaths, nil
+}
+
 // DoScan Perform datadog-sbom-generator scan action, with optional reporter to output information
 func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityResults, error) {
 	if len(actions.DirectoryPaths) == 0 {
@@ -256,6 +340,21 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	if r == nil {
 		r = &reporter.VoidReporter{}
+	}
+
+	// Fetch exclusions from unified configuration
+	configExclusions, err := fetchConfigExclusions(actions.DirectoryPaths[0], actions.DDEnvVars, actions.ExitOnConfigFailure, r)
+	if err != nil {
+		return models.VulnerabilityResults{}, err
+	}
+
+	if len(configExclusions) > 0 {
+		// Log when both CLI flag and config exclusions are set
+		if len(actions.ExcludePaths) > 0 {
+			r.Infof("[config] Merging exclusions from --exclude flag and configuration file\n")
+		}
+		// Union exclusions from config with CLI --exclude flag
+		actions.ExcludePaths = append(actions.ExcludePaths, configExclusions...)
 	}
 
 	var scannedPackages []lockfile.PackageDetails
