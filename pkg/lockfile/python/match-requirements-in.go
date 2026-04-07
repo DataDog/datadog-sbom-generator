@@ -170,13 +170,14 @@ func extractPackageNameFromRequirementsLine(line string) string {
 //	"foo==12.0"                            → "12.0"  (not "2.0")
 //	"requests>=2.0"                        → ""
 //	"requests!=2.0"                        → ""
+//	"requests===2.0"                       → ""  (arbitrary equality; treated as no pin)
 func extractPinnedVersionFromLine(line string) string {
 	// Strip environment markers so python_version=='x' is not treated as a pin.
 	if i := strings.IndexByte(line, ';'); i != -1 {
 		line = line[:i]
 	}
 	for i := range len(line) - 1 {
-		if line[i] == '=' && line[i+1] == '=' && (i == 0 || line[i-1] != '!') {
+		if line[i] == '=' && line[i+1] == '=' && (i == 0 || line[i-1] != '!') && (i+2 >= len(line) || line[i+2] != '=') {
 			rest := strings.TrimSpace(line[i+2:])
 			// Version token ends at whitespace, comma, semicolon, or extras bracket.
 			if end := strings.IndexAny(rest, " \t,;["); end != -1 {

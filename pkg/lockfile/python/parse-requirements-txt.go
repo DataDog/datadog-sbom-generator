@@ -425,6 +425,8 @@ var RequirementsExtractor = RequirementsTxtExtractor{
 	lockfile.WithMatcher{Matchers: []lockfile.Matcher{&RequirementsInMatcher{}}},
 }
 
+var _ lockfile.Extractor = RequirementsExtractor
+
 //nolint:gochecknoinits
 func init() {
 	lockfile.RegisterExtractor(models.RequirementsFilePath, RequirementsExtractor)
