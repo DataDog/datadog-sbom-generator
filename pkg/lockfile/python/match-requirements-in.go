@@ -75,20 +75,27 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 		// When the same package name appears more than once in the .in file
 		// (e.g. marker-specific pins for different Python versions), select which
 		// packages this line should claim using a preference order:
-		//   1. Unclaimed packages whose resolved version appears literally in this line
-		//      (handles exact-pinned duplicates like "requests==2.0" / "requests==3.5").
-		//   2. Any remaining unclaimed packages (handles range constraints).
+		//   1. Unclaimed packages whose resolved version exactly matches the pin on
+		//      this line (the version after "==").  Exact comparison avoids substring
+		//      false-positives (e.g. "2.0" matching inside "12.0" or in marker text).
+		//   2. ONE unclaimed package in fallback, for range/URL constraints where no
+		//      exact pin is present.  Claiming only one means N duplicate-name lines
+		//      distribute across N resolved packages instead of collapsing onto line 1.
 		//   3. Skip — all candidates are already claimed by an earlier line.
 		var toUpdate []int
-		for _, idx := range indices {
-			if !claimed[idx] && packages[idx].Version != "" && strings.Contains(trimmedLine, packages[idx].Version) {
-				toUpdate = append(toUpdate, idx)
+		pinnedVersion := extractPinnedVersionFromLine(trimmedLine)
+		if pinnedVersion != "" {
+			for _, idx := range indices {
+				if !claimed[idx] && packages[idx].Version == pinnedVersion {
+					toUpdate = append(toUpdate, idx)
+				}
 			}
 		}
 		if len(toUpdate) == 0 {
 			for _, idx := range indices {
 				if !claimed[idx] {
 					toUpdate = append(toUpdate, idx)
+					break // one per line — prevents all same-name packages collapsing onto the first range line
 				}
 			}
 		}
@@ -147,6 +154,38 @@ func extractPackageNameFromRequirementsLine(line string) string {
 	}
 
 	return strings.TrimSpace(line)
+}
+
+// extractPinnedVersionFromLine returns the version string following a bare "=="
+// operator in a requirements specifier, or "" if no exact pin is present.
+// Environment markers (everything after ";") are stripped first so that
+// expressions like python_version=='3.11' in marker text are not mistaken for
+// a version pin.
+//
+// Examples:
+//
+//	"requests==2.32.3"                     → "2.32.3"
+//	"requests[security]==2.32.3"           → "2.32.3"
+//	"requests==2.32.3; python_version>='3'" → "2.32.3"
+//	"foo==12.0"                            → "12.0"  (not "2.0")
+//	"requests>=2.0"                        → ""
+//	"requests!=2.0"                        → ""
+func extractPinnedVersionFromLine(line string) string {
+	// Strip environment markers so python_version=='x' is not treated as a pin.
+	if i := strings.IndexByte(line, ';'); i != -1 {
+		line = line[:i]
+	}
+	for i := 0; i < len(line)-1; i++ {
+		if line[i] == '=' && line[i+1] == '=' && (i == 0 || line[i-1] != '!') {
+			rest := strings.TrimSpace(line[i+2:])
+			// Version token ends at whitespace, comma, semicolon, or extras bracket.
+			if end := strings.IndexAny(rest, " \t,;["); end != -1 {
+				return rest[:end]
+			}
+			return rest
+		}
+	}
+	return ""
 }
 
 var _ lockfile.Matcher = RequirementsInMatcher{}

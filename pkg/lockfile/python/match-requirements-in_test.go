@@ -297,6 +297,147 @@ func TestRequirementsInMatcher_Match_DuplicateNameDifferentVersions(t *testing.T
 	})
 }
 
+func TestRequirementsInMatcher_Match_SubstringVersionAmbiguity(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-substring-version/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// "2.0" is a substring of "12.0"; substring matching would wrongly claim foo@2.0
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "foo",
+			Version:        "2.0",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "foo",
+			Version:        "12.0",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// foo@2.0 is NOT pinned by "foo==12.0" — must remain unmatched
+			Name:           "foo",
+			Version:        "2.0",
+			PackageManager: models.Requirements,
+		},
+		{
+			// foo@12.0 is the exact pin — gets the location
+			Name:           "foo",
+			Version:        "12.0",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 10},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 4},
+				Filename: sourcefilePath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 6, End: 10},
+				Filename: sourcefilePath,
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestRequirementsInMatcher_Match_RangeConstraintFallback(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/pip/with-in-file-range-constraints/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"requirements.in"))
+
+	sourceFile, err := lockfile.OpenLocalDepFile(basePath + "requirements.in")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Two range constraints for the same package name — fallback must distribute
+	// one resolved package per line rather than collapsing both onto line 1.
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "foo",
+			Version:        "1.5",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "foo",
+			Version:        "2.3",
+			PackageManager: models.Requirements,
+		},
+	}
+	err = requirementsInMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			// foo>=1 on line 1 — first unclaimed package gets this line
+			Name:           "foo",
+			Version:        "1.5",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 7},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 4},
+				Filename: sourcefilePath,
+			},
+			// VersionLocation nil: "1.5" not present in "foo>=1"
+			IsDirect: true,
+		},
+		{
+			// foo>=2 on line 2 — second unclaimed package gets this line
+			Name:           "foo",
+			Version:        "2.3",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 7},
+				Filename: sourcefilePath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 4},
+				Filename: sourcefilePath,
+			},
+			// VersionLocation nil: "2.3" not present in "foo>=2"
+			IsDirect: true,
+		},
+	})
+}
+
 func TestRequirementsInMatcher_Match_DirectURLReference(t *testing.T) {
 	t.Parallel()
 
