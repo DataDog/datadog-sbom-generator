@@ -175,16 +175,18 @@ func extractPinnedVersionFromLine(line string) string {
 	if i := strings.IndexByte(line, ';'); i != -1 {
 		line = line[:i]
 	}
-	for i := 0; i < len(line)-1; i++ {
+	for i := range len(line) - 1 {
 		if line[i] == '=' && line[i+1] == '=' && (i == 0 || line[i-1] != '!') {
 			rest := strings.TrimSpace(line[i+2:])
 			// Version token ends at whitespace, comma, semicolon, or extras bracket.
 			if end := strings.IndexAny(rest, " \t,;["); end != -1 {
 				return rest[:end]
 			}
+
 			return rest
 		}
 	}
+
 	return ""
 }
 
