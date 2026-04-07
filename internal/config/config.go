@@ -31,8 +31,10 @@ func ReadConfigFile(dir string) (string, error) {
 			if errors.Is(err, os.ErrNotExist) {
 				continue
 			}
+
 			return "", fmt.Errorf("could not read configuration file %s: %w", configPath, err)
 		}
+
 		return string(data), nil
 	}
 
@@ -44,5 +46,6 @@ func ParseConfig(data string) (*CodeSecurityConfig, error) {
 	if err := yaml.Unmarshal([]byte(data), &config); err != nil {
 		return nil, fmt.Errorf("could not parse configuration file: %w", err)
 	}
+
 	return &config, nil
 }

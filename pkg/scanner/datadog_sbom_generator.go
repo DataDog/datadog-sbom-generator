@@ -270,6 +270,7 @@ func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure 
 			r.Infof("[config] No git remote found, using local configuration only\n")
 			return parseIgnorePaths(localContents, r)
 		}
+
 		return nil, nil
 	}
 
@@ -289,6 +290,7 @@ func fetchConfigExclusions(dir string, ddEnvVars DDEnvVars, exitOnConfigFailure 
 		if hasLocalConfig {
 			return parseIgnorePaths(localContents, r)
 		}
+
 		return nil, nil
 	}
 
@@ -301,6 +303,7 @@ func parseIgnorePaths(contents string, r reporter.Reporter) ([]string, error) {
 		r.Warnf("[config] Failed to parse configuration: %v\n", err)
 		return nil, nil
 	}
+
 	return cfg.SCA.IgnorePaths, nil
 }
 

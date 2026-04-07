@@ -11,7 +11,9 @@ func TestReadConfigFile_YAML(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	content := "schema-version: v1.1\nsca:\n  ignore-paths:\n    - vendor/**\n"
-	os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(content), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(content), 0o600); err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
 
 	got, err := ReadConfigFile(dir)
 	if err != nil {
@@ -26,7 +28,9 @@ func TestReadConfigFile_YML(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	content := "schema-version: v1.1\n"
-	os.WriteFile(filepath.Join(dir, "code-security.datadog.yml"), []byte(content), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "code-security.datadog.yml"), []byte(content), 0o600); err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
 
 	got, err := ReadConfigFile(dir)
 	if err != nil {
@@ -42,8 +46,12 @@ func TestReadConfigFile_YAMLTakesPrecedence(t *testing.T) {
 	dir := t.TempDir()
 	yamlContent := "yaml-file\n"
 	ymlContent := "yml-file\n"
-	os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(yamlContent), 0o644)
-	os.WriteFile(filepath.Join(dir, "code-security.datadog.yml"), []byte(ymlContent), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(yamlContent), 0o600); err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "code-security.datadog.yml"), []byte(ymlContent), 0o600); err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
 
 	got, err := ReadConfigFile(dir)
 	if err != nil {
