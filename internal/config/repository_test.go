@@ -30,7 +30,7 @@ func TestFindRepositorySuccess(t *testing.T) {
 		t.Fatalf("failed to create remote: %v", err)
 	}
 
-	got, err := FindRepository(dir)
+	got, err := findRepositoryRoot(dir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -38,9 +38,33 @@ func TestFindRepositorySuccess(t *testing.T) {
 	if got.RootDir != dir {
 		t.Fatalf("RootDir = %q, want %q", got.RootDir, dir)
 	}
+}
 
-	if got.RemoteURL != "https://github.com/DataDog/example-repo" {
-		t.Fatalf("RemoteURL = %q, want %q", got.RemoteURL, "https://github.com/DataDog/example-repo")
+func TestFindRepositoryRemoteURLSuccess(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	repo, err := git.PlainInit(dir, false)
+	if err != nil {
+		t.Fatalf("failed to init repo: %v", err)
+	}
+
+	_, err = repo.CreateRemote(&gitconfig.RemoteConfig{
+		Name: remoteName,
+		URLs: []string{"https://github.com/DataDog/example-repo"},
+	})
+	if err != nil {
+		t.Fatalf("failed to create remote: %v", err)
+	}
+
+	got, err := findRepositoryRemoteURL(dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got != "https://github.com/DataDog/example-repo" {
+		t.Fatalf("got %q, want %q", got, "https://github.com/DataDog/example-repo")
 	}
 }
 
@@ -67,17 +91,13 @@ func TestFindRepositoryFromNestedPath(t *testing.T) {
 		t.Fatalf("failed to create nested directory: %v", err)
 	}
 
-	got, err := FindRepository(nestedDir)
+	got, err := findRepositoryRoot(nestedDir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	if got.RootDir != dir {
 		t.Fatalf("RootDir = %q, want %q", got.RootDir, dir)
-	}
-
-	if got.RemoteURL != "https://github.com/DataDog/example-repo" {
-		t.Fatalf("RemoteURL = %q, want %q", got.RemoteURL, "https://github.com/DataDog/example-repo")
 	}
 }
 
@@ -86,7 +106,7 @@ func TestFindRepositoryNotAGitRepo(t *testing.T) {
 
 	dir := t.TempDir()
 
-	_, err := FindRepository(dir)
+	_, err := findRepositoryRoot(dir)
 	if err == nil {
 		t.Fatal("expected error for non-git directory, got nil")
 	}
@@ -102,7 +122,12 @@ func TestFindRepositoryNoOriginRemote(t *testing.T) {
 		t.Fatalf("failed to init repo: %v", err)
 	}
 
-	_, err = FindRepository(dir)
+	_, err = findRepositoryRoot(dir)
+	if err != nil {
+		t.Fatalf("expected repo root lookup to succeed without origin remote, got %v", err)
+	}
+
+	_, err = findRepositoryRemoteURL(dir)
 	if err == nil {
 		t.Fatal("expected error for repo without origin remote, got nil")
 	}

@@ -20,7 +20,7 @@ func TestReadLocalConfigContentsYAML(t *testing.T) {
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	got, err := ReadLocalConfigContents(dir)
+	got, err := readLocalConfigContents(dir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -40,7 +40,7 @@ func TestReadLocalConfigContentsYML(t *testing.T) {
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	got, err := ReadLocalConfigContents(dir)
+	got, err := readLocalConfigContents(dir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -55,7 +55,7 @@ func TestReadLocalConfigContentsNotFound(t *testing.T) {
 
 	dir := t.TempDir()
 
-	_, err := ReadLocalConfigContents(dir)
+	_, err := readLocalConfigContents(dir)
 	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("expected os.ErrNotExist, got %v", err)
 	}
@@ -66,7 +66,7 @@ func TestParseValid(t *testing.T) {
 
 	contents := "schema-version: v1.1\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n"
 
-	cfg, err := Parse(contents)
+	cfg, err := parseUnifiedConfig(contents)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -93,7 +93,7 @@ func TestParseNoSCASection(t *testing.T) {
 
 	contents := "schema-version: v1.1\n"
 
-	cfg, err := Parse(contents)
+	cfg, err := parseUnifiedConfig(contents)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -108,7 +108,7 @@ func TestParseMalformedYAML(t *testing.T) {
 
 	contents := ":\n  invalid: [yaml\n"
 
-	_, err := Parse(contents)
+	_, err := parseUnifiedConfig(contents)
 	if err == nil {
 		t.Fatal("expected error for malformed YAML, got nil")
 	}

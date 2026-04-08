@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/config"
 	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
@@ -256,6 +257,11 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	if r == nil {
 		r = &reporter.VoidReporter{}
+	}
+
+	_, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, r)
+	if err != nil {
+		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
 	}
 
 	var scannedPackages []lockfile.PackageDetails
