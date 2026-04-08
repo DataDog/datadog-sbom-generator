@@ -13,7 +13,7 @@ import (
 
 const (
 	mixPackageManager      = models.Hex
-	mixOfficiallySupported = false
+	mixOfficiallySupported = true
 )
 
 type MixLockExtractor struct{}
