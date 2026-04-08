@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -24,23 +25,23 @@ func TestMatchCLIExclusion(t *testing.T) {
 		{
 			name:            "matches nested file pattern",
 			scanRoot:        "project",
-			path:            "project/subdir/file.txt",
-			cliExcludePaths: []string{"subdir/*"},
+			path:            filepath.Join("project", "subdir", "file.txt"),
+			cliExcludePaths: []string{filepath.Join("subdir", "*")},
 			expectedMatched: true,
-			expectedPattern: "subdir/*",
+			expectedPattern: filepath.Join("subdir", "*"),
 		},
 		{
 			name:            "matches test directory exclusion",
 			scanRoot:        "project",
-			path:            "project/tests/package-lock.json",
-			cliExcludePaths: []string{"tests/*"},
+			path:            filepath.Join("project", "tests", "package-lock.json"),
+			cliExcludePaths: []string{filepath.Join("tests", "*")},
 			expectedMatched: true,
-			expectedPattern: "tests/*",
+			expectedPattern: filepath.Join("tests", "*"),
 		},
 		{
 			name:            "does not use prefix matching for plain paths",
 			scanRoot:        "project",
-			path:            "project/tests/unit/package-lock.json",
+			path:            filepath.Join("project", "tests", "unit", "package-lock.json"),
 			cliExcludePaths: []string{"tests"},
 			expectedMatched: false,
 			expectedPattern: "",
@@ -48,7 +49,7 @@ func TestMatchCLIExclusion(t *testing.T) {
 		{
 			name:            "invalid pattern returns error",
 			scanRoot:        "project",
-			path:            "project/file.txt",
+			path:            filepath.Join("project", "file.txt"),
 			cliExcludePaths: []string{"["},
 			expectError:     true,
 		},

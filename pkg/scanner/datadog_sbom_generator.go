@@ -134,21 +134,17 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
-				shouldExcludePath, pattern, err := matchCLIExclusion(scanRoot, path, cliExcludePaths)
+				match, err := matchExclusion(r, scanRoot, repoRoot, path, cliExcludePaths, configExcludePaths)
 				if err != nil {
 					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
 				}
-				if shouldExcludePath {
-					r.Infof("Skipping %s with exclusion rule: %s\n", path, pattern)
-					return nil
-				}
+				if match != nil {
+					if match.source == exclusionSourceConfig {
+						r.Infof("Skipping %s with config exclusion rule: %s\n", path, match.pattern)
+					} else {
+						r.Infof("Skipping %s with exclusion rule: %s\n", path, match.pattern)
+					}
 
-				shouldExcludePath, pattern, err = matchConfigExclusion(repoRoot, path, configExcludePaths, r)
-				if err != nil {
-					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
-				}
-				if shouldExcludePath {
-					r.Infof("Skipping %s with config exclusion rule: %s\n", path, pattern)
 					return nil
 				}
 

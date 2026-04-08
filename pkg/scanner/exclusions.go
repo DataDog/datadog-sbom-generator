@@ -10,6 +10,47 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
+type exclusionMatch struct {
+	pattern string
+	source  exclusionSource
+}
+
+type exclusionSource string
+
+const (
+	exclusionSourceCLI    exclusionSource = "cli"
+	exclusionSourceConfig exclusionSource = "config"
+)
+
+// matchExclusion checks both exclusion sources for a scanned file.
+func matchExclusion(r reporter.Reporter, scanRoot string, repoRoot string, path string, cliExcludePaths []string, configExcludePaths []string) (*exclusionMatch, error) {
+	if len(cliExcludePaths) == 0 && len(configExcludePaths) == 0 {
+		return nil, nil
+	}
+
+	if len(cliExcludePaths) > 0 {
+		shouldExcludePath, pattern, err := matchCLIExclusion(scanRoot, path, cliExcludePaths)
+		if err != nil {
+			return nil, err
+		}
+		if shouldExcludePath {
+			return &exclusionMatch{pattern: pattern, source: exclusionSourceCLI}, nil
+		}
+	}
+
+	if len(configExcludePaths) > 0 {
+		shouldExcludePath, pattern, err := matchConfigExclusion(repoRoot, path, configExcludePaths, r)
+		if err != nil {
+			return nil, err
+		}
+		if shouldExcludePath {
+			return &exclusionMatch{pattern: pattern, source: exclusionSourceConfig}, nil
+		}
+	}
+
+	return nil, nil
+}
+
 // matchCLIExclusion applies CLI --exclude patterns relative to the current scan root.
 func matchCLIExclusion(scanRoot string, path string, cliExcludePaths []string) (bool, string, error) {
 	return fileposition.ShouldExcludePath(scanRoot, path, cliExcludePaths)
