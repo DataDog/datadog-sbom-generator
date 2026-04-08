@@ -13,7 +13,7 @@ import (
 
 const getMergedConfigPath = "api/v2/static-analysis/config/client"
 const schemaVersionQueryParam = "schema_version"
-const schemaVersion = "v1.1"
+const schemaVersion = "v1" // major version only — the API rejects minor versions (e.g. "v1.1")
 
 type GetMergedConfigRequest struct {
 	ID           string  `json:"id"            jsonapi:"primary,config"`
