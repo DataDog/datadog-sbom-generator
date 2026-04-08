@@ -76,7 +76,13 @@ var ErrAPIFailed = models.ErrAPIFailed
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, excludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+	scanRoot := dir
+	// Normalize the scan root once before exclusion matching.
+	if absPath, err := filepath.Abs(dir); err == nil {
+		scanRoot = absPath
+	}
+
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -128,13 +134,21 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
-				// Check if the file matches any of the excluded glob patterns
-				shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, rawPath, excludePaths)
+				shouldExcludePath, pattern, err := matchCLIExclusion(scanRoot, path, cliExcludePaths)
 				if err != nil {
 					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
 				}
 				if shouldExcludePath {
 					r.Infof("Skipping %s with exclusion rule: %s\n", path, pattern)
+					return nil
+				}
+
+				shouldExcludePath, pattern, err = matchConfigExclusion(repoRoot, path, configExcludePaths, r)
+				if err != nil {
+					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
+				}
+				if shouldExcludePath {
+					r.Infof("Skipping %s with config exclusion rule: %s\n", path, pattern)
 					return nil
 				}
 
@@ -261,7 +275,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	_, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
+	configExcludePaths, repoRoot, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
 	if err != nil {
 		if errors.Is(err, models.ErrAPIFailed) {
 			return models.VulnerabilityResults{}, ErrAPIFailed
@@ -282,7 +296,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			absolutePath = absPath
 		}
 		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
-		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths)
+		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, configExcludePaths)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}

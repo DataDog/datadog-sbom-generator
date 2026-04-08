@@ -38,9 +38,10 @@ func TestFetchExclusionsUsesLocalConfigWithoutAuth(t *testing.T) {
 	mockReporter.EXPECT().Infof("[config] No Datadog authentication available, using local configuration only\n").Times(1)
 	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
 
-	exclusions, err := FetchExclusions(dir, "", "", false, mockReporter)
+	exclusions, repoRoot, err := FetchExclusions(dir, "", "", false, mockReporter)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"vendor/**"}, exclusions)
+	assert.Equal(t, dir, repoRoot)
 }
 
 func TestFetchExclusionsUsesMergedConfigWhenAuthAndRepositoryPresent(t *testing.T) {
@@ -80,9 +81,10 @@ func TestFetchExclusionsUsesMergedConfigWhenAuthAndRepositoryPresent(t *testing.
 	mockReporter.EXPECT().Infof("[config] Fetching merged configuration for %s\n", "https://github.com/DataDog/example-repo").Times(1)
 	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
 
-	exclusions, err := FetchExclusions(dir, mockServer.URL, "jwt-token", false, mockReporter)
+	exclusions, repoRoot, err := FetchExclusions(dir, mockServer.URL, "jwt-token", false, mockReporter)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"contracts/**", "test/**"}, exclusions)
+	assert.Equal(t, dir, repoRoot)
 }
 
 func TestFetchExclusionsFallsBackToLocalConfigWhenMergedFetchFails(t *testing.T) {
@@ -112,9 +114,10 @@ func TestFetchExclusionsFallsBackToLocalConfigWhenMergedFetchFails(t *testing.T)
 	mockReporter.EXPECT().Infof("[config] Fetching merged configuration for %s\n", "https://github.com/DataDog/example-repo").Times(1)
 	mockReporter.EXPECT().Warnf("[config] Failed to fetch merged configuration, continuing with local configuration: %v\n", gomock.Any()).Times(1)
 
-	exclusions, err := FetchExclusions(dir, mockServer.URL, "jwt-token", false, mockReporter)
+	exclusions, repoRoot, err := FetchExclusions(dir, mockServer.URL, "jwt-token", false, mockReporter)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"vendor/**"}, exclusions)
+	assert.Equal(t, dir, repoRoot)
 }
 
 func TestFetchExclusionsReturnsAPIFailedWhenExitOnFetchFailureIsEnabled(t *testing.T) {
@@ -140,9 +143,10 @@ func TestFetchExclusionsReturnsAPIFailedWhenExitOnFetchFailureIsEnabled(t *testi
 	mockReporter := reporter.NewMockReporter(ctrl)
 	mockReporter.EXPECT().Infof("[config] Fetching merged configuration for %s\n", "https://github.com/DataDog/example-repo").Times(1)
 
-	exclusions, err := FetchExclusions(dir, mockServer.URL, "jwt-token", true, mockReporter)
+	exclusions, repoRoot, err := FetchExclusions(dir, mockServer.URL, "jwt-token", true, mockReporter)
 	require.ErrorIs(t, err, models.ErrAPIFailed)
 	assert.Nil(t, exclusions)
+	assert.Equal(t, dir, repoRoot)
 }
 
 func TestFetchExclusionsWarnsAndSkipsMalformedLocalConfig(t *testing.T) {
@@ -164,7 +168,8 @@ func TestFetchExclusionsWarnsAndSkipsMalformedLocalConfig(t *testing.T) {
 	mockReporter.EXPECT().Infof("[config] No Datadog authentication available, using local configuration only\n").Times(1)
 	mockReporter.EXPECT().Warnf("[config] Failed to parse configuration: %v\n", gomock.Any()).Times(1)
 
-	exclusions, err := FetchExclusions(dir, "", "", false, mockReporter)
+	exclusions, repoRoot, err := FetchExclusions(dir, "", "", false, mockReporter)
 	require.NoError(t, err)
 	assert.Nil(t, exclusions)
+	assert.Equal(t, dir, repoRoot)
 }

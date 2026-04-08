@@ -59,8 +59,9 @@ func Test_scanDir(t *testing.T) {
 
 	// Call scanDir without exclusion
 	var excludedGlobs []string
+	var configExcludedGlobs []string
 	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
-	packages, artifacts, err := scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+	packages, artifacts, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
 
 	// Validate results
 	require.NoError(t, err)
@@ -69,7 +70,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir
 	excludedGlobs = []string{filepath.Join("subdir", "*")}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 2) // Only package-lock.json and yarn.lock should be scanned (subdir/package-lock.json is excluded)
@@ -77,10 +78,79 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir and yarn.lock (precisely one file)
 	excludedGlobs = []string{filepath.Join("subdir", "*"), "yarn.lock"}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, true, false, enabledParsers, excludedGlobs)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 1) // Only package-lock.json should be scanned (yarn.lock and subdir/package-lock.json is excluded)
+	assert.Empty(t, artifacts)
+}
+
+func Test_scanDir_ConfigExclusionsUseRepositoryRoot(t *testing.T) {
+	t.Parallel()
+
+	repoRoot := t.TempDir()
+	scanDirPath := filepath.Join(repoRoot, "subdir")
+
+	require.NoError(t, os.Mkdir(scanDirPath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(repoRoot, "package-lock.json"), []byte(packageJSONLock), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(scanDirPath, "package-lock.json"), []byte(packageJSONLock), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(scanDirPath, "yarn.lock"), []byte(yarnLock), 0o600))
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Verbosef(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
+	packages, artifacts, err := scanDir(mockReporter, scanDirPath, repoRoot, true, false, enabledParsers, nil, []string{"subdir/*"})
+
+	require.NoError(t, err)
+	assert.Empty(t, packages)
+	assert.Empty(t, artifacts)
+}
+
+func Test_scanDir_ConfigExclusionsSupportPrefixAndDoublestarMatching(t *testing.T) {
+	t.Parallel()
+
+	repoRoot := t.TempDir()
+	scanDirPath := filepath.Join(repoRoot, "subdir")
+
+	require.NoError(t, os.MkdirAll(filepath.Join(scanDirPath, "dist"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(scanDirPath, "distribution"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(scanDirPath, "nested"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(scanDirPath, "dist", "package-lock.json"), []byte(packageJSONLock), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(scanDirPath, "distribution", "package-lock.json"), []byte(packageJSONLock), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(scanDirPath, "nested", "yarn.lock"), []byte(yarnLock), 0o600))
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Verbosef(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
+	packages, artifacts, err := scanDir(
+		mockReporter,
+		scanDirPath,
+		repoRoot,
+		true,
+		false,
+		enabledParsers,
+		nil,
+		[]string{"subdir/dist", "subdir/**/*.lock"},
+	)
+
+	require.NoError(t, err)
+	assert.Len(t, packages, 1)
+	assert.Equal(t, "package-lock.json", filepath.Base(packages[0].Source.Path))
+	assert.Contains(t, packages[0].Source.Path, filepath.Join("distribution", "package-lock.json"))
 	assert.Empty(t, artifacts)
 }
 
