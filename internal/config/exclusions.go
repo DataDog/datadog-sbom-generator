@@ -5,12 +5,13 @@ import (
 	"os"
 
 	ddhttp "github.com/DataDog/datadog-sbom-generator/internal/http"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 // FetchExclusions returns ignore-path exclusions from local unified config and,
 // when Datadog authentication is available, from the merged remote config.
-func FetchExclusions(dir string, baseURL string, jwtToken string, r reporter.Reporter) ([]string, error) {
+func FetchExclusions(dir string, baseURL string, jwtToken string, exitOnFetchFailure bool, r reporter.Reporter) ([]string, error) {
 	localConfig := readLocalConfig(dir, r)
 
 	hasDatadogAuth := ddhttp.HasDatadogAuth(jwtToken)
@@ -35,6 +36,10 @@ func FetchExclusions(dir string, baseURL string, jwtToken string, r reporter.Rep
 	r.Infof("[config] Fetching merged configuration for %s\n", remoteURL)
 	mergedConfig, err := ddhttp.PostGetMergedConfig(remoteURL, localConfig, baseURL, jwtToken)
 	if err != nil {
+		if exitOnFetchFailure {
+			return nil, models.ErrAPIFailed
+		}
+
 		if localConfig != nil {
 			r.Warnf("[config] Failed to fetch merged configuration, continuing with local configuration: %v\n", err)
 			return extractIgnorePaths(localConfig, r), nil

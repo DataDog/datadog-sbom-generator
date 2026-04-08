@@ -37,14 +37,15 @@ import (
 )
 
 type ScannerActions struct {
-	DirectoryPaths []string
-	ExcludePaths   []string
-	Recursive      bool
-	NoIgnore       bool
-	Reachability   bool
-	Debug          bool
-	EnableParsers  []string
-	DDEnvVars      DDEnvVars
+	DirectoryPaths      []string
+	ExcludePaths        []string
+	Recursive           bool
+	NoIgnore            bool
+	Reachability        bool
+	Debug               bool
+	EnableParsers       []string
+	DDEnvVars           DDEnvVars
+	ExitOnConfigFailure bool
 }
 
 type DDEnvVars struct {
@@ -68,8 +69,9 @@ var NoPackagesFoundErr = errors.New("no packages found in scan")
 //nolint:errname,stylecheck // Would require version major bump to change
 var VulnerabilitiesFoundErr = errors.New("vulnerabilities found")
 
-// ErrAPIFailed describes errors related to querying API endpoints.
-var ErrAPIFailed = errors.New("API query failed")
+// ErrAPIFailed is kept in scanner for compatibility; the canonical sentinel
+// lives in models.
+var ErrAPIFailed = models.ErrAPIFailed
 
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
@@ -259,8 +261,11 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	_, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, r)
+	_, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
 	if err != nil {
+		if errors.Is(err, models.ErrAPIFailed) {
+			return models.VulnerabilityResults{}, ErrAPIFailed
+		}
 		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
 	}
 

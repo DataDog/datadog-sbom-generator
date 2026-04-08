@@ -85,6 +85,11 @@ Examples:
 				Usage: "format output with indentation and newlines for readability",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  "exit-on-config-failure",
+				Usage: "stop scanning if fetching merged configuration fails",
+				Value: false,
+			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
 		Action: func(c *cli.Context) error {
@@ -120,12 +125,13 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 	}
 
 	vulnResult, err := scanner.DoScan(scanner.ScannerActions{
-		Recursive:      !context.Bool("not-recursive"),
-		NoIgnore:       context.Bool("no-ignore"),
-		Reachability:   context.Bool("reachability"),
-		DirectoryPaths: context.Args().Slice(),
-		ExcludePaths:   context.StringSlice("exclude"),
-		EnableParsers:  context.StringSlice("enable-parsers"),
+		Recursive:           !context.Bool("not-recursive"),
+		NoIgnore:            context.Bool("no-ignore"),
+		Reachability:        context.Bool("reachability"),
+		DirectoryPaths:      context.Args().Slice(),
+		ExcludePaths:        context.StringSlice("exclude"),
+		EnableParsers:       context.StringSlice("enable-parsers"),
+		ExitOnConfigFailure: context.Bool("exit-on-config-failure"),
 	}, r)
 
 	if err != nil && !errors.Is(err, scanner.NoPackagesFoundErr) && !errors.Is(err, scanner.VulnerabilitiesFoundErr) {
