@@ -126,8 +126,7 @@ func TestMatchConfigExclusion(t *testing.T) {
 			mockReporter := reporter.NewMockReporter(ctrl)
 			mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-			matched, pattern, err := matchConfigExclusion(tt.repoRoot, tt.path, tt.configExcludePaths, mockReporter)
-			require.NoError(t, err)
+			matched, pattern := matchConfigExclusion(tt.repoRoot, tt.path, tt.configExcludePaths, mockReporter)
 			assert.Equal(t, tt.expectedMatched, matched)
 			assert.Equal(t, tt.expectedPattern, pattern)
 		})

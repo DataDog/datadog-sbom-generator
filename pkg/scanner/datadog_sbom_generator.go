@@ -334,7 +334,12 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
-	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(actions.Reachability, r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+	var reachabilityAnalysis models.ReachabilityAnalysis
+	if actions.Reachability {
+		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, configExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+	} else {
+		r.Infof("[reachability] Reachability analysis is disabled")
+	}
 
 	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 
