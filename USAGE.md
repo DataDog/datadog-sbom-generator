@@ -30,17 +30,18 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 
 #### Flags
 
-| Flag               | Aliases | Default         | Description                                                       |
-| ------------------ | ------- | --------------- | ----------------------------------------------------------------- |
-| `--format`         | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                 |
-| `--output`         | `-o`    | stdout          | Save output to specified file path                                |
-| `--verbosity`      | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`         |
-| `--not-recursive`  |         | `false`         | Do not scan subdirectories                                        |
-| `--no-ignore`      |         | `false`         | Scan files normally ignored by .gitignore                         |
-| `--reachability`   |         | `false`         | Enable reachability analysis                                      |
-| `--enable-parsers` |         | (all)           | Filter by lockfile name, package manager, or language (see below) |
-| `--exclude`        |         | (none)          | Exclude paths using glob patterns (comma-separated)               |
-| `--pretty`         |         | `false`         | Format JSON output with indentation                               |
+| Flag                       | Aliases | Default         | Description                                                       |
+| -------------------------- | ------- | --------------- | ----------------------------------------------------------------- |
+| `--format`                 | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                 |
+| `--output`                 | `-o`    | stdout          | Save output to specified file path                                |
+| `--verbosity`              | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`         |
+| `--not-recursive`          |         | `false`         | Do not scan subdirectories                                        |
+| `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                         |
+| `--reachability`           |         | `false`         | Enable reachability analysis                                      |
+| `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below) |
+| `--exclude`                |         | (none)          | Exclude paths using glob patterns (relative to scanned directory) |
+| `--pretty`                 |         | `false`         | Format JSON output with indentation                               |
+| `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails         |
 
 #### Examples
 
@@ -77,6 +78,15 @@ datadog-sbom-generator scan --enable-parsers npm,poetry .
 datadog-sbom-generator scan --enable-parsers "package-lock.json,yarn.lock" .
 ```
 
+**Unified configuration:**
+
+The scanner automatically reads `code-security.datadog.yaml` (or `.yml`) from the repository root and applies any `sca.ignore-paths` exclusions. When Datadog authentication is available (`DD_API_KEY` + `DD_APP_KEY`), the local config is sent to the Datadog API and merged with org- and repo-level settings before exclusions are applied.
+
+```bash
+# Fail hard if the merged config API is unavailable (useful in strict CI pipelines)
+datadog-sbom-generator scan --exit-on-config-failure .
+```
+
 **Advanced options:**
 
 ```bash
@@ -96,6 +106,8 @@ datadog-sbom-generator scan --reachability .
 # Scan multiple directories in one run
 datadog-sbom-generator scan /path/to/project1 /path/to/project2
 ```
+
+> **Note:** When scanning multiple directories, unified config exclusions are resolved from the first directory only. If the directories span separate repositories, exclusions for subsequent directories may be incorrect.
 
 ### parsers
 
