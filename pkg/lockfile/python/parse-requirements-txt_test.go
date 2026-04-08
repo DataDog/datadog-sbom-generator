@@ -2228,3 +2228,178 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 		},
 	})
 }
+
+func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	txtPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/pip/with-in-file/requirements.txt"))
+	inPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/pip/with-in-file/requirements.in"))
+
+	packages, err := python.ParseRequirementsTxt(txtPath)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "certifi",
+			Version:        "2024.8.30",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 19},
+				Filename: txtPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: txtPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 10, End: 19},
+				Filename: txtPath,
+			},
+			DepGroups: []string{"requirements"},
+		},
+		{
+			Name:           "charset-normalizer",
+			Version:        "3.4.0",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 26},
+				Filename: txtPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 1, End: 19},
+				Filename: txtPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 21, End: 26},
+				Filename: txtPath,
+			},
+			DepGroups: []string{"requirements"},
+		},
+		{
+			// Direct dep: location remapped to .in file by matcher
+			Name:           "flask",
+			Version:        "3.0.3",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 13},
+				Filename: inPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 6},
+				Filename: inPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 8, End: 13},
+				Filename: inPath,
+			},
+			DepGroups: []string{"requirements"},
+			IsDirect:  true,
+		},
+		{
+			Name:           "idna",
+			Version:        "3.10",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 11},
+				Filename: txtPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 1, End: 5},
+				Filename: txtPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 7, End: 11},
+				Filename: txtPath,
+			},
+			DepGroups: []string{"requirements"},
+		},
+		{
+			// Direct dep: location remapped to .in file by matcher
+			Name:           "requests",
+			Version:        "2.32.3",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 17},
+				Filename: inPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: inPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 11, End: 17},
+				Filename: inPath,
+			},
+			DepGroups: []string{"requirements"},
+			IsDirect:  true,
+		},
+		{
+			// Direct dep: location remapped to .in file by matcher
+			// Version location nil because resolved "4.13.2" not in "typing_extensions>=4.0"
+			Name:           "typing-extensions",
+			Version:        "4.13.2",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 23},
+				Filename: inPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 3, End: 3},
+				Column:   models.Position{Start: 1, End: 18},
+				Filename: inPath,
+			},
+			DepGroups: []string{"requirements"},
+			IsDirect:  true,
+		},
+		{
+			Name:           "urllib3",
+			Version:        "2.2.3",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 1, End: 15},
+				Filename: txtPath,
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 1, End: 8},
+				Filename: txtPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 10, End: 15},
+				Filename: txtPath,
+			},
+			DepGroups: []string{"requirements"},
+		},
+	})
+}

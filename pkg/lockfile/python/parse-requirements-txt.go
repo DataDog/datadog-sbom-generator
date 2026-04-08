@@ -421,13 +421,17 @@ func parseRequirementsTxt(f lockfile.DepFile, requiredAlready map[string]struct{
 	return slices.Collect(maps.Values(packages)), nil
 }
 
-var _ lockfile.Extractor = RequirementsTxtExtractor{}
+var RequirementsExtractor = RequirementsTxtExtractor{
+	lockfile.WithMatcher{Matchers: []lockfile.Matcher{&RequirementsInMatcher{}}},
+}
+
+var _ lockfile.Extractor = RequirementsExtractor
 
 //nolint:gochecknoinits
 func init() {
-	lockfile.RegisterExtractor(models.RequirementsFilePath, RequirementsTxtExtractor{})
+	lockfile.RegisterExtractor(models.RequirementsFilePath, RequirementsExtractor)
 }
 
 func ParseRequirementsTxt(pathToLockfile string) ([]lockfile.PackageDetails, error) {
-	return lockfile.ExtractFromFile(pathToLockfile, RequirementsTxtExtractor{})
+	return lockfile.ExtractFromFile(pathToLockfile, RequirementsExtractor)
 }
