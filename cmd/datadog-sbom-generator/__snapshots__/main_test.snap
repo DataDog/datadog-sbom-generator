@@ -11353,6 +11353,8 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | .NET       | NuGet           | csproj                           |
 | .NET       | NuGet           | packages.lock.json               |
 | C++        | Conan           | conan.lock                       |
+| Dart       | Pub             | pubspec.lock                     |
+| Elixir     | Hex             | mix.lock                         |
 | Go         | Golang          | go.mod                           |
 | Java       | Gradle          | gradle.lockfile                  |
 | Java       | Gradle          | gradle/verification-metadata.xml |
@@ -15667,6 +15669,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
+      "bom-ref": "pkg:hex/plug@1.11.1",
+      "type": "library",
+      "name": "plug",
+      "version": "1.11.1",
+      "purl": "pkg:hex/plug@1.11.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Hex"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -16242,6 +16257,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
+      "type": "library",
+      "name": "back_button_interceptor",
+      "version": "6.0.1",
+      "purl": "pkg:pub/back_button_interceptor@6.0.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Pub"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",
@@ -20486,6 +20514,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
+      "bom-ref": "pkg:hex/plug@1.11.1",
+      "type": "library",
+      "name": "plug",
+      "version": "1.11.1",
+      "purl": "pkg:hex/plug@1.11.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Hex"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -21040,6 +21081,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
+      "type": "library",
+      "name": "back_button_interceptor",
+      "version": "6.0.1",
+      "purl": "pkg:pub/back_button_interceptor@6.0.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Pub"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",
@@ -25284,6 +25338,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
+      "bom-ref": "pkg:hex/plug@1.11.1",
+      "type": "library",
+      "name": "plug",
+      "version": "1.11.1",
+      "purl": "pkg:hex/plug@1.11.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Hex"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
       "type": "library",
       "name": "com.google.code.findbugs:jsr305",
@@ -25838,6 +25905,19 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
+    },
+    {
+      "bom-ref": "pkg:pub/back_button_interceptor@6.0.1",
+      "type": "library",
+      "name": "back_button_interceptor",
+      "version": "6.0.1",
+      "purl": "pkg:pub/back_button_interceptor@6.0.1",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Pub"
+        }
+      ]
     },
     {
       "bom-ref": "pkg:pypi/beautifulsoup4@4.9.3",
