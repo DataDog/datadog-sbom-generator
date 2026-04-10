@@ -72,9 +72,10 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 			}
 
 			if !shouldExcludePath {
-				shouldExcludePath, pattern, err = pathexclusion.MatchConfigExcludePath(repoRoot, absPath, configExcludePaths)
-				if err != nil {
-					r.Warnf("[reachability] Failed config exclusion of path %s: %v\n", path, err)
+				var configErrs []error
+				shouldExcludePath, pattern, configErrs = pathexclusion.MatchConfigExcludePath(repoRoot, absPath, configExcludePaths)
+				for _, configErr := range configErrs {
+					r.Warnf("[reachability] Failed config exclusion of path %s: %v\n", path, configErr)
 				}
 			}
 

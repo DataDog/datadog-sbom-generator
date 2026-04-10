@@ -51,11 +51,9 @@ func matchCLIExclusion(scanRoot string, path string, cliExcludePaths []string) (
 // matchConfigExclusion applies unified configuration exclusions relative to the
 // repository root.
 func matchConfigExclusion(repoRoot string, path string, configExcludePaths []string, r reporter.Reporter) (bool, string) {
-	matched, pattern, err := pathexclusion.MatchConfigExcludePath(repoRoot, path, configExcludePaths)
-	if err != nil {
+	matched, pattern, errs := pathexclusion.MatchConfigExcludePath(repoRoot, path, configExcludePaths)
+	for _, err := range errs {
 		r.Warnf("[config] Failed to evaluate exclusion pattern: %v\n", err)
-
-		return false, ""
 	}
 
 	return matched, pattern
