@@ -12,7 +12,7 @@ import (
 // testDirPerms creates temporary directories with rwxr-xr-x permissions.
 const testDirPerms = 0o755
 
-func TestFindRepositorySuccess(t *testing.T) {
+func TestFindRepositoryInfoSuccess(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -30,7 +30,7 @@ func TestFindRepositorySuccess(t *testing.T) {
 		t.Fatalf("failed to create remote: %v", err)
 	}
 
-	got, err := findRepositoryRoot(dir)
+	got, err := findRepositoryInfo(dir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -38,37 +38,13 @@ func TestFindRepositorySuccess(t *testing.T) {
 	if got.RootDir != dir {
 		t.Fatalf("RootDir = %q, want %q", got.RootDir, dir)
 	}
-}
 
-func TestFindRepositoryRemoteURLSuccess(t *testing.T) {
-	t.Parallel()
-
-	dir := t.TempDir()
-
-	repo, err := git.PlainInit(dir, false)
-	if err != nil {
-		t.Fatalf("failed to init repo: %v", err)
-	}
-
-	_, err = repo.CreateRemote(&gitconfig.RemoteConfig{
-		Name: remoteName,
-		URLs: []string{"https://github.com/DataDog/example-repo"},
-	})
-	if err != nil {
-		t.Fatalf("failed to create remote: %v", err)
-	}
-
-	got, err := findRepositoryRemoteURL(dir)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if got != "https://github.com/DataDog/example-repo" {
-		t.Fatalf("got %q, want %q", got, "https://github.com/DataDog/example-repo")
+	if got.RemoteURL != "https://github.com/DataDog/example-repo" {
+		t.Fatalf("RemoteURL = %q, want %q", got.RemoteURL, "https://github.com/DataDog/example-repo")
 	}
 }
 
-func TestFindRepositoryFromNestedPath(t *testing.T) {
+func TestFindRepositoryInfoFromNestedPath(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -91,7 +67,7 @@ func TestFindRepositoryFromNestedPath(t *testing.T) {
 		t.Fatalf("failed to create nested directory: %v", err)
 	}
 
-	got, err := findRepositoryRoot(nestedDir)
+	got, err := findRepositoryInfo(nestedDir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -101,18 +77,18 @@ func TestFindRepositoryFromNestedPath(t *testing.T) {
 	}
 }
 
-func TestFindRepositoryNotAGitRepo(t *testing.T) {
+func TestFindRepositoryInfoNotAGitRepo(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
 
-	_, err := findRepositoryRoot(dir)
+	_, err := findRepositoryInfo(dir)
 	if err == nil {
 		t.Fatal("expected error for non-git directory, got nil")
 	}
 }
 
-func TestFindRepositoryNoOriginRemote(t *testing.T) {
+func TestFindRepositoryInfoNoOriginRemote(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -122,13 +98,16 @@ func TestFindRepositoryNoOriginRemote(t *testing.T) {
 		t.Fatalf("failed to init repo: %v", err)
 	}
 
-	_, err = findRepositoryRoot(dir)
+	got, err := findRepositoryInfo(dir)
 	if err != nil {
-		t.Fatalf("expected repo root lookup to succeed without origin remote, got %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
-	_, err = findRepositoryRemoteURL(dir)
-	if err == nil {
-		t.Fatal("expected error for repo without origin remote, got nil")
+	if got.RootDir != dir {
+		t.Fatalf("RootDir = %q, want %q", got.RootDir, dir)
+	}
+
+	if got.RemoteURL != "" {
+		t.Fatalf("expected empty RemoteURL for repo without origin, got %q", got.RemoteURL)
 	}
 }

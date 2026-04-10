@@ -9,6 +9,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -71,7 +72,7 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 			}
 
 			if !shouldExcludePath {
-				shouldExcludePath, pattern, err = fileposition.MatchConfigExcludePath(repoRoot, absPath, configExcludePaths)
+				shouldExcludePath, pattern, err = pathexclusion.MatchConfigExcludePath(repoRoot, absPath, configExcludePaths)
 				if err != nil {
 					r.Warnf("[reachability] Failed config exclusion of path %s: %v\n", path, err)
 				}

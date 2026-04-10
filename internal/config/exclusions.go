@@ -12,64 +12,63 @@ import (
 // FetchExclusions returns ignore-path exclusions from local unified config and,
 // when Datadog authentication is available, from the merged remote config.
 func FetchExclusions(dir string, baseURL string, jwtToken string, exitOnFetchFailure bool, r reporter.Reporter) ([]string, string, error) {
-	localConfig, repoRoot := readLocalConfig(dir, r)
+	info, err := findRepositoryInfo(dir)
+	if err != nil {
+		// not a git repo or unresolvable worktree — no exclusions to apply
+		return nil, "", nil //nolint:nilerr
+	}
+
+	localConfig := readLocalConfig(info.RootDir, r)
 
 	hasDatadogAuth := ddhttp.HasDatadogAuth(jwtToken)
-	if !hasDatadogAuth && localConfig == nil {
-		return nil, repoRoot, nil
-	}
-
 	if !hasDatadogAuth {
-		r.Infof("[config] No Datadog authentication available, using local configuration only\n")
-		return extractIgnorePaths(localConfig, r), repoRoot, nil
-	}
-
-	remoteURL, err := findRepositoryRemoteURL(dir)
-	if err != nil {
 		if localConfig != nil {
-			r.Warnf("[config] Failed to resolve repository remote URL, continuing with local configuration: %v\n", err)
-			return extractIgnorePaths(localConfig, r), repoRoot, nil
+			r.Infof("[config] No Datadog authentication available, using local configuration only\n")
 		}
 
-		return nil, repoRoot, nil
+		return extractIgnorePaths(localConfig, r), info.RootDir, nil
 	}
 
-	r.Infof("[config] Fetching merged configuration for %s\n", remoteURL)
-	mergedConfig, err := ddhttp.PostGetMergedConfig(remoteURL, localConfig, baseURL, jwtToken)
+	if info.RemoteURL == "" {
+		if localConfig != nil {
+			r.Warnf("[config] Failed to resolve repository remote URL, continuing with local configuration\n")
+			return extractIgnorePaths(localConfig, r), info.RootDir, nil
+		}
+
+		return nil, info.RootDir, nil
+	}
+
+	r.Infof("[config] Fetching merged configuration for %s\n", info.RemoteURL)
+	mergedConfig, err := ddhttp.PostGetMergedConfig(info.RemoteURL, localConfig, baseURL, jwtToken)
 	if err != nil {
 		if exitOnFetchFailure {
-			return nil, repoRoot, models.ErrAPIFailed
+			return nil, info.RootDir, models.ErrAPIFailed
 		}
 
 		if localConfig != nil {
 			r.Warnf("[config] Failed to fetch merged configuration, continuing with local configuration: %v\n", err)
-			return extractIgnorePaths(localConfig, r), repoRoot, nil
+			return extractIgnorePaths(localConfig, r), info.RootDir, nil
 		}
 
 		r.Warnf("[config] Failed to fetch merged configuration, continuing without unified exclusions: %v\n", err)
 
-		return nil, repoRoot, nil
+		return nil, info.RootDir, nil
 	}
 
-	return extractIgnorePaths(&mergedConfig, r), repoRoot, nil
+	return extractIgnorePaths(&mergedConfig, r), info.RootDir, nil
 }
 
-func readLocalConfig(dir string, r reporter.Reporter) (*string, string) {
-	repo, err := findRepositoryRoot(dir)
-	if err != nil {
-		return nil, ""
-	}
-
-	localConfigContents, err := readLocalConfigContents(repo.RootDir)
+func readLocalConfig(rootDir string, r reporter.Reporter) *string {
+	contents, err := readLocalConfigContents(rootDir)
 	if err == nil {
-		return &localConfigContents, repo.RootDir
+		return &contents
 	}
 
 	if !errors.Is(err, os.ErrNotExist) {
 		r.Warnf("[config] Failed to read configuration file: %v\n", err)
 	}
 
-	return nil, repo.RootDir
+	return nil
 }
 
 func extractIgnorePaths(contents *string, r reporter.Reporter) []string {
