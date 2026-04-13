@@ -9,6 +9,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -17,12 +18,7 @@ import (
 )
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
-	if !enabled {
-		r.Infof("[reachability] Reachability analysis is disabled")
-		return models.ReachabilityAnalysis{}
-	}
-
+func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
 	r.Infof("[reachability] Fetching symbols...")
 	resp, err := http.PostResolveVulnerableSymbols(purls, ddBaseURL, ddJwtToken)
 	if err != nil {
@@ -65,9 +61,22 @@ func PerformReachabilityAnalysis(enabled bool, r reporter.Reporter, purls []stri
 				return err
 			}
 
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				absPath = path
+			}
+
 			shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)
 			if err != nil {
 				r.Warnf("[reachability] Failed exclusion of path %s: %v\n", path, err)
+			}
+
+			if !shouldExcludePath {
+				var configErrs []error
+				shouldExcludePath, pattern, configErrs = pathexclusion.MatchConfigExcludePath(repoRoot, absPath, configExcludePaths)
+				for _, configErr := range configErrs {
+					r.Warnf("[reachability] Failed config exclusion of path %s: %v\n", path, configErr)
+				}
 			}
 
 			if shouldExcludePath {

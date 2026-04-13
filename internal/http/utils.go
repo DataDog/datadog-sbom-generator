@@ -45,6 +45,12 @@ func getEnvVarValue(variable string) (string, bool) {
 	return value, value != ""
 }
 
+// HasDatadogAuth returns true when Datadog API authentication is configured.
+func HasDatadogAuth(ddJwtToken string) bool {
+	_, err := getDatadogAuthHeaders(ddJwtToken)
+	return err == nil
+}
+
 // getDatadogBaseURL returns a base URL to use for Datadog API requests.
 // It first checks if a base URL override was given otherwise it builds a URL
 // using either the DD_HOSTNAME or the DD_SITE environment variable,

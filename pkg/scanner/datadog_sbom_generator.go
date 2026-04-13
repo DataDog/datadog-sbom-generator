@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/config"
 	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
@@ -36,14 +37,15 @@ import (
 )
 
 type ScannerActions struct {
-	DirectoryPaths []string
-	ExcludePaths   []string
-	Recursive      bool
-	NoIgnore       bool
-	Reachability   bool
-	Debug          bool
-	EnableParsers  []string
-	DDEnvVars      DDEnvVars
+	DirectoryPaths      []string
+	ExcludePaths        []string
+	Recursive           bool
+	NoIgnore            bool
+	Reachability        bool
+	Debug               bool
+	EnableParsers       []string
+	DDEnvVars           DDEnvVars
+	ExitOnConfigFailure bool
 }
 
 type DDEnvVars struct {
@@ -67,13 +69,20 @@ var NoPackagesFoundErr = errors.New("no packages found in scan")
 //nolint:errname,stylecheck // Would require version major bump to change
 var VulnerabilitiesFoundErr = errors.New("vulnerabilities found")
 
-// ErrAPIFailed describes errors related to querying API endpoints.
-var ErrAPIFailed = errors.New("API query failed")
+// ErrAPIFailed is kept in scanner for compatibility; the canonical sentinel
+// lives in models.
+var ErrAPIFailed = models.ErrAPIFailed
 
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, excludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+	scanRoot := dir
+	// Normalize the scan root once before exclusion matching.
+	if absPath, err := filepath.Abs(dir); err == nil {
+		scanRoot = absPath
+	}
+
 	var ignoreMatcher *gitIgnoreMatcher
 	if useGitIgnore {
 		var err error
@@ -125,13 +134,17 @@ func scanDir(r reporter.Reporter, dir string, recursive bool, useGitIgnore bool,
 
 		if !info.IsDir() {
 			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
-				// Check if the file matches any of the excluded glob patterns
-				shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, rawPath, excludePaths)
+				match, err := matchExclusion(r, scanRoot, repoRoot, path, cliExcludePaths, configExcludePaths)
 				if err != nil {
 					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
 				}
-				if shouldExcludePath {
-					r.Infof("Skipping %s with exclusion rule: %s\n", path, pattern)
+				if match != nil {
+					if match.source == exclusionSourceConfig {
+						r.Infof("Skipping %s with config exclusion rule: %s\n", path, match.pattern)
+					} else {
+						r.Infof("Skipping %s with exclusion rule: %s\n", path, match.pattern)
+					}
+
 					return nil
 				}
 
@@ -258,6 +271,14 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
+	configExcludePaths, repoRoot, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
+	if err != nil {
+		if errors.Is(err, models.ErrAPIFailed) {
+			return models.VulnerabilityResults{}, ErrAPIFailed
+		}
+		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
+	}
+
 	var scannedPackages []lockfile.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
@@ -271,7 +292,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			absolutePath = absPath
 		}
 		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
-		pkgs, artifacts, err := scanDir(r, dir, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths)
+		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, configExcludePaths)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
@@ -313,7 +334,12 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
-	reachabilityAnalysis := reachability.PerformReachabilityAnalysis(actions.Reachability, r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+	var reachabilityAnalysis models.ReachabilityAnalysis
+	if actions.Reachability {
+		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, configExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+	} else {
+		r.Infof("[reachability] Reachability analysis is disabled")
+	}
 
 	vulnerabilityResults := groupBySource(r, scannedPackages, scannedArtifacts, reachabilityAnalysis)
 

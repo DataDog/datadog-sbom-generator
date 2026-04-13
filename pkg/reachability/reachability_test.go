@@ -80,10 +80,11 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 	mockReporter := createMockReporter(t)
 
 	result := PerformReachabilityAnalysis(
-		true,
 		mockReporter,
 		[]string{},
 		[]string{tempDir},
+		[]string{},
+		"",
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
@@ -143,11 +144,61 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 
 	excludePaths := []string{filepath.Join("subdir", "*")}
 	result := PerformReachabilityAnalysis(
-		true,
 		mockReporter,
 		[]string{},
 		[]string{tempDir},
 		excludePaths,
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+	)
+
+	// Expected result
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
+			},
+		},
+	}
+
+	// Assert the result
+	assert.Equal(t, expected, result)
+}
+
+func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	// Create a mock server to simulate the API response
+	// The server will return a successful response with the vulnerable symbols
+	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	defer mockServer.Close()
+
+	// Create a temporary directory with a mock Java file
+	repoRoot := t.TempDir()
+	scanDir := filepath.Join(repoRoot, "subdir")
+	err := os.Mkdir(scanDir, 0755)
+	require.NoError(t, err)
+
+	// Create a mock Java file with a vulnerable class (should be excluded by config ignore-path)
+	mockJavaFile := filepath.Join(scanDir, "Main.java")
+	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	configExcludePaths := []string{"subdir/**"}
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{repoRoot},
+		[]string{},
+		repoRoot,
+		configExcludePaths,
 		mockServer.URL,
 		ddJwtToken,
 	)
