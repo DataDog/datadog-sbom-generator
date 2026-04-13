@@ -87,6 +87,16 @@ func TestJarPomPropertiesExtractor_IsOfficiallySupported(t *testing.T) {
 	}
 }
 
+func TestJarPomPropertiesExtractor_Registration(t *testing.T) {
+	t.Parallel()
+
+	// The java package's init() registers the extractor.
+	// Importing java (done above) triggers registration.
+	if !lockfile.IsSupportedExtractor(models.JarFilePath.String()) {
+		t.Error("expected extractor to be registered as \"jar\"")
+	}
+}
+
 func TestParseJarPomProperties_FileDoesNotExist(t *testing.T) {
 	t.Parallel()
 

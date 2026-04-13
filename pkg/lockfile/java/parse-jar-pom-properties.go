@@ -56,7 +56,7 @@ func (e JarPomPropertiesExtractor) Extract(f lockfile.DepFile, context lockfile.
 		return []lockfile.PackageDetails{}, lockfile.ErrIncompatibleFileFormat
 	}
 
-	var packages []lockfile.PackageDetails
+	packages := make([]lockfile.PackageDetails, 0, len(zipReader.File))
 
 	for _, entry := range zipReader.File {
 		if !strings.HasPrefix(entry.Name, pomPropertiesPrefix) || !strings.HasSuffix(entry.Name, pomPropertiesSuffix) {
@@ -72,6 +72,7 @@ func (e JarPomPropertiesExtractor) Extract(f lockfile.DepFile, context lockfile.
 		if groupID == "" || artifactID == "" || version == "" {
 			context.Reporter.Warnf("Skipping incomplete pom.properties in %s: %s (groupId=%q, artifactId=%q, version=%q)\n",
 				f.Path(), entry.Name, groupID, artifactID, version)
+
 			continue
 		}
 
