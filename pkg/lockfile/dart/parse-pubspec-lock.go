@@ -16,7 +16,7 @@ import (
 const (
 	pubsecPackageManager      = models.Pub
 	pubsecFilePath            = models.PubFilePath
-	pubsecOfficiallySupported = false
+	pubsecOfficiallySupported = true
 )
 
 type PubspecLockDescription struct {
