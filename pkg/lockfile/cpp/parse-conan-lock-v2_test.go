@@ -2,7 +2,10 @@ package cpp_test
 
 import (
 	"io/fs"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/cpp"
@@ -49,7 +52,7 @@ func TestParseConanLock_v2_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -69,7 +72,7 @@ func TestParseConanLock_v2_NoName(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -89,7 +92,7 @@ func TestParseConanLock_v2_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.11",
@@ -116,7 +119,7 @@ func TestParseConanLock_v2_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "zlib",
 			Version:        "1.2.13",
@@ -164,7 +167,7 @@ func TestParseConanLock_v2_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "ninja",
 			Version:        "1.11.1",
@@ -173,4 +176,36 @@ func TestParseConanLock_v2_OnePackageDev(t *testing.T) {
 			DepGroups:      []string{"build-requires"},
 		},
 	})
+}
+
+func TestParseConanLock_v2_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	packages, err := cpp.ParseConanLock("../fixtures/conan/two-packages.v2.json")
+
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packagesByName := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		packagesByName[pkg.Name] = pkg
+	}
+
+	absoluteLockfilePath, err := filepath.Abs("../fixtures/conan/two-packages.v2.json")
+	if err != nil {
+		t.Fatalf("Could not get absolute path: %v", err)
+	}
+
+	// zlib on line 4: "zlib/1.2.11#ffa77daf83a57094149707928bdce823%1667396813.184"
+	zlibPkg := packagesByName["zlib"]
+	assert.Equal(t, absoluteLockfilePath, zlibPkg.BlockLocation.Filename)
+	assert.Equal(t, 4, zlibPkg.BlockLocation.Line.Start)
+	assert.Equal(t, 4, zlibPkg.BlockLocation.Line.End)
+
+	// bzip2 on line 5: "bzip2/1.0.8#464be69744fa6d48ed01928cfe470008%1666580345.213"
+	bzip2Pkg := packagesByName["bzip2"]
+	assert.Equal(t, absoluteLockfilePath, bzip2Pkg.BlockLocation.Filename)
+	assert.Equal(t, 5, bzip2Pkg.BlockLocation.Line.Start)
+	assert.Equal(t, 5, bzip2Pkg.BlockLocation.Line.End)
 }
