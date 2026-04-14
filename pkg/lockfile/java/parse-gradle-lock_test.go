@@ -152,6 +152,34 @@ func TestParseGradleLock_OnePackage(t *testing.T) {
 }
 
 //nolint:paralleltest
+func TestParseGradleLock_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/gradle-lockfile/one-pkg"))
+	packages, err := java.ParseGradleLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.Greater(t, pkg.BlockLocation.Line.Start, 0,
+			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Line.End, 0,
+			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.Start, 0,
+			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.End, 0,
+			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
+	}
+}
+
+//nolint:paralleltest
 func TestParseGradleLock_OnePackage_MatcherFailed(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
