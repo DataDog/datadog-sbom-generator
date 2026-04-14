@@ -56,7 +56,7 @@ func TestParseNpmLock_v1_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -108,7 +108,7 @@ func TestParseNpmLock_v1_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -132,7 +132,7 @@ func TestParseNpmLock_v1_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -163,7 +163,7 @@ func TestParseNpmLock_v1_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -194,7 +194,7 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "postcss",
 			Version:        "6.0.23",
@@ -251,29 +251,29 @@ func TestParseNpmLock_v1_NestedDependenciesDup(t *testing.T) {
 		t.Errorf("Expected to get 39 packages, but got %d", len(packages))
 	}
 
-	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "6.1.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	})
+	}, true)
 
-	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "5.5.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	})
+	}, true)
 
-	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "2.0.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	})
+	}, true)
 }
 
 func TestParseNpmLock_v1_Commits(t *testing.T) {
@@ -289,7 +289,7 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "@segment/analytics.js-integration-facebook-pixel",
 			Version:        "",
@@ -426,7 +426,7 @@ func TestParseNpmLock_v1_Files(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "lodash",
 			Version:        "1.3.1",
@@ -459,7 +459,7 @@ func TestParseNpmLock_v1_Alias(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "@babel/code-frame",
 			Version:        "7.0.0",
@@ -497,7 +497,7 @@ func TestParseNpmLock_v1_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",

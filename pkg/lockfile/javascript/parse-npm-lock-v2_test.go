@@ -987,9 +987,13 @@ func TestParseNpmLock_v2_WorkspacesComplex(t *testing.T) {
 			Version:        "1.4.0",
 			PackageManager: models.NPM,
 			Ecosystem:      models.EcosystemNPM,
-			BlockLocation:  models.FilePosition{},
-			IsDirect:       false, // is a dependency of group-dependencies@0.0.11
-			DepGroups:      []string{"dev"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 37, End: 46},
+				Column:   models.Position{Start: 5, End: 6},
+				Filename: path,
+			},
+			IsDirect:  false, // is a dependency of group-dependencies@0.0.11
+			DepGroups: []string{"dev"},
 		},
 		{
 			Name:           "semver",
