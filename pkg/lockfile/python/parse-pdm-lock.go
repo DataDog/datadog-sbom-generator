@@ -1,9 +1,13 @@
 package python
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"path/filepath"
+	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -25,7 +29,12 @@ func (p PdmLockExtractor) PackageManager() models.PackageManager {
 func (p PdmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockFile *PdmLockFile
 
-	_, err := toml.NewDecoder(f).Decode(&parsedLockFile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
+	}
+
+	_, err = toml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockFile)
 	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
@@ -57,6 +66,19 @@ func (p PdmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 		}
 
 		packages = append(packages, details)
+	}
+
+	// Set BlockLocation for each package using the InTOML utility
+	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
+	positions := make([]*models.FilePosition, len(packages))
+	for i := range packages {
+		positions[i] = &packages[i].BlockLocation
+	}
+
+	fileposition.InTOML("[[package]]", "", positions, lines)
+
+	for i := range packages {
+		packages[i].BlockLocation.Filename = f.Path()
 	}
 
 	return packages, nil
