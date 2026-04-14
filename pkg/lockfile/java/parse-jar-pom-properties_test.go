@@ -158,6 +158,7 @@ func TestParseJarPomProperties_OnePackage(t *testing.T) {
 			Version:        "1.0.0",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
 		},
 	})
 }
@@ -182,12 +183,14 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 			Version:        "2.0.0",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
 		},
 		{
 			Name:           "org.other:lib-b",
 			Version:        "3.1.0",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
 		},
 	})
 }
