@@ -2,7 +2,10 @@ package dart_test
 
 import (
 	"io/fs"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/dart"
@@ -112,7 +115,7 @@ func TestParsePubspecLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "back_button_interceptor",
 			Version:        "6.0.1",
@@ -131,7 +134,7 @@ func TestParsePubspecLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "build_runner",
 			Version:        "2.2.1",
@@ -151,7 +154,7 @@ func TestParsePubspecLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "shelf",
 			Version:        "1.3.2",
@@ -176,7 +179,7 @@ func TestParsePubspecLock_MixedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "back_button_interceptor",
 			Version:        "6.0.1",
@@ -214,7 +217,7 @@ func TestParsePubspecLock_PackageWithGitSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "flutter_rust_bridge",
 			Version:        "1.32.0",
@@ -262,7 +265,7 @@ func TestParsePubspecLock_PackageWithSdkSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "flutter_web_plugins",
 			Version:        "0.0.0",
@@ -282,7 +285,7 @@ func TestParsePubspecLock_PackageWithPathSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "maa_core",
 			Version:        "0.0.1",
@@ -291,4 +294,36 @@ func TestParsePubspecLock_PackageWithPathSource(t *testing.T) {
 			Commit:         "",
 		},
 	})
+}
+
+func TestParsePubspecLock_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	packages, err := dart.ParsePubspecLock("../fixtures/pub/two-packages.lock")
+
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packagesByName := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		packagesByName[pkg.Name] = pkg
+	}
+
+	absoluteLockfilePath, err := filepath.Abs("../fixtures/pub/two-packages.lock")
+	if err != nil {
+		t.Fatalf("Could not get absolute path: %v", err)
+	}
+
+	// shelf: lines 4-10
+	shelfPkg := packagesByName["shelf"]
+	assert.Equal(t, absoluteLockfilePath, shelfPkg.BlockLocation.Filename)
+	assert.Equal(t, 4, shelfPkg.BlockLocation.Line.Start)
+	assert.Equal(t, 10, shelfPkg.BlockLocation.Line.End)
+
+	// shelf_web_socket: lines 11-17
+	swsPkg := packagesByName["shelf_web_socket"]
+	assert.Equal(t, absoluteLockfilePath, swsPkg.BlockLocation.Filename)
+	assert.Equal(t, 11, swsPkg.BlockLocation.Line.Start)
+	assert.Equal(t, 17, swsPkg.BlockLocation.Line.End)
 }
