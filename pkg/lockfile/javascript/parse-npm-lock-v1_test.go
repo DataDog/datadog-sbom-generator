@@ -10,6 +10,8 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/javascript"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseNpmLock_v1_FileDoesNotExist(t *testing.T) {
@@ -63,6 +65,34 @@ func TestParseNpmLock_v1_OnePackage(t *testing.T) {
 			DepGroups:      []string{"prod"},
 		},
 	})
+}
+
+func TestParseNpmLock_v1_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/npm/one-package.v1.json"))
+	packages, err := javascript.ParseNpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Every package must have a valid BlockLocation from the lockfile
+	for _, pkg := range packages {
+		assert.Greater(t, pkg.BlockLocation.Line.Start, 0,
+			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Line.End, 0,
+			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.Start, 0,
+			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.End, 0,
+			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
+	}
 }
 
 func TestParseNpmLock_v1_OnePackageDev(t *testing.T) {
