@@ -112,7 +112,7 @@ func TestParsePipenvLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -157,7 +157,7 @@ func TestParsePipenvLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -183,7 +183,7 @@ func TestParsePipenvLock_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "markupsafe",
 			Version:        "2.1.1",
@@ -207,7 +207,7 @@ func TestParsePipenvLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -237,7 +237,7 @@ func TestParsePipenvLock_TwoPackagesAlt(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -266,7 +266,7 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "itsdangerous",
 			Version:        "2.1.2",
@@ -293,6 +293,41 @@ func TestParsePipenvLock_MultiplePackages(t *testing.T) {
 			Ecosystem:      models.EcosystemPyPI,
 		},
 	})
+}
+
+func TestParsePipenvLock_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pipenv/two-packages.json"))
+	packages, err := python.ParsePipenvLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packagesByName := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		packagesByName[pkg.Name] = pkg
+	}
+
+	// itsdangerous is in "default" section, lines 19-26
+	itsdangerous := packagesByName["itsdangerous"]
+	assert.Equal(t, 19, itsdangerous.BlockLocation.Line.Start)
+	assert.Equal(t, 26, itsdangerous.BlockLocation.Line.End)
+	assert.Equal(t, 7, itsdangerous.BlockLocation.Column.Start)
+	assert.Equal(t, 8, itsdangerous.BlockLocation.Column.End)
+	assert.Equal(t, path, itsdangerous.BlockLocation.Filename)
+
+	// markupsafe is in "develop" section, lines 29-74
+	markupsafe := packagesByName["markupsafe"]
+	assert.Equal(t, 29, markupsafe.BlockLocation.Line.Start)
+	assert.Equal(t, 74, markupsafe.BlockLocation.Line.End)
+	assert.Equal(t, 7, markupsafe.BlockLocation.Column.Start)
+	assert.Equal(t, 8, markupsafe.BlockLocation.Column.End)
+	assert.Equal(t, path, markupsafe.BlockLocation.Filename)
 }
 
 func TestParsePipenvLock_PackageWithoutVersion(t *testing.T) {
