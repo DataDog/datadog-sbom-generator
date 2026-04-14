@@ -1,9 +1,13 @@
 package rust
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"path/filepath"
+	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -25,7 +29,12 @@ func (e CargoLockExtractor) PackageManager() models.PackageManager {
 func (e CargoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *CargoLockFile
 
-	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
+	}
+
+	_, err = toml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 
 	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
@@ -40,6 +49,20 @@ func (e CargoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 			PackageManager: cargoPackageManager,
 			Ecosystem:      models.EcosystemCratesIO,
 		})
+	}
+
+	// Set BlockLocation for each package using the InTOML utility
+	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
+	positions := make([]*models.FilePosition, len(packages))
+	for i := range packages {
+		positions[i] = &packages[i].BlockLocation
+	}
+
+	fileposition.InTOML("[[package]]", "", positions, lines)
+
+	for i := range packages {
+		packages[i].BlockLocation.Filename = f.Path()
+		packages[i].LocationRole = models.LocationRoleLockfile
 	}
 
 	return packages, nil
