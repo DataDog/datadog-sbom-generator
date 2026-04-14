@@ -279,6 +279,7 @@ func filesToParsers() map[string]string {
 		"go.mod":                           "go.mod",
 		"gradle/verification-metadata.xml": "gradle/verification-metadata.xml",
 		"gradle.lockfile":                  "gradle.lockfile",
+		"library.jar":                      "jar",
 		"maven_install.json":               "maven_install.json",
 		"mix.lock":                         "mix.lock",
 		"pdm.lock":                         "pdm.lock",

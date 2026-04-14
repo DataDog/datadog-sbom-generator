@@ -195,6 +195,54 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
 
 ---
 
+[TestRun/Scan_JAR_with_pom.properties_(opaque_property) - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/com.example/my-lib@1.0.0",
+      "type": "library",
+      "name": "com.example:my-lib",
+      "version": "1.0.0",
+      "purl": "pkg:maven/com.example/my-lib@1.0.0",
+      "properties": [
+        {
+          "name": "datadog:opaque",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_JAR_with_pom.properties_(opaque_property) - 2]
+[parser] Enabling: jar
+Scanning directory './fixtures/integration-jar', resolved absolute path '<rootdir>/fixtures/integration-jar'
+Scanned <rootdir>/fixtures/integration-jar/one-package.jar file and found 1 package
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_cargo_project_with_multiple_dependency_types - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",

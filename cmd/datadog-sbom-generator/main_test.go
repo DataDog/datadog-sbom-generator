@@ -295,6 +295,11 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-cargo"},
 			exit: 0,
 		},
+		{
+			name: "Scan JAR with pom.properties (opaque property)",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--enable-parsers=jar", "./fixtures/integration-jar"},
+			exit: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

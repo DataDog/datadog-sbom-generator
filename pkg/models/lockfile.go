@@ -21,6 +21,7 @@ const (
 	GradleVerificationFilePath ParsedFilePath = "gradle/verification-metadata.xml"
 	GradleFilePath             ParsedFilePath = "gradle.lockfile"
 	HexFilePath                ParsedFilePath = "mix.lock"
+	JarFilePath                ParsedFilePath = "jar"
 	MavenFilePath              ParsedFilePath = "pom.xml"
 	MavenInstallFilePath       ParsedFilePath = "maven_install.json"
 	NodeModulesPath            ParsedFilePath = "node_modules"
