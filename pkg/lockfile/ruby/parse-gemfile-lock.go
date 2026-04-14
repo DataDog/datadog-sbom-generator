@@ -31,6 +31,12 @@ func (parser *gemfileLockfileParser) isSourceSection(line string) bool {
 }
 
 func (parser *gemfileLockfileParser) addDependency(name string, version string) {
+	blockLocation := models.FilePosition{
+		Line:     models.Position{Start: parser.lineNumber, End: parser.lineNumber},
+		Column:   models.Position{Start: 1, End: len(parser.currentLine) + 1},
+		Filename: parser.sourceFile,
+	}
+
 	if !parser.isInDepSection {
 		parser.dependencies = append(parser.dependencies, lockfile.PackageDetails{
 			Name:           name,
@@ -38,6 +44,8 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			PackageManager: gemfilePackageManager,
 			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
+			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 
 		return
@@ -63,6 +71,8 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
+			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 }
@@ -184,11 +194,15 @@ func (e GemfileLockExtractor) PackageManager() models.PackageManager {
 
 func (e GemfileLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parser gemfileLockfileParser
+	parser.sourceFile = f.Path()
 
 	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
-		parser.parse(scanner.Text())
+		parser.lineNumber++
+		line := scanner.Text()
+		parser.currentLine = line
+		parser.parse(line)
 	}
 
 	if err := scanner.Err(); err != nil {

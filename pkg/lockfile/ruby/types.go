@@ -67,6 +67,13 @@ type gemfileLockfileParser struct {
 
 	// whether or not the parser is in the `DEPENDENCIES` section
 	isInDepSection bool
+
+	// current line number being parsed (1-indexed)
+	lineNumber int
+	// current line text being parsed
+	currentLine string
+	// absolute path of the lockfile being parsed
+	sourceFile string
 }
 
 type GemfileLockExtractor struct {
