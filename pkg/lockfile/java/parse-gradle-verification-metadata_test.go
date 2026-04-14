@@ -133,7 +133,7 @@ func TestParseGradleVerificationMetadata_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "org.apache.pdfbox:pdfbox",
 			Version:        "2.0.17",
@@ -200,7 +200,7 @@ func TestParseGradleVerificationMetadata_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "org.apache.pdfbox:pdfbox",
 			Version:        "2.0.17",
@@ -225,7 +225,7 @@ func TestParseGradleVerificationMetadata_MultipleVersions(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "androidx.activity:activity",
 			Version:        "1.2.1",
@@ -346,7 +346,7 @@ func TestParseGradleVerificationMetadata_Complex(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "com.google:google",
 			Version:        "1",
@@ -744,4 +744,36 @@ func TestParseGradleVerificationMetadata_Complex(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 		},
 	})
+}
+
+func TestParseGradleVerificationMetadata_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	packages, err := java.ParseGradleVerificationMetadata("../fixtures/gradle-verification-metadata/two-packages.xml")
+
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packagesByName := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		packagesByName[pkg.Name] = pkg
+	}
+
+	absoluteLockfilePath, err := filepath.Abs("../fixtures/gradle-verification-metadata/two-packages.xml")
+	if err != nil {
+		t.Fatalf("Could not get absolute path: %v", err)
+	}
+
+	// pdfbox: <component> on line 10, </component> on line 17
+	pdfboxPkg := packagesByName["org.apache.pdfbox:pdfbox"]
+	assert.Equal(t, absoluteLockfilePath, pdfboxPkg.BlockLocation.Filename)
+	assert.Equal(t, 10, pdfboxPkg.BlockLocation.Line.Start)
+	assert.Equal(t, 17, pdfboxPkg.BlockLocation.Line.End)
+
+	// javaparser-core: <component> on line 18, </component> on line 22
+	javaparserPkg := packagesByName["com.github.javaparser:javaparser-core"]
+	assert.Equal(t, absoluteLockfilePath, javaparserPkg.BlockLocation.Filename)
+	assert.Equal(t, 18, javaparserPkg.BlockLocation.Line.Start)
+	assert.Equal(t, 22, javaparserPkg.BlockLocation.Line.End)
 }
