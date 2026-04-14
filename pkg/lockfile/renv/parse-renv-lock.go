@@ -1,10 +1,14 @@
 package renv
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"path/filepath"
+	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -41,26 +45,48 @@ func (e RenvLockExtractor) PackageManager() models.PackageManager {
 func (e RenvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *RenvLockfile
 
-	err := json.NewDecoder(f).Decode(&parsedLockfile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+	}
+
+	err = json.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 
 	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
+	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
+
+	// Build position map for InJSON keyed by package name
+	positions := make(map[string]*models.FilePosition, len(parsedLockfile.Packages))
+	for name := range parsedLockfile.Packages {
+		positions[name] = &models.FilePosition{}
+	}
+
+	fileposition.InJSON("Packages", positions, lines, 0)
+
 	packages := make([]lockfile.PackageDetails, 0, len(parsedLockfile.Packages))
 
-	for _, pkg := range parsedLockfile.Packages {
+	for name, pkg := range parsedLockfile.Packages {
 		// currently we only support CRAN
 		if pkg.Repository != string(models.EcosystemCRAN) {
 			continue
 		}
 
-		packages = append(packages, lockfile.PackageDetails{
+		pkgDetails := lockfile.PackageDetails{
 			Name:           pkg.Package,
 			Version:        pkg.Version,
 			PackageManager: renvPackageManager,
 			Ecosystem:      models.EcosystemCRAN,
-		})
+			LocationRole:   models.LocationRoleLockfile,
+		}
+		if pos, ok := positions[name]; ok {
+			blockLocation := *pos
+			blockLocation.Filename = f.Path()
+			pkgDetails.BlockLocation = blockLocation
+		}
+		packages = append(packages, pkgDetails)
 	}
 
 	return packages, nil
