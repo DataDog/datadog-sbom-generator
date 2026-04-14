@@ -63,9 +63,12 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			depGroup = "optional"
 		}
 
-		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.BlockLocation.Line.Start != 0 {
-			// If it is a dev or optional dependency definition and we already found a package location,
-			// we skip it to prioritize non-dev dependencies
+		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.BlockLocation.Filename == depMap.FilePath {
+			// If it is a dev or optional dependency definition and this package's BlockLocation
+			// already points to the current source file (meaning a prior matcher section like
+			// "dependencies" already set it), skip the location overwrite to prioritize the
+			// non-dev location. We compare Filename rather than checking Line.Start != 0
+			// because extractors may now set BlockLocation from the lockfile for all packages.
 			pkgIndexes = []int{}
 		}
 		depMap.UpdatePackageDetails(pkg, packageJSONContent, pkgIndexes, depGroup)

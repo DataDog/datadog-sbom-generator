@@ -86,6 +86,34 @@ func TestParseNpmLock_v2_OnePackage(t *testing.T) {
 	})
 }
 
+func TestParseNpmLock_v2_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/npm/one-package.v2.json"))
+	packages, err := javascript.ParseNpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Every package must have a valid BlockLocation from the lockfile
+	for _, pkg := range packages {
+		assert.Greater(t, pkg.BlockLocation.Line.Start, 0,
+			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Line.End, 0,
+			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.Start, 0,
+			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
+		assert.Greater(t, pkg.BlockLocation.Column.End, 0,
+			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
+	}
+}
+
 //nolint:paralleltest
 func TestParseNpmLock_v2_OnePackage_MatcherFailed(t *testing.T) {
 	dir, err := os.Getwd()

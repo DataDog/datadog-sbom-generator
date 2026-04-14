@@ -35,9 +35,12 @@ func (depMap *ComposerMatcherDependencyMap) UnmarshalJSON(bytes []byte) error {
 	content := string(bytes)
 
 	for _, pkg := range depMap.Packages {
-		if depMap.RootType == typeRequireDev && pkg.BlockLocation.Line.Start != 0 {
-			// If it is dev dependency definition and we already found a package location,
-			// we skip it to prioritize non-dev dependencies
+		if depMap.RootType == typeRequireDev && pkg.BlockLocation.Filename == depMap.FilePath {
+			// If it is dev dependency definition and this package's BlockLocation already
+			// points to the current source file (meaning a prior section like "require"
+			// already set it), skip the location overwrite to prioritize non-dev dependencies.
+			// We compare Filename rather than checking Line.Start != 0 because extractors
+			// may now set BlockLocation from the lockfile for all packages.
 			continue
 		}
 		pkgIndexes := jsonUtils.ExtractPackageIndexes(pkg.Name, "", content)

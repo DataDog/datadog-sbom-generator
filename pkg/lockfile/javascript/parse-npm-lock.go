@@ -73,7 +73,7 @@ func (dep *NpmLockDependency) depGroups() []string {
 	return groups
 }
 
-func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[string]lockfile.PackageDetails {
+func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency, sourceFile string) map[string]lockfile.PackageDetails {
 	details := npmPackageDetailsMap{}
 
 	keys := reflect.ValueOf(dependencies).MapKeys()
@@ -84,7 +84,7 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 		name := key.Interface().(string)
 		detail := dependencies[name]
 		if detail.Dependencies != nil {
-			nestedDeps := parseNpmLockDependencies(detail.Dependencies)
+			nestedDeps := parseNpmLockDependencies(detail.Dependencies, sourceFile)
 			for k, v := range nestedDeps {
 				details.add(k, v)
 			}
@@ -118,6 +118,9 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			}
 		}
 
+		blockLocation := detail.FilePosition
+		blockLocation.Filename = sourceFile
+
 		details.add(name+"@"+version, lockfile.PackageDetails{
 			Name:           name,
 			Version:        finalVersion,
@@ -125,6 +128,8 @@ func parseNpmLockDependencies(dependencies map[string]*NpmLockDependency) map[st
 			Ecosystem:      models.EcosystemNPM,
 			Commit:         commit,
 			DepGroups:      detail.depGroups(),
+			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 
@@ -244,6 +249,7 @@ func processWorkspacePackages(
 	declaredWorkspacePackages map[string]*NpmLockPackage,
 	resolvedPackages map[string]*NpmLockPackage,
 	processedPackages *map[string]bool,
+	sourceFile string,
 ) {
 	for workspacePath, workspacePkg := range declaredWorkspacePackages {
 		allDeps := make(map[string]string)
@@ -266,6 +272,7 @@ func processWorkspacePackages(
 				TargetVersion:     targetVersion,
 				DeclarationPath:   workspacePath,
 				ProcessedPackages: processedPackages,
+				SourceFile:        sourceFile,
 			}
 
 			if resolvedPkg, exists := resolvedPackages[workspaceNodeModulesPath]; exists {
@@ -295,6 +302,7 @@ func processRootPackages(
 	declaredRootPackages map[string]string,
 	resolvedPackages map[string]*NpmLockPackage,
 	processedPackages *map[string]bool,
+	sourceFile string,
 ) {
 	for depName, targetVersion := range declaredRootPackages {
 		rootNodeModulesPath := getRootResolvedPath(depName)
@@ -307,6 +315,7 @@ func processRootPackages(
 				DeclarationPath:   "",
 				PhysicalPath:      rootNodeModulesPath,
 				ProcessedPackages: processedPackages,
+				SourceFile:        sourceFile,
 			})
 		}
 	}
@@ -317,6 +326,7 @@ func processLocalPackages(
 	localPackages map[string]*NpmLockPackage,
 	declaredRootPackages map[string]string,
 	processedPackages *map[string]bool,
+	sourceFile string,
 ) {
 	for localPath, localPkg := range localPackages {
 		depName := path.Base(localPath)
@@ -335,6 +345,7 @@ func processLocalPackages(
 			DeclarationPath:   "",
 			PhysicalPath:      localPath,
 			ProcessedPackages: processedPackages,
+			SourceFile:        sourceFile,
 		})
 	}
 }
@@ -343,6 +354,7 @@ func processRemainingPackages(
 	details npmPackageDetailsMap,
 	resolvedPackages map[string]*NpmLockPackage,
 	processedPackages *map[string]bool,
+	sourceFile string,
 ) {
 	for physicalPath, pkg := range resolvedPackages {
 		if !(*processedPackages)[physicalPath] {
@@ -355,6 +367,7 @@ func processRemainingPackages(
 				DeclarationPath:   "",
 				PhysicalPath:      physicalPath,
 				ProcessedPackages: processedPackages,
+				SourceFile:        sourceFile,
 			})
 		}
 	}
@@ -368,6 +381,7 @@ type packageProcessingParams struct {
 	DeclarationPath   string
 	PhysicalPath      string
 	ProcessedPackages *map[string]bool
+	SourceFile        string
 }
 
 func processPackage(params packageProcessingParams) {
@@ -413,6 +427,9 @@ func processPackage(params packageProcessingParams) {
 		location = &models.FilePosition{Filename: params.DeclarationPath}
 	}
 
+	blockLocation := params.Pkg.FilePosition
+	blockLocation.Filename = params.SourceFile
+
 	packageUniqKey := getWorkspaceDependencyKey(finalName, finalVersion, params.DeclarationPath)
 	params.Details.add(packageUniqKey, lockfile.PackageDetails{
 		Name:           finalName,
@@ -422,6 +439,8 @@ func processPackage(params packageProcessingParams) {
 		Ecosystem:      models.EcosystemNPM,
 		Commit:         commit,
 		DepGroups:      params.Pkg.depGroups(),
+		BlockLocation:  blockLocation,
+		LocationRole:   models.LocationRoleLockfile,
 		NameLocation:   location,
 	})
 
@@ -429,7 +448,7 @@ func processPackage(params packageProcessingParams) {
 	(*params.ProcessedPackages)[params.PhysicalPath] = true
 }
 
-func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]lockfile.PackageDetails {
+func parseNpmLockPackages(packages map[string]*NpmLockPackage, sourceFile string) map[string]lockfile.PackageDetails {
 	details := npmPackageDetailsMap{}
 
 	workspacePatterns := extractWorkspacePatterns(packages)
@@ -437,10 +456,10 @@ func parseNpmLockPackages(packages map[string]*NpmLockPackage) map[string]lockfi
 
 	processedPackages := make(map[string]bool) // makes sure we do not process the same package twice (meaningful with the support of workspaces)
 
-	processRootPackages(details, categorized.DeclaredRoot, categorized.Resolved, &processedPackages)
-	processWorkspacePackages(details, categorized.DeclaredWorkspace, categorized.Resolved, &processedPackages)
-	processLocalPackages(details, categorized.Local, categorized.DeclaredRoot, &processedPackages)
-	processRemainingPackages(details, categorized.Resolved, &processedPackages)
+	processRootPackages(details, categorized.DeclaredRoot, categorized.Resolved, &processedPackages, sourceFile)
+	processWorkspacePackages(details, categorized.DeclaredWorkspace, categorized.Resolved, &processedPackages, sourceFile)
+	processLocalPackages(details, categorized.Local, categorized.DeclaredRoot, &processedPackages, sourceFile)
+	processRemainingPackages(details, categorized.Resolved, &processedPackages, sourceFile)
 
 	return details
 }
@@ -449,12 +468,12 @@ func parseNpmLock(lockfile NpmLockfile, lines []string) map[string]lockfile.Pack
 	if lockfile.Packages != nil {
 		fileposition.InJSON("packages", lockfile.Packages, lines, 0)
 
-		return parseNpmLockPackages(lockfile.Packages)
+		return parseNpmLockPackages(lockfile.Packages, lockfile.SourceFile)
 	}
 
 	fileposition.InJSON("dependencies", lockfile.Dependencies, lines, 0)
 
-	return parseNpmLockDependencies(lockfile.Dependencies)
+	return parseNpmLockDependencies(lockfile.Dependencies, lockfile.SourceFile)
 }
 
 func getWorkspaceDependencyKey(pkgName string, pkgVersion string, workspace string) string {
@@ -488,7 +507,7 @@ func (e NpmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not read from %s: %w", f.Path(), err)
 	}
 	contentString := string(contentBytes)
-	lines := strings.Split(contentString, "\n")
+	lines := strings.Split(strings.ReplaceAll(contentString, "\r\n", "\n"), "\n")
 	decoder := json.NewDecoder(strings.NewReader(contentString))
 
 	if err := decoder.Decode(&parsedLockfile); err != nil {
