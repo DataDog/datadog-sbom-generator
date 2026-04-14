@@ -2,7 +2,10 @@ package python_test
 
 import (
 	"io/fs"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/python"
 
@@ -109,7 +112,7 @@ func TestParsePdmLock_SinglePackage(t *testing.T) {
 	packages, err := python.ParsePdmLock("../fixtures/pdm/single-package.toml")
 
 	expectNilErr(t, err)
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -125,7 +128,7 @@ func TestParsePdmLock_TwoPackages(t *testing.T) {
 	packages, err := python.ParsePdmLock("../fixtures/pdm/two-packages.toml")
 
 	expectNilErr(t, err)
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -147,7 +150,7 @@ func TestParsePdmLock_PackageWithDevDependencies(t *testing.T) {
 	packages, err := python.ParsePdmLock("../fixtures/pdm/dev-dependency.toml")
 
 	expectNilErr(t, err)
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -177,7 +180,7 @@ func TestParsePdmLock_PackageWithOptionalDependency(t *testing.T) {
 	packages, err := python.ParsePdmLock("../fixtures/pdm/optional-dependency.toml")
 
 	expectNilErr(t, err)
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -207,7 +210,7 @@ func TestParsePdmLock_PackageWithGitDependency(t *testing.T) {
 	packages, err := python.ParsePdmLock("../fixtures/pdm/git-dependency.toml")
 
 	expectNilErr(t, err)
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "toml",
 			Version:        "0.10.2",
@@ -216,4 +219,48 @@ func TestParsePdmLock_PackageWithGitDependency(t *testing.T) {
 			Commit:         "65bab7582ce14c55cdeec2244c65ea23039c9e6f",
 		},
 	})
+}
+
+func TestParsePdmLock_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("../fixtures/pdm/two-packages.toml")
+	if err != nil {
+		t.Fatalf("could not get absolute path: %v", err)
+	}
+
+	packages, err := python.ParsePdmLock(path)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// two-packages.toml has:
+	// line 4: [metadata]
+	// line 10: [[package]] (six, lines 10-19)
+	// line 21: [[package]] (toml, lines 21-30)
+	assert.Equal(t, 2, len(packages), "expected 2 packages")
+
+	for _, pkg := range packages {
+		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,
+			"expected BlockLocation.Line.Start to be set for package %s", pkg.Name)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to be set for package %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to match the lockfile path for package %s", pkg.Name)
+	}
+
+	// Verify specific positions
+	pkgMap := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		pkgMap[pkg.Name] = pkg
+	}
+
+	// six starts at line 10 ("[[package]]")
+	assert.Equal(t, 10, pkgMap["six"].BlockLocation.Line.Start)
+
+	// toml starts at line 21 ("[[package]]")
+	assert.Equal(t, 21, pkgMap["toml"].BlockLocation.Line.Start)
+
+	// Verify path is absolute
+	assert.True(t, filepath.IsAbs(path), "path should be absolute")
 }
