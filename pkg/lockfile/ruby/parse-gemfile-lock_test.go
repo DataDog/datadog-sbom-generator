@@ -2,7 +2,11 @@ package ruby_test
 
 import (
 	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/ruby"
 
@@ -112,7 +116,7 @@ func TestParseGemfileLock_OneGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "ast",
 			Version:        "2.4.2",
@@ -131,7 +135,7 @@ func TestParseGemfileLock_SomeGems(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "coderay",
 			Version:        "1.1.3",
@@ -162,7 +166,7 @@ func TestParseGemfileLock_MultipleGems(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "bundler-audit",
 			Version:        "0.9.0.1",
@@ -213,7 +217,7 @@ func TestParseGemfileLock_Rails(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "actioncable",
 			Version:        "7.0.2.2",
@@ -502,7 +506,7 @@ func TestParseGemfileLock_Rubocop(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "ast",
 			Version:        "2.4.2",
@@ -575,7 +579,7 @@ func TestParseGemfileLock_HasLocalGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "backbone-on-rails",
 			Version:        "1.2.0.0",
@@ -768,7 +772,7 @@ func TestParseGemfileLock_HasGitGem(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "hanami-controller",
 			Version:        "2.0.0.alpha1",
@@ -832,4 +836,56 @@ func TestParseGemfileLock_PlatformSpecificDependencyIsParsed(t *testing.T) {
 			IsDirect:       true,
 		},
 	})
+}
+
+func TestParseGemfileLock_SomeGems_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("../fixtures/bundler/some-gems.lock")
+	if err != nil {
+		t.Fatalf("could not get absolute path: %v", err)
+	}
+
+	packages, err := ruby.ParseGemfileLock(path)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// some-gems.lock has:
+	// line 4: "    coderay (1.1.3)"
+	// line 5: "    method_source (1.0.0)"
+	// line 6: "    pry (0.14.1)"
+	assert.Equal(t, len(packages), 3, "expected 3 packages")
+
+	for _, pkg := range packages {
+		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,
+			"expected BlockLocation.Line.Start to be set for package %s", pkg.Name)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to be set for package %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to match the lockfile path for package %s", pkg.Name)
+	}
+
+	// Verify specific line numbers
+	pkgMap := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		pkgMap[pkg.Name] = pkg
+	}
+
+	// coderay is at line 4: "    coderay (1.1.3)"
+	assert.Equal(t, 4, pkgMap["coderay"].BlockLocation.Line.Start)
+	assert.Equal(t, 4, pkgMap["coderay"].BlockLocation.Line.End)
+	assert.Equal(t, 1, pkgMap["coderay"].BlockLocation.Column.Start)
+
+	// method_source is at line 5: "    method_source (1.0.0)"
+	assert.Equal(t, 5, pkgMap["method_source"].BlockLocation.Line.Start)
+	assert.Equal(t, 5, pkgMap["method_source"].BlockLocation.Line.End)
+
+	// pry is at line 6: "    pry (0.14.1)"
+	assert.Equal(t, 6, pkgMap["pry"].BlockLocation.Line.Start)
+	assert.Equal(t, 6, pkgMap["pry"].BlockLocation.Line.End)
+
+	// Verify path is absolute (from lockfile, not relative)
+	assert.True(t, os.IsPathSeparator(path[0]) || filepath.IsAbs(path),
+		"path should be absolute")
 }
