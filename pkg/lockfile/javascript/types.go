@@ -248,6 +248,7 @@ type YarnPackage struct {
 	Resolution    string
 	Dependencies  []YarnDependency
 	WorkspacePath string
+	BlockLocation models.FilePosition
 }
 
 type YarnLockExtractor struct {
