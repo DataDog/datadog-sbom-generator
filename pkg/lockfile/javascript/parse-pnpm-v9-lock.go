@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"maps"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -74,7 +76,7 @@ func addDependencyToPackageDetails(dependency lockfile.PackageDetails, packageId
 	return deps
 }
 
-func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, targetedKey string, deps map[string]lockfile.PackageDetails) map[string]lockfile.PackageDetails {
+func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, targetedKey string, deps map[string]lockfile.PackageDetails, positions map[string]models.FilePosition, filePath string) map[string]lockfile.PackageDetails {
 	// Need to look at dependencies
 	visitedSnapshots := make(map[string]bool)
 	snapshotQueue := make([]string, 0)
@@ -96,14 +98,16 @@ func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, t
 		}
 
 		for depName, depVersion := range snapshot.Dependencies {
+			version := getCleanedVersion(sourceFile, depName, depVersion)
 			transitiveDep := lockfile.PackageDetails{
 				Name:           depName,
-				Version:        getCleanedVersion(sourceFile, depName, depVersion),
+				Version:        version,
 				Commit:         getCommitFromVersion(depVersion),
 				Ecosystem:      models.EcosystemNPM,
 				DepGroups:      root.Pkg.DepGroups,
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
+				BlockLocation:  lookupPnpmPosition(depName, version, depVersion, filePath, positions),
 			}
 			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
@@ -111,14 +115,16 @@ func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, t
 		}
 
 		for depName, depVersion := range snapshot.OptionalDependencies {
+			version := getCleanedVersion(sourceFile, depName, depVersion)
 			transitiveDep := lockfile.PackageDetails{
 				Name:           depName,
-				Version:        getCleanedVersion(sourceFile, depName, depVersion),
+				Version:        version,
 				Commit:         getCommitFromVersion(depVersion),
 				Ecosystem:      models.EcosystemNPM,
 				DepGroups:      root.Pkg.DepGroups,
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
+				BlockLocation:  lookupPnpmPosition(depName, version, depVersion, filePath, positions),
 			}
 			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
@@ -129,17 +135,19 @@ func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, t
 	return deps
 }
 
-func extractDirectDependencies(sourceFile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string, workspacePath string) []PnpmDirectDependency {
+func extractDirectDependencies(sourceFile PnpmLockfile, roots []PnpmDirectDependency, dependencies PnpmDependencies, depGroup string, workspacePath string, positions map[string]models.FilePosition, filePath string) []PnpmDirectDependency {
 	for dependencyName, dependency := range dependencies {
 		var nameLocation *models.FilePosition
 		if workspacePath != "" && workspacePath != "." {
 			nameLocation = &models.FilePosition{Filename: workspacePath}
 		}
 
+		version := getCleanedVersion(sourceFile, dependencyName, dependency.Version)
+
 		roots = append(roots, PnpmDirectDependency{
 			Pkg: lockfile.PackageDetails{
 				Name:           dependencyName,
-				Version:        getCleanedVersion(sourceFile, dependencyName, dependency.Version),
+				Version:        version,
 				Commit:         getCommitFromVersion(dependency.Version),
 				TargetVersions: []string{dependency.Specifier},
 				Ecosystem:      models.EcosystemNPM,
@@ -147,6 +155,7 @@ func extractDirectDependencies(sourceFile PnpmLockfile, roots []PnpmDirectDepend
 				PackageManager: models.Pnpm,
 				IsDirect:       true,
 				NameLocation:   nameLocation,
+				BlockLocation:  lookupPnpmPosition(dependencyName, version, dependency.Version, filePath, positions),
 			},
 			Dep:           dependency,
 			WorkspacePath: workspacePath,
@@ -156,7 +165,51 @@ func extractDirectDependencies(sourceFile PnpmLockfile, roots []PnpmDirectDepend
 	return roots
 }
 
-func parsePnpmLock(sourceFile PnpmLockfile) []lockfile.PackageDetails {
+// lookupPnpmPosition resolves the FilePosition for a package in the positions map.
+// It tries, in order:
+//  1. Exact key "name@version" (common case).
+//  2. Raw version key "name@rawVersion" for git/tarball deps where the packages: section
+//     stores the full URL (e.g. "ansi-regex@https://codeload.github.com/...") but the
+//     caller has already cleaned the version to a semver.
+//  3. Prefix match "name@version(" for peer-suffixed keys (e.g. "tsutils@3.21.0(typescript@4.9.5)").
+//     When multiple peer variants exist for the same base version, picks the earliest by line number.
+func lookupPnpmPosition(name, version, rawVersion, filePath string, positions map[string]models.FilePosition) models.FilePosition {
+	key := name + "@" + version
+	if pos, ok := positions[key]; ok {
+		pos.Filename = filePath
+		return pos
+	}
+
+	// Fallback for git/tarball deps: try the raw (pre-cleaning) version.
+	if rawVersion != version {
+		rawKey := name + "@" + rawVersion
+		if pos, ok := positions[rawKey]; ok {
+			pos.Filename = filePath
+			return pos
+		}
+	}
+
+	// Fallback for peer-suffixed keys (e.g. "tsutils@3.21.0(typescript@4.9.5)").
+	// When multiple peer variants exist for the same base version, pick the earliest by line number.
+	prefix := key + "("
+	var best *models.FilePosition
+	for k, pos := range positions {
+		if strings.HasPrefix(k, prefix) {
+			p := pos
+			if best == nil || p.Line.Start < best.Line.Start {
+				best = &p
+			}
+		}
+	}
+	if best != nil {
+		best.Filename = filePath
+		return *best
+	}
+
+	return models.FilePosition{}
+}
+
+func parsePnpmLock(sourceFile PnpmLockfile, positions map[string]models.FilePosition, filePath string) []lockfile.PackageDetails {
 	// First create the deps tree
 	// To do so, first look at the packages list, for each package, look into the importers
 	// If present in the importers => its direct and we know its scope
@@ -165,15 +218,15 @@ func parsePnpmLock(sourceFile PnpmLockfile) []lockfile.PackageDetails {
 	// Going through the importers to get a direct (prod or dev), then finding the transitives in the snapshot
 	directDependencies := make([]PnpmDirectDependency, 0)
 	for workspacePath, importer := range sourceFile.Importers {
-		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.Dependencies, "prod", workspacePath)
-		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.OptionalDependencies, "optional", workspacePath)
-		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.DevDependencies, "dev", workspacePath)
+		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.Dependencies, "prod", workspacePath, positions, filePath)
+		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.OptionalDependencies, "optional", workspacePath, positions, filePath)
+		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.DevDependencies, "dev", workspacePath, positions, filePath)
 	}
 
 	packages := make(map[string]lockfile.PackageDetails)
 	for _, direct := range directDependencies {
 		packages = addDependencyToPackageDetails(direct.Pkg, getPnpmWorkspaceDependencyKey(direct), packages)
-		packages = extractTransitiveDeps(sourceFile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages)
+		packages = extractTransitiveDeps(sourceFile, direct, direct.Pkg.Name+"@"+direct.Dep.Version, packages, positions, filePath)
 	}
 
 	return slices.Collect(maps.Values(packages))
@@ -187,10 +240,120 @@ func getPnpmDependencyKey(pkg lockfile.PackageDetails) string {
 	return getWorkspaceDependencyKey(pkg.Name, pkg.Version, "") // this has no workspace path
 }
 
+// closePnpmBlock closes a package block by finding the last non-empty line before index i.
+func closePnpmBlock(positions map[string]models.FilePosition, key string, beforeIndex int, lines []string) {
+	pos := positions[key]
+	// Find last non-empty line before beforeIndex
+	lastNonEmpty := beforeIndex - 1
+	for lastNonEmpty >= 0 && strings.TrimSpace(lines[lastNonEmpty]) == "" {
+		lastNonEmpty--
+	}
+
+	if lastNonEmpty >= 0 {
+		pos.Line.End = lastNonEmpty + 1 // 1-indexed
+		pos.Column.End = fileposition.GetLastNonEmptyCharacterIndexInLine(lines[lastNonEmpty])
+	} else {
+		pos.Line.End = pos.Line.Start
+	}
+
+	positions[key] = pos
+}
+
+// extractPnpmV9PackagePositions scans YAML lines for package entries under "packages:".
+// Package keys appear at 2-space indent (e.g. "  acorn@8.11.3:"), and their blocks extend
+// until the next entry at the same indent or end of the packages section.
+func extractPnpmV9PackagePositions(lines []string) map[string]models.FilePosition {
+	positions := make(map[string]models.FilePosition)
+
+	inPackages := false
+	var currentKey string
+	var startLine int
+
+	for i, line := range lines {
+		lineNum := i + 1
+
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		// Detect the "packages:" top-level key
+		if trimmed == "packages:" {
+			inPackages = true
+
+			continue
+		}
+
+		if !inPackages {
+			continue
+		}
+
+		// A line with no leading spaces means we've exited the packages block
+		if len(line) > 0 && line[0] != ' ' {
+			if currentKey != "" {
+				closePnpmBlock(positions, currentKey, i, lines)
+				currentKey = ""
+			}
+
+			inPackages = false
+
+			continue
+		}
+
+		// 2-space indent: package entry (e.g. "  acorn@8.11.3:")
+		if len(line) >= 3 && line[0] == ' ' && line[1] == ' ' && line[2] != ' ' && strings.HasSuffix(trimmed, ":") {
+			// Close previous package
+			if currentKey != "" {
+				closePnpmBlock(positions, currentKey, i, lines)
+			}
+
+			// Strip trailing ":" and surrounding single quotes (YAML quotes scoped package
+			// names starting with "@", e.g. "'@scope/pkg@1.0.0':" → "@scope/pkg@1.0.0").
+			pkgKey := strings.Trim(strings.TrimSuffix(trimmed, ":"), "'")
+			currentKey = pkgKey
+			startLine = lineNum
+
+			colStart := fileposition.GetFirstNonEmptyCharacterIndexInLine(line)
+
+			positions[currentKey] = models.FilePosition{
+				Line:   models.Position{Start: startLine, End: 0},
+				Column: models.Position{Start: colStart, End: 0},
+			}
+
+			continue
+		}
+	}
+
+	// Close last package if file ended within packages section
+	if currentKey != "" {
+		pos := positions[currentKey]
+		lastIdx := len(lines) - 1
+		for lastIdx >= 0 && strings.TrimSpace(lines[lastIdx]) == "" {
+			lastIdx--
+		}
+
+		if lastIdx >= 0 {
+			pos.Line.End = lastIdx + 1
+			pos.Column.End = fileposition.GetLastNonEmptyCharacterIndexInLine(lines[lastIdx])
+		} else {
+			pos.Line.End = pos.Line.Start
+		}
+
+		positions[currentKey] = pos
+	}
+
+	return positions
+}
+
 func (e PnpmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PnpmLockfile
 
-	err := yaml.NewDecoder(f).Decode(&parsedLockfile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+	}
+
+	err = yaml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 
 	if err != nil && !errors.Is(err, io.EOF) {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
@@ -213,7 +376,10 @@ func (e PnpmLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCont
 		return e.extractLegacyPnpm(file)
 	}
 
-	return parsePnpmLock(*parsedLockfile), nil
+	lines := fileposition.BytesToLines(content)
+	positions := extractPnpmV9PackagePositions(lines)
+
+	return parsePnpmLock(*parsedLockfile, positions, f.Path()), nil
 }
 
 var PnpmExtractor = PnpmLockExtractor{
