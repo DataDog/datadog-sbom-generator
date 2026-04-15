@@ -855,7 +855,7 @@ func TestParseGemfileLock_SomeGems_BlockLocation(t *testing.T) {
 	// line 4: "    coderay (1.1.3)"
 	// line 5: "    method_source (1.0.0)"
 	// line 6: "    pry (0.14.1)"
-	assert.Equal(t, len(packages), 3, "expected 3 packages")
+	assert.Len(t, packages, 3, "expected 3 packages")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,

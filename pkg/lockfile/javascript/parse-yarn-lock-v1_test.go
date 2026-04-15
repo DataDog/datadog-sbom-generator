@@ -80,10 +80,10 @@ func TestParseYarnLock_v1_OnePackage_BlockLocation(t *testing.T) {
 	}
 
 	pkg := packages[0]
-	assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0")
 	assert.Equal(t, path, pkg.BlockLocation.Filename)
 
 	// balanced-match@^1.0.0 block is at lines 5-8 in one-package.v1.lock
@@ -105,10 +105,10 @@ func TestParseYarnLock_v1_TwoPackages_BlockLocation(t *testing.T) {
 	}
 
 	for _, pkg := range packages {
-		assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
 		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
 	}
 }
@@ -1171,6 +1171,7 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 						Column:   models.Position{Start: 1, End: 108},
 						Filename: lockfilePath,
 					},
+					LocationRole: models.LocationRoleLockfile,
 					Dependencies: make([]*lockfile.PackageDetails, 0),
 				},
 			},
@@ -1186,6 +1187,7 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 108},
 				Filename: lockfilePath,
 			},
+			LocationRole: models.LocationRoleLockfile,
 			IsDirect:     false, // is a dependency of group-dependencies@0.0.11
 			DepGroups:    []string{"dev"},
 			Dependencies: make([]*lockfile.PackageDetails, 0),

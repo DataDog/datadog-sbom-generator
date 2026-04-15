@@ -202,7 +202,7 @@ func TestParseComposerLock_TwoPackages_BlockLocation(t *testing.T) {
 	// two-packages.json has:
 	// "packages" array with sentry/sdk at lines 9-39
 	// "packages-dev" array with theseer/tokenizer at lines 42-77
-	assert.Equal(t, 2, len(packages), "expected 2 packages")
+	assert.Len(t, packages, 2, "expected 2 packages")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,

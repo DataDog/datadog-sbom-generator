@@ -129,7 +129,7 @@ func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 				Ecosystem:      models.EcosystemPyPI,
 				IsDirect:       isDirect || isDevDependency,
 				BlockLocation:  blockLocation,
-			LocationRole:   models.LocationRoleLockfile,
+				LocationRole:   models.LocationRoleLockfile,
 			}
 
 			if len(depGroups) > 0 {

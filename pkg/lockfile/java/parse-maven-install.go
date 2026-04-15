@@ -65,7 +65,7 @@ func extractMavenInstallArtifacts(installFile mavenInstallLockfile, contentBytes
 		return []lockfile.PackageDetails{}, err
 	}
 
-	lines := strings.Split(string(contentBytes), "\n")
+	lines := strings.Split(strings.ReplaceAll(string(contentBytes), "\r\n", "\n"), "\n")
 	fileposition.InJSON("artifacts", installFile.Artifacts, lines, 0)
 
 	artifactNames := make([]string, 0, len(installFile.Artifacts))

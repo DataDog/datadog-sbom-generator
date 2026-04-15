@@ -311,7 +311,7 @@ func TestParsePoetryLock_TwoPackages_BlockLocation(t *testing.T) {
 	// line 1: "[[package]]"  (proto-plus block, lines 1-13)
 	// line 15: "[[package]]" (protobuf block, lines 15-21)
 	// line 23: "[metadata]"  (not a package)
-	assert.Equal(t, 2, len(packages), "expected 2 packages")
+	assert.Len(t, packages, 2, "expected 2 packages")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,
