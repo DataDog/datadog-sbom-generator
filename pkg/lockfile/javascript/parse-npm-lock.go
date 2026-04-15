@@ -54,6 +54,12 @@ func (pdm npmPackageDetailsMap) add(key string, details lockfile.PackageDetails)
 
 	if ok {
 		details.DepGroups = mergeNpmDepsGroups(existing, details)
+		// Keep the earlier lockfile location to ensure deterministic output
+		// (multiple node_modules paths may resolve to the same package key)
+		if existing.BlockLocation.Line.Start > 0 &&
+			(details.BlockLocation.Line.Start == 0 || existing.BlockLocation.Line.Start < details.BlockLocation.Line.Start) {
+			details.BlockLocation = existing.BlockLocation
+		}
 	}
 
 	pdm[key] = details
