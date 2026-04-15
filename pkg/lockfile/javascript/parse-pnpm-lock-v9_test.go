@@ -9,6 +9,8 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/javascript"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParsePnpmLock_v9_NoPackages(t *testing.T) {
@@ -41,6 +43,46 @@ func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 			DepGroups:      []string{"prod"},
 		},
 	})
+}
+
+func TestParsePnpmLock_v9_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/one-package.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if len(packages) != 1 {
+		t.Fatalf("Expected 1 package, got %d", len(packages))
+	}
+
+	pkg := packages[0]
+	if pkg.BlockLocation.Line.Start == 0 {
+		t.Errorf("Expected BlockLocation.Line.Start > 0 for %s, got 0", pkg.Name)
+	}
+	if pkg.BlockLocation.Line.End == 0 {
+		t.Errorf("Expected BlockLocation.Line.End > 0 for %s, got 0", pkg.Name)
+	}
+	if pkg.BlockLocation.Column.Start == 0 {
+		t.Errorf("Expected BlockLocation.Column.Start > 0 for %s, got 0", pkg.Name)
+	}
+	if pkg.BlockLocation.Column.End == 0 {
+		t.Errorf("Expected BlockLocation.Column.End > 0 for %s, got 0", pkg.Name)
+	}
+	if pkg.BlockLocation.Filename != path {
+		t.Errorf("Expected BlockLocation.Filename = %s, got %s", path, pkg.BlockLocation.Filename)
+	}
+
+	// acorn@8.11.3 is at lines 17-20 in one-package.v9.yaml (last non-empty line before "snapshots:")
+	assert.Equal(t, 17, pkg.BlockLocation.Line.Start)
+	assert.Equal(t, 20, pkg.BlockLocation.Line.End)
 }
 
 func TestParsePnpmLock_v9_OnePackageDev(t *testing.T) {
@@ -313,6 +355,90 @@ func TestParsePnpmLock_v9_Commits(t *testing.T) {
 	})
 }
 
+// TestParsePnpmLock_v9_Commits_BlockLocation verifies that git/tarball dependencies
+// (whose packages: key uses a full URL like "ansi-regex@https://codeload.github.com/...")
+// correctly resolve their BlockLocation even though lookupPnpmPosition receives a cleaned
+// semver version, not the raw URL.
+func TestParsePnpmLock_v9_Commits_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/commits.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
+}
+
+func TestParsePnpmLock_v9_MixedGroups_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/mixed-groups.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// All packages should have BlockLocation set
+	for _, pkg := range packages {
+		assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
+}
+
+// TestParsePnpmLock_v9_PeerDependenciesAdvanced_BlockLocation verifies that scoped packages
+// (whose YAML keys are surrounded by single quotes, e.g. '@scope/pkg@1.0.0':) get their
+// BlockLocation correctly populated. This is a regression test for the bug where the single
+// quotes were stored as part of the position map key, causing lookups to miss.
+func TestParsePnpmLock_v9_PeerDependenciesAdvanced_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/peer-dependencies-advanced.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Packages that appear in the packages: section should all have BlockLocation set.
+	// chalk@4.1.2 only appears in snapshots: (not packages:) so it is the only exception.
+	packagesWithoutPosition := map[string]bool{
+		"chalk@4.1.2": true,
+	}
+
+	for _, pkg := range packages {
+		key := pkg.Name + "@" + pkg.Version
+		if packagesWithoutPosition[key] {
+			continue
+		}
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
+}
+
 func TestParsePnpmLock_v9_MixedGroups(t *testing.T) {
 	t.Parallel()
 
@@ -573,6 +699,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 	}
 
 	rootPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/package.json"))
+	lockfilePath := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/pnpm-lock.yaml"))
 	workspace1Path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/workspace-1/package.json"))
 	workspace2Path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/nested/workspace-2/package.json"))
 	workspace3Path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/workspace-3/package.json"))
@@ -608,9 +735,13 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 			Version:        "1.4.0",
 			PackageManager: models.Pnpm,
 			Ecosystem:      models.EcosystemNPM,
-			BlockLocation:  models.FilePosition{},
-			IsDirect:       false, // is a dependency of group-dependencies@0.0.11
-			DepGroups:      []string{"dev"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 45, End: 47},
+				Column:   models.Position{Start: 3, End: 32},
+				Filename: lockfilePath,
+			},
+			IsDirect:  false, // is a dependency of group-dependencies@0.0.11
+			DepGroups: []string{"dev"},
 		},
 		{
 			Name:           "semver",
@@ -763,4 +894,58 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 			DepGroups: []string{"prod", "prod"},
 		},
 	})
+}
+
+func TestParsePnpmLock_Legacy_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/one-package.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if len(packages) != 1 {
+		t.Fatalf("Expected 1 package, got %d", len(packages))
+	}
+
+	pkg := packages[0]
+	assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0")
+	assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0")
+	assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0")
+	assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0")
+	assert.Equal(t, path, pkg.BlockLocation.Filename)
+
+	// /acorn/8.7.0 is at lines 11-15 in one-package.yaml
+	assert.Equal(t, 11, pkg.BlockLocation.Line.Start)
+	assert.Equal(t, 15, pkg.BlockLocation.Line.End)
+}
+
+func TestParsePnpmLock_Legacy_MultiplePackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/multiple-packages.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// All packages should have BlockLocation set
+	for _, pkg := range packages {
+		assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
 }
