@@ -238,7 +238,7 @@ func TestParsePdmLock_TwoPackages_BlockLocation(t *testing.T) {
 	// line 4: [metadata]
 	// line 10: [[package]] (six, lines 10-19)
 	// line 21: [[package]] (toml, lines 21-30)
-	assert.Equal(t, 2, len(packages), "expected 2 packages")
+	assert.Len(t, packages, 2, "expected 2 packages")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,

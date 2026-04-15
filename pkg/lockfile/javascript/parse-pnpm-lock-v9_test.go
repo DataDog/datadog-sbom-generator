@@ -396,10 +396,10 @@ func TestParsePnpmLock_v9_MixedGroups_BlockLocation(t *testing.T) {
 
 	// All packages should have BlockLocation set
 	for _, pkg := range packages {
-		assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
 		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
 	}
 }
@@ -915,10 +915,10 @@ func TestParsePnpmLock_Legacy_OnePackage_BlockLocation(t *testing.T) {
 	}
 
 	pkg := packages[0]
-	assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0")
-	assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0")
 	assert.Equal(t, path, pkg.BlockLocation.Filename)
 
 	// /acorn/8.7.0 is at lines 11-15 in one-package.yaml
@@ -942,10 +942,10 @@ func TestParsePnpmLock_Legacy_MultiplePackages_BlockLocation(t *testing.T) {
 
 	// All packages should have BlockLocation set
 	for _, pkg := range packages {
-		assert.Greater(t, pkg.BlockLocation.Line.Start, 0, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Line.End, 0, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.Start, 0, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
-		assert.Greater(t, pkg.BlockLocation.Column.End, 0, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
 		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
 	}
 }

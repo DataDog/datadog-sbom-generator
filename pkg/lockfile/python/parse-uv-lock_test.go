@@ -248,7 +248,7 @@ func TestParseUvLock_SinglePackage_BlockLocation(t *testing.T) {
 	// line 5: certifi, line 14: charset-normalizer, line 36: idna,
 	// line 45: requests, line 60: urllib3, line 69: uv (root, skipped)
 	// Root package "uv" is skipped, so 5 packages returned.
-	assert.Equal(t, 5, len(packages), "expected 5 packages (root skipped)")
+	assert.Len(t, packages, 5, "expected 5 packages (root skipped)")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,

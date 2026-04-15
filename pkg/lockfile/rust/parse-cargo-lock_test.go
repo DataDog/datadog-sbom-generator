@@ -199,7 +199,7 @@ func TestParseCargoLock_TwoPackages_BlockLocation(t *testing.T) {
 	// two-packages.lock has:
 	// line 5: "[[package]]"  (addr2line block, lines 5-12)
 	// line 14: "[[package]]" (syn block, lines 14-23)
-	assert.Equal(t, 2, len(packages), "expected 2 packages")
+	assert.Len(t, packages, 2, "expected 2 packages")
 
 	for _, pkg := range packages {
 		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,
