@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -104,7 +106,88 @@ func getVersionInfo(name string, maps ...map[string]PnpmLegacyLockDependency) (s
 	return "", "", false
 }
 
-func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile) []lockfile.PackageDetails {
+// extractPnpmLegacyPackagePositions scans YAML lines for package entries under "packages:".
+// Legacy pnpm package keys appear at 2-space indent (e.g. "  /acorn/8.7.0:").
+func extractPnpmLegacyPackagePositions(lines []string) map[string]models.FilePosition {
+	positions := make(map[string]models.FilePosition)
+
+	inPackages := false
+	var currentKey string
+
+	for i, line := range lines {
+		lineNum := i + 1
+
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		// Detect the "packages:" top-level key
+		if trimmed == "packages:" {
+			inPackages = true
+
+			continue
+		}
+
+		if !inPackages {
+			continue
+		}
+
+		// A line with no leading spaces means we've exited the packages block
+		if len(line) > 0 && line[0] != ' ' {
+			if currentKey != "" {
+				closePnpmBlock(positions, currentKey, i, lines)
+				currentKey = ""
+			}
+
+			inPackages = false
+
+			continue
+		}
+
+		// 2-space indent: package entry (e.g. "  /acorn/8.7.0:")
+		if len(line) >= 3 && line[0] == ' ' && line[1] == ' ' && line[2] != ' ' && strings.HasSuffix(trimmed, ":") {
+			// Close previous package
+			if currentKey != "" {
+				closePnpmBlock(positions, currentKey, i, lines)
+			}
+
+			pkgKey := strings.TrimSuffix(trimmed, ":")
+			currentKey = pkgKey
+
+			colStart := fileposition.GetFirstNonEmptyCharacterIndexInLine(line)
+
+			positions[currentKey] = models.FilePosition{
+				Line:   models.Position{Start: lineNum, End: 0},
+				Column: models.Position{Start: colStart, End: 0},
+			}
+
+			continue
+		}
+	}
+
+	// Close last package if file ended within packages section
+	if currentKey != "" {
+		pos := positions[currentKey]
+		lastIdx := len(lines) - 1
+		for lastIdx >= 0 && strings.TrimSpace(lines[lastIdx]) == "" {
+			lastIdx--
+		}
+
+		if lastIdx >= 0 {
+			pos.Line.End = lastIdx + 1
+			pos.Column.End = fileposition.GetLastNonEmptyCharacterIndexInLine(lines[lastIdx])
+		} else {
+			pos.Line.End = pos.Line.Start
+		}
+
+		positions[currentKey] = pos
+	}
+
+	return positions
+}
+
+func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile, positions map[string]models.FilePosition, filePath string) []lockfile.PackageDetails {
 	packages := make([]lockfile.PackageDetails, 0, len(sourceFile.Packages))
 
 	for s, pkg := range sourceFile.Packages {
@@ -186,6 +269,12 @@ func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile) []lockfile.PackageDetail
 			targetVersions = []string{targetVersion}
 		}
 
+		blockLocation := models.FilePosition{}
+		if pos, ok := positions[s]; ok {
+			pos.Filename = filePath
+			blockLocation = pos
+		}
+
 		packages = append(packages, lockfile.PackageDetails{
 			Name:           name,
 			Version:        version,
@@ -195,6 +284,7 @@ func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile) []lockfile.PackageDetail
 			Commit:         commit,
 			DepGroups:      depGroups,
 			IsDirect:       isDirect,
+			BlockLocation:  blockLocation,
 		})
 	}
 
@@ -216,7 +306,12 @@ func (e PnpmLockExtractor) PackageManager() models.PackageManager {
 func (e PnpmLockExtractor) extractLegacyPnpm(f lockfile.DepFile) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *PnpmLegacyLockfile
 
-	err := yaml.NewDecoder(f).Decode(&parsedLockfile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+	}
+
+	err = yaml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 
 	if err != nil && !errors.Is(err, io.EOF) {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
@@ -227,5 +322,8 @@ func (e PnpmLockExtractor) extractLegacyPnpm(f lockfile.DepFile) ([]lockfile.Pac
 		parsedLockfile = &PnpmLegacyLockfile{}
 	}
 
-	return parsePnpmLegacyLock(*parsedLockfile), nil
+	lines := fileposition.BytesToLines(content)
+	positions := extractPnpmLegacyPackagePositions(lines)
+
+	return parsePnpmLegacyLock(*parsedLockfile, positions, f.Path()), nil
 }
