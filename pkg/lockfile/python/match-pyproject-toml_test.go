@@ -212,3 +212,165 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+func TestPyprojectTomlMatcher_Match_PEP621_OnePackage(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-one-package/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 3, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 4, End: 9},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 11, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+func TestPyprojectTomlMatcher_Match_PEP621_OnePackageDev(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-one-package-dev/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 3, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 4, End: 9},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 11, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect:  true,
+			DepGroups: []string{"dev"},
+		},
+	})
+}
+
+func TestPyprojectTomlMatcher_Match_PEP621_TransitiveDependencies(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-transitive/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+		},
+		{
+			Name:           "proto-plus",
+			PackageManager: models.Uv,
+		},
+		{
+			Name:           "protobuf",
+			PackageManager: models.Uv,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "numpy",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 3, End: 19},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 4, End: 9},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 11, End: 17},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "proto-plus",
+			PackageManager: models.Uv,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 3, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 4, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 15, End: 16},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "protobuf",
+			PackageManager: models.Uv,
+		},
+	})
+}

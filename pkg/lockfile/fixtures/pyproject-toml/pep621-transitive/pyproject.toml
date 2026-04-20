@@ -1,0 +1,13 @@
+[project]
+name = "test-project"
+version = "0.1.0"
+requires-python = ">=3.8"
+description = "A test project"
+dependencies = [
+  "numpy>=1.24.0",
+  "proto-plus<2",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
