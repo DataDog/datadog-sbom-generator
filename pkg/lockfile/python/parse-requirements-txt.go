@@ -187,7 +187,6 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 	}
 }
 
-
 func removeComments(line string) string {
 	re := cachedregexp.MustCompile(`(\s*)#.*$`)
 
