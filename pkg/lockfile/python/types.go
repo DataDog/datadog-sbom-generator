@@ -178,3 +178,31 @@ type PipfileMatcher struct{}
 type PyprojectTOMLMatcher struct{}
 
 type RequirementsInMatcher struct{}
+
+// ============================================================================
+// PyprojectTOML TOML Types
+// ============================================================================
+
+type pyprojectTOML struct {
+	Tool    pyprojectTool    `toml:"tool"`
+	Project pyprojectProject `toml:"project"`
+}
+
+type pyprojectProject struct {
+	Dependencies         []string            `toml:"dependencies"`
+	OptionalDependencies map[string][]string `toml:"optional-dependencies"`
+}
+
+type pyprojectTool struct {
+	Poetry pyprojectPoetry `toml:"poetry"`
+}
+
+type pyprojectPoetry struct {
+	Dependencies    map[string]any            `toml:"dependencies"`
+	DevDependencies map[string]any            `toml:"dev-dependencies"`
+	Groups          map[string]pyprojectGroup `toml:"group"`
+}
+
+type pyprojectGroup struct {
+	Dependencies map[string]any `toml:"dependencies"`
+}
