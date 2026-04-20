@@ -82,6 +82,7 @@ func (e JarPomPropertiesExtractor) Extract(f lockfile.DepFile, context lockfile.
 			PackageManager: jarPomPropertiesPackageManager,
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
+			IsDirect:       true,
 		})
 	}
 

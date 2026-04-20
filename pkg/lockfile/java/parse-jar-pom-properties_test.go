@@ -159,6 +159,7 @@ func TestParseJarPomProperties_OnePackage(t *testing.T) {
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
+			IsDirect:       true,
 		},
 	})
 }
@@ -184,6 +185,7 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
+			IsDirect:       true,
 		},
 		{
 			Name:           "org.other:lib-b",
@@ -191,6 +193,7 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
+			IsDirect:       true,
 		},
 	})
 }
