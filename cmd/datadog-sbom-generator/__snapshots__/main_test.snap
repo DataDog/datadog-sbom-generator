@@ -222,6 +222,10 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
       "purl": "pkg:maven/com.example/my-lib@1.0.0",
       "properties": [
         {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
           "name": "datadog:opaque",
           "value": "true"
         },
