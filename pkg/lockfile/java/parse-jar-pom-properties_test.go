@@ -152,7 +152,7 @@ func TestParseJarPomProperties_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "com.example:my-lib",
 			Version:        "1.0.0",
@@ -160,6 +160,11 @@ func TestParseJarPomProperties_OnePackage(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
 			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Filename: path,
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 1},
+			},
 		},
 	})
 }
@@ -178,7 +183,7 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "com.example:lib-a",
 			Version:        "2.0.0",
@@ -186,6 +191,11 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
 			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Filename: path,
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 1},
+			},
 		},
 		{
 			Name:           "org.other:lib-b",
@@ -194,6 +204,11 @@ func TestParseJarPomProperties_MultiplePackages(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
 			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Filename: path,
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 1},
+			},
 		},
 	})
 }

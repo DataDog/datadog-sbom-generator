@@ -83,6 +83,11 @@ func (e JarPomPropertiesExtractor) Extract(f lockfile.DepFile, context lockfile.
 			Ecosystem:      models.EcosystemMaven,
 			Opaque:         true,
 			IsDirect:       true,
+			BlockLocation: models.FilePosition{
+				Filename: f.Path(),
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 1},
+			},
 		})
 	}
 

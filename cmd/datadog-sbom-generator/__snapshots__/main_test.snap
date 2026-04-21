@@ -233,7 +233,14 @@ unsupported output format "unknown" - must be one of: json, cyclonedx-1-5
           "name": "datadog:package-manager",
           "value": "Maven"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"one-package.jar/",/"line_start/":1,/"line_end/":1,/"column_start/":1,/"column_end/":1}}"
+          }
+        ]
+      }
     }
   ]
 }
