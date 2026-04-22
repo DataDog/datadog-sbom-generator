@@ -1,0 +1,11 @@
+[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "requests==2.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "requests==2.28.0",
+]
