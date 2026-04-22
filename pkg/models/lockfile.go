@@ -32,6 +32,7 @@ const (
 	PipfileFilePath            ParsedFilePath = "Pipfile.lock"
 	PnpmFilePath               ParsedFilePath = "pnpm-lock.yaml"
 	PoetryFilePath             ParsedFilePath = "poetry.lock"
+	PyProjectTomlFilePath      ParsedFilePath = "pyproject.toml"
 	PubFilePath                ParsedFilePath = "pubspec.lock"
 	RenvFilePath               ParsedFilePath = "renv.lock"
 	RequirementsFilePath       ParsedFilePath = "requirements.txt"
