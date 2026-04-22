@@ -76,6 +76,11 @@ Examples:
 				Name:  "enable-parsers",
 				Usage: "filter lockfiles to parse by lockfile, package manager or language. Use individual lockfile names (e.g., 'package-lock.json', 'pom.xml'), package manager names(e.g., 'gradle', 'poetry') or language names (e.g., 'javascript', 'java'). To list available parsers use the 'parsers list' command.",
 			},
+			&cli.BoolFlag{
+				Name:  "no-lockfile-parsers",
+				Usage: "also run parsers that extract packages from manifest files (e.g. pyproject.toml) when no lock file is present. Additive to the default parser set.",
+				Value: false,
+			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
 				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
@@ -131,6 +136,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		DirectoryPaths:      context.Args().Slice(),
 		ExcludePaths:        context.StringSlice("exclude"),
 		EnableParsers:       context.StringSlice("enable-parsers"),
+		NoLockfileParsers:   context.Bool("no-lockfile-parsers"),
 		ExitOnConfigFailure: context.Bool("exit-on-config-failure"),
 	}, r)
 
