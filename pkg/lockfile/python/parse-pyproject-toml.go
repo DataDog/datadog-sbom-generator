@@ -67,6 +67,10 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 
 	for i, line := range lines {
 		lowerLine := strings.ToLower(line)
+		// skip comment lines — a commented-out dependency must not be mistaken for an active one
+		if strings.HasPrefix(strings.TrimSpace(lowerLine), "#") {
+			continue
+		}
 		if !strings.Contains(lowerLine, lowerRawName) {
 			continue
 		}
@@ -94,7 +98,8 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		var versionLocation *models.FilePosition
 		if version != "" {
 			if isPoetry {
-				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
+				// Match version in both single- and double-quoted TOML assignments: key = "..." or key = '...'
+				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*[\"']", "[\"']")
 			} else {
 				versionLocation = fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerVersion, lineNumber)
 			}
