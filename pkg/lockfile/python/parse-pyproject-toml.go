@@ -71,8 +71,17 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		if strings.HasPrefix(strings.TrimSpace(lowerLine), "#") {
 			continue
 		}
-		if !strings.Contains(lowerLine, lowerRawName) {
+		// Match the name as a full token — a name like "foo" must not match a line for "foo-bar"
+		nameIdx := strings.Index(lowerLine, lowerRawName)
+		if nameIdx < 0 {
 			continue
+		}
+		afterName := nameIdx + len(lowerRawName)
+		if afterName < len(lowerLine) {
+			next := lowerLine[afterName]
+			if next != '=' && next != '[' && next != '"' && next != '\'' && next != ' ' && next != '\t' && next != ',' && next != ')' {
+				continue
+			}
 		}
 		// Verify the version also appears on this line to avoid matching the wrong occurrence
 		// when the same package name appears in multiple sections with different versions.
@@ -98,8 +107,13 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		var versionLocation *models.FilePosition
 		if version != "" {
 			if isPoetry {
-				// Match version in both single- and double-quoted TOML assignments: key = "..." or key = '...'
-				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*[\"']", "[\"']")
+				// For inline tables like {version = "==2.28.0", source = "..."}, anchor to the version key
+				// to avoid greedily matching other quoted fields.
+				// For simple assignments like requests = "==2.28.0", fall back to the first quoted value.
+				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, "[^\"']+", lineNumber, "version\\s*=\\s*[\"']", "[\"']")
+				if versionLocation == nil {
+					versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, "[^\"']+", lineNumber, "=\\s*[\"']", "[\"']")
+				}
 			} else {
 				versionLocation = fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerVersion, lineNumber)
 			}
