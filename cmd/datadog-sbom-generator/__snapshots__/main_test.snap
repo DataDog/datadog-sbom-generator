@@ -2286,6 +2286,112 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_pyproject.toml_without_lock_file - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/flask@2.3.2",
+      "type": "library",
+      "name": "flask",
+      "version": "2.3.2",
+      "purl": "pkg:pypi/flask@2.3.2",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "uv"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":20},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":11},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":13,/"column_end/":18}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/pytest@8.2.0",
+      "type": "library",
+      "name": "pytest",
+      "version": "8.2.0",
+      "purl": "pkg:pypi/pytest@8.2.0",
+      "properties": [
+        {
+          "name": "datadog:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "uv"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":5,/"column_end/":21},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":14,/"column_end/":19}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/requests@2.28.0",
+      "type": "library",
+      "name": "requests",
+      "version": "2.28.0",
+      "purl": "pkg:pypi/requests@2.28.0",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "uv"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":24},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":14},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_pyproject.toml_without_lock_file - 2]
+Scanning directory './fixtures/integration-pyproject', resolved absolute path '<rootdir>/fixtures/integration-pyproject'
+Scanned <rootdir>/fixtures/integration-pyproject/pyproject.toml file and found 3 packages
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_yarn_with_workspace_support - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",

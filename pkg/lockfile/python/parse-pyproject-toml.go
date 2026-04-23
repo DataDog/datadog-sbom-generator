@@ -57,14 +57,22 @@ func detectPackageManager(pyproject *PyProjectTOML) models.PackageManager {
 	return models.Unknown
 }
 
-// extractPositions finds the line containing the given name in lines and returns
-// block, name, and version positions. For PEP 621 string deps the version appears
-// inline; for Poetry key=value deps the version is in a quoted value.
-func extractPositions(lines []string, filePath, name, version string, isPoetry bool) (models.FilePosition, *models.FilePosition, *models.FilePosition) {
-	lowerName := strings.ToLower(name)
+// extractPositions finds the line containing the given rawName and version in lines and returns
+// block, name, and version positions. rawName is the pre-normalization name as it appears in the
+// file (e.g. "my_pkg"), which may differ from the normalized name used as the package key.
+// For PEP 621 string deps the version appears inline; for Poetry key=value deps it is quoted.
+func extractPositions(lines []string, filePath, rawName, version string, isPoetry bool) (models.FilePosition, *models.FilePosition, *models.FilePosition) {
+	lowerRawName := strings.ToLower(rawName)
+	lowerVersion := strings.ToLower(version)
 
 	for i, line := range lines {
-		if !strings.Contains(strings.ToLower(line), lowerName) {
+		lowerLine := strings.ToLower(line)
+		if !strings.Contains(lowerLine, lowerRawName) {
+			continue
+		}
+		// Verify the version also appears on this line to avoid matching the wrong occurrence
+		// when the same package name appears in multiple sections with different versions.
+		if version != "" && !strings.Contains(lowerLine, lowerVersion) {
 			continue
 		}
 
@@ -78,7 +86,7 @@ func extractPositions(lines []string, filePath, name, version string, isPoetry b
 			Filename: filePath,
 		}
 
-		nameLocation := fileposition.ExtractStringPositionInBlock([]string{line}, lowerName, lineNumber)
+		nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerRawName, lineNumber)
 		if nameLocation != nil {
 			nameLocation.Filename = filePath
 		}
@@ -86,9 +94,9 @@ func extractPositions(lines []string, filePath, name, version string, isPoetry b
 		var versionLocation *models.FilePosition
 		if version != "" {
 			if isPoetry {
-				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{line}, ".*", lineNumber, "=\\s*\"", "\"")
+				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
 			} else {
-				versionLocation = fileposition.ExtractStringPositionInBlock([]string{line}, version, lineNumber)
+				versionLocation = fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerVersion, lineNumber)
 			}
 			if versionLocation != nil {
 				versionLocation.Filename = filePath
@@ -137,16 +145,16 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 	packages := map[string]lockfile.PackageDetails{}
 
 	for _, dep := range pyproject.Project.Dependencies {
-		if name, version, ok := parsePEP508Pin(dep); ok {
-			block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, false)
+		if name, rawName, version, ok := parsePEP508Pin(dep); ok {
+			block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
 			addOrMergeGroups(packages, name, version, []string{"prod"}, pm, block, nameLocation, versionLocation)
 		}
 	}
 
 	for group, deps := range pyproject.Project.OptionalDependencies {
 		for _, dep := range deps {
-			if name, version, ok := parsePEP508Pin(dep); ok {
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, false)
+			if name, rawName, version, ok := parsePEP508Pin(dep); ok {
+				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
 				addOrMergeGroups(packages, name, version, []string{group}, pm, block, nameLocation, versionLocation)
 			}
 		}
@@ -159,8 +167,8 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 				// skip {include-group = "..."} table entries
 				continue
 			}
-			if name, version, ok := parsePEP508Pin(dep); ok {
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, false)
+			if name, rawName, version, ok := parsePEP508Pin(dep); ok {
+				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
 				addOrMergeGroups(packages, name, version, []string{group}, pm, block, nameLocation, versionLocation)
 			}
 		}
@@ -226,9 +234,10 @@ func addOrMergeGroups(packages map[string]lockfile.PackageDetails, name, version
 	}
 }
 
-// parsePEP508Pin parses a PEP 508 dependency string and returns the normalized name and version
-// only when the dependency is an exact pin (==). Returns ok=false for all other specifiers.
-func parsePEP508Pin(dep string) (name, version string, ok bool) {
+// parsePEP508Pin parses a PEP 508 dependency string and returns the normalized name, the raw
+// (pre-normalization) name as written in the file, and the version — only when the dependency
+// is an exact pin (==). Returns ok=false for all other specifiers.
+func parsePEP508Pin(dep string) (name, rawName, version string, ok bool) {
 	// strip environment markers (PEP 508)
 	dep, _, _ = strings.Cut(dep, ";")
 	dep = strings.TrimSpace(dep)
@@ -237,40 +246,40 @@ func parsePEP508Pin(dep string) (name, version string, ok bool) {
 	// !=, >=, <=, ~= (checked via the preceding character) or === (checked via the following character).
 	idx := strings.Index(dep, "==")
 	if idx < 0 {
-		return "", "", false
+		return "", "", "", false
 	}
 	if idx > 0 {
 		if prev := dep[idx-1]; prev == '!' || prev == '>' || prev == '<' || prev == '~' {
-			return "", "", false
+			return "", "", "", false
 		}
 	}
 	if idx+2 < len(dep) && dep[idx+2] == '=' {
-		return "", "", false
+		return "", "", "", false
 	}
 	// reject multi-constraint specs where == appears after another constraint e.g. "requests~=2.28,==2.28.0"
 	if strings.Contains(dep[:idx], ",") {
-		return "", "", false
+		return "", "", "", false
 	}
 
 	// strip optional parenthesis: "requests (" -> "requests"
-	rawName := strings.TrimRight(strings.TrimSpace(dep[:idx]), "( ")
+	fileRawName := strings.TrimRight(strings.TrimSpace(dep[:idx]), "( ")
 	rawVersion := strings.TrimSpace(dep[idx+2:])
 
 	// strip extras: requests[security] -> requests
-	rawName, _, _ = strings.Cut(rawName, "[")
-	rawName = strings.TrimSpace(rawName)
+	fileRawName, _, _ = strings.Cut(fileRawName, "[")
+	fileRawName = strings.TrimSpace(fileRawName)
 
 	// reject multi-constraint specs like "==2.28.0,!=2.28.0" — not an exact pin
 	if strings.Contains(rawVersion, ",") {
-		return "", "", false
+		return "", "", "", false
 	}
 	rawVersion = strings.TrimSpace(strings.TrimRight(rawVersion, ")"))
 
-	if rawName == "" || rawVersion == "" || !isConcreteVersion(rawVersion) {
-		return "", "", false
+	if fileRawName == "" || rawVersion == "" || !isConcreteVersion(rawVersion) {
+		return "", "", "", false
 	}
 
-	return normalizedRequirementName(rawName), rawVersion, true
+	return normalizedRequirementName(fileRawName), fileRawName, rawVersion, true
 }
 
 // parsePoetryPin parses a Poetry dependency value (string or inline table) and returns
