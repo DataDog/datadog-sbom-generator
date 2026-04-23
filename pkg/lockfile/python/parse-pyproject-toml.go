@@ -182,14 +182,14 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 			}
 			if version, ok := parsePoetryPin(val); ok {
 				normalized := normalizedRequirementName(name)
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), normalized, version, true)
+				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
 				addOrMergeGroups(packages, normalized, version, []string{"prod"}, pm, block, nameLocation, versionLocation)
 			}
 		}
 		for name, val := range pyproject.Tool.Poetry.DevDependencies {
 			if version, ok := parsePoetryPin(val); ok {
 				normalized := normalizedRequirementName(name)
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), normalized, version, true)
+				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
 				addOrMergeGroups(packages, normalized, version, []string{"dev"}, pm, block, nameLocation, versionLocation)
 			}
 		}
@@ -197,7 +197,7 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 			for name, val := range group.Dependencies {
 				if version, ok := parsePoetryPin(val); ok {
 					normalized := normalizedRequirementName(name)
-					block, nameLocation, versionLocation := extractPositions(lines, f.Path(), normalized, version, true)
+					block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
 					addOrMergeGroups(packages, normalized, version, []string{groupName}, pm, block, nameLocation, versionLocation)
 				}
 			}
@@ -257,7 +257,13 @@ func parsePEP508Pin(dep string) (name, rawName, version string, ok bool) {
 		return "", "", "", false
 	}
 	// reject multi-constraint specs where == appears after another constraint e.g. "requests~=2.28,==2.28.0"
-	if strings.Contains(dep[:idx], ",") {
+	// Only check for commas outside of brackets to allow extras like "requests[socks,security]==2.28.0"
+	nameSegment := dep[:idx]
+	if bracketEnd := strings.Index(nameSegment, "]"); bracketEnd >= 0 {
+		if strings.Contains(nameSegment[bracketEnd:], ",") {
+			return "", "", "", false
+		}
+	} else if strings.Contains(nameSegment, ",") {
 		return "", "", "", false
 	}
 
