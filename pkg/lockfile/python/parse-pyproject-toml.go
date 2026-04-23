@@ -71,10 +71,17 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		if strings.HasPrefix(strings.TrimSpace(lowerLine), "#") {
 			continue
 		}
-		// Match the name as a full token — a name like "foo" must not match a line for "foo-bar"
+		// Match the name as a full token — neither a prefix ("foo" must not match "foo-bar")
+		// nor a suffix ("requests" must not match "myrequests").
 		nameIdx := strings.Index(lowerLine, lowerRawName)
 		if nameIdx < 0 {
 			continue
+		}
+		if nameIdx > 0 {
+			prev := lowerLine[nameIdx-1]
+			if prev != '"' && prev != '\'' && prev != ' ' && prev != '\t' {
+				continue
+			}
 		}
 		afterName := nameIdx + len(lowerRawName)
 		if afterName < len(lowerLine) {
