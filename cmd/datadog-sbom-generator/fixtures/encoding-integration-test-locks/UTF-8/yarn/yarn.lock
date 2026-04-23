@@ -17,13 +17,13 @@ __metadata:
   resolution: "datadog-sbom-generator@workspace:."
   dependencies:
     balanced-match: "npm:^1.0.0"
-    supports-color: "npm:10.0.0"
+    supports-color: "npm:10.2.2"
   languageName: unknown
   linkType: soft
 
-"supports-color@npm:10.0.0":
-  version: 10.0.0
-  resolution: "supports-color@npm:10.0.0"
-  checksum: 10c0/0e7884dfd02a07b3c6e0b235346f58c19f0201f1e44f7807583581761b354688c8577378785b5a4e3b03110809786c4c808e0e086cd91911f7b8bc59132703a8
+"supports-color@npm:10.2.2":
+  version: 10.2.2
+  resolution: "supports-color@npm:10.2.2"
+  checksum: 10c0/fb28dd7e0cdf80afb3f2a41df5e068d60c8b4f97f7140de2eaed5b42e075d82a0e980b20a2c0efd2b6d73cfacb55555285d8cc719fa0472220715aefeaa1da7c
   languageName: node
   linkType: hard

@@ -1,15 +1,24 @@
-lockfileVersion: 5.3
+lockfileVersion: '9.0'
 
-specifiers:
-  acorn: ^8.7.0
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
-dependencies:
-  acorn: 8.7.0
+importers:
+
+  .:
+    dependencies:
+      acorn:
+        specifier: ^8.7.1
+        version: 8.16.0
 
 packages:
 
-  /acorn/8.7.0:
-    resolution: {integrity: sha512-V/LGr1APy+PXIwKebEWrkZPwoeoF+w1jiOBUmuxuiUIaOHtob8Qc9BTrYo7VuI5fR8tqsy+buA2WFooR5olqvQ==}
+  acorn@8.16.0:
+    resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-    dev: false
+
+snapshots:
+
+  acorn@8.16.0: {}
