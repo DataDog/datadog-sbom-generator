@@ -170,6 +170,46 @@ type RequirementsTxtExtractor struct {
 }
 
 // ============================================================================
+// PyProject Types
+// ============================================================================
+
+const pyprojectOfficiallySupported = false
+
+type PyProjectTOML struct {
+	BuildSystem      PyProjectBuildSystem  `toml:"build-system"`
+	Project          PyProjectProject      `toml:"project"`
+	DependencyGroups map[string][]any      `toml:"dependency-groups"`
+	Tool             PyProjectToolSections `toml:"tool"`
+}
+
+type PyProjectBuildSystem struct {
+	BuildBackend string `toml:"build-backend"`
+}
+
+type PyProjectProject struct {
+	Dependencies         []string            `toml:"dependencies"`
+	OptionalDependencies map[string][]string `toml:"optional-dependencies"`
+}
+
+type PyProjectToolSections struct {
+	Poetry *PyProjectPoetry `toml:"poetry"`
+	PDM    *map[string]any  `toml:"pdm"`
+	UV     *map[string]any  `toml:"uv"`
+}
+
+type PyProjectPoetry struct {
+	Dependencies    map[string]any                  `toml:"dependencies"`
+	DevDependencies map[string]any                  `toml:"dev-dependencies"`
+	Group           map[string]PyProjectPoetryGroup `toml:"group"`
+}
+
+type PyProjectPoetryGroup struct {
+	Dependencies map[string]any `toml:"dependencies"`
+}
+
+type PyProjectTOMLExtractor struct{}
+
+// ============================================================================
 // Matcher Types
 // ============================================================================
 
