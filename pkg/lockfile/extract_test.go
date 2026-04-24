@@ -291,6 +291,7 @@ func filesToParsers() map[string]string {
 		"pom.xml":                          "pom.xml",
 		"pubspec.lock":                     "pubspec.lock",
 		"renv.lock":                        "renv.lock",
+		"pyproject.toml":                   "pyproject.toml",
 		"requirements-example.txt":         "requirements.txt",
 		"yarn.lock":                        "yarn.lock",
 		"uv.lock":                          "uv.lock",
