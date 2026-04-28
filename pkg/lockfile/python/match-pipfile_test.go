@@ -79,6 +79,7 @@ func TestPipfileMatcher_Match_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 11},
@@ -142,6 +143,7 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 7},
@@ -162,6 +164,7 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 4},

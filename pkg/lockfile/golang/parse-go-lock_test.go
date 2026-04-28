@@ -117,6 +117,7 @@ func TestParseGoLock_WithPathMajor(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 54},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 46, End: 47},
@@ -139,6 +140,7 @@ func TestParseGoLock_WithPathMajor(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 3},
@@ -178,6 +180,7 @@ func TestParseGoLock_WithoutSupportedVersioning(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 51},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 9, End: 44},
@@ -195,6 +198,7 @@ func TestParseGoLock_WithoutSupportedVersioning(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 3},
@@ -234,6 +238,7 @@ func TestParseGoLock_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 35},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 30, End: 35},
@@ -273,6 +278,7 @@ func TestParseGoLock_TwoPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 35},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 30, End: 35},
@@ -295,6 +301,7 @@ func TestParseGoLock_TwoPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 25},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 20, End: 25},
@@ -317,6 +324,7 @@ func TestParseGoLock_TwoPackages(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 3},
@@ -356,6 +364,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 35},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 30, End: 35},
@@ -378,6 +387,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 25},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 20, End: 25},
@@ -400,6 +410,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 38},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 33, End: 38},
@@ -422,6 +433,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 36},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 30, End: 36},
@@ -444,6 +456,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 2, End: 53},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 20, End: 53},
@@ -466,6 +479,7 @@ func TestParseGoLock_IndirectPackages(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 3},
@@ -505,6 +519,7 @@ func TestParseGoLock_Replacements_One(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 63},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 58, End: 63},
@@ -544,6 +559,7 @@ func TestParseGoLock_Replacements_Mixed(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 59},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 54, End: 59},
@@ -566,6 +582,7 @@ func TestParseGoLock_Replacements_Mixed(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 28},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 23, End: 28},
@@ -605,6 +622,7 @@ func TestParseGoLock_Replacements_Local(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 38},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 33, End: 38},
@@ -627,7 +645,8 @@ func TestParseGoLock_Replacements_Local(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 42},
 				Filename: path,
 			},
-			IsDirect: true,
+			LocationRole: models.LocationRoleManifest,
+			IsDirect:     true,
 		},
 	})
 }
@@ -656,6 +675,7 @@ func TestParseGoLock_Replacements_Different(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 59},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 54, End: 59},
@@ -678,6 +698,7 @@ func TestParseGoLock_Replacements_Different(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 59},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 54, End: 59},
@@ -717,6 +738,7 @@ func TestParseGoLock_Replacements_NotRequired(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 28},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 23, End: 28},
@@ -739,6 +761,7 @@ func TestParseGoLock_Replacements_NotRequired(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 38},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 33, End: 38},
@@ -778,6 +801,7 @@ func TestParseGoLock_Replacements_NoVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 52},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 47, End: 52},

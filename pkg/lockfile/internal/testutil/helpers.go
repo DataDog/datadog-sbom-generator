@@ -133,7 +133,7 @@ func cmpOptions(ignoreLocations bool) []cmp.Option {
 	}
 
 	return []cmp.Option{
-		cmpopts.IgnoreFields(lockfile.PackageDetails{}, "BlockLocation", "NameLocation", "VersionLocation"),
+		cmpopts.IgnoreFields(lockfile.PackageDetails{}, "BlockLocation", "LocationRole", "NameLocation", "VersionLocation"),
 	}
 }
 

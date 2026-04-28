@@ -97,6 +97,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 58},
 				Filename: sourceFilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 51, End: 54},
@@ -118,6 +119,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 90},
 				Filename: sourceFilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 61, End: 66},
@@ -139,6 +141,7 @@ func TestNugetCsprojMatcher_Match_Packages(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 24},
 				Filename: sourceFilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 16, End: 21},

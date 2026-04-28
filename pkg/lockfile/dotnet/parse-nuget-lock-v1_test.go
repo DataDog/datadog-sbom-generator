@@ -240,6 +240,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 22},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 30, End: 61},
@@ -264,6 +265,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 79},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 30, End: 39},
@@ -288,6 +290,7 @@ func TestParseNuGetLock_v1_DevelopmentDependency(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 68},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 30, End: 41},
@@ -329,6 +332,7 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 68},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 32, End: 47},
@@ -361,6 +365,7 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 68},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 32, End: 47},

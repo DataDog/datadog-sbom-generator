@@ -155,6 +155,7 @@ func findPackagePositions(pkg *lockfile.PackageDetails, depName string, versionR
 			startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
 			endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
 
+			pkg.LocationRole = models.LocationRoleManifest
 			pkg.BlockLocation = models.FilePosition{
 				Line:     models.Position{Start: lineNumber, End: lineNumber},
 				Column:   models.Position{Start: startColumn, End: endColumn},

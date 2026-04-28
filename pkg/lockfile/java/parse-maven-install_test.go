@@ -284,6 +284,7 @@ func TestParseMavenInstall_OnePackage(t *testing.T) {
 				Line:     models.Position{Start: 4, End: 10},
 				Column:   models.Position{Start: 5, End: 6},
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 	})
 }
@@ -313,6 +314,7 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 				Line:     models.Position{Start: 4, End: 10},
 				Column:   models.Position{Start: 5, End: 6},
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 		{
 			Name:           "com.google.guava:guava",
@@ -324,6 +326,7 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 				Line:     models.Position{Start: 11, End: 17},
 				Column:   models.Position{Start: 5, End: 6},
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 		{
 			Name:           "org.slf4j:slf4j-api",
@@ -335,6 +338,7 @@ func TestParseMavenInstall_MultiplePackages(t *testing.T) {
 				Line:     models.Position{Start: 18, End: 24},
 				Column:   models.Position{Start: 5, End: 6},
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 	})
 }

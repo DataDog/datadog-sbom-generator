@@ -124,6 +124,7 @@ func TestParseRequirementsTxt_OneRequirementUnconstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -159,6 +160,7 @@ func TestParseRequirementsTxt_OneRequirementConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -199,6 +201,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 8},
@@ -221,6 +224,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 22},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 15},
@@ -243,6 +247,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 6},
@@ -266,6 +271,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 18},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 1, End: 9},
@@ -288,6 +294,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 18, End: 18},
 				Column:   models.Position{Start: 1, End: 8},
@@ -310,6 +317,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 1, End: 8},
@@ -332,6 +340,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 22, End: 22},
 				Column:   models.Position{Start: 1, End: 7},
@@ -355,6 +364,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 6},
@@ -377,6 +387,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 28},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 26, End: 26},
 				Column:   models.Position{Start: 1, End: 21},
@@ -400,6 +411,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 21},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 28, End: 28},
 				Column:   models.Position{Start: 1, End: 14},
@@ -423,6 +435,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 30, End: 30},
 				Column:   models.Position{Start: 1, End: 12},
@@ -446,6 +459,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 24},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 32, End: 32},
 				Column:   models.Position{Start: 1, End: 16},
@@ -469,6 +483,7 @@ func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 34, End: 34},
 				Column:   models.Position{Start: 1, End: 7},
@@ -509,6 +524,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -527,6 +543,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 11},
@@ -545,6 +562,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 7},
@@ -568,6 +586,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 6},
@@ -591,6 +610,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 21},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 13},
@@ -614,6 +634,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 8},
@@ -632,6 +653,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 9},
@@ -650,6 +672,7 @@ func TestParseRequirementsTxt_MultipleRequirementsMixed(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -686,6 +709,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 7},
@@ -704,6 +728,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 11},
@@ -722,6 +747,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 15},
@@ -740,6 +766,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 70},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 7},
@@ -763,6 +790,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 52},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 8},
@@ -786,6 +814,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 77},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 1, End: 9},
@@ -804,6 +833,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 73},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 14},
@@ -827,6 +857,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 23, End: 23},
 				Column:   models.Position{Start: 1, End: 9},
@@ -845,6 +876,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 6},
@@ -863,6 +895,7 @@ func TestParseRequirementsTxt_FileFormatExample(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: otherPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 7},
@@ -903,6 +936,7 @@ func TestParseRequirementsTxt_WithAddedSupport(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 23},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 15},
@@ -942,6 +976,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 22},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 15},
@@ -964,6 +999,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 7},
@@ -987,6 +1023,7 @@ func TestParseRequirementsTxt_NonNormalizedNames(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 23},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 1, End: 15},
@@ -1028,6 +1065,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -1046,6 +1084,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 11},
@@ -1064,6 +1103,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1087,6 +1127,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 6},
@@ -1110,6 +1151,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 21},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 1, End: 13},
@@ -1133,6 +1175,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 8},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 8},
@@ -1151,6 +1194,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 9},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1169,6 +1213,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: multiplePackagesPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1187,6 +1232,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1210,6 +1256,7 @@ func TestParseRequirementsTxt_WithMultipleROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: onePackagePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1260,6 +1307,7 @@ func TestParseRequirementsTxt_WithURLROption(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1302,6 +1350,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: basePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1325,6 +1374,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1348,6 +1398,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: testPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1371,6 +1422,7 @@ func TestParseRequirementsTxt_DuplicateROptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: testPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1411,6 +1463,7 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1434,6 +1487,7 @@ func TestParseRequirementsTxt_CyclicRSelf(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 9},
@@ -1476,6 +1530,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 20},
 				Filename: sourcePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 17},
@@ -1499,6 +1554,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 20},
 				Filename: cyclic2Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 17},
@@ -1522,6 +1578,7 @@ func TestParseRequirementsTxt_CyclicRComplex(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 20},
 				Filename: cyclic3Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 17},
@@ -1562,6 +1619,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 95},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 6},
@@ -1585,6 +1643,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 4},
@@ -1608,6 +1667,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 81},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 1, End: 11},
@@ -1631,6 +1691,7 @@ func TestParseRequirementsTxt_WithPerRequirementOptions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 50},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 11},
@@ -1671,6 +1732,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 6},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 4},
@@ -1694,6 +1756,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 4},
@@ -1717,6 +1780,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 4},
@@ -1740,6 +1804,7 @@ func TestParseRequirementsTxt_LineContinuation(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 17, End: 17},
 				Column:   models.Position{Start: 1, End: 4},
@@ -1780,6 +1845,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 26},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 3},
@@ -1799,6 +1865,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 67},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 20},
@@ -1818,6 +1885,7 @@ func TestParseRequirementsTxt_EnvironmentMarkers(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 41},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 12},
@@ -1859,6 +1927,7 @@ func TestParseRequirementsTxt_GitUrlPackages(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 52},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1898,6 +1967,7 @@ func TestParseRequirementsTxt_WhlUrlPackages(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 161},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 7},
@@ -1941,6 +2011,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 8},
@@ -1963,6 +2034,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 26},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 19},
@@ -1985,6 +2057,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 1, End: 5},
@@ -2007,6 +2080,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 9},
@@ -2030,6 +2104,7 @@ func TestParseRequirementsTxt_FromSimpleGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 1, End: 8},
@@ -2071,6 +2146,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 8},
@@ -2094,6 +2170,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 26},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 19},
@@ -2118,6 +2195,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 1, End: 5},
@@ -2142,6 +2220,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 18, End: 18},
 				Column:   models.Position{Start: 1, End: 9},
@@ -2166,6 +2245,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 1, End: 8},
@@ -2189,6 +2269,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 22, End: 22},
 				Column:   models.Position{Start: 1, End: 10},
@@ -2213,6 +2294,7 @@ func TestParseRequirementsTxt_FromComplexGeneratedFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 18},
 				Filename: path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 24, End: 24},
 				Column:   models.Position{Start: 1, End: 11},
@@ -2255,6 +2337,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: txtPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
 				Column:   models.Position{Start: 1, End: 8},
@@ -2277,6 +2360,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 26},
 				Filename: txtPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 19},
@@ -2300,6 +2384,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: inPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 6},
@@ -2323,6 +2408,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 11},
 				Filename: txtPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 5},
@@ -2346,6 +2432,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: inPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 9},
@@ -2371,6 +2458,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 23},
 				Filename: inPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 18},
@@ -2389,6 +2477,7 @@ func TestParseRequirementsTxt_FromGeneratedFileWithInFile(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 15},
 				Filename: txtPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 19, End: 19},
 				Column:   models.Position{Start: 1, End: 8},

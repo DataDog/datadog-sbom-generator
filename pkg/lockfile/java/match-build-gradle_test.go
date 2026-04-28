@@ -152,6 +152,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Groovy(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 77},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 48, End: 70},
@@ -197,6 +198,7 @@ func TestBuildGradleMatcher_Match_OnePackage_GroovyExtended(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 105},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 64, End: 86},
@@ -242,6 +244,7 @@ func TestBuildGradleMatcher_Match_OnePackage_Kotlin(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 78},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 48, End: 70},
@@ -287,6 +290,7 @@ func TestBuildGradleMatcher_Match_OnePackage_KotlinExtended(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 109},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 66, End: 88},
@@ -334,6 +338,7 @@ func TestBuildGradleMatcher_Match_OneRuntimePackage_Kotlin(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 75},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 45, End: 67},
@@ -395,6 +400,7 @@ func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 53},
 				Filename: packages[0].BlockLocation.Filename,
 			},
+			LocationRole:    models.LocationRoleManifest,
 			NameLocation:    packages[0].NameLocation,
 			VersionLocation: packages[0].VersionLocation,
 		},
@@ -408,6 +414,7 @@ func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 66},
 				Filename: packages[1].BlockLocation.Filename,
 			},
+			LocationRole:    models.LocationRoleManifest,
 			NameLocation:    packages[1].NameLocation,
 			VersionLocation: packages[1].VersionLocation,
 		},
@@ -421,6 +428,7 @@ func TestBuildGradleMatcher_Match_MultiModule(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 70},
 				Filename: packages[2].BlockLocation.Filename,
 			},
+			LocationRole:    models.LocationRoleManifest,
 			NameLocation:    packages[2].NameLocation,
 			VersionLocation: packages[2].VersionLocation,
 		},

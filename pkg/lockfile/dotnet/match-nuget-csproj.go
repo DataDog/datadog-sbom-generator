@@ -48,6 +48,7 @@ func (m NugetCsprojMatcher) Match(sourceFile lockfile.DepFile, packages []lockfi
 			packages[key].DepGroups = matchingPkg.DepGroups
 			packages[key].TargetFrameworks = matchingPkg.TargetFrameworks
 			packages[key].BlockLocation = matchingPkg.BlockLocation
+			packages[key].LocationRole = matchingPkg.LocationRole
 			packages[key].NameLocation = matchingPkg.NameLocation
 			packages[key].VersionLocation = matchingPkg.VersionLocation
 		}

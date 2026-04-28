@@ -127,6 +127,7 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile lockfile
 			continue
 		}
 
+		pkg.LocationRole = models.LocationRoleManifest
 		pkg.BlockLocation = models.FilePosition{
 			Line:     gem.blockLine,
 			Column:   gem.blockColumn,
