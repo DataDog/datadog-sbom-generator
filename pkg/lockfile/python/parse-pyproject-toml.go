@@ -236,6 +236,7 @@ func addOrMergeGroups(packages map[string]lockfile.PackageDetails, name, version
 		BlockLocation:   block,
 		NameLocation:    nameLocation,
 		VersionLocation: versionLocation,
+		LocationRole:    models.LocationRoleManifest,
 	}
 }
 

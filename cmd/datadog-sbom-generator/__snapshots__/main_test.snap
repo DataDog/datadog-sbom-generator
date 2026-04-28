@@ -1716,6 +1716,54 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_maven_install.json_(lockfile_role) - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:maven/com.google.guava/guava@31.1-jre",
+      "type": "library",
+      "name": "com.google.guava:guava",
+      "version": "31.1-jre",
+      "purl": "pkg:maven/com.google.guava/guava@31.1-jre",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"maven_install.json/",/"line_start/":4,/"line_end/":10,/"column_start/":5,/"column_end/":6,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_maven_install.json_(lockfile_role) - 2]
+
+---
+
 [TestRun/Scan_npm_with_workspace_support - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -2324,7 +2372,7 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":20},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":11},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":13,/"column_end/":18}}"
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":20,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":11,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":13,/"column_end/":18,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -2352,7 +2400,7 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":5,/"column_end/":21},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":14,/"column_end/":19}}"
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":5,/"column_end/":21,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":6,/"column_end/":12,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":13,/"line_end/":13,/"column_start/":14,/"column_end/":19,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -2376,7 +2424,7 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":24},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":14},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22}}"
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":5,/"column_end/":24,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":6,/"column_end/":14,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":6,/"line_end/":6,/"column_start/":16,/"column_end/":22,/"role/":/"manifest/"}}"
           }
         ]
       }

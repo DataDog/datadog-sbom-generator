@@ -80,15 +80,15 @@ func TestParsePyProjectTOML_PEP621_PinnedExtracted(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22),
+			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "flask", Version: "2.3.2", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 6, 6, 5, 20), NameLocation: posPtr(path, 6, 6, 6, 11), VersionLocation: posPtr(path, 6, 6, 13, 18),
+			BlockLocation: pos(path, 6, 6, 5, 20), NameLocation: posPtr(path, 6, 6, 6, 11), VersionLocation: posPtr(path, 6, 6, 13, 18), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "boto3", Version: "1.26.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 9, 9, 5, 21), NameLocation: posPtr(path, 9, 9, 6, 11), VersionLocation: posPtr(path, 9, 9, 13, 19),
+			BlockLocation: pos(path, 9, 9, 5, 21), NameLocation: posPtr(path, 9, 9, 6, 11), VersionLocation: posPtr(path, 9, 9, 13, 19), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -116,19 +116,19 @@ func TestParsePyProjectTOML_PEP621_OptionalDeps(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22),
+			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "pytest", Version: "7.4.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"dev"},
-			BlockLocation: pos(path, 10, 10, 5, 21), NameLocation: posPtr(path, 10, 10, 6, 12), VersionLocation: posPtr(path, 10, 10, 14, 19),
+			BlockLocation: pos(path, 10, 10, 5, 21), NameLocation: posPtr(path, 10, 10, 6, 12), VersionLocation: posPtr(path, 10, 10, 14, 19), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "mypy", Version: "1.5.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"dev"},
-			BlockLocation: pos(path, 11, 11, 5, 19), NameLocation: posPtr(path, 11, 11, 6, 10), VersionLocation: posPtr(path, 11, 11, 12, 17),
+			BlockLocation: pos(path, 11, 11, 5, 19), NameLocation: posPtr(path, 11, 11, 6, 10), VersionLocation: posPtr(path, 11, 11, 12, 17), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "sphinx", Version: "7.1.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"docs"},
-			BlockLocation: pos(path, 14, 14, 5, 21), NameLocation: posPtr(path, 14, 14, 6, 12), VersionLocation: posPtr(path, 14, 14, 14, 19),
+			BlockLocation: pos(path, 14, 14, 5, 21), NameLocation: posPtr(path, 14, 14, 6, 12), VersionLocation: posPtr(path, 14, 14, 14, 19), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -147,19 +147,19 @@ func TestParsePyProjectTOML_DependencyGroups_PinnedExtracted(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Uv, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22),
+			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "pytest", Version: "7.4.0", PackageManager: models.Uv, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"dev"},
-			BlockLocation: pos(path, 12, 12, 5, 21), NameLocation: posPtr(path, 12, 12, 6, 12), VersionLocation: posPtr(path, 12, 12, 14, 19),
+			BlockLocation: pos(path, 12, 12, 5, 21), NameLocation: posPtr(path, 12, 12, 6, 12), VersionLocation: posPtr(path, 12, 12, 14, 19), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "ruff", Version: "0.1.0", PackageManager: models.Uv, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"dev"},
-			BlockLocation: pos(path, 13, 13, 5, 19), NameLocation: posPtr(path, 13, 13, 6, 10), VersionLocation: posPtr(path, 13, 13, 12, 17),
+			BlockLocation: pos(path, 13, 13, 5, 19), NameLocation: posPtr(path, 13, 13, 6, 10), VersionLocation: posPtr(path, 13, 13, 12, 17), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "hypothesis", Version: "6.100.0", PackageManager: models.Uv, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"test"},
-			BlockLocation: pos(path, 17, 17, 5, 27), NameLocation: posPtr(path, 17, 17, 6, 16), VersionLocation: posPtr(path, 17, 17, 18, 25),
+			BlockLocation: pos(path, 17, 17, 5, 27), NameLocation: posPtr(path, 17, 17, 6, 16), VersionLocation: posPtr(path, 17, 17, 18, 25), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -179,15 +179,15 @@ func TestParsePyProjectTOML_Poetry_PinnedExtracted(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 11, 11, 1, 22), NameLocation: posPtr(path, 11, 11, 1, 9), VersionLocation: posPtr(path, 11, 11, 13, 21),
+			BlockLocation: pos(path, 11, 11, 1, 22), NameLocation: posPtr(path, 11, 11, 1, 9), VersionLocation: posPtr(path, 11, 11, 13, 21), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "flask", Version: "2.3.2", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 12, 12, 1, 18), NameLocation: posPtr(path, 12, 12, 1, 6), VersionLocation: posPtr(path, 12, 12, 10, 17),
+			BlockLocation: pos(path, 12, 12, 1, 18), NameLocation: posPtr(path, 12, 12, 1, 6), VersionLocation: posPtr(path, 12, 12, 10, 17), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "boto3", Version: "1.26.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 13, 13, 1, 17), NameLocation: posPtr(path, 13, 13, 1, 6), VersionLocation: posPtr(path, 13, 13, 10, 16),
+			BlockLocation: pos(path, 13, 13, 1, 17), NameLocation: posPtr(path, 13, 13, 1, 6), VersionLocation: posPtr(path, 13, 13, 10, 16), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -202,19 +202,19 @@ func TestParsePyProjectTOML_Poetry_GroupDeps(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 11, 11, 1, 22), NameLocation: posPtr(path, 11, 11, 1, 9), VersionLocation: posPtr(path, 11, 11, 13, 21),
+			BlockLocation: pos(path, 11, 11, 1, 22), NameLocation: posPtr(path, 11, 11, 1, 9), VersionLocation: posPtr(path, 11, 11, 13, 21), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "black", Version: "23.1.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"dev"},
-			BlockLocation: pos(path, 14, 14, 1, 19), NameLocation: posPtr(path, 14, 14, 1, 6), VersionLocation: posPtr(path, 14, 14, 10, 18),
+			BlockLocation: pos(path, 14, 14, 1, 19), NameLocation: posPtr(path, 14, 14, 1, 6), VersionLocation: posPtr(path, 14, 14, 10, 18), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "pytest", Version: "7.4.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"test"},
-			BlockLocation: pos(path, 17, 17, 1, 19), NameLocation: posPtr(path, 17, 17, 1, 7), VersionLocation: posPtr(path, 17, 17, 11, 18),
+			BlockLocation: pos(path, 17, 17, 1, 19), NameLocation: posPtr(path, 17, 17, 1, 7), VersionLocation: posPtr(path, 17, 17, 11, 18), LocationRole: models.LocationRoleManifest,
 		},
 		{
 			Name: "pytest-cov", Version: "4.1.0", PackageManager: models.Poetry, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"test"},
-			BlockLocation: pos(path, 18, 18, 1, 35), NameLocation: posPtr(path, 18, 18, 1, 11), VersionLocation: posPtr(path, 18, 18, 26, 33),
+			BlockLocation: pos(path, 18, 18, 1, 35), NameLocation: posPtr(path, 18, 18, 1, 11), VersionLocation: posPtr(path, 18, 18, 26, 33), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -255,7 +255,7 @@ func TestParsePyProjectTOML_PEP621_ParenthesizedPin(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod"},
-			BlockLocation: pos(path, 5, 5, 5, 27), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 18, 24),
+			BlockLocation: pos(path, 5, 5, 5, 27), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 18, 24), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
@@ -274,7 +274,7 @@ func TestParsePyProjectTOML_MergesGroupsForDuplicatePackage(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name: "requests", Version: "2.28.0", PackageManager: models.Unknown, Ecosystem: models.EcosystemPyPI, IsDirect: true, DepGroups: []string{"prod", "dev"},
-			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22),
+			BlockLocation: pos(path, 5, 5, 5, 24), NameLocation: posPtr(path, 5, 5, 6, 14), VersionLocation: posPtr(path, 5, 5, 16, 22), LocationRole: models.LocationRoleManifest,
 		},
 	})
 }
