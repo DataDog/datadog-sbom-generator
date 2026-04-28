@@ -44,6 +44,7 @@ type ScannerActions struct {
 	Reachability        bool
 	Debug               bool
 	EnableParsers       []string
+	ManifestParsers     bool
 	DDEnvVars           DDEnvVars
 	ExitOnConfigFailure bool
 }
@@ -266,6 +267,11 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 	}
 
 	enabledParsers := initializeEnabledParsers(actions.EnableParsers, r)
+	if actions.ManifestParsers && len(actions.EnableParsers) == 0 {
+		for _, name := range lockfile.ListManifestExtractorNames() {
+			enabledParsers[name] = true
+		}
+	}
 
 	if r == nil {
 		r = &reporter.VoidReporter{}
