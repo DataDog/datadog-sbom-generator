@@ -28,6 +28,7 @@ import (
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/renv"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/ruby"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/rust"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/swift"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/system"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability"
