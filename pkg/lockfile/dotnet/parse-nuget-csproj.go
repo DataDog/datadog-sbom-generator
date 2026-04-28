@@ -142,6 +142,7 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 						IsDirect:        true, // .csproj only contains direct dependencies
 						DepGroups:       []string{string(depGroup)},
 						BlockLocation:   blockLocation,
+						LocationRole:    models.LocationRoleManifest,
 						NameLocation:    nameLocation,
 						VersionLocation: versionLocation,
 					}
@@ -150,6 +151,7 @@ func (e NuGetCsprojExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 					// Update to use the occurrence with the lower line number
 					// This ensures deterministic behavior when iterating over the map
 					existing.BlockLocation = blockLocation
+					existing.LocationRole = models.LocationRoleManifest
 					existing.NameLocation = nameLocation
 					existing.VersionLocation = versionLocation
 				}

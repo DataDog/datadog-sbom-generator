@@ -500,6 +500,7 @@ func (e MavenLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 			Version:         resolvedVersion,
 			Ecosystem:       models.EcosystemMaven,
 			BlockLocation:   blockLocation,
+			LocationRole:    models.LocationRoleManifest,
 			NameLocation:    &artifactPosition,
 			VersionLocation: &versionPosition,
 			PackageManager:  mavenPackageManager,

@@ -98,6 +98,7 @@ func extractMavenInstallArtifacts(installFile mavenInstallLockfile, contentBytes
 			PackageManager: mavenInstallPackageManager,
 			Ecosystem:      models.EcosystemMaven,
 			BlockLocation:  artifact.FilePosition,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 

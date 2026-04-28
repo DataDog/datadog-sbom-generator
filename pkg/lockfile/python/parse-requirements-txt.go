@@ -179,6 +179,7 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 		Name:            normalizedRequirementName(name),
 		Version:         version,
 		BlockLocation:   blockLocation,
+		LocationRole:    models.LocationRoleManifest,
 		NameLocation:    nameLocation,
 		VersionLocation: versionLocation,
 		PackageManager:  requirementsPackageManager,
