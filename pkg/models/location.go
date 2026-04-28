@@ -6,12 +6,18 @@ import (
 	"strings"
 )
 
+const (
+	LocationRoleManifest = "manifest"
+	LocationRoleLockfile = "lockfile"
+)
+
 type PackageLocation struct {
 	Filename    string `json:"file_name"`
 	LineStart   int    `json:"line_start"`
 	LineEnd     int    `json:"line_end"`
 	ColumnStart int    `json:"column_start"`
 	ColumnEnd   int    `json:"column_end"`
+	Role        string `json:"role,omitempty"`
 }
 
 type PackageLocations struct {
@@ -59,5 +65,6 @@ func (location PackageLocation) Hash() string {
 		strconv.Itoa(location.LineEnd),
 		strconv.Itoa(location.ColumnStart),
 		strconv.Itoa(location.ColumnEnd),
+		location.Role,
 	}, "#")
 }
