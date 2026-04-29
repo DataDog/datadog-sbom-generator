@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -20,6 +21,7 @@ var urlRegexp = cachedregexp.MustCompile(`url:\s*"([^"]+)"`)
 type packageEntry struct {
 	name    string // normalized name (same format as nameFromRepoURL)
 	lineNum int    // 1-indexed line where .package( starts
+	rawLine string // full source line where .package( appears (for column extraction)
 }
 
 func (m PackageSwiftMatcher) GetSourceFile(f lockfile.DepFile) (lockfile.DepFile, error) {
@@ -49,7 +51,7 @@ func (m PackageSwiftMatcher) Match(sourceFile lockfile.DepFile, packages []lockf
 		packages[i].LocationRole = models.LocationRoleManifest
 		packages[i].BlockLocation = models.FilePosition{
 			Line:     models.Position{Start: entry.lineNum, End: entry.lineNum},
-			Column:   models.Position{Start: 0, End: 0},
+			Column:   models.Position{Start: fileposition.GetFirstNonEmptyCharacterIndexInLine(entry.rawLine), End: fileposition.GetLastNonEmptyCharacterIndexInLine(entry.rawLine)},
 			Filename: sourceFile.Path(),
 		}
 	}
@@ -65,6 +67,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 
 	var inBlock bool
 	var blockStartLine int
+	var blockStartRawLine string
 	var blockLines strings.Builder
 	var parenDepth int
 
@@ -81,6 +84,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 
 			inBlock = true
 			blockStartLine = lineNum
+			blockStartRawLine = line
 			blockLines.Reset()
 			// Count parens from the .package( position onward
 			parenDepth = 0
@@ -95,7 +99,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 
 			if parenDepth <= 0 {
 				// Block is complete on a single line
-				entry := extractEntryFromBlock(blockLines.String(), blockStartLine)
+				entry := extractEntryFromBlock(blockLines.String(), blockStartLine, blockStartRawLine)
 				if entry != nil {
 					entries = append(entries, *entry)
 				}
@@ -114,7 +118,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 			blockLines.WriteString(line)
 
 			if parenDepth <= 0 {
-				entry := extractEntryFromBlock(blockLines.String(), blockStartLine)
+				entry := extractEntryFromBlock(blockLines.String(), blockStartLine, blockStartRawLine)
 				if entry != nil {
 					entries = append(entries, *entry)
 				}
@@ -131,7 +135,8 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 }
 
 // extractEntryFromBlock extracts the URL from a .package(...) block and derives the normalized name.
-func extractEntryFromBlock(block string, lineNum int) *packageEntry {
+// rawLine is the original source line where .package( appears, used for column extraction.
+func extractEntryFromBlock(block string, lineNum int, rawLine string) *packageEntry {
 	matches := urlRegexp.FindStringSubmatch(block)
 	if len(matches) < 2 {
 		return nil
@@ -146,6 +151,7 @@ func extractEntryFromBlock(block string, lineNum int) *packageEntry {
 	return &packageEntry{
 		name:    name,
 		lineNum: lineNum,
+		rawLine: rawLine,
 	}
 }
 
