@@ -37,5 +37,6 @@ const (
 	RenvFilePath               ParsedFilePath = "renv.lock"
 	RequirementsFilePath       ParsedFilePath = "requirements.txt"
 	UvFilePath                 ParsedFilePath = "uv.lock"
+	SwiftFilePath              ParsedFilePath = "Package.resolved"
 	YarnFilePath               ParsedFilePath = "yarn.lock"
 )

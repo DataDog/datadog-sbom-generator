@@ -20,6 +20,7 @@ const (
 	Pub          PackageManager = "Pub"
 	Renv         PackageManager = "Renv"
 	Requirements PackageManager = "Requirements"
+	SwiftPM      PackageManager = "SwiftPM"
 	Unknown      PackageManager = "Unknown"
 	Uv           PackageManager = "uv"
 	Yarn         PackageManager = "Yarn"
@@ -45,4 +46,5 @@ var PackageManagerToLanguage = map[PackageManager]Language{
 	Hex:          Elixir,
 	Pub:          Dart,
 	Renv:         R,
+	SwiftPM:      Swift,
 }

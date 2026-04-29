@@ -18,4 +18,5 @@ const (
 	Dart       Language = "Dart"
 	R          Language = "R"
 	Rust       Language = "Rust"
+	Swift      Language = "Swift"
 )
