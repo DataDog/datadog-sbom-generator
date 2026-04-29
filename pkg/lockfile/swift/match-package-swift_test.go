@@ -85,7 +85,7 @@ func TestPackageSwiftMatcher_Match_SinglePackage(t *testing.T) {
 			LocationRole:   models.LocationRoleManifest,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
-				Column:   models.Position{Start: 0, End: 0},
+				Column:   models.Position{Start: 9, End: 84},
 				Filename: sourceFile.Path(),
 			},
 		},
@@ -142,7 +142,7 @@ func TestPackageSwiftMatcher_Match_MultiplePackagesPartialMatch(t *testing.T) {
 			LocationRole:   models.LocationRoleManifest,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
-				Column:   models.Position{Start: 0, End: 0},
+				Column:   models.Position{Start: 9, End: 84},
 				Filename: sourceFile.Path(),
 			},
 		},
@@ -155,7 +155,7 @@ func TestPackageSwiftMatcher_Match_MultiplePackagesPartialMatch(t *testing.T) {
 			LocationRole:   models.LocationRoleManifest,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 8, End: 8},
-				Column:   models.Position{Start: 0, End: 0},
+				Column:   models.Position{Start: 9, End: 89},
 				Filename: sourceFile.Path(),
 			},
 		},
@@ -237,7 +237,7 @@ func TestPackageSwiftMatcher_Match_MultilinePackageBlock(t *testing.T) {
 			LocationRole:   models.LocationRoleManifest,
 			BlockLocation: models.FilePosition{
 				Line:     models.Position{Start: 7, End: 7},
-				Column:   models.Position{Start: 0, End: 0},
+				Column:   models.Position{Start: 9, End: 18},
 				Filename: sourceFile.Path(),
 			},
 		},
