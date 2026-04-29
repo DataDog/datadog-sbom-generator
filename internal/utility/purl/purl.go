@@ -23,12 +23,14 @@ var EcosystemToPURLMapper = map[models.Ecosystem]string{
 	models.EcosystemPub:         "pub",
 	models.EcosystemHex:         packageurl.TypeHex,
 	models.EcosystemCRAN:        packageurl.TypeCran,
+	models.EcosystemSwiftURL:    "swift",
 }
 
 var ecosystemPURLExtractor = map[models.Ecosystem]ParameterExtractor{
 	models.EcosystemMaven:     FromMaven,
 	models.EcosystemGo:        FromGo,
 	models.EcosystemPackagist: FromComposer,
+	models.EcosystemSwiftURL:  FromSwift,
 }
 
 func From(packageInfo models.PackageInfo) (*packageurl.PackageURL, error) {
