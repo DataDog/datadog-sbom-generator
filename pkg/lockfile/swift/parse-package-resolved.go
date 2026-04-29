@@ -12,7 +12,9 @@ import (
 )
 
 // PackageResolvedExtractor extracts dependencies from Swift Package.resolved files (v1, v2, v3).
-type PackageResolvedExtractor struct{}
+type PackageResolvedExtractor struct {
+	lockfile.WithMatcher
+}
 
 func (e PackageResolvedExtractor) ShouldExtract(path string) bool {
 	return filepath.Base(path) == models.SwiftFilePath.String()
@@ -135,12 +137,16 @@ func isLocalURL(rawURL string) bool {
 
 var _ lockfile.Extractor = PackageResolvedExtractor{}
 
-//nolint:gochecknoinits
-func init() {
-	lockfile.RegisterExtractor(models.SwiftFilePath, PackageResolvedExtractor{})
+var swiftExtractor = PackageResolvedExtractor{
+	lockfile.WithMatcher{Matchers: []lockfile.Matcher{&PackageSwiftMatcher{}}},
 }
 
 // ParsePackageResolved is a convenience function for testing.
 func ParsePackageResolved(pathToLockfile string) ([]lockfile.PackageDetails, error) {
-	return lockfile.ExtractFromFile(pathToLockfile, PackageResolvedExtractor{})
+	return lockfile.ExtractFromFile(pathToLockfile, swiftExtractor)
+}
+
+//nolint:gochecknoinits
+func init() {
+	lockfile.RegisterExtractor(models.SwiftFilePath, swiftExtractor)
 }
