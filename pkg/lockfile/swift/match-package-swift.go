@@ -69,6 +69,18 @@ func (m PackageSwiftMatcher) Match(sourceFile lockfile.DepFile, packages []lockf
 	return nil
 }
 
+// stripLineComment removes everything from the first // comment marker that is
+// not part of a URL scheme (i.e. not preceded by :).
+func stripLineComment(line string) string {
+	for i := 0; i < len(line)-1; i++ {
+		if line[i] == '/' && line[i+1] == '/' && (i == 0 || line[i-1] != ':') {
+			return line[:i]
+		}
+	}
+
+	return line
+}
+
 // parsePackageSwift reads a Package.swift file and extracts .package(url: "...") entries.
 func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 	scanner := bufio.NewScanner(r)
@@ -83,7 +95,8 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 
 	for scanner.Scan() {
 		lineNum++
-		line := scanner.Text()
+		rawLine := scanner.Text()
+		line := stripLineComment(rawLine)
 
 		if !inBlock {
 			// Look for .package( to start a dependency block
@@ -94,7 +107,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 
 			inBlock = true
 			blockStartLine = lineNum
-			blockStartRawLine = line
+			blockStartRawLine = rawLine
 			blockLines.Reset()
 			// Count parens from the .package( position onward
 			parenDepth = 0
