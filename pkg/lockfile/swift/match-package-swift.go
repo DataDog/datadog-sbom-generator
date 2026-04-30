@@ -44,15 +44,17 @@ func (m PackageSwiftMatcher) Match(sourceFile lockfile.DepFile, packages []lockf
 		return err
 	}
 
-	// Build a lookup map from normalized name to entry
+	// Build a lookup map from normalized name to entry.
+	// Keys are lowercased because GitHub URLs are case-insensitive: Package.swift and
+	// Package.resolved may use different casings for the same repository URL.
 	entryMap := make(map[string]packageEntry, len(entries))
 	for _, entry := range entries {
-		entryMap[entry.name] = entry
+		entryMap[strings.ToLower(entry.name)] = entry
 	}
 
 	// Enrich matching packages
 	for i := range packages {
-		entry, ok := entryMap[packages[i].Name]
+		entry, ok := entryMap[strings.ToLower(packages[i].Name)]
 		if !ok {
 			continue
 		}
