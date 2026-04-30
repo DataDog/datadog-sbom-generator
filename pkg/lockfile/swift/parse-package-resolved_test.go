@@ -231,6 +231,28 @@ func TestParsePackageResolved_MixedStatesV2(t *testing.T) {
 	})
 }
 
+func TestParsePackageResolved_SSHUrlV2(t *testing.T) {
+	t.Parallel()
+
+	packages, err := swift.ParsePackageResolved("../fixtures/swift/ssh-url-v2.json")
+
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "github.com/Alamofire/Alamofire",
+			Version:        "5.6.1",
+			Commit:         "f82c23a8a7ef8dc1a49a8bfc6a96883e79121864",
+			PackageManager: models.SwiftPM,
+			Ecosystem:      models.EcosystemSwiftURL,
+			IsDirect:       false,
+			LocationRole:   models.LocationRoleLockfile,
+		},
+	})
+}
+
 func TestParsePackageResolved_RegistryPinV2(t *testing.T) {
 	t.Parallel()
 

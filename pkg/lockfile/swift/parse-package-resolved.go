@@ -7,9 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
+
+// scpStyleRegexp matches scp-style SSH URLs like git@github.com:org/repo.git
+var scpStyleRegexp = cachedregexp.MustCompile(`^[^@]+@([^:]+):(.+)$`)
 
 // PackageResolvedExtractor extracts dependencies from Swift Package.resolved files (v1, v2, v3).
 type PackageResolvedExtractor struct {
@@ -117,7 +121,20 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 
 // nameFromRepoURL extracts a purl-compatible name from a repository URL.
 // For "https://github.com/Alamofire/Alamofire.git" it returns "github.com/Alamofire/Alamofire".
+// For scp-style SSH URLs like "git@github.com:org/repo.git" it returns "github.com/org/repo".
 func nameFromRepoURL(repoURL string) string {
+	// Handle scp-style SSH URLs (e.g. git@github.com:org/repo.git) which url.Parse
+	// does not recognise as having a host.
+	if m := scpStyleRegexp.FindStringSubmatch(repoURL); m != nil {
+		host := m[1]
+		path := strings.TrimSuffix(m[2], ".git")
+		if path == "" {
+			return ""
+		}
+
+		return host + "/" + path
+	}
+
 	parsed, err := url.Parse(repoURL)
 	if err != nil || parsed.Host == "" {
 		return ""
