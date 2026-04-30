@@ -202,6 +202,45 @@ func TestPackageSwiftMatcher_Match_URLWithGitSuffix(t *testing.T) {
 	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
 }
 
+func TestPackageSwiftMatcher_Match_MultiplePackagesOnOneLine(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/swift/compact-package-swift/Package.swift")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "github.com/Alamofire/Alamofire",
+			Version:        "5.6.1",
+			PackageManager: models.SwiftPM,
+			Ecosystem:      models.EcosystemSwiftURL,
+			IsDirect:       false,
+			LocationRole:   models.LocationRoleLockfile,
+		},
+		{
+			Name:           "github.com/apple/swift-argument-parser",
+			Version:        "1.2.0",
+			PackageManager: models.SwiftPM,
+			Ecosystem:      models.EcosystemSwiftURL,
+			IsDirect:       false,
+			LocationRole:   models.LocationRoleLockfile,
+		},
+	}
+
+	err = packageSwiftMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Both packages are declared on the same line — both should be IsDirect=true
+	assert.True(t, packages[0].IsDirect)
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+	assert.True(t, packages[1].IsDirect)
+	assert.Equal(t, models.LocationRoleManifest, packages[1].LocationRole)
+}
+
 func TestPackageSwiftMatcher_Match_CommentedOutPackageIgnored(t *testing.T) {
 	t.Parallel()
 

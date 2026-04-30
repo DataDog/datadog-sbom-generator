@@ -81,6 +81,24 @@ func stripLineComment(line string) string {
 	return line
 }
 
+// scanParens counts parens in s starting at initialDepth and returns the final depth
+// and the index just past the character that brought depth to zero (or -1 if depth
+// never reached zero).
+func scanParens(s string, initialDepth int) (depth int, closeIdx int) {
+	for i, ch := range s {
+		if ch == '(' {
+			initialDepth++
+		} else if ch == ')' {
+			initialDepth--
+			if initialDepth <= 0 {
+				return initialDepth, i + 1
+			}
+		}
+	}
+
+	return initialDepth, -1
+}
+
 // parsePackageSwift reads a Package.swift file and extracts .package(url: "...") entries.
 func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 	scanner := bufio.NewScanner(r)
@@ -99,53 +117,78 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 		line := stripLineComment(rawLine)
 
 		if !inBlock {
-			// Look for .package( to start a dependency block
-			idx := strings.Index(line, ".package(")
-			if idx < 0 {
-				continue
-			}
-
-			inBlock = true
-			blockStartLine = lineNum
-			blockStartRawLine = rawLine
-			blockLines.Reset()
-			// Count parens from the .package( position onward
-			parenDepth = 0
-			for _, ch := range line[idx:] {
-				if ch == '(' {
-					parenDepth++
-				} else if ch == ')' {
-					parenDepth--
+			// A single line may contain multiple .package(...) calls; process all of them.
+			rest := line
+			for {
+				idx := strings.Index(rest, ".package(")
+				if idx < 0 {
+					break
 				}
-			}
-			blockLines.WriteString(line[idx:])
 
-			if parenDepth <= 0 {
-				// Block is complete on a single line
-				entry := extractEntryFromBlock(blockLines.String(), blockStartLine, blockStartRawLine)
-				if entry != nil {
-					entries = append(entries, *entry)
+				fragment := rest[idx:]
+				depth, closeIdx := scanParens(fragment, 0)
+
+				if closeIdx >= 0 {
+					// Block is complete within this line segment.
+					entry := extractEntryFromBlock(fragment[:closeIdx], lineNum, rawLine)
+					if entry != nil {
+						entries = append(entries, *entry)
+					}
+					rest = fragment[closeIdx:]
+				} else {
+					// Block spans multiple lines; hand off to the continuation path.
+					inBlock = true
+					blockStartLine = lineNum
+					blockStartRawLine = rawLine
+					blockLines.Reset()
+					blockLines.WriteString(fragment)
+					parenDepth = depth
+					break
 				}
-				inBlock = false
 			}
 		} else {
-			// Continue collecting the multi-line block
-			for _, ch := range line {
-				if ch == '(' {
-					parenDepth++
-				} else if ch == ')' {
-					parenDepth--
-				}
-			}
-			blockLines.WriteString("\n")
-			blockLines.WriteString(line)
+			// Continue collecting a multi-line block.
+			depth, closeIdx := scanParens(line, parenDepth)
 
-			if parenDepth <= 0 {
+			blockLines.WriteString("\n")
+			if closeIdx >= 0 {
+				blockLines.WriteString(line[:closeIdx])
 				entry := extractEntryFromBlock(blockLines.String(), blockStartLine, blockStartRawLine)
 				if entry != nil {
 					entries = append(entries, *entry)
 				}
 				inBlock = false
+
+				// Process the remainder of the line for more .package( calls.
+				rest := line[closeIdx:]
+				for {
+					idx := strings.Index(rest, ".package(")
+					if idx < 0 {
+						break
+					}
+
+					fragment := rest[idx:]
+					d, ci := scanParens(fragment, 0)
+
+					if ci >= 0 {
+						entry := extractEntryFromBlock(fragment[:ci], lineNum, rawLine)
+						if entry != nil {
+							entries = append(entries, *entry)
+						}
+						rest = fragment[ci:]
+					} else {
+						inBlock = true
+						blockStartLine = lineNum
+						blockStartRawLine = rawLine
+						blockLines.Reset()
+						blockLines.WriteString(fragment)
+						parenDepth = d
+						break
+					}
+				}
+			} else {
+				blockLines.WriteString(line)
+				parenDepth = depth
 			}
 		}
 	}
