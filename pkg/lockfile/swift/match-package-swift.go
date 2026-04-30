@@ -77,7 +77,7 @@ func (m PackageSwiftMatcher) Match(sourceFile lockfile.DepFile, packages []lockf
 // stripLineComment removes everything from the first // comment marker that is
 // not part of a URL scheme (i.e. not preceded by :).
 func stripLineComment(line string) string {
-	for i := 0; i < len(line)-1; i++ {
+	for i := range len(line) - 1 {
 		if line[i] == '/' && line[i+1] == '/' && (i == 0 || line[i-1] != ':') {
 			return line[:i]
 		}
@@ -148,6 +148,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 					blockLines.Reset()
 					blockLines.WriteString(fragment)
 					parenDepth = depth
+
 					break
 				}
 			}
@@ -188,6 +189,7 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 						blockLines.Reset()
 						blockLines.WriteString(fragment)
 						parenDepth = d
+
 						break
 					}
 				}
