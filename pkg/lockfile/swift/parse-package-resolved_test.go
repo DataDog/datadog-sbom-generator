@@ -221,7 +221,7 @@ func TestParsePackageResolved_MixedStatesV2(t *testing.T) {
 		},
 		{
 			Name:           "github.com/apple/swift-nio",
-			Version:        "",
+			Version:        "main",
 			Commit:         "a0e22235ec1e4e23c4a7a54e5ed2fba9e4e88a7b",
 			PackageManager: models.SwiftPM,
 			Ecosystem:      models.EcosystemSwiftURL,

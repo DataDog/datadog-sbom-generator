@@ -44,6 +44,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 		identity string
 		repoURL  string
 		version  string
+		branch   string
 		revision string
 		kind     string // "remoteSourceControl", "localSourceControl", "registry", or "" for v1
 	}
@@ -60,6 +61,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 			pins = append(pins, normalizedPin{
 				repoURL:  pin.RepositoryURL,
 				version:  pin.State.Version,
+				branch:   pin.State.Branch,
 				revision: pin.State.Revision,
 			})
 		}
@@ -69,6 +71,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 				identity: pin.Identity,
 				repoURL:  pin.Location,
 				version:  pin.State.Version,
+				branch:   pin.State.Branch,
 				revision: pin.State.Revision,
 				kind:     pin.Kind,
 			})
@@ -105,9 +108,15 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 			continue
 		}
 
+		// Use branch as version when there is no version tag (branch-pinned dependency).
+		version := pin.version
+		if version == "" {
+			version = pin.branch
+		}
+
 		packages = append(packages, lockfile.PackageDetails{
 			Name:           name,
-			Version:        pin.version,
+			Version:        version,
 			Commit:         pin.revision,
 			PackageManager: swiftPackageManager,
 			Ecosystem:      models.EcosystemSwiftURL,
