@@ -58,13 +58,13 @@ func TestFromSwift(t *testing.T) {
 			namespace, name, err := FromSwift(models.PackageInfo{Name: tt.packageName})
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("expected error but got none")
+					t.Errorf("want error, got nil")
 				}
 
 				return
 			}
 			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+				t.Errorf("got unexpected error: %v", err)
 
 				return
 			}
