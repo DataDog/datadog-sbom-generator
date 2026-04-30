@@ -15,6 +15,9 @@ import (
 // direct-dependency information from Package.swift.
 type PackageSwiftMatcher struct{}
 
+// urlRegexp matches the url: "..." argument in a .package(url: ...) declaration.
+// TODO: Swift Package Registry dependencies use .package(id: "scope.name", from: "1.0.0")
+// with no url: argument. These are never matched and will always be reported as IsDirect=false.
 var urlRegexp = cachedregexp.MustCompile(`url:\s*"([^"]+)"`)
 
 // packageEntry represents a .package(url: "...") declaration found in Package.swift.
