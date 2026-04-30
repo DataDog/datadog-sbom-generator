@@ -16637,7 +16637,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -16736,7 +16737,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -16755,7 +16757,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21338,7 +21341,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":10,/"column_end/":19,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":10,/"column_end/":19,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21361,7 +21365,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":26,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":21,/"column_end/":26,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":26,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":21,/"column_end/":26,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21432,7 +21437,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":7,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":9,/"column_end/":15,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":7,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":9,/"column_end/":15,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21455,7 +21461,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21554,7 +21561,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -21573,7 +21581,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26156,7 +26165,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":10,/"column_end/":19,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":8,/"line_end/":8,/"column_start/":10,/"column_end/":19,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26179,7 +26189,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":26,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":21,/"column_end/":26,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":26,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":1,/"column_end/":19,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":11,/"line_end/":11,/"column_start/":21,/"column_end/":26,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26250,7 +26261,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":7,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":9,/"column_end/":15,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":1,/"column_end/":7,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":19,/"line_end/":19,/"column_start/":9,/"column_end/":15,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26273,7 +26285,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":11,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":1,/"column_end/":5,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":15,/"line_end/":15,/"column_start/":7,/"column_end/":11,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26372,7 +26385,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":17,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":1,/"column_end/":9,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":26,/"line_end/":26,/"column_start/":11,/"column_end/":17,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
@@ -26391,7 +26405,8 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"          }
+            "location": "{/"block/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":15,/"role/":/"lockfile/"},/"name/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":1,/"column_end/":8,/"role/":/"lockfile/"},/"version/":{/"file_name/":/"requirements.txt/",/"line_start/":28,/"line_end/":28,/"column_start/":10,/"column_end/":15,/"role/":/"lockfile/"}}"
+          }
         ]
       }
     },
