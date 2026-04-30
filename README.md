@@ -45,6 +45,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
 | Ruby       | Bundler                                   |
 | Rust       | Crates                                    |
+| Swift      | Swift Package Manager                     |
 
 ## Limitations
 
