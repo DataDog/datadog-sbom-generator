@@ -79,6 +79,7 @@ func TestPyprojectTomlMatcher_Match_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 6},
@@ -122,6 +123,7 @@ func TestPyprojectTomlMatcher_Match_OnePackageDev(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 6},
@@ -174,6 +176,7 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 19},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 6},
@@ -194,6 +197,7 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 18},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 1, End: 11},

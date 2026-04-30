@@ -130,6 +130,7 @@ func (m BuildGradleMatcher) matchFileContent(content []byte, sourcePath string, 
 					startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(line)
 					endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(line)
 
+					packages[key].LocationRole = models.LocationRoleManifest
 					packages[key].BlockLocation = models.FilePosition{
 						Line:     models.Position{Start: lineNumber, End: lineNumber},
 						Column:   models.Position{Start: startColumn, End: endColumn},

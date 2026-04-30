@@ -43,6 +43,7 @@ func (m PipfileMatcher) Match(sourceFile lockfile.DepFile, packages []lockfile.P
 				startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
 				endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
 
+				packages[key].LocationRole = models.LocationRoleManifest
 				packages[key].BlockLocation = models.FilePosition{
 					Line:     models.Position{Start: lineNumber, End: lineNumber},
 					Column:   models.Position{Start: startColumn, End: endColumn},

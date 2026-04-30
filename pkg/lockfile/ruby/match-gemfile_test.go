@@ -84,6 +84,7 @@ func TestGemfileMatcher_Match_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 24},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 5, End: 15},

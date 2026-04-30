@@ -15,6 +15,7 @@ type PackageDetails struct {
 	Ecosystem        models.Ecosystem      `json:"ecosystem,omitempty"`
 	DepGroups        []string              `json:"depGroups,omitempty"`
 	BlockLocation    models.FilePosition   `json:"blockLocation,omitempty"`
+	LocationRole     string                `json:"locationRole,omitempty"`
 	VersionLocation  *models.FilePosition  `json:"versionLocation,omitempty"`
 	NameLocation     *models.FilePosition  `json:"nameLocation,omitempty"`
 	PackageManager   models.PackageManager `json:"packageManager,omitempty"`

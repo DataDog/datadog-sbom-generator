@@ -109,6 +109,7 @@ func (m RequirementsInMatcher) Match(sourceFile lockfile.DepFile, packages []loc
 		for _, key := range toUpdate {
 			claimed[key] = true
 
+			packages[key].LocationRole = models.LocationRoleManifest
 			packages[key].BlockLocation = models.FilePosition{
 				Line:     models.Position{Start: lineNumber, End: lineNumber},
 				Column:   models.Position{Start: startColumn, End: endColumn},

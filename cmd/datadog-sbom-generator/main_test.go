@@ -305,6 +305,11 @@ func TestRun(t *testing.T) {
 			args: []string{"", "--pretty", "--verbosity", "verbose", "--manifest-parsers", "./fixtures/integration-pyproject"},
 			exit: 0,
 		},
+		{
+			name: "Scan maven_install.json (lockfile role)",
+			args: []string{"", "--format=cyclonedx-1-5", "--pretty", "./fixtures/integration-maven-install"},
+			exit: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -100,6 +100,7 @@ func TestParseNuGetCsproj_Common(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 68},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 48},
@@ -124,6 +125,7 @@ func TestParseNuGetCsproj_Common(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 71},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 32, End: 39},
@@ -159,6 +161,7 @@ func TestParseNuGetCsproj_Logging(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 93},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 73},
@@ -183,6 +186,7 @@ func TestParseNuGetCsproj_Logging(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 59},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 32, End: 39},
@@ -229,6 +233,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 68},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 23, End: 23},
 				Column:   models.Position{Start: 32, End: 47},
@@ -253,6 +258,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 71},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 26, End: 26},
 				Column:   models.Position{Start: 32, End: 39},
@@ -277,6 +283,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 99},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
 				Column:   models.Position{Start: 32, End: 37},
@@ -301,6 +308,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 103},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 38, End: 38},
 				Column:   models.Position{Start: 32, End: 50},
@@ -325,6 +333,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 105},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 41, End: 41},
 				Column:   models.Position{Start: 32, End: 61},
@@ -349,6 +358,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 69},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 71, End: 71},
 				Column:   models.Position{Start: 32, End: 38},
@@ -373,6 +383,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 77},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 50, End: 50},
 				Column:   models.Position{Start: 32, End: 56},
@@ -397,6 +408,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 76},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 29, End: 29},
 				Column:   models.Position{Start: 32, End: 56},
@@ -421,6 +433,7 @@ func TestParseNuGetCsproj_SampleApp(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 82},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 74, End: 74},
 				Column:   models.Position{Start: 32, End: 44},
@@ -451,6 +464,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 51},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 32, End: 47},
@@ -470,6 +484,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 43},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 23, End: 23},
 				Column:   models.Position{Start: 32, End: 39},
@@ -489,6 +504,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 83},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 29, End: 29},
 				Column:   models.Position{Start: 32, End: 37},
@@ -508,6 +524,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 74},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 32, End: 32},
 				Column:   models.Position{Start: 32, End: 50},
@@ -527,6 +544,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 89},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
 				Column:   models.Position{Start: 32, End: 61},
@@ -546,6 +564,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 42},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 59, End: 59},
 				Column:   models.Position{Start: 32, End: 38},
@@ -565,6 +584,7 @@ func TestParseNuGetCsproj_SampleApp_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 64},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 26, End: 26},
 				Column:   models.Position{Start: 32, End: 60},
@@ -604,6 +624,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 52},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 48},
@@ -623,6 +644,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 52},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 48},
@@ -642,6 +664,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 43},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 32, End: 39},
@@ -692,6 +715,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement_MultipleBuild(t *testi
 				Column:   models.Position{Start: 5, End: 52},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 48},
@@ -711,6 +735,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement_MultipleBuild(t *testi
 				Column:   models.Position{Start: 5, End: 52},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 32, End: 48},
@@ -730,6 +755,7 @@ func TestParseNuGetCsproj_Common_CentralVersionManagement_MultipleBuild(t *testi
 				Column:   models.Position{Start: 5, End: 43},
 				Filename: absoluteCsprojPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 32, End: 39},

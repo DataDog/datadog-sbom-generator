@@ -79,6 +79,7 @@ func TestCargoTomlMatcher_Match_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -127,6 +128,7 @@ func TestCargoTomlMatcher_Match_SubstringNotMatched(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -147,6 +149,7 @@ func TestCargoTomlMatcher_Match_SubstringNotMatched(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 21},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 11},
@@ -195,6 +198,7 @@ func TestCargoTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -244,6 +248,7 @@ func TestCargoTomlMatcher_Match_DevDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 20},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 10},
@@ -288,6 +293,7 @@ func TestCargoTomlMatcher_Match_BuildDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 3},
@@ -348,6 +354,7 @@ func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 16},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -368,6 +375,7 @@ func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 6},
@@ -388,6 +396,7 @@ func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 20},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 10},
@@ -409,6 +418,7 @@ func TestCargoTomlMatcher_Match_AllSections(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 1, End: 3},
@@ -468,6 +478,7 @@ func TestCargoTomlMatcher_Match_MultipleVersions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 1, End: 6},
@@ -490,6 +501,7 @@ func TestCargoTomlMatcher_Match_MultipleVersions(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -546,6 +558,7 @@ func TestCargoTomlMatcher_Match_TableForm(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 51},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 1, End: 6},
@@ -567,6 +580,7 @@ func TestCargoTomlMatcher_Match_TableForm(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 49},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 1, End: 6},
@@ -588,6 +602,7 @@ func TestCargoTomlMatcher_Match_TableForm(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 58},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 1, End: 10},
