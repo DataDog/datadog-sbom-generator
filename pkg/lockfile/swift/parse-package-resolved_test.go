@@ -231,6 +231,27 @@ func TestParsePackageResolved_MixedStatesV2(t *testing.T) {
 	})
 }
 
+func TestParsePackageResolved_RegistryPinV2(t *testing.T) {
+	t.Parallel()
+
+	packages, err := swift.ParsePackageResolved("../fixtures/swift/registry-pin-v2.json")
+
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "apple.swift-argument-parser",
+			Version:        "1.2.0",
+			PackageManager: models.SwiftPM,
+			Ecosystem:      models.EcosystemSwiftURL,
+			IsDirect:       false,
+			LocationRole:   models.LocationRoleLockfile,
+		},
+	})
+}
+
 func TestParsePackageResolved_LocalPackageSkipped(t *testing.T) {
 	t.Parallel()
 

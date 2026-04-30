@@ -37,6 +37,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 
 	// Normalize pins from v1 or v2/v3 into a common representation.
 	type normalizedPin struct {
+		identity string
 		repoURL  string
 		version  string
 		revision string
@@ -61,6 +62,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 	case 2, 3:
 		for _, pin := range resolved.Pins {
 			pins = append(pins, normalizedPin{
+				identity: pin.Identity,
 				repoURL:  pin.Location,
 				version:  pin.State.Version,
 				revision: pin.State.Revision,
@@ -87,7 +89,14 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 			}
 		}
 
-		name := nameFromRepoURL(pin.repoURL)
+		var name string
+		if pin.kind == "registry" {
+			// Registry pins have an identity (e.g. "scope.name") and an empty location.
+			name = pin.identity
+		} else {
+			name = nameFromRepoURL(pin.repoURL)
+		}
+
 		if name == "" {
 			continue
 		}
