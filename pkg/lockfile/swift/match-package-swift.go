@@ -29,6 +29,11 @@ type packageEntry struct {
 // Note: Xcode can write the active lockfile at .swiftpm/configuration/Package.resolved,
 // which is two levels below Package.swift. In that case this lookup will fail and no
 // manifest enrichment will happen. Upward directory search is not implemented yet.
+// GetSourceFile opens Package.swift from the same directory as the lockfile.
+//
+// Note: Xcode can write the active lockfile at .swiftpm/configuration/Package.resolved,
+// which is two levels below Package.swift. In that case this lookup will fail and no
+// manifest enrichment will happen. Upward directory search is not implemented yet.
 func (m PackageSwiftMatcher) GetSourceFile(f lockfile.DepFile) (lockfile.DepFile, error) {
 	return f.Open("Package.swift")
 }
