@@ -82,13 +82,13 @@ func TestParseNpmLock_v1_OnePackage_BlockLocation(t *testing.T) {
 
 	// Every package must have a valid BlockLocation from the lockfile
 	for _, pkg := range packages {
-		assert.Greater(t, pkg.BlockLocation.Line.Start, 0,
+		assert.Positive(t, pkg.BlockLocation.Line.Start,
 			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
-		assert.Greater(t, pkg.BlockLocation.Line.End, 0,
+		assert.Positive(t, pkg.BlockLocation.Line.End,
 			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
-		assert.Greater(t, pkg.BlockLocation.Column.Start, 0,
+		assert.Positive(t, pkg.BlockLocation.Column.Start,
 			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
-		assert.Greater(t, pkg.BlockLocation.Column.End, 0,
+		assert.Positive(t, pkg.BlockLocation.Column.End,
 			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
 		assert.NotEmpty(t, pkg.BlockLocation.Filename,
 			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)

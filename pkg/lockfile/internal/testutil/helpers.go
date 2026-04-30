@@ -82,7 +82,7 @@ func HasPackage(t *testing.T, expectedPkgs []lockfile.PackageDetails, currentPkg
 	for _, expectedPkg := range expectedPkgs {
 		var ignore []string
 		if ignoreLocations {
-			ignore = []string{"BlockLocation", "NameLocation", "VersionLocation"}
+			ignore = []string{"BlockLocation", "LocationRole", "NameLocation", "VersionLocation"}
 		}
 
 		if cmp.Equal(expectedPkg, currentPkg, cmpopts.IgnoreFields(lockfile.PackageDetails{}, ignore...)) {
