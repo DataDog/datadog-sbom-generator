@@ -133,7 +133,8 @@ type packageJSONRaw struct {
 }
 
 func (e PackageJSONExtractor) ShouldExtract(path string) bool {
-	if strings.Contains(path, nodeModulesPath) || strings.Contains(path, nodeModulesWindowsPath) {
+	normalized := filepath.ToSlash(path)
+	if strings.Contains(normalized, "/"+nodeModulesPath) || strings.HasPrefix(normalized, nodeModulesPath) {
 		return false
 	}
 

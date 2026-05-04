@@ -29,6 +29,8 @@ func TestPackageJSONExtractor_ShouldExtract(t *testing.T) {
 		{name: "inside node_modules", path: "node_modules/lodash/package.json", want: false},
 		{name: "inside nested node_modules", path: "path/to/node_modules/foo/package.json", want: false},
 		{name: "node_modules windows path", path: "path\\to\\node_modules\\foo\\package.json", want: false},
+		{name: "my-node_modules is not node_modules", path: "my-node_modules/foo/package.json", want: true},
+		{name: "nested my-node_modules is not node_modules", path: "path/to/my-node_modules/foo/package.json", want: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

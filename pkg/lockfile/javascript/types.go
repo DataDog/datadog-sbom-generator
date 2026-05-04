@@ -17,7 +17,6 @@ const (
 	npmPackageManager      = models.NPM
 	npmOfficiallySupported = true
 	nodeModulesPath        = "node_modules/"
-	nodeModulesWindowsPath = "node_modules\\"
 )
 
 // ============================================================================
