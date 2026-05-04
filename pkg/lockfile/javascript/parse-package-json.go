@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
@@ -198,7 +199,16 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 	}
 
 	for _, section := range sections {
-		for name, specifier := range section.deps {
+		// Sort alias names so that when multiple aliases resolve to the same package
+		// with different ranges, the alphabetically-first alias key always wins.
+		names := make([]string, 0, len(section.deps))
+		for name := range section.deps {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		for _, name := range names {
+			specifier := section.deps[name]
 			resolvedName := name
 			if alias := ResolveNpmAlias(specifier); alias != "" {
 				resolvedName = alias
@@ -213,7 +223,14 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 				versionRange = effectiveSpec
 			}
 
-			dedupKey := resolvedName + "@" + version + versionRange
+			// Exact-version entries are keyed by name@version (one entry per version).
+			// Range and no-version entries share a key by name alone: if multiple aliases
+			// resolve to the same package at different ranges, the alphabetically-first
+			// alias name wins and subsequent ones are dropped.
+			dedupKey := resolvedName
+			if version != "" {
+				dedupKey = resolvedName + "@" + version
+			}
 
 			if _, exists := packages[dedupKey]; exists {
 				continue
@@ -253,6 +270,17 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 	for _, pkg := range packages {
 		result = append(result, pkg)
 	}
+
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Name != result[j].Name {
+			return result[i].Name < result[j].Name
+		}
+		if result[i].Version != result[j].Version {
+			return result[i].Version < result[j].Version
+		}
+
+		return result[i].VersionRange < result[j].VersionRange
+	})
 
 	return result, nil
 }

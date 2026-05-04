@@ -376,6 +376,32 @@ func TestParsePackageJSON_AliasCollision(t *testing.T) {
 	})
 }
 
+func TestParsePackageJSON_AliasRangeCollision(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("got unexpected error: %v", err)
+	}
+
+	// react17 < react18 alphabetically, so react17's range (^17) wins deterministically.
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json-extractor/alias-range-collision/package.json"))
+	packages, err := javascript.ParsePackageJSON(path)
+	if err != nil {
+		t.Errorf("got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "react",
+			VersionRange:   "^17",
+			PackageManager: models.NPM,
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+	})
+}
+
 func TestParsePackageJSON_WorkspaceWithRootLockfile(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
