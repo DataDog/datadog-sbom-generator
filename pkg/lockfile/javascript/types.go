@@ -17,6 +17,7 @@ const (
 	npmPackageManager      = models.NPM
 	npmOfficiallySupported = true
 	nodeModulesPath        = "node_modules/"
+	nodeModulesWindowsPath = "node_modules\\"
 )
 
 // ============================================================================
@@ -309,6 +310,21 @@ type packageJSONFile struct {
 	DevDependencies      packageJSONDependencyMap `json:"devDependencies"`
 	OptionalDependencies packageJSONDependencyMap `json:"optionalDependencies"`
 }
+
+// ============================================================================
+// Package.json Extractor Constants
+// ============================================================================
+
+const (
+	packageJSONPackageManager      = models.NPM
+	packageJSONOfficiallySupported = true
+)
+
+// ============================================================================
+// Package.json Extractor Types
+// ============================================================================
+
+type PackageJSONExtractor struct{}
 
 // UnmarshalYAML is a custom unmarshaler for PnpmLegacyDependencies
 func (pnpmDependencies *PnpmLegacyDependencies) UnmarshalYAML(value *yaml.Node) error {

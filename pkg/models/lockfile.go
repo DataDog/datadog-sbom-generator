@@ -27,6 +27,7 @@ const (
 	MavenInstallFilePath       ParsedFilePath = "maven_install.json"
 	NodeModulesPath            ParsedFilePath = "node_modules"
 	NpmFilePath                ParsedFilePath = "package-lock.json"
+	PackageJSONFilePath        ParsedFilePath = "package.json"
 	NuGetCsProjFilePath        ParsedFilePath = "csproj"
 	NugetLockFilePath          ParsedFilePath = "packages.lock.json"
 	PdmFilePath                ParsedFilePath = "pdm.lock"
