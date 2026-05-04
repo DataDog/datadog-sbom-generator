@@ -128,6 +128,7 @@ func TestListExtractors(t *testing.T) {
 		"mix.lock",
 		"package-lock.json",
 		"Package.resolved",
+		"package.json",
 		"packages.lock.json",
 		"pdm.lock",
 		"Pipfile.lock",
@@ -208,7 +209,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 
 	// Test language expansion
 	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
-	expected := []string{"bun.lock", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	expected := []string{"bun.lock", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
 	assert.Equal(t, expected, result)
 
 	// Test direct parser name
@@ -224,7 +225,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	// Test case insensitivity for language names
 	result1 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
 	result2 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"JAVASCRIPT"})
-	expected = []string{"bun.lock", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	expected = []string{"bun.lock", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
 	assert.Equal(t, expected, result1)
 	assert.Equal(t, expected, result2)
 
@@ -287,6 +288,7 @@ func filesToParsers() map[string]string {
 		"mix.lock":                         "mix.lock",
 		"pdm.lock":                         "pdm.lock",
 		"Pipfile.lock":                     "Pipfile.lock",
+		"package.json":                     "package.json",
 		"package-lock.json":                "package-lock.json",
 		"packages.lock.json":               "packages.lock.json",
 		"pnpm-lock.yaml":                   "pnpm-lock.yaml",
