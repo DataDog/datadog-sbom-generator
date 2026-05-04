@@ -99,6 +99,11 @@ func effectiveVersionSpecifier(specifier string) string {
 		return ""
 	}
 
+	// Strip standalone = operator (npm exact pin: =1.2.3 ≡ 1.2.3)
+	if strings.HasPrefix(specifier, "=") && !strings.HasPrefix(specifier, ">=") {
+		specifier = specifier[1:]
+	}
+
 	return specifier
 }
 

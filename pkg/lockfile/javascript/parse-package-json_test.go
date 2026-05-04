@@ -284,6 +284,14 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			DepGroups:      []string{"prod"},
 		},
 		{
+			Name:           "eq-pinned",
+			Version:        "2.0.0",
+			PackageManager: models.NPM,
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+		{
 			Name:           "caret",
 			Version:        "",
 			VersionRange:   "^2.3.4",
