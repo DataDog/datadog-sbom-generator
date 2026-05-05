@@ -202,6 +202,36 @@ func TestPackageSwiftMatcher_Match_URLWithGitSuffix(t *testing.T) {
 	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
 }
 
+func TestPackageSwiftMatcher_Match_RegistryPackageID(t *testing.T) {
+	t.Parallel()
+
+	// Package.swift uses .package(id: "scope.name", ...) — Swift Package Registry style.
+	// The corresponding Package.resolved registry pin uses pin.Identity as the package name.
+	sourceFile, err := lockfile.OpenLocalDepFile("../fixtures/swift/registry-package-swift/Package.swift")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []lockfile.PackageDetails{
+		{
+			Name:           "apple.swift-argument-parser",
+			Version:        "1.2.0",
+			PackageManager: models.SwiftPM,
+			Ecosystem:      models.EcosystemSwiftURL,
+			IsDirect:       false,
+			LocationRole:   models.LocationRoleLockfile,
+		},
+	}
+
+	err = packageSwiftMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect)
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+}
+
 func TestPackageSwiftMatcher_Match_CaseInsensitiveURL(t *testing.T) {
 	t.Parallel()
 

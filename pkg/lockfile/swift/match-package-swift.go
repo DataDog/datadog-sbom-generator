@@ -16,13 +16,15 @@ import (
 type PackageSwiftMatcher struct{}
 
 // urlRegexp matches the url: "..." argument in a .package(url: ...) declaration.
-// TODO: Swift Package Registry dependencies use .package(id: "scope.name", from: "1.0.0")
-// with no url: argument. These are never matched and will always be reported as IsDirect=false.
 var urlRegexp = cachedregexp.MustCompile(`url:\s*"([^"]+)"`)
 
-// packageEntry represents a .package(url: "...") declaration found in Package.swift.
+// idRegexp matches the id: "..." argument in a Swift Package Registry .package(id: ...) declaration.
+// The id value has the format "scope.name" (e.g. "apple.swift-argument-parser").
+var idRegexp = cachedregexp.MustCompile(`id:\s*"([^"]+)"`)
+
+// packageEntry represents a .package(url: ...) or .package(id: ...) declaration found in Package.swift.
 type packageEntry struct {
-	name    string // normalized name (same format as nameFromRepoURL)
+	name    string // normalized name: "host/owner/repo" for URL deps, "scope.name" for registry deps
 	lineNum int    // 1-indexed line where .package( starts
 	rawLine string // full source line where .package( appears (for column extraction)
 }
@@ -207,25 +209,31 @@ func parsePackageSwift(r io.Reader) ([]packageEntry, error) {
 	return entries, nil
 }
 
-// extractEntryFromBlock extracts the URL from a .package(...) block and derives the normalized name.
+// extractEntryFromBlock extracts the name from a .package(...) block.
+// For URL-based deps it parses the url: argument; for registry deps it uses the id: value directly.
 // rawLine is the original source line where .package( appears, used for column extraction.
 func extractEntryFromBlock(block string, lineNum int, rawLine string) *packageEntry {
-	matches := urlRegexp.FindStringSubmatch(block)
-	if len(matches) < 2 {
-		return nil
+	// Try url: first (source control dependency).
+	if matches := urlRegexp.FindStringSubmatch(block); len(matches) >= 2 {
+		name := nameFromRepoURL(matches[1])
+		if name == "" {
+			return nil
+		}
+
+		return &packageEntry{name: name, lineNum: lineNum, rawLine: rawLine}
 	}
 
-	repoURL := matches[1]
-	name := nameFromRepoURL(repoURL)
-	if name == "" {
-		return nil
+	// Fall back to id: (Swift Package Registry dependency, e.g. "scope.name").
+	if matches := idRegexp.FindStringSubmatch(block); len(matches) >= 2 {
+		name := matches[1]
+		if name == "" {
+			return nil
+		}
+
+		return &packageEntry{name: name, lineNum: lineNum, rawLine: rawLine}
 	}
 
-	return &packageEntry{
-		name:    name,
-		lineNum: lineNum,
-		rawLine: rawLine,
-	}
+	return nil
 }
 
 var _ lockfile.Matcher = PackageSwiftMatcher{}
