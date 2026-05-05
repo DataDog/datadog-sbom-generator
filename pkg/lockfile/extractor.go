@@ -49,6 +49,14 @@ type ArtifactExtractor interface {
 	GetArtifact(f DepFile, context ScanContext) (*models.ScannedArtifact, error)
 }
 
+// ManifestExtractor is an optional interface for extractors that parse manifest
+// files directly (e.g. pyproject.toml) when no lock file is present.
+// These extractors are opt-in and not included in the default parser set.
+type ManifestExtractor interface {
+	Extractor
+	IsManifestParser() bool
+}
+
 func (e WithMatcher) GetMatchers() []Matcher {
 	return e.Matchers
 }

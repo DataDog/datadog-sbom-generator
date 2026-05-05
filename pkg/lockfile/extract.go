@@ -51,6 +51,21 @@ func ListSupportedExtractors() map[string]Extractor {
 	return supportedExtractors
 }
 
+func ListManifestExtractorNames() []string {
+	var names []string
+	for name, extractor := range lockfileExtractors {
+		if e, ok := extractor.(ManifestExtractor); ok && e.IsManifestParser() {
+			names = append(names, name)
+		}
+	}
+
+	sort.Slice(names, func(i, j int) bool {
+		return strings.ToLower(names[i]) < strings.ToLower(names[j])
+	})
+
+	return names
+}
+
 func ListExtractorNames() []string {
 	extractors := ListSupportedExtractors()
 	extractorNames := make([]string, 0, len(extractors))

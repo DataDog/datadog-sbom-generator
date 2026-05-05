@@ -60,6 +60,7 @@ func (depMap *MatcherDependencyMap) updatePackageDetailLocation(pkg *PackageDeta
 	lineEnd := depMap.LineOffset + strings.Count(content[:indexes[1]], "\n")
 	lineEndIndex := strings.LastIndex(content[:indexes[1]], "\n")
 
+	pkg.LocationRole = models.LocationRoleManifest
 	pkg.BlockLocation = models.FilePosition{
 		Filename: depMap.FilePath,
 		Line: models.Position{

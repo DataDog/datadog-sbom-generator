@@ -1,0 +1,10 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "my-app"
+version = "1.0.0"
+
+[tool.poetry.dependencies]
+requests = "==2.28.0"

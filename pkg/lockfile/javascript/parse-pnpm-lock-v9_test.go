@@ -393,6 +393,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibSameVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace1path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 12},
@@ -417,6 +418,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibSameVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace2path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 12},
@@ -475,6 +477,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibDifferentVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: rootPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 6, End: 12},
@@ -499,6 +502,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibDifferentVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace1path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 12},
@@ -523,6 +527,7 @@ func TestParsePnpmLock_v9_WorkspacesSameLibDifferentVersion(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace2path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 12},
@@ -584,6 +589,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 35},
 				Filename: rootPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 6, End: 24},
@@ -617,6 +623,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: rootPath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 6, End: 12},
@@ -641,6 +648,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 27},
 				Filename: workspace1Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 16},
@@ -665,6 +673,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace1Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 6, End: 12},
@@ -689,6 +698,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace2Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 12},
@@ -713,6 +723,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 27},
 				Filename: workspace3Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 6, End: 16},
@@ -737,6 +748,7 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 5, End: 23},
 				Filename: workspace3Path,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 6, End: 12},

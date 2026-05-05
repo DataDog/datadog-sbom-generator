@@ -82,6 +82,7 @@ func TestRequirementsInMatcher_Match_OnePackage(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 9},
@@ -154,6 +155,7 @@ func TestRequirementsInMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 13},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 1, End: 6},
@@ -176,6 +178,7 @@ func TestRequirementsInMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 17},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 9},
@@ -199,6 +202,7 @@ func TestRequirementsInMatcher_Match_TransitiveDependencies(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 23},
 				Filename: sourceFile.Path(),
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 1, End: 18},
@@ -260,6 +264,7 @@ func TestRequirementsInMatcher_Match_DuplicateNameDifferentVersions(t *testing.T
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 9},
@@ -282,6 +287,7 @@ func TestRequirementsInMatcher_Match_DuplicateNameDifferentVersions(t *testing.T
 				Column:   models.Position{Start: 1, End: 14},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 9},
@@ -348,6 +354,7 @@ func TestRequirementsInMatcher_Match_SubstringVersionAmbiguity(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 10},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 4},
@@ -409,6 +416,7 @@ func TestRequirementsInMatcher_Match_RangeConstraintFallback(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 4},
@@ -427,6 +435,7 @@ func TestRequirementsInMatcher_Match_RangeConstraintFallback(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 7},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 2, End: 2},
 				Column:   models.Position{Start: 1, End: 4},
@@ -477,6 +486,7 @@ func TestRequirementsInMatcher_Match_DirectURLReference(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 52},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 7},
@@ -532,6 +542,7 @@ func TestRequirementsInMatcher_Match_InlineComments(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 23},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 9},
@@ -588,6 +599,7 @@ func TestRequirementsInMatcher_Match_EnvironmentMarkerOnly(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 26},
 				Filename: sourcefilePath,
 			},
+			LocationRole: models.LocationRoleManifest,
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 1, End: 1},
 				Column:   models.Position{Start: 1, End: 3},

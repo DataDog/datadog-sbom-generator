@@ -18,6 +18,7 @@
       },
       "file_name": "<rootdir>/pkg/lockfile/fixtures/composer/one-package/composer.json"
     },
+    "locationRole": "manifest",
     "versionLocation": {
       "line": {
         "start": 19,

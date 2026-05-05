@@ -76,6 +76,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 						End:   29,
 					},
 				},
+				LocationRole: models.LocationRoleManifest,
 				NameLocation: &models.FilePosition{
 					Filename: "file-path",
 					Line: models.Position{
@@ -130,6 +131,7 @@ func TestMatcherDependencyMap_UpdatePackageDetails(t *testing.T) {
 						End:   31,
 					},
 				},
+				LocationRole: models.LocationRoleManifest,
 				NameLocation: &models.FilePosition{
 					Filename: "file-path",
 					Line: models.Position{

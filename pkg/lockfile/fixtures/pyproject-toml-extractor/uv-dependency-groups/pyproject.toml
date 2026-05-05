@@ -1,0 +1,18 @@
+[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "requests==2.28.0",
+]
+
+[tool.uv]
+
+[dependency-groups]
+dev = [
+    "pytest==7.4.0",
+    "ruff==0.1.0",
+    {include-group = "test"},
+]
+test = [
+    "hypothesis==6.100.0",
+]
