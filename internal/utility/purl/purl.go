@@ -20,15 +20,17 @@ var EcosystemToPURLMapper = map[models.Ecosystem]string{
 	models.EcosystemNPM:         packageurl.TypeNPM,
 	models.EcosystemConanCenter: packageurl.TypeConan,
 	models.EcosystemCratesIO:    packageurl.TypeCargo,
-	models.EcosystemPub:         "pub",
+	models.EcosystemPub:         packageurl.TypePub,
 	models.EcosystemHex:         packageurl.TypeHex,
 	models.EcosystemCRAN:        packageurl.TypeCran,
+	models.EcosystemSwiftURL:    packageurl.TypeSwift,
 }
 
 var ecosystemPURLExtractor = map[models.Ecosystem]ParameterExtractor{
 	models.EcosystemMaven:     FromMaven,
 	models.EcosystemGo:        FromGo,
 	models.EcosystemPackagist: FromComposer,
+	models.EcosystemSwiftURL:  FromSwift,
 }
 
 func From(packageInfo models.PackageInfo) (*packageurl.PackageURL, error) {

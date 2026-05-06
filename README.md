@@ -45,6 +45,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
 | Ruby       | Bundler                                   |
 | Rust       | Crates                                    |
+| Swift      | Swift Package Manager                     |
 
 ## Limitations
 
@@ -140,6 +141,15 @@ NPM, Yarn and PNPM have workspace support
 - This tool supports package information enrichment from `Cargo.toml`, including dependencies declared in `[dependencies]`, `[dev-dependencies]`, and `[build-dependencies]` sections.
 - Workspace support is not currently available.
 - Renaming dependencies is not supported.
+
+### Swift
+
+#### Swift Package Manager
+
+- This tool only supports extracting packages from `Package.resolved` (v1, v2, and v3 formats).
+- This tool only supports package information enrichment from `Package.swift`.
+- When Xcode writes the lockfile at `.swiftpm/configuration/Package.resolved`, `Package.swift` enrichment is not available because the manifest is two directory levels above the lockfile.
+- `IsDirect` is only set for packages declared with a URL in `Package.swift`. Registry-based dependencies (`.package(id: ...)`) are always reported as transitive.
 
 ## Contributing
 
