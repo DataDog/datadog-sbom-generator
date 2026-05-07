@@ -126,7 +126,9 @@ func parseLine(path string, line string, lineNumber int, lineOffset int, columnS
 
 	version := ""
 
-	if strings.Contains(line, "==") {
+	if strings.Contains(line, "===") {
+		constraint = "==="
+	} else if strings.Contains(line, "==") {
 		constraint = "=="
 	}
 
