@@ -4,15 +4,20 @@
     "": {
       "name": "bun-ranges",
       "dependencies": {
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "workspace-a": "workspace:packages/a"
       },
       "devDependencies": {
         "typescript": "^5.0.0"
       }
+    },
+    "packages/a": {
+      "name": "workspace-a"
     }
   },
   "packages": {
     "lodash": ["lodash@4.17.21", "", {}, "sha512-aaa"],
-    "typescript": ["typescript@5.3.3", "", {}, "sha512-bbb"]
+    "typescript": ["typescript@5.3.3", "", {}, "sha512-bbb"],
+    "workspace-a": ["workspace-a@workspace:packages/a", "", {}, ""]
   }
 }

@@ -154,6 +154,32 @@ func TestParseBunLock_MultiplePackages(t *testing.T) {
 	})
 }
 
+func TestParseBunLock_SkipsWorkspacePackages(t *testing.T) {
+	t.Parallel()
+
+	packages, err := javascript.ParseBunLock("../fixtures/bun/workspace-package.lock")
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "lodash",
+			Version:        "4.17.21",
+			PackageManager: models.Bun,
+			TargetVersions: []string{"^4.17.21"},
+			Ecosystem:      models.EcosystemNPM,
+		},
+		{
+			Name:           "typescript",
+			Version:        "5.3.3",
+			PackageManager: models.Bun,
+			TargetVersions: []string{"^5.0.0"},
+			Ecosystem:      models.EcosystemNPM,
+		},
+	})
+}
+
 func TestParseBunLock_MatchesPackageJSONRanges(t *testing.T) {
 	t.Parallel()
 

@@ -103,6 +103,9 @@ func (e BunLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 		if err != nil || name == "" {
 			continue
 		}
+		if strings.HasPrefix(version, "workspace:") {
+			continue
+		}
 
 		packages = append(packages, lockfile.PackageDetails{
 			Name:           name,
