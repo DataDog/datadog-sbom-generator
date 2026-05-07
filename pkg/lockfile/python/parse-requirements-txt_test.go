@@ -177,6 +177,47 @@ func TestParseRequirementsTxt_OneRequirementConstrained(t *testing.T) {
 	})
 }
 
+func TestParseRequirementsTxt_TripleEqualsConstraint(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pip/one-package-triple-equals.txt"))
+	packages, err := python.ParseRequirementsTxt(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "django",
+			Version:        "5.0",
+			PackageManager: models.Requirements,
+			Ecosystem:      models.EcosystemPyPI,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 13},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 1, End: 7},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 1, End: 1},
+				Column:   models.Position{Start: 10, End: 13},
+				Filename: path,
+			},
+			DepGroups: []string{"one-package-triple-equals"},
+			IsDirect:  true,
+		},
+	})
+}
+
 func TestParseRequirementsTxt_MultipleRequirementsConstrained(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
