@@ -1,0 +1,14 @@
+{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "files-fixture",
+      "dependencies": {
+        "local-pkg": "file:../local-pkg"
+      }
+    }
+  },
+  "packages": {
+    "local-pkg": ["local-pkg@file:../local-pkg", {}, "local-pkg"]
+  }
+}

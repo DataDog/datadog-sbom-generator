@@ -247,6 +247,88 @@ Scanned <rootdir>/fixtures/integration-jar/one-package.jar file and found 1 pack
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_bun_with_ranged_package.json_dependencies - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/lodash@4.17.21",
+      "type": "library",
+      "name": "lodash",
+      "version": "4.17.21",
+      "purl": "pkg:npm/lodash@4.17.21",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "Bun"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":5,/"column_end/":25,/"role/":/"manifest/"},/"name/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":6,/"column_end/":12,/"role/":/"manifest/"},/"version/":{/"file_name/":/"package.json/",/"line_start/":4,/"line_end/":4,/"column_start/":16,/"column_end/":24,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:npm/typescript@5.3.3",
+      "type": "library",
+      "name": "typescript",
+      "version": "5.3.3",
+      "purl": "pkg:npm/typescript@5.3.3",
+      "properties": [
+        {
+          "name": "datadog:is-dev",
+          "value": "true"
+        },
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "Bun"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":27,/"role/":/"manifest/"},/"name/":{/"file_name/":/"package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":16,/"role/":/"manifest/"},/"version/":{/"file_name/":/"package.json/",/"line_start/":7,/"line_end/":7,/"column_start/":20,/"column_end/":26,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_bun_with_ranged_package.json_dependencies - 2]
+Scanning directory './fixtures/integration-bun/ranges', resolved absolute path '<rootdir>/fixtures/integration-bun/ranges'
+Scanned <rootdir>/fixtures/integration-bun/ranges/bun.lock file and found 2 packages
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_cargo_project_with_multiple_dependency_types - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
@@ -11566,6 +11648,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Java       | Gradle          | gradle/verification-metadata.xml |
 | Java       | Maven           | maven_install.json               |
 | Java       | Maven           | pom.xml                          |
+| Javascript | Bun             | bun.lock                         |
 | Javascript | NPM             | package-lock.json                |
 | Javascript | Pnpm            | pnpm-lock.yaml                   |
 | Javascript | Yarn            | yarn.lock                        |

@@ -1,0 +1,6 @@
+{
+  "lockfileVersion": 0,
+  "packages": {
+    "broken": [42, "", {}, "sha512-aaa"]
+  }
+}

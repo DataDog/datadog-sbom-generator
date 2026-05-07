@@ -1,0 +1,14 @@
+{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "commits-fixture",
+      "devDependencies": {
+        "raven-js": "getsentry/raven-js#3.23.1"
+      }
+    }
+  },
+  "packages": {
+    "raven-js": ["raven-js@github:getsentry/raven-js#91ef2d4", {}, "getsentry-raven-js-91ef2d4"]
+  }
+}

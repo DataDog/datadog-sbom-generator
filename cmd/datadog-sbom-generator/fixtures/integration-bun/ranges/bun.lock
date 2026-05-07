@@ -1,0 +1,18 @@
+{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "bun-ranges",
+      "dependencies": {
+        "lodash": "^4.17.21"
+      },
+      "devDependencies": {
+        "typescript": "^5.0.0"
+      }
+    }
+  },
+  "packages": {
+    "lodash": ["lodash@4.17.21", "", {}, "sha512-aaa"],
+    "typescript": ["typescript@5.3.3", "", {}, "sha512-bbb"]
+  }
+}
