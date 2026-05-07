@@ -11,6 +11,7 @@ import (
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/bmatcuk/doublestar/v4"
 )
 
@@ -63,12 +64,14 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			depGroup = "optional"
 		}
 
-		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.BlockLocation.Filename == depMap.FilePath {
-			// If it is a dev or optional dependency definition and this package's BlockLocation
-			// already points to the current source file (meaning a prior matcher section like
-			// "dependencies" already set it), skip the location overwrite to prioritize the
-			// non-dev location. We compare Filename rather than checking Line.Start != 0
-			// because extractors may now set BlockLocation from the lockfile for all packages.
+		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.LocationRole == models.LocationRoleManifest {
+			// If it is a dev or optional dependency definition and this package was already
+			// matched to a manifest location (e.g. the root package.json "dependencies" section,
+			// or an earlier workspace package.json), skip the overwrite to prioritize the
+			// non-dev/non-optional manifest location.
+			// We check LocationRole rather than BlockLocation.Filename so that cross-workspace
+			// matches are also guarded: a root prod-dep match sets LocationRole=manifest, and
+			// a subsequent workspace dev-dep section for the same package must not overwrite it.
 			pkgIndexes = []int{}
 		}
 		depMap.UpdatePackageDetails(pkg, packageJSONContent, pkgIndexes, depGroup)
