@@ -40,7 +40,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | C++        | Conan                                     |
 | Go         | Golang                                    |
 | Java       | Gradle, Maven, Bazel (rules_jvm_external) |
-| JavaScript | NPM, PNPM, Yarn                           |
+| JavaScript | Bun, NPM, PNPM, Yarn                      |
 | PHP        | Composer                                  |
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
 | Ruby       | Bundler                                   |
@@ -91,6 +91,11 @@ This tool only supports enriching information from the following package manager
 ### Javascript and Typescript
 
 NPM, Yarn and PNPM have workspace support
+
+#### Bun
+
+- This tool only supports extracting packages from `bun.lock` (the text JSONC lockfile introduced in Bun 1.2). The legacy binary `bun.lockb` format is not supported.
+- This tool only supports package information enrichment from `package.json`.
 
 #### NPM
 
