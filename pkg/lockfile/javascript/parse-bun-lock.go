@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -61,11 +62,15 @@ func structureBunPackageDetails(tuple []json.RawMessage) (string, string, string
 	return name, version, commit, nil
 }
 
-func collectBunTargetVersions(workspaces map[string]BunLockWorkspace, name string) []string {
+func collectBunTargetVersions(workspaces map[string]BunLockWorkspace, packageKey string, name string) []string {
 	seen := make(map[string]bool)
 	targetVersions := make([]string, 0)
 
-	for _, workspace := range workspaces {
+	for workspacePath, workspace := range workspaces {
+		if packageKey != bunWorkspacePackageKey(workspacePath, name) {
+			continue
+		}
+
 		targetVersions = appendBunTargetVersion(targetVersions, seen, workspace.Dependencies[name])
 		targetVersions = appendBunTargetVersion(targetVersions, seen, workspace.OptionalDependencies[name])
 		targetVersions = appendBunTargetVersion(targetVersions, seen, workspace.DevDependencies[name])
@@ -74,6 +79,14 @@ func collectBunTargetVersions(workspaces map[string]BunLockWorkspace, name strin
 	slices.Sort(targetVersions)
 
 	return targetVersions
+}
+
+func bunWorkspacePackageKey(workspacePath string, name string) string {
+	if workspacePath == "" || workspacePath == "." {
+		return name
+	}
+
+	return path.Join(workspacePath, name)
 }
 
 func appendBunTargetVersion(targetVersions []string, seen map[string]bool, version string) []string {
@@ -98,7 +111,7 @@ func (e BunLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 	}
 
 	packages := make([]lockfile.PackageDetails, 0, len(parsed.Packages))
-	for _, tuple := range parsed.Packages {
+	for packageKey, tuple := range parsed.Packages {
 		name, version, commit, err := structureBunPackageDetails(tuple)
 		if err != nil || name == "" {
 			continue
@@ -111,7 +124,7 @@ func (e BunLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 			Name:           name,
 			Version:        version,
 			Commit:         commit,
-			TargetVersions: collectBunTargetVersions(parsed.Workspaces, name),
+			TargetVersions: collectBunTargetVersions(parsed.Workspaces, packageKey, name),
 			Ecosystem:      models.EcosystemNPM,
 			PackageManager: bunPackageManager,
 		})

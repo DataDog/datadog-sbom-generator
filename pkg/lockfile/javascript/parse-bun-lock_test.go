@@ -255,6 +255,67 @@ func TestParseBunLock_MatchesPackageJSONRanges(t *testing.T) {
 	}
 }
 
+func TestParseBunLock_DoesNotApplyDirectRangeToTransitiveVersion(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	bunLockPath := filepath.Join(dir, models.BunFilePath.String())
+	packageJSONPath := filepath.Join(dir, "package.json")
+
+	err := os.WriteFile(bunLockPath, []byte(`{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "bun-duplicate-ranges",
+      "dependencies": {
+        "debug": "^4.3.4"
+      }
+    }
+  },
+  "packages": {
+    "debug": ["debug@4.3.4", "", {}, "sha512-direct"],
+    "compression/debug": ["debug@2.6.9", "", {}, "sha512-transitive"]
+  }
+}`), 0o600)
+	if err != nil {
+		t.Fatalf("could not write bun.lock fixture: %v", err)
+	}
+
+	err = os.WriteFile(packageJSONPath, []byte(`{
+  "name": "bun-duplicate-ranges",
+  "dependencies": {
+    "debug": "^4.3.4"
+  }
+}`), 0o600)
+	if err != nil {
+		t.Fatalf("could not write package.json fixture: %v", err)
+	}
+
+	packages, err := javascript.ParseBunLock(bunLockPath)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "debug",
+			Version:        "4.3.4",
+			PackageManager: models.Bun,
+			TargetVersions: []string{"^4.3.4"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+		{
+			Name:           "debug",
+			Version:        "2.6.9",
+			PackageManager: models.Bun,
+			TargetVersions: []string{},
+			Ecosystem:      models.EcosystemNPM,
+		},
+	})
+}
+
 func TestParseBunLock_MalformedJSON(t *testing.T) {
 	t.Parallel()
 
