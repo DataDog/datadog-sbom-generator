@@ -88,6 +88,8 @@ func effectiveVersionSpecifier(specifier string) string {
 	specifier = strings.TrimSpace(specifier)
 	if strings.HasPrefix(specifier, "npm:") {
 		idx := strings.LastIndex(specifier, "@")
+		// idx > 4 ensures the @ is beyond the "npm:" prefix (len 4), meaning
+		// there is a package name between "npm:" and "@version".
 		if idx > 4 {
 			return strings.TrimSpace(specifier[idx+1:])
 		}
@@ -114,6 +116,8 @@ func resolveNpmAlias(specifier string) string {
 	}
 
 	idx := strings.LastIndex(specifier, "@")
+	// idx > 4 ensures the @ is beyond the "npm:" prefix (len 4), meaning
+	// there is a package name between "npm:" and "@version".
 	if idx > 4 {
 		return specifier[4:idx]
 	}
@@ -251,6 +255,8 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 			var versionLocation *models.FilePosition
 
 			pkgIndexes := jsonUtils.ExtractPackageIndexes(name, specifier, contentStr)
+			// ExtractPackageIndexes returns 3 pairs of [start, end] byte indexes:
+			// [0,1] block, [2,3] name, [4,5] version — 6 values in total.
 			if len(pkgIndexes) >= 6 {
 				blockLocation = computeFilePosition(contentStr, f.Path(), pkgIndexes[0], pkgIndexes[1])
 
