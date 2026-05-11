@@ -316,7 +316,7 @@ type packageJSONFile struct {
 
 const (
 	packageJSONPackageManager      = models.NPM
-	packageJSONOfficiallySupported = true
+	packageJSONOfficiallySupported = false
 )
 
 // ============================================================================

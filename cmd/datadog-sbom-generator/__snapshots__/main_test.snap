@@ -1801,7 +1801,6 @@ Failed to match the source file of <rootdir>/fixtures/locks-many/Gemfile.lock: o
 Scanned <rootdir>/fixtures/locks-many/Gemfile.lock file and found 1 package
 Skipping <rootdir>/fixtures/locks-many/composer.lock with exclusion rule: *composer.lock
 Skipping <rootdir>/fixtures/locks-many/package-lock.json with exclusion rule: *package-lock.json
-Scanned <rootdir>/fixtures/locks-many/package.json file and found 0 packages
 Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
 [reachability] Reachability analysis is disabled
 ---
@@ -2603,13 +2602,66 @@ Skipping <rootdir>/fixtures/locks-many/yarn.lock with exclusion rule: *yarn.lock
 
 [TestRun/Scan_npm_with_workspace_support - 2]
 Scanning directory './fixtures/integration-npm/with-workspace', resolved absolute path '<rootdir>/fixtures/integration-npm/with-workspace'
-Scanned <rootdir>/fixtures/integration-npm/with-workspace/nested/workspace-2/package.json file and found 0 packages
 Scanned <rootdir>/fixtures/integration-npm/with-workspace/package-lock.json file and found 35 packages
-Scanned <rootdir>/fixtures/integration-npm/with-workspace/package.json file and found 0 packages
 Scanned <rootdir>/fixtures/integration-npm/with-workspace/pnpm-lock.yaml file and found 35 packages
-Scanned <rootdir>/fixtures/integration-npm/with-workspace/workspace-1/package.json file and found 0 packages
-Scanned <rootdir>/fixtures/integration-npm/with-workspace/workspace-3/package.json file and found 0 packages
 Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and found 34 packages
+[reachability] Reachability analysis is disabled
+---
+
+[TestRun/Scan_package.json_without_lock_file - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/lodash",
+      "type": "library",
+      "name": "lodash",
+      "purl": "pkg:npm/lodash",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "NPM"
+        },
+        {
+          "name": "datadog:version-range",
+          "value": "^4.17.21"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":5,/"column_end/":25},/"name/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":16,/"column_end/":24}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_package.json_without_lock_file - 2]
+Scanning directory './fixtures/integration-package-json', resolved absolute path '<rootdir>/fixtures/integration-package-json'
+Scanned <rootdir>/fixtures/integration-package-json/package.json file and found 1 package
 [reachability] Reachability analysis is disabled
 ---
 
@@ -15837,7 +15889,6 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Java       | Maven           | pom.xml                          |
 | Javascript | Bun             | bun.lock                         |
 | Javascript | NPM             | package-lock.json                |
-| Javascript | NPM             | package.json                     |
 | Javascript | Pnpm            | pnpm-lock.yaml                   |
 | Javascript | Yarn            | yarn.lock                        |
 | PHP        | Composer        | composer.lock                    |

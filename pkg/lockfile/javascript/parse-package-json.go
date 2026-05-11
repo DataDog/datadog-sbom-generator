@@ -150,6 +150,10 @@ func (e PackageJSONExtractor) IsOfficiallySupported() bool {
 	return packageJSONOfficiallySupported
 }
 
+func (e PackageJSONExtractor) IsManifestParser() bool {
+	return true
+}
+
 func (e PackageJSONExtractor) PackageManager() models.PackageManager {
 	return packageJSONPackageManager
 }
