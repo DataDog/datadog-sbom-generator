@@ -107,7 +107,7 @@ func effectiveVersionSpecifier(specifier string) string {
 	return specifier
 }
 
-func ResolveNpmAlias(specifier string) string {
+func resolveNpmAlias(specifier string) string {
 	specifier = strings.TrimSpace(specifier)
 	if !strings.HasPrefix(specifier, "npm:") {
 		return ""
@@ -220,7 +220,7 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 		for _, name := range names {
 			specifier := section.deps[name]
 			resolvedName := name
-			if alias := ResolveNpmAlias(specifier); alias != "" {
+			if alias := resolveNpmAlias(specifier); alias != "" {
 				resolvedName = alias
 			}
 

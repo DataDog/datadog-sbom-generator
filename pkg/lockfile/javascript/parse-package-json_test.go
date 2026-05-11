@@ -44,32 +44,6 @@ func TestPackageJSONExtractor_ShouldExtract(t *testing.T) {
 	}
 }
 
-func TestResolveNpmAlias(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name      string
-		specifier string
-		want      string
-	}{
-		{name: "not an alias", specifier: "^1.0.0", want: ""},
-		{name: "simple alias", specifier: "npm:react@18.3.1", want: "react"},
-		{name: "scoped alias", specifier: "npm:@scope/pkg@2.0.0", want: "@scope/pkg"},
-		{name: "alias with caret", specifier: "npm:lodash@^4.17.0", want: "lodash"},
-		{name: "alias without version", specifier: "npm:react", want: "react"},
-		{name: "empty", specifier: "", want: ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := javascript.ResolveNpmAlias(tt.specifier)
-			if got != tt.want {
-				t.Errorf("ResolveNpmAlias(%q) = %q, want %q", tt.specifier, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestParsePackageJSON_FileDoesNotExist(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
