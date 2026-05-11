@@ -86,6 +86,34 @@ func TestParseNpmLock_v2_OnePackage(t *testing.T) {
 	})
 }
 
+func TestParseNpmLock_v2_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/npm/one-package.v2.json"))
+	packages, err := javascript.ParseNpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// Every package must have a valid BlockLocation from the lockfile
+	for _, pkg := range packages {
+		assert.Positive(t, pkg.BlockLocation.Line.Start,
+			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Line.End,
+			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Column.Start,
+			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Column.End,
+			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
+	}
+}
+
 //nolint:paralleltest
 func TestParseNpmLock_v2_OnePackage_MatcherFailed(t *testing.T) {
 	dir, err := os.Getwd()
@@ -959,9 +987,14 @@ func TestParseNpmLock_v2_WorkspacesComplex(t *testing.T) {
 			Version:        "1.4.0",
 			PackageManager: models.NPM,
 			Ecosystem:      models.EcosystemNPM,
-			BlockLocation:  models.FilePosition{},
-			IsDirect:       false, // is a dependency of group-dependencies@0.0.11
-			DepGroups:      []string{"dev"},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 37, End: 46},
+				Column:   models.Position{Start: 5, End: 6},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleLockfile,
+			IsDirect:     false, // is a dependency of group-dependencies@0.0.11
+			DepGroups:    []string{"dev"},
 		},
 		{
 			Name:           "semver",
