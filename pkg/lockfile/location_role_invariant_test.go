@@ -28,12 +28,19 @@ func TestLocationRoleSetWhenBlockLocationIsValid(t *testing.T) {
 	fixturesRoot := "fixtures"
 	context := testutil.GetTestContext()
 
+	// Enable all registered parsers so FindExtractor can match fixture files.
+	// An empty map disables every parser (FindExtractor checks enabledParsers[name] == true).
+	allParsers := make(map[string]bool)
+	for name := range lockfile.ListSupportedExtractors() {
+		allParsers[name] = true
+	}
+
 	err := filepath.WalkDir(fixturesRoot, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
 
-		extractor, _ := lockfile.FindExtractor(path, map[string]bool{})
+		extractor, _ := lockfile.FindExtractor(path, allParsers)
 		if extractor == nil {
 			return nil
 		}
