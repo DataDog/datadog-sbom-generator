@@ -236,7 +236,7 @@ func TestParseJarPomProperties_ManifestFallback_Bouncycastle(t *testing.T) {
 
 	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
-			Name:           "org.bouncycastle:bcprov",
+			Name:           "org.bouncycastle:bcprov-jdk18on",
 			Version:        "1.78.1",
 			PackageManager: models.Maven,
 			Ecosystem:      models.EcosystemMaven,

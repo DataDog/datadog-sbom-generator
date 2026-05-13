@@ -80,6 +80,53 @@ func TestParseJarFilename(t *testing.T) {
 			wantArtifactID: "log4j-api",
 			wantVersion:    "2.17.1",
 		},
+		// Classifier stripping
+		{
+			name:           "platform classifier linux-x86_64 stripped",
+			filename:       "netty-tcnative-boringssl-static-2.0.61.Final-linux-x86_64.jar",
+			wantArtifactID: "netty-tcnative-boringssl-static",
+			wantVersion:    "2.0.61.Final",
+		},
+		{
+			name:           "platform classifier linux-aarch_64 stripped",
+			filename:       "netty-tcnative-boringssl-static-2.0.61.Final-linux-aarch_64.jar",
+			wantArtifactID: "netty-tcnative-boringssl-static",
+			wantVersion:    "2.0.61.Final",
+		},
+		{
+			name:           "platform classifier osx-x86_64 stripped",
+			filename:       "grpc-netty-1.50.0-osx-x86_64.jar",
+			wantArtifactID: "grpc-netty",
+			wantVersion:    "1.50.0",
+		},
+		{
+			// Regex splits at first -digit boundary: artifactId="guava", version="31.1-jre-sources".
+			// Classifier stripping then removes "-sources", leaving version="31.1-jre".
+			name:           "sources classifier stripped",
+			filename:       "guava-31.1-jre-sources.jar",
+			wantArtifactID: "guava",
+			wantVersion:    "31.1-jre",
+		},
+		{
+			name:           "SNAPSHOT qualifier not stripped",
+			filename:       "spring-core-5.3.0-SNAPSHOT.jar",
+			wantArtifactID: "spring-core",
+			wantVersion:    "5.3.0-SNAPSHOT",
+		},
+		{
+			name:           "Final qualifier not stripped",
+			filename:       "netty-tcnative-2.0.61.Final.jar",
+			wantArtifactID: "netty-tcnative",
+			wantVersion:    "2.0.61.Final",
+		},
+		{
+			// artifactId contains a hyphen-digit segment; greedy match finds the
+			// rightmost -\d boundary so the split is correct.
+			name:           "artifactId with embedded hyphen-digit segment",
+			filename:       "log4j-1.2-api-2.17.1.jar",
+			wantArtifactID: "log4j-1.2-api",
+			wantVersion:    "2.17.1",
+		},
 	}
 
 	for _, tt := range tests {
@@ -253,8 +300,8 @@ func TestParseManifestAttributes(t *testing.T) {
 		wantBSN           string
 		wantBundleName    string
 		wantBundleVersion string
-		wantImplTitle     string
 		wantImplVersion   string
+		wantAMN           string
 		wantErr           bool
 	}{
 		{
@@ -268,7 +315,6 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "org.bouncycastle.bcprov-jdk18on",
 			wantBundleName:    "bcprov",
 			wantBundleVersion: "1.78.1",
-			wantImplTitle:     "bcprov",
 			wantImplVersion:   "1.78.1",
 		},
 		{
@@ -277,7 +323,6 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "",
 			wantBundleName:    "",
 			wantBundleVersion: "",
-			wantImplTitle:     "",
 			wantImplVersion:   "",
 		},
 		{
@@ -288,7 +333,6 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "org.eclipse.core.runtime;singleton:=true",
 			wantBundleName:    "",
 			wantBundleVersion: "3.26.0",
-			wantImplTitle:     "",
 			wantImplVersion:   "",
 		},
 		{
@@ -299,7 +343,6 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "",
 			wantBundleName:    "",
 			wantBundleVersion: "",
-			wantImplTitle:     "Gson",
 			wantImplVersion:   "2.10.1",
 		},
 		{
@@ -311,7 +354,6 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "org.example.very.long.symbolic.name.continued",
 			wantBundleName:    "",
 			wantBundleVersion: "1.0.0",
-			wantImplTitle:     "",
 			wantImplVersion:   "",
 		},
 		{
@@ -328,8 +370,19 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantBSN:           "org.bouncycastle.bcprov",
 			wantBundleName:    "",
 			wantBundleVersion: "1.78.1",
-			wantImplTitle:     "",
 			wantImplVersion:   "",
+		},
+		{
+			name: "Automatic-Module-Name extracted",
+			manifest: "Manifest-Version: 1.0\r\n" +
+				"Bundle-SymbolicName: bcprov\r\n" +
+				"Bundle-Name: bcprov\r\n" +
+				"Bundle-Version: 1.78.1\r\n" +
+				"Automatic-Module-Name: org.bouncycastle.provider\r\n",
+			wantBSN:           "bcprov",
+			wantBundleName:    "bcprov",
+			wantBundleVersion: "1.78.1",
+			wantAMN:           "org.bouncycastle.provider",
 		},
 	}
 
@@ -337,25 +390,25 @@ func TestParseManifestAttributes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			reader := createTestJar(t, tt.manifest)
-			bsn, bundleName, bundleVersion, implTitle, implVersion, err := parseManifestAttributes(reader)
+			mf, err := parseManifestAttributes(reader)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseManifestAttributes() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if bsn != tt.wantBSN {
-				t.Errorf("BSN = %q, want %q", bsn, tt.wantBSN)
+			if mf.bundleSymbolicName != tt.wantBSN {
+				t.Errorf("BSN = %q, want %q", mf.bundleSymbolicName, tt.wantBSN)
 			}
-			if bundleName != tt.wantBundleName {
-				t.Errorf("BundleName = %q, want %q", bundleName, tt.wantBundleName)
+			if mf.bundleName != tt.wantBundleName {
+				t.Errorf("BundleName = %q, want %q", mf.bundleName, tt.wantBundleName)
 			}
-			if bundleVersion != tt.wantBundleVersion {
-				t.Errorf("BundleVersion = %q, want %q", bundleVersion, tt.wantBundleVersion)
+			if mf.bundleVersion != tt.wantBundleVersion {
+				t.Errorf("BundleVersion = %q, want %q", mf.bundleVersion, tt.wantBundleVersion)
 			}
-			if implTitle != tt.wantImplTitle {
-				t.Errorf("ImplTitle = %q, want %q", implTitle, tt.wantImplTitle)
+			if mf.implVersion != tt.wantImplVersion {
+				t.Errorf("ImplVersion = %q, want %q", mf.implVersion, tt.wantImplVersion)
 			}
-			if implVersion != tt.wantImplVersion {
-				t.Errorf("ImplVersion = %q, want %q", implVersion, tt.wantImplVersion)
+			if mf.automaticModuleName != tt.wantAMN {
+				t.Errorf("AutomaticModuleName = %q, want %q", mf.automaticModuleName, tt.wantAMN)
 			}
 		})
 	}
@@ -384,14 +437,13 @@ func TestParseManifestAttributes_NoManifest(t *testing.T) {
 		t.Fatalf("failed to open jar: %v", err)
 	}
 
-	bsn, bundleName, bundleVersion, implTitle, implVersion, err := parseManifestAttributes(reader)
+	mf, err := parseManifestAttributes(reader)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 	// All should be empty when no MANIFEST.MF exists
-	if bsn != "" || bundleName != "" || bundleVersion != "" || implTitle != "" || implVersion != "" {
-		t.Errorf("expected all empty, got bsn=%q bundleName=%q bundleVersion=%q implTitle=%q implVersion=%q",
-			bsn, bundleName, bundleVersion, implTitle, implVersion)
+	if mf != (manifestAttrs{}) {
+		t.Errorf("expected zero manifestAttrs, got %+v", mf)
 	}
 }
 
@@ -403,14 +455,15 @@ func TestParseGroupId(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name               string
-		bundleSymbolicName string
-		bundleName         string
-		filenameArtifact   string
-		want               string
+		name                string
+		bundleSymbolicName  string
+		bundleName          string
+		filenameArtifact    string
+		automaticModuleName string
+		want                string
 	}{
 		{
-			name:               "bouncycastle - filename candidate matches suffix",
+			name:               "bouncycastle - filename candidate matches BSN suffix",
 			bundleSymbolicName: "org.bouncycastle.bcprov-jdk18on",
 			bundleName:         "",
 			filenameArtifact:   "bcprov-jdk18on",
@@ -438,7 +491,7 @@ func TestParseGroupId(t *testing.T) {
 			want:               "ab.cd",
 		},
 		{
-			name:               "BSN with no dots - fallback to BSN",
+			name:               "BSN with no dots and no AMN - fallback to BSN",
 			bundleSymbolicName: "mybundle",
 			bundleName:         "",
 			filenameArtifact:   "mybundle",
@@ -479,15 +532,47 @@ func TestParseGroupId(t *testing.T) {
 			filenameArtifact:   "org.example",
 			want:               "org.example",
 		},
+		// AMN fallback cases (BSN has no dots)
+		{
+			// BouncyCastle: BSN="bcprov" has no dots; AMN="org.bouncycastle.provider"
+			// has 3 segments so last-segment stripping gives "org.bouncycastle".
+			name:                "AMN last-segment strip when BSN has no dots - bouncycastle",
+			bundleSymbolicName:  "bcprov",
+			bundleName:          "bcprov",
+			filenameArtifact:    "bcprov-jdk15to18",
+			automaticModuleName: "org.bouncycastle.provider",
+			want:                "org.bouncycastle",
+		},
+		{
+			// AMN "com.mylib" has only 1 dot (2 segments). The dot-prefix heuristic
+			// can't match because filenameArtifact differs from AMN's suffix, so it
+			// falls through to the last-segment threshold check (requires >= 2 dots).
+			// With only 1 dot the strip is skipped and BSN is returned as-is.
+			name:                "AMN with 1 dot - below threshold, fallback to BSN",
+			bundleSymbolicName:  "mylib",
+			bundleName:          "",
+			filenameArtifact:    "unrelated-artifact",
+			automaticModuleName: "com.mylib",
+			want:                "mylib",
+		},
+		{
+			// BSN has dots → AMN path is skipped; BSN dot-prefix is used.
+			name:                "BSN with dots - AMN path not taken",
+			bundleSymbolicName:  "org.bouncycastle.bcprov-jdk18on",
+			bundleName:          "",
+			filenameArtifact:    "bcprov-jdk18on",
+			automaticModuleName: "org.bouncycastle.provider",
+			want:                "org.bouncycastle",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := parseGroupID(tt.bundleSymbolicName, tt.bundleName, tt.filenameArtifact)
+			got := parseGroupID(tt.bundleSymbolicName, tt.bundleName, tt.filenameArtifact, tt.automaticModuleName)
 			if got != tt.want {
-				t.Errorf("parseGroupID(%q, %q, %q) = %q, want %q",
-					tt.bundleSymbolicName, tt.bundleName, tt.filenameArtifact, got, tt.want)
+				t.Errorf("parseGroupID(%q, %q, %q, %q) = %q, want %q",
+					tt.bundleSymbolicName, tt.bundleName, tt.filenameArtifact, tt.automaticModuleName, got, tt.want)
 			}
 		})
 	}
@@ -501,28 +586,44 @@ func TestResolveManifestPackage(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name             string
-		filenameArtifact string
-		filenameVersion  string
-		bsn              string
-		bundleName       string
-		bundleVersion    string
-		implTitle        string
-		implVersion      string
-		wantName         string
-		wantVersion      string
+		name                string
+		filenameArtifact    string
+		filenameVersion     string
+		bsn                 string
+		bundleName          string
+		bundleVersion       string
+		implVersion         string
+		automaticModuleName string
+		wantName            string
+		wantVersion         string
 	}{
 		{
-			name:             "full bouncycastle example",
+			// JAR has BSN with dots: dot-prefix heuristic gives groupId=org.bouncycastle.
+			// Bundle-Name "bcprov" is a display name; filename artifact "bcprov-jdk18on"
+			// is the correct Maven artifactId and is always preferred.
+			name:             "bouncycastle with full BSN - filename artifact preferred over bundle name",
 			filenameArtifact: "bcprov-jdk18on",
 			filenameVersion:  "1.78.1",
 			bsn:              "org.bouncycastle.bcprov-jdk18on",
 			bundleName:       "bcprov",
 			bundleVersion:    "1.78.1",
-			implTitle:        "bcprov",
 			implVersion:      "1.78.1",
-			wantName:         "org.bouncycastle:bcprov",
+			wantName:         "org.bouncycastle:bcprov-jdk18on",
 			wantVersion:      "1.78.1",
+		},
+		{
+			// Real bcprov-jdk15to18: BSN="bcprov" (no dots), Bundle-Name="bcprov" (same as BSN),
+			// AMN="org.bouncycastle.provider". Expects filename artifact and AMN-derived groupId.
+			name:                "bouncycastle jdk15to18 - AMN groupId + filename artifactId",
+			filenameArtifact:    "bcprov-jdk15to18",
+			filenameVersion:     "1.78.1",
+			bsn:                 "bcprov",
+			bundleName:          "bcprov",
+			bundleVersion:       "1..78.1",
+			implVersion:         "1.78.1.0",
+			automaticModuleName: "org.bouncycastle.provider",
+			wantName:            "org.bouncycastle:bcprov-jdk15to18",
+			wantVersion:         "1.78.1",
 		},
 		{
 			name:             "version agreement - bundle==impl preferred",
@@ -531,7 +632,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.mylib",
 			bundleName:       "",
 			bundleVersion:    "1.5.0",
-			implTitle:        "",
 			implVersion:      "1.5.0",
 			wantName:         "com.example:mylib",
 			wantVersion:      "1.5.0",
@@ -543,7 +643,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.mylib",
 			bundleName:       "",
 			bundleVersion:    "1.5.0",
-			implTitle:        "",
 			implVersion:      "1.6.0",
 			wantName:         "com.example:mylib",
 			wantVersion:      "2.0.0",
@@ -555,7 +654,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.mylib",
 			bundleName:       "",
 			bundleVersion:    "1.5.0",
-			implTitle:        "",
 			implVersion:      "",
 			wantName:         "com.example:mylib",
 			wantVersion:      "1.5.0",
@@ -567,36 +665,33 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.mylib",
 			bundleName:       "",
 			bundleVersion:    "",
-			implTitle:        "",
 			implVersion:      "3.0.0",
 			wantName:         "com.example:mylib",
 			wantVersion:      "3.0.0",
 		},
 		{
-			name:             "artifactId priority - bundleName preferred over implTitle",
+			// Bundle-Name and Implementation-Title are display names; filename artifact
+			// is always used as the Maven artifactId regardless.
+			name:             "filename artifact used despite bundle name and impl title being present",
 			filenameArtifact: "filename-art",
 			filenameVersion:  "1.0.0",
-			bsn:              "com.example.my-bundle",
+			bsn:              "com.example.filename-art",
 			bundleName:       "My Bundle",
 			bundleVersion:    "1.0.0",
-			implTitle:        "ImplArt",
 			implVersion:      "1.0.0",
-			wantName:         "com.example:my-bundle",
+			wantName:         "com.example:filename-art",
 			wantVersion:      "1.0.0",
 		},
 		{
-			name:             "artifactId priority - implTitle when no bundleName",
+			name:             "filename artifact used when no bundle name or impl title",
 			filenameArtifact: "filename-art",
 			filenameVersion:  "1.0.0",
-			bsn:              "com.example.implart",
+			bsn:              "com.example.filename-art",
 			bundleName:       "",
 			bundleVersion:    "1.0.0",
-			implTitle:        "ImplArt",
 			implVersion:      "1.0.0",
-			// groupId uses filename-art and bundleName as candidates, not chosen artifactId.
-			// BSN doesn't end with ".filename-art", so groupId falls back to full BSN.
-			wantName:    "com.example.implart:implart",
-			wantVersion: "1.0.0",
+			wantName:         "com.example:filename-art",
+			wantVersion:      "1.0.0",
 		},
 		{
 			name:             "artifactId priority - filename when no bundleName or implTitle",
@@ -605,7 +700,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.filename-art",
 			bundleName:       "",
 			bundleVersion:    "1.0.0",
-			implTitle:        "",
 			implVersion:      "1.0.0",
 			wantName:         "com.example:filename-art",
 			wantVersion:      "1.0.0",
@@ -617,7 +711,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "",
 			bundleName:       "",
 			bundleVersion:    "",
-			implTitle:        "",
 			implVersion:      "",
 			wantName:         "",
 			wantVersion:      "",
@@ -629,7 +722,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "com.example.mylib",
 			bundleName:       "",
 			bundleVersion:    "",
-			implTitle:        "",
 			implVersion:      "",
 			wantName:         "com.example:mylib",
 			wantVersion:      "",
@@ -641,7 +733,6 @@ func TestResolveManifestPackage(t *testing.T) {
 			bsn:              "org.eclipse.core.runtime;singleton:=true",
 			bundleName:       "",
 			bundleVersion:    "3.26.0",
-			implTitle:        "",
 			implVersion:      "",
 			wantName:         "org.eclipse.core:runtime",
 			wantVersion:      "3.26.0",
@@ -654,7 +745,8 @@ func TestResolveManifestPackage(t *testing.T) {
 			gotName, gotVersion := resolveManifestPackage(
 				tt.filenameArtifact, tt.filenameVersion,
 				tt.bsn, tt.bundleName, tt.bundleVersion,
-				tt.implTitle, tt.implVersion,
+				tt.implVersion,
+				tt.automaticModuleName,
 			)
 			if gotName != tt.wantName {
 				t.Errorf("resolveManifestPackage() name = %q, want %q", gotName, tt.wantName)

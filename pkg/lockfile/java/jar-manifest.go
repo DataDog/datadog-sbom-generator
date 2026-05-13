@@ -12,19 +12,36 @@ import (
 )
 
 // jarFilenameRegex matches Maven-convention JAR filenames: artifactId-version.jar
-// The version must start with a digit. The artifactId is the minimal non-greedy match,
-// and the version captures everything after the first hyphen-digit boundary through .jar.
-var jarFilenameRegex = cachedregexp.MustCompile(`^(.+?)-(\d.*)\.jar$`)
+// The version must start with a digit. The artifactId uses a greedy match so that
+// the split occurs at the LAST hyphen-digit boundary, not the first. This correctly
+// handles artifactIds that themselves contain a hyphen-digit segment, e.g.
+// log4j-1.2-api-2.17.1.jar → artifactId="log4j-1.2-api", version="2.17.1".
+var jarFilenameRegex = cachedregexp.MustCompile(`^(.+)-(\d.*)\.jar$`)
+
+// jarClassifierRegex matches known Maven classifier suffixes appended at the end of a
+// version string in a JAR filename. Classifiers are either OS/architecture identifiers
+// (linux, windows, osx, …) optionally followed by an arch token, or well-known
+// descriptor strings (sources, javadoc, native, …).
+//
+// Version qualifiers such as -SNAPSHOT, -Final, -RC1 are intentionally excluded so
+// they are never stripped.
+var jarClassifierRegex = cachedregexp.MustCompile(
+	`-(?:linux|windows|osx|macos|darwin|freebsd|sunos|solaris|aix)(?:[_-][a-z0-9_]+)*$` +
+		`|-(?:sources|javadoc|tests|native|all|uber|shaded|assembly|no_aop)$`,
+)
 
 // parseJarFilename extracts artifactId and version from a JAR filename following
-// Maven naming conventions. Returns empty strings if the filename doesn't match.
+// Maven naming conventions. If the version portion contains a known classifier suffix
+// (e.g. "-linux-x86_64", "-sources"), the classifier is stripped so that only the
+// canonical Maven version is returned. Returns empty strings if the filename doesn't
+// match the expected pattern.
 func parseJarFilename(filename string) (artifactID, version string) {
 	matches := jarFilenameRegex.FindStringSubmatch(filename)
 	if matches == nil {
 		return "", ""
 	}
 
-	return matches[1], matches[2]
+	return matches[1], jarClassifierRegex.ReplaceAllString(matches[2], "")
 }
 
 // cleanBundleSymbolicName strips OSGi directives (everything after the first ';')
@@ -60,10 +77,21 @@ func cleanName(raw string) string {
 	return b.String()
 }
 
+// manifestAttrs holds the MANIFEST.MF attributes relevant to fallback package inference.
+// Raw attribute values are stored (not cleaned) so callers can apply appropriate cleaning.
+type manifestAttrs struct {
+	bundleSymbolicName  string
+	bundleName          string
+	bundleVersion       string
+	implVersion         string
+	automaticModuleName string
+}
+
 // parseManifestAttributes reads META-INF/MANIFEST.MF from a zip archive and
-// extracts the five relevant attributes for fallback package inference.
-// Returns raw attribute values (not cleaned) so callers can apply appropriate cleaning.
-func parseManifestAttributes(zipReader *zip.Reader) (bundleSymbolicName, bundleName, bundleVersion, implTitle, implVersion string, err error) {
+// returns the attributes relevant to fallback package inference.
+// Parsing stops at the first blank line, which ends the main section; per-entry
+// sections that follow must not overwrite main-section values.
+func parseManifestAttributes(zipReader *zip.Reader) (manifestAttrs, error) {
 	var manifestEntry *zip.File
 	for _, entry := range zipReader.File {
 		if entry.Name == "META-INF/MANIFEST.MF" {
@@ -74,12 +102,12 @@ func parseManifestAttributes(zipReader *zip.Reader) (bundleSymbolicName, bundleN
 	}
 
 	if manifestEntry == nil {
-		return "", "", "", "", "", nil
+		return manifestAttrs{}, nil
 	}
 
 	rc, err := manifestEntry.Open()
 	if err != nil {
-		return "", "", "", "", "", err
+		return manifestAttrs{}, err
 	}
 	defer rc.Close()
 
@@ -118,26 +146,33 @@ func parseManifestAttributes(zipReader *zip.Reader) (bundleSymbolicName, bundleN
 	}
 
 	if err := scanner.Err(); err != nil {
-		return "", "", "", "", "", err
+		return manifestAttrs{}, err
 	}
 
-	return attrs["Bundle-SymbolicName"],
-		attrs["Bundle-Name"],
-		attrs["Bundle-Version"],
-		attrs["Implementation-Title"],
-		attrs["Implementation-Version"],
-		nil
+	return manifestAttrs{
+		bundleSymbolicName:  attrs["Bundle-SymbolicName"],
+		bundleName:          attrs["Bundle-Name"],
+		bundleVersion:       attrs["Bundle-Version"],
+		implVersion:         attrs["Implementation-Version"],
+		automaticModuleName: attrs["Automatic-Module-Name"],
+	}, nil
 }
 
 // parseGroupID infers a Maven groupId from MANIFEST.MF attributes using the
 // dot-prefix heuristic from the Java Tracer's Dependency.java guessFallbackNoPom.
 //
-// Algorithm:
+// Primary algorithm (BSN-based):
 //  1. Build candidate names: [filenameArtifact, cleanName(bundleName)]
 //  2. For each candidate, check if BSN ends with "." + candidate AND BSN contains "." AND len(BSN) > 5
 //  3. If match: groupId = BSN prefix (BSN minus "." + candidate)
-//  4. If no match: groupId = BSN (fallback)
-func parseGroupID(bundleSymbolicName, bundleName, filenameArtifact string) string {
+//
+// Fallback when BSN has no dots (poor OSGi metadata, e.g. Bundle-SymbolicName: "bcprov"):
+//  1. Apply the same dot-prefix heuristic to Automatic-Module-Name
+//  2. If no candidate matches, strip the last dot-segment of AMN as a best-effort groupId
+//     (requires AMN to have at least 2 dots for confidence)
+//
+// Final fallback: BSN as-is.
+func parseGroupID(bundleSymbolicName, bundleName, filenameArtifact, automaticModuleName string) string {
 	if bundleSymbolicName == "" {
 		return ""
 	}
@@ -152,6 +187,7 @@ func parseGroupID(bundleSymbolicName, bundleName, filenameArtifact string) strin
 		candidates = append(candidates, cleanedBundleName)
 	}
 
+	// Primary: dot-prefix heuristic on BSN
 	for _, candidate := range candidates {
 		suffix := "." + candidate
 		if strings.HasSuffix(bundleSymbolicName, suffix) &&
@@ -161,36 +197,56 @@ func parseGroupID(bundleSymbolicName, bundleName, filenameArtifact string) strin
 		}
 	}
 
+	// BSN-based inference failed. When BSN has no dots (e.g. "bcprov"), it carries
+	// no package hierarchy. Try Automatic-Module-Name as a more reliable source.
+	if !strings.Contains(bundleSymbolicName, ".") && automaticModuleName != "" {
+		// Dot-prefix heuristic on AMN
+		for _, candidate := range candidates {
+			suffix := "." + candidate
+			if strings.HasSuffix(automaticModuleName, suffix) &&
+				strings.Contains(automaticModuleName, ".") &&
+				len(automaticModuleName) > 5 {
+				return automaticModuleName[:len(automaticModuleName)-len(suffix)]
+			}
+		}
+
+		// No candidate matched. Strip the last dot-segment of AMN as a best-effort
+		// groupId (e.g. "org.bouncycastle.provider" → "org.bouncycastle").
+		// Require at least 2 dots (3 segments) to avoid over-truncating short names.
+		if strings.Count(automaticModuleName, ".") >= 2 {
+			if idx := strings.LastIndex(automaticModuleName, "."); idx > 0 {
+				return automaticModuleName[:idx]
+			}
+		}
+	}
+
 	// No candidate matched; use BSN as-is
 	return bundleSymbolicName
 }
 
 // resolveManifestPackage determines the final package name and version from
-// MANIFEST.MF attributes and filename-derived values, following the priority
-// chains from the Java Tracer's Dependency.java.
+// MANIFEST.MF attributes and filename-derived values.
 //
-// ArtifactId priority: cleanName(bundleName) > cleanName(implTitle) > filenameArtifact
+// ArtifactId: always the filename-derived artifact ID.
+// Bundle-Name and Implementation-Title are OSGi/JAR display names and frequently
+// do not match the Maven artifactId (e.g. Bundle-Name "bcprov" vs filename artifact
+// "bcprov-jdk18on"). The filename is the authoritative source for the Maven coordinate.
+//
 // Version priority: bundleVersion==implVersion agreement > filenameVersion > bundleVersion > implVersion > ""
 //
+// Implementation-Title is intentionally excluded: it is an OSGi/JAR display name
+// and is not reliably set to the Maven artifactId.
+//
 // Returns empty name if groupId or artifactId cannot be determined.
-func resolveManifestPackage(filenameArtifact, filenameVersion, rawBSN, bundleName, bundleVersion, implTitle, implVersion string) (name, version string) {
+func resolveManifestPackage(filenameArtifact, filenameVersion, rawBSN, bundleName, bundleVersion, implVersion, automaticModuleName string) (name, version string) {
 	bsn := cleanBundleSymbolicName(rawBSN)
 	if bsn == "" {
 		return "", ""
 	}
 
-	// Resolve artifactId by priority
-	var artifactID string
-
-	switch {
-	case cleanName(bundleName) != "":
-		artifactID = cleanName(bundleName)
-	case cleanName(implTitle) != "":
-		artifactID = cleanName(implTitle)
-	default:
-		artifactID = filenameArtifact
-	}
-
+	// artifactId comes from the filename: it is the most reliable source of the Maven
+	// artifact ID. Bundle-Name / Implementation-Title are display names only.
+	artifactID := filenameArtifact
 	if artifactID == "" {
 		return "", ""
 	}
@@ -209,7 +265,7 @@ func resolveManifestPackage(filenameArtifact, filenameVersion, rawBSN, bundleNam
 
 	// Resolve groupId using filename artifact and bundle name as candidates
 	// (not the resolved artifactId — groupId inference has its own candidate list)
-	groupID := parseGroupID(bsn, bundleName, filenameArtifact)
+	groupID := parseGroupID(bsn, bundleName, filenameArtifact, automaticModuleName)
 	if groupID == "" {
 		return "", ""
 	}
@@ -227,7 +283,7 @@ func extractFromManifest(jarPath string, zipReader *zip.Reader, packages []lockf
 		return packages
 	}
 
-	bsn, bundleName, bundleVersion, implTitle, implVersion, err := parseManifestAttributes(zipReader)
+	mf, err := parseManifestAttributes(zipReader)
 	if err != nil {
 		// Silently skip on parse error — this is a best-effort fallback
 		return packages
@@ -235,8 +291,9 @@ func extractFromManifest(jarPath string, zipReader *zip.Reader, packages []lockf
 
 	name, version := resolveManifestPackage(
 		filenameArtifact, filenameVersion,
-		bsn, bundleName, bundleVersion,
-		implTitle, implVersion,
+		mf.bundleSymbolicName, mf.bundleName, mf.bundleVersion,
+		mf.implVersion,
+		mf.automaticModuleName,
 	)
 
 	if name == "" {
