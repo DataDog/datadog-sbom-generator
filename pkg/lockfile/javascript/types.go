@@ -1,6 +1,8 @@
 package javascript
 
 import (
+	"encoding/json"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -184,6 +186,35 @@ type PnpmLegacyLockfile struct {
 }
 
 type PnpmLockExtractor struct {
+	lockfile.WithMatcher
+}
+
+// ============================================================================
+// Bun Constants
+// ============================================================================
+
+const (
+	bunPackageManager      = models.Bun
+	bunOfficiallySupported = true
+)
+
+// ============================================================================
+// Bun Types
+// ============================================================================
+
+type BunLockfile struct {
+	Version    int                          `json:"lockfileVersion"`
+	Workspaces map[string]BunLockWorkspace  `json:"workspaces"`
+	Packages   map[string][]json.RawMessage `json:"packages"`
+}
+
+type BunLockWorkspace struct {
+	Dependencies         map[string]string `json:"dependencies"`
+	DevDependencies      map[string]string `json:"devDependencies"`
+	OptionalDependencies map[string]string `json:"optionalDependencies"`
+}
+
+type BunLockExtractor struct {
 	lockfile.WithMatcher
 }
 

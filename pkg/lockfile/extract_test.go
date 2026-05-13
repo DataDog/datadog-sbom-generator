@@ -115,6 +115,7 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
+		"bun.lock",
 		"Cargo.lock",
 		"composer.lock",
 		"conan.lock",
@@ -207,7 +208,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 
 	// Test language expansion
 	result = lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
-	expected := []string{"package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	expected := []string{"bun.lock", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
 	assert.Equal(t, expected, result)
 
 	// Test direct parser name
@@ -223,7 +224,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	// Test case insensitivity for language names
 	result1 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"javascript"})
 	result2 := lockfile.ExpandLanguagesAndPackageManagersToExtractors([]string{"JAVASCRIPT"})
-	expected = []string{"package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
+	expected = []string{"bun.lock", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"}
 	assert.Equal(t, expected, result1)
 	assert.Equal(t, expected, result2)
 
@@ -272,6 +273,7 @@ func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
 func filesToParsers() map[string]string {
 	return map[string]string{
 		"buildscript-gradle.lockfile":      "gradle.lockfile",
+		"bun.lock":                         "bun.lock",
 		"Cargo.lock":                       "Cargo.lock",
 		"composer.lock":                    "composer.lock",
 		"conan.lock":                       "conan.lock",

@@ -1,0 +1,14 @@
+{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "one-package-fixture",
+      "dependencies": {
+        "wrappy": "^1.0.0"
+      }
+    }
+  },
+  "packages": {
+    "wrappy": ["wrappy@1.0.2", "", {}, "sha512-aaa"]
+  }
+}

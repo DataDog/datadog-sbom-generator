@@ -3,6 +3,7 @@ package models
 type PackageManager string
 
 const (
+	Bun          PackageManager = "Bun"
 	Bundler      PackageManager = "Bundler"
 	Composer     PackageManager = "Composer"
 	Conan        PackageManager = "Conan"
@@ -32,6 +33,7 @@ var PackageManagerToLanguage = map[PackageManager]Language{
 	NPM:          Javascript,
 	Yarn:         Javascript,
 	Pnpm:         Javascript,
+	Bun:          Javascript,
 	Requirements: Python,
 	Pipfile:      Python,
 	Pdm:          Python,

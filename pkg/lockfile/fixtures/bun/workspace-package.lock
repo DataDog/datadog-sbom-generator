@@ -1,0 +1,23 @@
+{
+  "lockfileVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "bun-workspace-fixture",
+      "dependencies": {
+        "workspace-a": "workspace:packages/a",
+        "lodash": "^4.17.21"
+      }
+    },
+    "packages/a": {
+      "name": "workspace-a",
+      "dependencies": {
+        "typescript": "^5.0.0"
+      }
+    }
+  },
+  "packages": {
+    "workspace-a": ["workspace-a@workspace:packages/a", "", {}, ""],
+    "lodash": ["lodash@4.17.21", "", {}, "sha512-aaa"],
+    "packages/a/typescript": ["typescript@5.3.3", "", {}, "sha512-bbb"]
+  }
+}

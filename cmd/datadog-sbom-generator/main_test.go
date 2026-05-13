@@ -276,6 +276,11 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan bun with ranged package.json dependencies",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-bun/ranges"},
+			exit: 0,
+		},
+		{
 			name: "Scan csproj project",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-nuget/csproj-sample-app"},
 			exit: 0,
