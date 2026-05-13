@@ -93,6 +93,12 @@ func parseManifestAttributes(zipReader *zip.Reader) (bundleSymbolicName, bundleN
 	for scanner.Scan() {
 		line := scanner.Text()
 
+		// A blank line ends the main section of the manifest.
+		// Per-entry sections follow and must not overwrite main-section attributes.
+		if line == "" {
+			break
+		}
+
 		// Continuation line: starts with a single space
 		if strings.HasPrefix(line, " ") && currentKey != "" {
 			attrs[currentKey] += strings.TrimPrefix(line, " ")

@@ -314,6 +314,23 @@ func TestParseManifestAttributes(t *testing.T) {
 			wantImplTitle:     "",
 			wantImplVersion:   "",
 		},
+		{
+			// Per-entry sections follow the blank line that ends the main section.
+			// Attributes in those sections must not overwrite main-section values.
+			name: "per-entry section ignored after blank line",
+			manifest: "Manifest-Version: 1.0\r\n" +
+				"Bundle-SymbolicName: org.bouncycastle.bcprov\r\n" +
+				"Bundle-Version: 1.78.1\r\n" +
+				"\r\n" +
+				"Name: com/example/SomeClass.class\r\n" +
+				"Bundle-SymbolicName: com.attacker.evil\r\n" +
+				"Implementation-Version: 99.0.0\r\n",
+			wantBSN:           "org.bouncycastle.bcprov",
+			wantBundleName:    "",
+			wantBundleVersion: "1.78.1",
+			wantImplTitle:     "",
+			wantImplVersion:   "",
+		},
 	}
 
 	for _, tt := range tests {
