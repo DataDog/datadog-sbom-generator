@@ -2641,12 +2641,47 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
         {
           "name": "datadog:package-manager",
           "value": "uv"
+        },
+        {
+          "name": "datadog:requires-transitive-enrichment",
+          "value": "true"
         }
       ],
       "evidence": {
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":5,/"column_end/":20,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":6,/"column_end/":11,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":7,/"line_end/":7,/"column_start/":13,/"column_end/":18,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:pypi/numpy",
+      "type": "library",
+      "name": "numpy",
+      "purl": "pkg:pypi/numpy",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "uv"
+        },
+        {
+          "name": "datadog:requires-transitive-enrichment",
+          "value": "true"
+        },
+        {
+          "name": "datadog:version-range",
+          "value": "/u003e=1.24"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pyproject.toml/",/"line_start/":8,/"line_end/":8,/"column_start/":5,/"column_end/":19,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pyproject.toml/",/"line_start/":8,/"line_end/":8,/"column_start/":6,/"column_end/":11,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pyproject.toml/",/"line_start/":8,/"line_end/":8,/"column_start/":11,/"column_end/":17,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -2669,6 +2704,10 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
         {
           "name": "datadog:package-manager",
           "value": "uv"
+        },
+        {
+          "name": "datadog:requires-transitive-enrichment",
+          "value": "true"
         }
       ],
       "evidence": {
@@ -2693,6 +2732,10 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
         {
           "name": "datadog:package-manager",
           "value": "uv"
+        },
+        {
+          "name": "datadog:requires-transitive-enrichment",
+          "value": "true"
         }
       ],
       "evidence": {
@@ -2710,7 +2753,7 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
 
 [TestRun/Scan_pyproject.toml_without_lock_file - 2]
 Scanning directory './fixtures/integration-pyproject', resolved absolute path '<rootdir>/fixtures/integration-pyproject'
-Scanned <rootdir>/fixtures/integration-pyproject/pyproject.toml file and found 3 packages
+Scanned <rootdir>/fixtures/integration-pyproject/pyproject.toml file and found 4 packages
 [reachability] Reachability analysis is disabled
 ---
 
