@@ -5,11 +5,13 @@ import "fmt"
 type PackageMetadataType string
 
 const (
-	PackageManagerMetadata     PackageMetadataType = "package-manager"
-	IsDirectDependencyMetadata PackageMetadataType = "is-direct"
-	IsDevDependencyMetadata    PackageMetadataType = "is-dev"
-	ExclusionMetadata          PackageMetadataType = "exclusion"
-	OpaqueMetadata             PackageMetadataType = "opaque"
+	PackageManagerMetadata               PackageMetadataType = "package-manager"
+	IsDirectDependencyMetadata           PackageMetadataType = "is-direct"
+	VersionRangeMetadata                 PackageMetadataType = "version-range"
+	RequiresTransitiveEnrichmentMetadata PackageMetadataType = "requires-transitive-enrichment"
+	IsDevDependencyMetadata              PackageMetadataType = "is-dev"
+	ExclusionMetadata                    PackageMetadataType = "exclusion"
+	OpaqueMetadata                       PackageMetadataType = "opaque"
 )
 
 type PackageMetadata map[PackageMetadataType]string
