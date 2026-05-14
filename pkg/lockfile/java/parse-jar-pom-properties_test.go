@@ -215,3 +215,159 @@ func TestParseJarPomProperties_MalformedPomProperties(t *testing.T) {
 	// Malformed pom.properties (missing groupId) should be skipped gracefully
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
 }
+
+// ============================================================================
+// MANIFEST.MF Fallback Integration Tests
+// ============================================================================
+
+func TestParseJarPomProperties_ManifestFallback_Bouncycastle(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.Join(dir, "../fixtures/jar/bcprov-jdk18on-1.78.1.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "org.bouncycastle:bcprov-jdk18on",
+			Version:        "1.78.1",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
+			IsDirect:       true,
+		},
+	})
+}
+
+func TestParseJarPomProperties_ManifestFallback_NoBundleSymbolicName(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.Join(dir, "../fixtures/jar/manifest-no-bsn-1.0.0.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	// No Bundle-SymbolicName means no groupId can be inferred -> no package emitted
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{})
+}
+
+func TestParseJarPomProperties_ManifestFallback_VersionPriority(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// Bundle-Version=1.5.0, Implementation-Version=1.6.0, filename=2.0.0
+	// Since they disagree, filename version wins
+	path := filepath.Join(dir, "../fixtures/jar/mylib-2.0.0.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.example:mylib",
+			Version:        "2.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
+			IsDirect:       true,
+		},
+	})
+}
+
+func TestParseJarPomProperties_ManifestFallback_SingletonDirective(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.Join(dir, "../fixtures/jar/runtime-3.26.0.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "org.eclipse.core:runtime",
+			Version:        "3.26.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
+			IsDirect:       true,
+		},
+	})
+}
+
+func TestParseJarPomProperties_PomPropertiesTakesPrecedence(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// JAR has both pom.properties and MANIFEST.MF - pom.properties should win
+	path := filepath.Join(dir, "../fixtures/jar/has-both-1.0.0.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.example:has-both",
+			Version:        "1.0.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
+			IsDirect:       true,
+		},
+	})
+}
+
+func TestParseJarPomProperties_ManifestFallback_VersionAgreement(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// Bundle-Version == Implementation-Version -> high confidence, use it
+	path := filepath.Join(dir, "../fixtures/jar/gson-2.10.1.jar")
+	packages, err := java.ParseJarPomProperties(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+		{
+			Name:           "com.google:gson",
+			Version:        "2.10.1",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			Opaque:         true,
+			IsDirect:       true,
+		},
+	})
+}

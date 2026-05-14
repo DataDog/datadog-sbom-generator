@@ -86,6 +86,11 @@ func (e JarPomPropertiesExtractor) Extract(f lockfile.DepFile, context lockfile.
 		})
 	}
 
+	// Fallback: if no pom.properties found, try to infer from MANIFEST.MF + filename
+	if len(packages) == 0 {
+		packages = extractFromManifest(f.Path(), zipReader, packages)
+	}
+
 	return packages, nil
 }
 
