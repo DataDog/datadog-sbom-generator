@@ -55,11 +55,11 @@ func detectPackageManager(pyproject *PyProjectTOML) models.PackageManager {
 	return models.Unknown
 }
 
-// extractPositions finds the line containing the given rawName and version in lines and returns
-// block, name, and version positions. rawName is the pre-normalization name as it appears in the
-// file (e.g. "my_pkg"), which may differ from the normalized name used as the package key.
-// For PEP 621 string deps the version appears inline; for Poetry key=value deps it is quoted.
-func extractPositions(lines []string, filePath, rawName, version string, isPoetry bool) (models.FilePosition, *models.FilePosition, *models.FilePosition) {
+// extractPositions finds the line containing the dependency and returns block, name, and version
+// positions. rawName is the pre-normalization name as it appears in the file (e.g. "my_pkg"), which
+// may differ from the normalized name used as the package key. rawValue is the full PEP 508 string
+// dependency when available, and anchors inline array entries that share the same line.
+func extractPositions(lines []string, filePath, rawName, rawValue, version string, isPoetry bool) (models.FilePosition, *models.FilePosition, *models.FilePosition) {
 	lowerRawName := strings.ToLower(rawName)
 	lowerVersion := strings.ToLower(version)
 
@@ -67,6 +67,15 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		lowerLine := strings.ToLower(line)
 		if strings.HasPrefix(strings.TrimSpace(lowerLine), "#") {
 			continue
+		}
+		rawValueStart := -1
+		sourceRawValue := rawValue
+		if rawValue != "" {
+			var ok bool
+			rawValueStart, sourceRawValue, ok = quotedTOMLValue(line, rawValue)
+			if !ok {
+				continue
+			}
 		}
 		if !strings.Contains(lowerLine, lowerRawName) {
 			continue
@@ -77,7 +86,7 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 
 		lineNumber := i + 1
 
-		nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerRawName, lineNumber)
+		nameLocation := extractNamePosition(lineNumber, line, sourceRawValue, rawValueStart, rawName, isPoetry)
 		if nameLocation == nil {
 			continue
 		}
@@ -94,10 +103,16 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 		var versionLocation *models.FilePosition
 		if version != "" {
 			if isPoetry {
-				versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, "[^\"']+", lineNumber, "version\\s*=\\s*[\"']", "[\"']")
-				if versionLocation == nil {
+				if rawValue != "" {
+					versionLocation = extractStringPosition(lineNumber, line, sourceRawValue, rawValueStart, sourceRawValue)
+				} else {
+					versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, "[^\"']+", lineNumber, "version\\s*=\\s*[\"']", "[\"']")
+				}
+				if versionLocation == nil && rawValue == "" {
 					versionLocation = fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, "[^\"']+", lineNumber, "=\\s*[\"']", "[\"']")
 				}
+			} else if rawValue != "" {
+				versionLocation = extractStringPosition(lineNumber, line, sourceRawValue, rawValueStart, version)
 			} else {
 				versionLocation = fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerVersion, lineNumber)
 			}
@@ -110,6 +125,63 @@ func extractPositions(lines []string, filePath, rawName, version string, isPoetr
 	}
 
 	return models.FilePosition{Filename: filePath}, nil, nil
+}
+
+func quotedTOMLValue(line, value string) (int, string, bool) {
+	for _, candidate := range tomlBasicStringCandidates(value) {
+		if quotedStart := strings.Index(line, `"`+candidate+`"`); quotedStart != -1 {
+			return quotedStart + len(`"`), candidate, true
+		}
+	}
+
+	if quotedStart := strings.Index(line, `'`+value+`'`); quotedStart != -1 {
+		return quotedStart + len(`'`), value, true
+	}
+
+	return 0, "", false
+}
+
+func tomlBasicStringCandidates(value string) []string {
+	values := []string{value}
+	if !strings.HasPrefix(value, "==") {
+		values = append(values, "=="+value)
+	}
+
+	candidates := make([]string, 0, len(values)*2)
+	for _, value := range values {
+		candidates = append(candidates, value)
+		if escaped := strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(value); escaped != value {
+			candidates = append(candidates, escaped)
+		}
+	}
+
+	return candidates
+}
+
+func extractNamePosition(lineNumber int, line, rawValue string, rawValueStart int, rawName string, isPoetry bool) *models.FilePosition {
+	if isPoetry {
+		return fileposition.ExtractStringPositionInBlock([]string{strings.ToLower(line)}, strings.ToLower(rawName), lineNumber)
+	}
+
+	return extractStringPosition(lineNumber, line, rawValue, rawValueStart, rawName)
+}
+
+func extractStringPosition(lineNumber int, line, rawValue string, rawValueStart int, value string) *models.FilePosition {
+	if rawValueStart == -1 {
+		return fileposition.ExtractStringPositionInBlock([]string{strings.ToLower(line)}, strings.ToLower(value), lineNumber)
+	}
+
+	index := strings.Index(strings.ToLower(rawValue), strings.ToLower(value))
+	if index == -1 {
+		return nil
+	}
+
+	columnStart := rawValueStart + index + 1
+
+	return &models.FilePosition{
+		Line:   models.Position{Start: lineNumber, End: lineNumber},
+		Column: models.Position{Start: columnStart, End: columnStart + len(value)},
+	}
 }
 
 func (e PyProjectTOMLExtractor) ShouldExtract(path string) bool {
@@ -192,6 +264,7 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 				collector.addDependency(pep508Dependency{
 					Name:         normalizedRequirementName(name),
 					RawName:      name,
+					RawValue:     versionOrRange(version, versionRange),
 					Version:      version,
 					VersionRange: versionRange,
 				}, []string{string(models.DepGroupProd)}, true)
@@ -202,6 +275,7 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 				collector.addDependency(pep508Dependency{
 					Name:         normalizedRequirementName(name),
 					RawName:      name,
+					RawValue:     versionOrRange(version, versionRange),
 					Version:      version,
 					VersionRange: versionRange,
 				}, []string{string(models.DepGroupDev)}, true)
@@ -213,6 +287,7 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 					collector.addDependency(pep508Dependency{
 						Name:         normalizedRequirementName(name),
 						RawName:      name,
+						RawValue:     versionOrRange(version, versionRange),
 						Version:      version,
 						VersionRange: versionRange,
 					}, []string{poetryGroupName}, true)
@@ -227,6 +302,7 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 type pep508Dependency struct {
 	Name         string
 	RawName      string
+	RawValue     string
 	Version      string
 	VersionRange string
 }
@@ -234,6 +310,8 @@ type pep508Dependency struct {
 // parsePEP508Dependency parses a PEP 508 dependency string into a normalized name,
 // the raw name as written in the file, and either an exact version or original version range.
 func parsePEP508Dependency(dep string) (pep508Dependency, bool) {
+	rawValue := dep
+
 	// strip environment markers (PEP 508)
 	dep, _, _ = strings.Cut(dep, ";")
 	dep = strings.TrimSpace(dep)
@@ -261,9 +339,10 @@ func parsePEP508Dependency(dep string) (pep508Dependency, bool) {
 		rawVersion := strings.TrimSpace(specifier[len(op):])
 		if rawVersion != "" && !strings.Contains(rawVersion, ",") && isConcreteVersion(rawVersion) {
 			return pep508Dependency{
-				Name:    normalizedRequirementName(fileRawName),
-				RawName: fileRawName,
-				Version: rawVersion,
+				Name:     normalizedRequirementName(fileRawName),
+				RawName:  fileRawName,
+				RawValue: rawValue,
+				Version:  rawVersion,
 			}, true
 		}
 	}
@@ -271,6 +350,7 @@ func parsePEP508Dependency(dep string) (pep508Dependency, bool) {
 	return pep508Dependency{
 		Name:         normalizedRequirementName(fileRawName),
 		RawName:      fileRawName,
+		RawValue:     rawValue,
 		VersionRange: specifier,
 	}, true
 }

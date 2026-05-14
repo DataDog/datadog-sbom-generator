@@ -31,7 +31,7 @@ func (c *pyprojectPackageCollector) addDependency(dependency pep508Dependency, g
 		return
 	}
 
-	block, nameLocation, versionLocation := extractPositions(c.lines, c.path, dependency.RawName, versionOrRange(dependency.Version, dependency.VersionRange), isPoetry)
+	block, nameLocation, versionLocation := extractPositions(c.lines, c.path, dependency.RawName, dependency.RawValue, versionOrRange(dependency.Version, dependency.VersionRange), isPoetry)
 	c.addOrMergePackageGroups(lockfile.PackageDetails{
 		Name:                         dependency.Name,
 		Version:                      dependency.Version,
@@ -119,6 +119,12 @@ func comparePyprojectPackageDetails(a, b lockfile.PackageDetails) int {
 	if c := cmp.Compare(sourceColumn(a.BlockLocation), sourceColumn(b.BlockLocation)); c != 0 {
 		return c
 	}
+	if c := cmp.Compare(sourceLinePtr(a.NameLocation), sourceLinePtr(b.NameLocation)); c != 0 {
+		return c
+	}
+	if c := cmp.Compare(sourceColumnPtr(a.NameLocation), sourceColumnPtr(b.NameLocation)); c != 0 {
+		return c
+	}
 	if c := strings.Compare(a.Name, b.Name); c != 0 {
 		return c
 	}
@@ -143,6 +149,22 @@ func sourceColumn(location models.FilePosition) int {
 	}
 
 	return location.Column.Start
+}
+
+func sourceLinePtr(location *models.FilePosition) int {
+	if location == nil {
+		return 1 << 30
+	}
+
+	return sourceLine(*location)
+}
+
+func sourceColumnPtr(location *models.FilePosition) int {
+	if location == nil {
+		return 1 << 30
+	}
+
+	return sourceColumn(*location)
 }
 
 func versionOrRange(version, versionRange string) string {

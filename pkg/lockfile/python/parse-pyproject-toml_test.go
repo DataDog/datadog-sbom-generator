@@ -360,6 +360,105 @@ dev = [
 	}
 }
 
+func TestParsePyProjectTOML_PrefixRangesUseSourceOrder(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		content        string
+		packageManager models.PackageManager
+		line           int
+		nameColumn     int
+	}{
+		{
+			name: "pep621 multiline",
+			content: `[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "foo>=10",
+    "foo>=1",
+]
+`,
+			packageManager: models.Unknown,
+			line:           5,
+			nameColumn:     6,
+		},
+		{
+			name: "pep621 inline",
+			content: `[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = ["foo>=10", "foo>=1"]
+`,
+			packageManager: models.Unknown,
+			line:           4,
+			nameColumn:     18,
+		},
+		{
+			name: "pep621 escaped marker",
+			content: `[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "foo>=10; python_version == \"3.11\"",
+    "foo>=1",
+]
+`,
+			packageManager: models.Unknown,
+			line:           5,
+			nameColumn:     6,
+		},
+		{
+			name: "poetry",
+			content: `[tool.poetry]
+name = "my-app"
+version = "1.0.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+foo = ">=10"
+
+[tool.poetry.group.dev.dependencies]
+foo = ">=1"
+`,
+			packageManager: models.Poetry,
+			line:           7,
+			nameColumn:     1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := t.TempDir()
+			path := filepath.Join(dir, "pyproject.toml")
+			if err := os.WriteFile(path, []byte(tt.content), 0o600); err != nil {
+				t.Fatalf("could not write pyproject fixture: %v", err)
+			}
+
+			packages, err := python.ParsePyProjectTOML(path)
+
+			expectNilErr(t, err)
+			if len(packages) == 0 {
+				t.Fatalf("expected packages, got none")
+			}
+
+			first := packages[0]
+			if first.Name != "foo" || first.VersionRange != ">=10" || first.PackageManager != tt.packageManager {
+				t.Fatalf("expected first package to be earliest foo range, got %s %q %q", first.Name, first.VersionRange, first.PackageManager)
+			}
+			if first.BlockLocation.Line.Start != tt.line {
+				t.Fatalf("expected first package on line %d, got %d", tt.line, first.BlockLocation.Line.Start)
+			}
+			if first.NameLocation == nil || first.NameLocation.Column.Start != tt.nameColumn {
+				t.Fatalf("expected first package name on column %d, got %v", tt.nameColumn, first.NameLocation)
+			}
+		})
+	}
+}
+
 // ============================================================================
 // Error cases
 // ============================================================================
