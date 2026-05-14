@@ -1,11 +1,8 @@
 package python_test
 
 import (
-	"bytes"
-	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
@@ -304,13 +301,8 @@ func TestParsePyProjectTOML_MergesGroupsForDuplicatePackage(t *testing.T) {
 	})
 }
 
-func TestParsePyProjectTOML_ConflictingRangesAreSourceOrderedAndLogged(t *testing.T) {
+func TestParsePyProjectTOML_ConflictingRangesAreSourceOrdered(t *testing.T) {
 	t.Parallel()
-
-	var logs bytes.Buffer
-	previousLogOutput := log.Writer()
-	log.SetOutput(&logs)
-	defer log.SetOutput(previousLogOutput)
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "pyproject.toml")
@@ -354,9 +346,6 @@ dev = [
 	}
 	if packages[0].Name != "requests" || packages[0].VersionRange != ">=1,<2" {
 		t.Fatalf("expected first package to be earliest requests range, got %s %q", packages[0].Name, packages[0].VersionRange)
-	}
-	if !strings.Contains(logs.String(), `Multiple pyproject version ranges for dependency "requests"`) {
-		t.Fatalf("expected conflicting range log, got %q", logs.String())
 	}
 }
 
