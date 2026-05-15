@@ -268,17 +268,18 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 			}
 
 			packages[dedupKey] = lockfile.PackageDetails{
-				Name:            resolvedName,
-				Version:         version,
-				VersionRange:    versionRange,
-				PackageManager:  packageJSONPackageManager,
-				Ecosystem:       models.EcosystemNPM,
-				IsDirect:        true,
-				DepGroups:       []string{section.group},
-				BlockLocation:   blockLocation,
-				NameLocation:    nameLocation,
-				VersionLocation: versionLocation,
-				LocationRole:    models.LocationRoleManifest,
+				Name:                         resolvedName,
+				Version:                      version,
+				VersionRange:                 versionRange,
+				PackageManager:               packageJSONPackageManager,
+				Ecosystem:                    models.EcosystemNPM,
+				IsDirect:                     true,
+				RequiresTransitiveEnrichment: true,
+				DepGroups:                    []string{section.group},
+				BlockLocation:                blockLocation,
+				NameLocation:                 nameLocation,
+				VersionLocation:              versionLocation,
+				LocationRole:                 models.LocationRoleManifest,
 			}
 		}
 	}

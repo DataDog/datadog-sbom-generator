@@ -2642,6 +2642,10 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
           "value": "NPM"
         },
         {
+          "name": "datadog:requires-transitive-enrichment",
+          "value": "true"
+        },
+        {
           "name": "datadog:version-range",
           "value": "^4.17.21"
         }
