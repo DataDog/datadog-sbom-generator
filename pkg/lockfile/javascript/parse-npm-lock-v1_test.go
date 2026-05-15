@@ -10,8 +10,6 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/javascript"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParseNpmLock_v1_FileDoesNotExist(t *testing.T) {
@@ -56,7 +54,7 @@ func TestParseNpmLock_v1_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -65,34 +63,6 @@ func TestParseNpmLock_v1_OnePackage(t *testing.T) {
 			DepGroups:      []string{"prod"},
 		},
 	})
-}
-
-func TestParseNpmLock_v1_OnePackage_BlockLocation(t *testing.T) {
-	t.Parallel()
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
-	}
-
-	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/npm/one-package.v1.json"))
-	packages, err := javascript.ParseNpmLock(path)
-	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
-	}
-
-	// Every package must have a valid BlockLocation from the lockfile
-	for _, pkg := range packages {
-		assert.Positive(t, pkg.BlockLocation.Line.Start,
-			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
-		assert.Positive(t, pkg.BlockLocation.Line.End,
-			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
-		assert.Positive(t, pkg.BlockLocation.Column.Start,
-			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
-		assert.Positive(t, pkg.BlockLocation.Column.End,
-			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
-		assert.NotEmpty(t, pkg.BlockLocation.Filename,
-			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
-	}
 }
 
 func TestParseNpmLock_v1_OnePackageDev(t *testing.T) {
@@ -108,7 +78,7 @@ func TestParseNpmLock_v1_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -132,7 +102,7 @@ func TestParseNpmLock_v1_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -163,7 +133,7 @@ func TestParseNpmLock_v1_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -194,7 +164,7 @@ func TestParseNpmLock_v1_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "postcss",
 			Version:        "6.0.23",
@@ -251,29 +221,29 @@ func TestParseNpmLock_v1_NestedDependenciesDup(t *testing.T) {
 		t.Errorf("Expected to get 39 packages, but got %d", len(packages))
 	}
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "6.1.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "5.5.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "2.0.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 }
 
 func TestParseNpmLock_v1_Commits(t *testing.T) {
@@ -289,7 +259,7 @@ func TestParseNpmLock_v1_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "@segment/analytics.js-integration-facebook-pixel",
 			Version:        "",
@@ -426,7 +396,7 @@ func TestParseNpmLock_v1_Files(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "lodash",
 			Version:        "1.3.1",
@@ -459,7 +429,7 @@ func TestParseNpmLock_v1_Alias(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "@babel/code-frame",
 			Version:        "7.0.0",
@@ -497,7 +467,7 @@ func TestParseNpmLock_v1_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
