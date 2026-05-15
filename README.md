@@ -40,7 +40,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | C++        | Conan                                     |
 | Go         | Golang                                    |
 | Java       | Gradle, Maven, Bazel (rules_jvm_external) |
-| JavaScript | Bun, NPM, PNPM, Yarn, package.json             |
+| JavaScript | Bun, NPM, PNPM, Yarn, package.json        |
 | PHP        | Composer                                  |
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
 | Ruby       | Bundler                                   |
