@@ -36,7 +36,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -55,7 +55,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_OnePackageDev(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -74,7 +74,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -100,7 +100,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_ScopedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "wrappy",
 			Version:        "1.0.2",
@@ -126,7 +126,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependencies(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "postcss",
 			Version:        "6.0.23",
@@ -178,29 +178,29 @@ func TestNodeModulesExtractor_Extract_npm_v1_NestedDependenciesDup(t *testing.T)
 		t.Errorf("Expected to get 39 packages, but got %d", len(packages))
 	}
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "6.1.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "5.5.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 
-	testutil.InnerExpectPackage(t, packages, lockfile.PackageDetails{
+	testutil.ExpectPackage(t, packages, lockfile.PackageDetails{
 		Name:           "supports-color",
 		Version:        "2.0.0",
 		PackageManager: models.NPM,
 		Ecosystem:      models.EcosystemNPM,
 		DepGroups:      []string{"prod"},
-	}, true)
+	})
 }
 
 func TestNodeModulesExtractor_Extract_npm_v1_Commits(t *testing.T) {
@@ -211,7 +211,7 @@ func TestNodeModulesExtractor_Extract_npm_v1_Commits(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "@segment/analytics.js-integration-facebook-pixel",
 			Version:        "",
