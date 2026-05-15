@@ -287,6 +287,7 @@ func filesToParsers() map[string]string {
 		"mix.lock":                         "mix.lock",
 		"pdm.lock":                         "pdm.lock",
 		"Pipfile.lock":                     "Pipfile.lock",
+		"package.json":                     "package.json",
 		"package-lock.json":                "package-lock.json",
 		"packages.lock.json":               "packages.lock.json",
 		"pnpm-lock.yaml":                   "pnpm-lock.yaml",

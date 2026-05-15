@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react17": "npm:react@^17",
+    "react18": "npm:react@^18"
+  }
+}

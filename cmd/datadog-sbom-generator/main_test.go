@@ -311,6 +311,11 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan package.json without lock file",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--manifest-parsers", "./fixtures/integration-package-json"},
+			exit: 0,
+		},
+		{
 			name: "Scan maven_install.json (lockfile role)",
 			args: []string{"", "--format=cyclonedx-1-5", "--pretty", "./fixtures/integration-maven-install"},
 			exit: 0,

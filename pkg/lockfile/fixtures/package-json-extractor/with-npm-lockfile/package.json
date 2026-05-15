@@ -1,0 +1,6 @@
+{
+  "name": "has-lockfile",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}

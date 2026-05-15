@@ -2608,6 +2608,63 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_package.json_without_lock_file - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:npm/lodash",
+      "type": "library",
+      "name": "lodash",
+      "purl": "pkg:npm/lodash",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "NPM"
+        },
+        {
+          "name": "datadog:version-range",
+          "value": "^4.17.21"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":5,/"column_end/":25,/"role/":/"manifest/"},/"name/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":6,/"column_end/":12,/"role/":/"manifest/"},/"version/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":16,/"column_end/":24,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_package.json_without_lock_file - 2]
+Scanning directory './fixtures/integration-package-json', resolved absolute path '<rootdir>/fixtures/integration-package-json'
+Scanned <rootdir>/fixtures/integration-package-json/package.json file and found 1 package
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_pyproject.toml_without_lock_file - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
