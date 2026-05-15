@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"log"
 	"maps"
+	"math"
 	"slices"
 	"strings"
 
@@ -62,6 +63,9 @@ func (c *pyprojectPackageCollector) addOrMergePackageGroups(pkg lockfile.Package
 	c.packages[key] = pkg
 }
 
+// pyprojectPackageKey keeps declarations separate unless the package name and
+// the exact version or range match, so duplicate declarations can merge groups
+// without dropping distinct constraints.
 func pyprojectPackageKey(pkg lockfile.PackageDetails) string {
 	return pkg.Name + "@" + pkg.Version + "|" + pkg.VersionRange
 }
@@ -74,6 +78,9 @@ func mergeDepGroups(pkg *lockfile.PackageDetails, groups []string) {
 	}
 }
 
+// logVersionRangeConflict warns when two ranges for the same package will later
+// share an unversioned PURL in CycloneDX output. The packages stay separate here
+// so their source locations can still be preserved.
 func (c *pyprojectPackageCollector) logVersionRangeConflict(pkg lockfile.PackageDetails) {
 	if pkg.VersionRange == "" {
 		return
@@ -109,6 +116,8 @@ func sortedPyprojectPackages(packages map[string]lockfile.PackageDetails) []lock
 	return result
 }
 
+// comparePyprojectPackageDetails sorts by pyproject.toml location first. Entries
+// without a parsed location sort last, then package fields break ties.
 func comparePyprojectPackageDetails(a, b lockfile.PackageDetails) int {
 	if c := strings.Compare(a.BlockLocation.Filename, b.BlockLocation.Filename); c != 0 {
 		return c
@@ -129,22 +138,28 @@ func comparePyprojectPackageDetails(a, b lockfile.PackageDetails) int {
 	return strings.Compare(a.VersionRange, b.VersionRange)
 }
 
+// sourceLine returns a sortable line number. Missing source positions sort last
+// so packages with extracted manifest locations preserve source order first.
 func sourceLine(location models.FilePosition) int {
 	if location.Line.Start == 0 {
-		return 1 << 30
+		return math.MaxInt
 	}
 
 	return location.Line.Start
 }
 
+// sourceColumn returns a sortable column number. Missing source positions sort
+// last, then name/version/range comparisons below keep ordering deterministic.
 func sourceColumn(location models.FilePosition) int {
 	if location.Column.Start == 0 {
-		return 1 << 30
+		return math.MaxInt
 	}
 
 	return location.Column.Start
 }
 
+// versionOrRange returns the manifest value to anchor when extracting source
+// positions; each dependency should have exactly one of these set.
 func versionOrRange(version, versionRange string) string {
 	if version != "" {
 		return version
