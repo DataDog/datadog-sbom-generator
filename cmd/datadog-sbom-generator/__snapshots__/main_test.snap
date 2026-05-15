@@ -2649,7 +2649,7 @@ Scanned <rootdir>/fixtures/integration-npm/with-workspace/yarn.lock file and fou
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":5,/"column_end/":25},/"name/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":6,/"column_end/":12},/"version/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":16,/"column_end/":24}}"
+            "location": "{/"block/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":5,/"column_end/":25,/"role/":/"manifest/"},/"name/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":6,/"column_end/":12,/"role/":/"manifest/"},/"version/":{/"file_name/":/"package.json/",/"line_start/":3,/"line_end/":3,/"column_start/":16,/"column_end/":24,/"role/":/"manifest/"}}"
           }
         ]
       }

@@ -278,6 +278,7 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 				BlockLocation:   blockLocation,
 				NameLocation:    nameLocation,
 				VersionLocation: versionLocation,
+				LocationRole:    models.LocationRoleManifest,
 			}
 		}
 	}

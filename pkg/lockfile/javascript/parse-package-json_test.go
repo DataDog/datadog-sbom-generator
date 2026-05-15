@@ -110,6 +110,7 @@ func TestParsePackageJSON_Basic(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -136,6 +137,7 @@ func TestParsePackageJSON_AllDepTypes(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "jest",
@@ -145,6 +147,7 @@ func TestParsePackageJSON_AllDepTypes(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"dev"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "fsevents",
@@ -153,6 +156,7 @@ func TestParsePackageJSON_AllDepTypes(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"optional"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -199,6 +203,7 @@ func TestParsePackageJSON_WithSiblingLockfileButLockfileParsersDisabled(t *testi
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -256,6 +261,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "eq-pinned",
@@ -264,6 +270,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "caret",
@@ -273,6 +280,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "tilde",
@@ -282,6 +290,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "range",
@@ -291,6 +300,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "real-pkg",
@@ -299,6 +309,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "local-file",
@@ -307,6 +318,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "url-dep",
@@ -315,6 +327,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "tag-dep",
@@ -323,6 +336,7 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -348,6 +362,7 @@ func TestParsePackageJSON_AliasCollision(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 		{
 			Name:           "react",
@@ -356,6 +371,7 @@ func TestParsePackageJSON_AliasCollision(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -382,6 +398,7 @@ func TestParsePackageJSON_AliasRangeCollision(t *testing.T) {
 			Ecosystem:      models.EcosystemNPM,
 			IsDirect:       true,
 			DepGroups:      []string{"prod"},
+			LocationRole:   models.LocationRoleManifest,
 		},
 	})
 }
@@ -405,6 +422,34 @@ func TestParsePackageJSON_WorkspaceWithRootLockfile(t *testing.T) {
 	}
 
 	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{})
+}
+
+// TestParsePackageJSON_SetsLocationRoleManifest verifies that every extracted package
+// has LocationRole set to LocationRoleManifest. ExpectPackagesWithoutLocations ignores
+// this field, so the assertion is made directly here.
+func TestParsePackageJSON_SetsLocationRoleManifest(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json-extractor/all-dep-types/package.json"))
+	packages, err := javascript.ParsePackageJSON(path)
+	if err != nil {
+		t.Errorf("got unexpected error: %v", err)
+	}
+
+	if len(packages) == 0 {
+		t.Fatal("expected packages, got none")
+	}
+
+	for _, pkg := range packages {
+		if pkg.LocationRole != models.LocationRoleManifest {
+			t.Errorf("package %s@%s: LocationRole = %q, want %q",
+				pkg.Name, pkg.Version, pkg.LocationRole, models.LocationRoleManifest)
+		}
+	}
 }
 
 func TestParsePackageJSON_WorkspaceWithRelativeRootDir(t *testing.T) {
