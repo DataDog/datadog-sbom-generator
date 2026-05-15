@@ -40,7 +40,7 @@ This tool sources all dependencies by parsing package manager files. As new pack
 | C++        | Conan                                     |
 | Go         | Golang                                    |
 | Java       | Gradle, Maven, Bazel (rules_jvm_external) |
-| JavaScript | Bun, NPM, PNPM, Yarn                      |
+| JavaScript | Bun, NPM, PNPM, Yarn, package.json        |
 | PHP        | Composer                                  |
 | Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
 | Ruby       | Bundler                                   |
@@ -96,6 +96,13 @@ NPM, Yarn and PNPM have workspace support
 
 - This tool only supports extracting packages from `bun.lock` (the text JSONC lockfile introduced in Bun 1.2). The legacy binary `bun.lockb` format is not supported.
 - This tool only supports package information enrichment from `package.json`.
+
+#### package.json (no lockfile)
+
+- This tool supports extracting packages directly from `package.json` when no sibling lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`) is present.
+- Parses `dependencies`, `devDependencies`, and `optionalDependencies` sections.
+- Version ranges are stripped to extract base versions (e.g., `^2.3.4` → `2.3.4`).
+- All packages are marked as direct dependencies.
 
 #### NPM
 

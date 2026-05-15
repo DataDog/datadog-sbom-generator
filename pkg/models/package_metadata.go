@@ -10,6 +10,7 @@ const (
 	IsDevDependencyMetadata    PackageMetadataType = "is-dev"
 	ExclusionMetadata          PackageMetadataType = "exclusion"
 	OpaqueMetadata             PackageMetadataType = "opaque"
+	VersionRangeMetadata       PackageMetadataType = "version-range"
 )
 
 type PackageMetadata map[PackageMetadataType]string

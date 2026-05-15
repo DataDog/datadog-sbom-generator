@@ -1,0 +1,14 @@
+{
+  "name": "complex-versions",
+  "dependencies": {
+    "pinned": "1.0.0",
+    "eq-pinned": "=2.0.0",
+    "caret": "^2.3.4",
+    "tilde": "~1.5.3",
+    "range": ">=1.0.0 <2.0.0",
+    "aliased": "npm:real-pkg@3.0.0",
+    "local-file": "file:../local",
+    "url-dep": "http://example.com/pkg.tgz",
+    "tag-dep": "latest"
+  }
+}

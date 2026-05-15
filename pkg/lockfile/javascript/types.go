@@ -310,6 +310,21 @@ type packageJSONFile struct {
 	OptionalDependencies packageJSONDependencyMap `json:"optionalDependencies"`
 }
 
+// ============================================================================
+// Package.json Extractor Constants
+// ============================================================================
+
+const (
+	packageJSONPackageManager      = models.NPM
+	packageJSONOfficiallySupported = false
+)
+
+// ============================================================================
+// Package.json Extractor Types
+// ============================================================================
+
+type PackageJSONExtractor struct{}
+
 // UnmarshalYAML is a custom unmarshaler for PnpmLegacyDependencies
 func (pnpmDependencies *PnpmLegacyDependencies) UnmarshalYAML(value *yaml.Node) error {
 	if *pnpmDependencies == nil {

@@ -1,0 +1,6 @@
+{
+  "name": "has-pnpm-lock",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
