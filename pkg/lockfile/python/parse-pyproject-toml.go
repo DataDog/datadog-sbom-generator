@@ -275,6 +275,8 @@ func parsePEP508Dependency(dep string) (pep508Dependency, bool) {
 	}, true
 }
 
+// findFirstPEP508Specifier returns the first PEP 508 version operator in dep.
+// Operator order matters because longer operators must be checked before their prefixes.
 func findFirstPEP508Specifier(dep string) (int, string) {
 	firstIndex := -1
 	firstOp := ""

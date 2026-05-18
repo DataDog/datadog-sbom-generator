@@ -22,7 +22,7 @@ type pyprojectPackageCollector struct {
 func (c *pyprojectPackageCollector) addDependency(dependency pep508Dependency, groups []string, isPoetry bool) {
 	if (dependency.Version == "") == (dependency.VersionRange == "") {
 		log.Printf(
-			"Skipping pyproject dependency %q from %s: expected exactly one of version or version range, got version=%q versionRange=%q\n",
+			"Invalid pyproject dependency state for %q from %s: expected exactly one of version or version range, got version=%q versionRange=%q\n",
 			dependency.Name,
 			c.path,
 			dependency.Version,
