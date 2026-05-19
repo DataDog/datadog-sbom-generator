@@ -56,7 +56,7 @@ We will detail here any known limitations by language.
 
 ### Python
 
-This tool only supports extracting packages from:
+This tool supports extracting packages from the following Python lockfiles and requirements files:
 
 - `requirements*.txt`
 - `Pipfile.lock`
@@ -64,10 +64,19 @@ This tool only supports extracting packages from:
 - `pdm.lock`
 - `uv.lock`
 
-This tool only supports enriching information from the following package manager declaration files:
+This tool also supports enriching lockfile-derived package information from the following package manager declaration files:
 
 - `Pipfile`
 - `pyproject.toml`
+
+#### pyproject.toml (no lockfile)
+
+- This tool supports extracting packages directly from `pyproject.toml` when no sibling lockfile (`Pipfile.lock`, `poetry.lock`, `pdm.lock`, `uv.lock`) is present.
+- Parses PEP 621 `dependencies` and `optional-dependencies`, PEP 735 `dependency-groups`, and Poetry dependency sections.
+- Keeps exact pins as versions.
+- Preserves version ranges as `datadog:version-range`.
+- Skips unsupported direct references, arbitrary equality (`===`), and unversioned dependencies.
+- All packages are marked as direct dependencies requiring transitive enrichment.
 
 ### Java
 
@@ -99,10 +108,12 @@ NPM, Yarn and PNPM have workspace support
 
 #### package.json (no lockfile)
 
-- This tool supports extracting packages directly from `package.json` when no sibling lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`) is present.
+- This tool supports extracting packages directly from `package.json` when no active lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`) is present in the package directory or an ancestor directory.
 - Parses `dependencies`, `devDependencies`, and `optionalDependencies` sections.
-- Version ranges are stripped to extract base versions (e.g., `^2.3.4` → `2.3.4`).
-- All packages are marked as direct dependencies.
+- Keeps exact pins as versions.
+- Preserves version ranges as `datadog:version-range`.
+- Skips unsupported non-version specifiers such as local file paths, URLs, and dist-tags.
+- All packages are marked as direct dependencies requiring transitive enrichment.
 
 #### NPM
 
