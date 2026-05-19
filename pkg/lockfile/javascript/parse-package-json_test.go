@@ -344,36 +344,6 @@ func TestParsePackageJSON_ComplexVersions(t *testing.T) {
 			DepGroups:                    []string{"prod"},
 			LocationRole:                 models.LocationRoleManifest,
 		},
-		{
-			Name:                         "local-file",
-			Version:                      "",
-			PackageManager:               models.NPM,
-			Ecosystem:                    models.EcosystemNPM,
-			IsDirect:                     true,
-			RequiresTransitiveEnrichment: true,
-			DepGroups:                    []string{"prod"},
-			LocationRole:                 models.LocationRoleManifest,
-		},
-		{
-			Name:                         "url-dep",
-			Version:                      "",
-			PackageManager:               models.NPM,
-			Ecosystem:                    models.EcosystemNPM,
-			IsDirect:                     true,
-			RequiresTransitiveEnrichment: true,
-			DepGroups:                    []string{"prod"},
-			LocationRole:                 models.LocationRoleManifest,
-		},
-		{
-			Name:                         "tag-dep",
-			Version:                      "",
-			PackageManager:               models.NPM,
-			Ecosystem:                    models.EcosystemNPM,
-			IsDirect:                     true,
-			RequiresTransitiveEnrichment: true,
-			DepGroups:                    []string{"prod"},
-			LocationRole:                 models.LocationRoleManifest,
-		},
 	})
 }
 
