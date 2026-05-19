@@ -360,8 +360,10 @@ func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
 }
 
 // sanitizeScannedPackages is used to sanitize scanned packages.
-// 1. filters our packages that have a ranged version
+// 1. filters out packages that have a ranged value in Version
 // 2. creates a PURL for each package and drops the package if it cannot be created
+// Packages with VersionRange are allowed through with an empty Version so that
+// downstream services can resolve them.
 func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockfile.PackageDetails, []string) {
 	finalPackages := make([]lockfile.PackageDetails, 0, len(scannedPackages))
 	droppedReasons := make([]string, 0, len(scannedPackages))

@@ -3,9 +3,7 @@ package python
 import (
 	"fmt"
 	"io"
-	"maps"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -147,34 +145,39 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 
 	lines := fileposition.BytesToLines(content)
 	pm := detectPackageManager(&pyproject)
-	packages := map[string]lockfile.PackageDetails{}
+	collector := pyprojectPackageCollector{
+		packages:       map[string]lockfile.PackageDetails{},
+		lines:          lines,
+		path:           f.Path(),
+		packageManager: pm,
+	}
 
 	for _, dep := range pyproject.Project.Dependencies {
-		if name, rawName, version, ok := parsePEP508Pin(dep); ok {
-			block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
-			addOrMergeGroups(packages, name, version, []string{"prod"}, pm, block, nameLocation, versionLocation)
+		dependency, ok := parsePEP508Dependency(dep)
+		if ok {
+			collector.addDependency(dependency, []string{string(models.DepGroupProd)}, false)
 		}
 	}
 
-	for group, deps := range pyproject.Project.OptionalDependencies {
+	for optionalDependencyGroup, deps := range pyproject.Project.OptionalDependencies {
 		for _, dep := range deps {
-			if name, rawName, version, ok := parsePEP508Pin(dep); ok {
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
-				addOrMergeGroups(packages, name, version, []string{group}, pm, block, nameLocation, versionLocation)
+			dependency, ok := parsePEP508Dependency(dep)
+			if ok {
+				collector.addDependency(dependency, []string{optionalDependencyGroup}, false)
 			}
 		}
 	}
 
-	for group, items := range pyproject.DependencyGroups {
-		for _, item := range items {
+	for dependencyGroupName, dependencyGroupItems := range pyproject.DependencyGroups {
+		for _, item := range dependencyGroupItems {
 			dep, ok := item.(string)
 			if !ok {
-				// skip {include-group = "..."} table entries
+				// PEP 735 dependency groups can include table entries such as {include-group = "..."}.
 				continue
 			}
-			if name, rawName, version, ok := parsePEP508Pin(dep); ok {
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), rawName, version, false)
-				addOrMergeGroups(packages, name, version, []string{group}, pm, block, nameLocation, versionLocation)
+			dependency, ok := parsePEP508Dependency(dep)
+			if ok {
+				collector.addDependency(dependency, []string{dependencyGroupName}, false)
 			}
 		}
 	}
@@ -185,147 +188,162 @@ func (e PyProjectTOMLExtractor) Extract(f lockfile.DepFile, context lockfile.Sca
 			if name == "python" {
 				continue
 			}
-			if version, ok := parsePoetryPin(val); ok {
-				normalized := normalizedRequirementName(name)
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
-				addOrMergeGroups(packages, normalized, version, []string{"prod"}, pm, block, nameLocation, versionLocation)
+			if version, versionRange, ok := parsePoetryDependency(val); ok {
+				collector.addDependency(pep508Dependency{
+					Name:         normalizedRequirementName(name),
+					RawName:      name,
+					Version:      version,
+					VersionRange: versionRange,
+				}, []string{string(models.DepGroupProd)}, true)
 			}
 		}
 		for name, val := range pyproject.Tool.Poetry.DevDependencies {
-			if version, ok := parsePoetryPin(val); ok {
-				normalized := normalizedRequirementName(name)
-				block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
-				addOrMergeGroups(packages, normalized, version, []string{"dev"}, pm, block, nameLocation, versionLocation)
+			if version, versionRange, ok := parsePoetryDependency(val); ok {
+				collector.addDependency(pep508Dependency{
+					Name:         normalizedRequirementName(name),
+					RawName:      name,
+					Version:      version,
+					VersionRange: versionRange,
+				}, []string{string(models.DepGroupDev)}, true)
 			}
 		}
-		for groupName, group := range pyproject.Tool.Poetry.Group {
-			for name, val := range group.Dependencies {
-				if version, ok := parsePoetryPin(val); ok {
-					normalized := normalizedRequirementName(name)
-					block, nameLocation, versionLocation := extractPositions(lines, f.Path(), name, version, true)
-					addOrMergeGroups(packages, normalized, version, []string{groupName}, pm, block, nameLocation, versionLocation)
+		for poetryGroupName, poetryGroup := range pyproject.Tool.Poetry.Group {
+			for name, val := range poetryGroup.Dependencies {
+				if version, versionRange, ok := parsePoetryDependency(val); ok {
+					collector.addDependency(pep508Dependency{
+						Name:         normalizedRequirementName(name),
+						RawName:      name,
+						Version:      version,
+						VersionRange: versionRange,
+					}, []string{poetryGroupName}, true)
 				}
 			}
 		}
 	}
 
-	return slices.Collect(maps.Values(packages)), nil
+	return sortedPyprojectPackages(collector.packages), nil
 }
 
-// addOrMergeGroups adds a package to the map, or if it already exists (same name+version),
-// merges the new dep groups into the existing entry rather than dropping the duplicate.
-func addOrMergeGroups(packages map[string]lockfile.PackageDetails, name, version string, groups []string, pm models.PackageManager, block models.FilePosition, nameLocation, versionLocation *models.FilePosition) {
-	key := name + "@" + version
-	if existing, exists := packages[key]; exists {
-		for _, g := range groups {
-			if !slices.Contains(existing.DepGroups, g) {
-				existing.DepGroups = append(existing.DepGroups, g)
-			}
-		}
-		packages[key] = existing
-
-		return
-	}
-	packages[key] = lockfile.PackageDetails{
-		Name:            name,
-		Version:         version,
-		PackageManager:  pm,
-		Ecosystem:       models.EcosystemPyPI,
-		IsDirect:        true,
-		DepGroups:       groups,
-		BlockLocation:   block,
-		NameLocation:    nameLocation,
-		VersionLocation: versionLocation,
-		LocationRole:    models.LocationRoleManifest,
-	}
+type pep508Dependency struct {
+	Name         string
+	RawName      string
+	Version      string
+	VersionRange string
 }
 
-// parsePEP508Pin parses a PEP 508 dependency string and returns the normalized name, the raw
-// (pre-normalization) name as written in the file, and the version — only when the dependency
-// is an exact pin (==). Returns ok=false for all other specifiers.
-func parsePEP508Pin(dep string) (name, rawName, version string, ok bool) {
+// parsePEP508Dependency parses a PEP 508 dependency string into a normalized name,
+// the raw name as written in the file, and either an exact version or original version range.
+func parsePEP508Dependency(dep string) (pep508Dependency, bool) {
 	// strip environment markers (PEP 508)
 	dep, _, _ = strings.Cut(dep, ";")
 	dep = strings.TrimSpace(dep)
+	if strings.Contains(dep, " @ ") {
+		return pep508Dependency{}, false
+	}
 	// strip parenthesized specifier: "requests (==2.28.0)" -> "requests ==2.28.0"
 	dep = strings.NewReplacer("(", "", ")", "").Replace(dep)
 
-	// reject if any non-exact operator is present
-	for _, op := range []string{"===", "!=", ">=", "<=", "~=", ">", "<"} {
-		if strings.Contains(dep, op) {
-			return "", "", "", false
+	opIndex, op := findFirstPEP508Specifier(dep)
+	if opIndex == -1 || op == "===" {
+		return pep508Dependency{}, false
+	}
+
+	// strip extras: "requests[security]" -> "requests"
+	fileRawName, _, _ := strings.Cut(strings.TrimSpace(dep[:opIndex]), "[")
+	fileRawName = strings.TrimSpace(fileRawName)
+	specifier := strings.TrimSpace(dep[opIndex:])
+
+	if fileRawName == "" || specifier == "" {
+		return pep508Dependency{}, false
+	}
+
+	if op == "==" {
+		rawVersion := strings.TrimSpace(specifier[len(op):])
+		if rawVersion != "" && !strings.Contains(rawVersion, ",") && isConcreteVersion(rawVersion) {
+			return pep508Dependency{
+				Name:    normalizedRequirementName(fileRawName),
+				RawName: fileRawName,
+				Version: rawVersion,
+			}, true
 		}
 	}
 
-	rawNamePart, rawVersion, found := strings.Cut(dep, "==")
-	if !found {
-		return "", "", "", false
-	}
-
-	// reject multi-constraint specs: "==2.28.0,!=2.28.0"
-	if strings.Contains(rawVersion, ",") {
-		return "", "", "", false
-	}
-	rawVersion = strings.TrimSpace(rawVersion)
-
-	// strip extras: "requests[security]" -> "requests"
-	fileRawName, _, _ := strings.Cut(strings.TrimSpace(rawNamePart), "[")
-	fileRawName = strings.TrimSpace(fileRawName)
-
-	if fileRawName == "" || rawVersion == "" || !isConcreteVersion(rawVersion) {
-		return "", "", "", false
-	}
-
-	return normalizedRequirementName(fileRawName), fileRawName, rawVersion, true
+	return pep508Dependency{
+		Name:         normalizedRequirementName(fileRawName),
+		RawName:      fileRawName,
+		VersionRange: specifier,
+	}, true
 }
 
-// parsePoetryPin parses a Poetry dependency value (string or inline table) and returns
-// the version only when it is an exact pin (== prefix) with a concrete version.
-func parsePoetryPin(val any) (version string, ok bool) {
+// findFirstPEP508Specifier returns the first PEP 508 version operator in dep.
+// Operator order matters because longer operators must be checked before their prefixes.
+func findFirstPEP508Specifier(dep string) (int, string) {
+	firstIndex := -1
+	firstOp := ""
+	for _, op := range []string{"===", "==", "!=", ">=", "<=", "~=", ">", "<"} {
+		index := strings.Index(dep, op)
+		if index == -1 {
+			continue
+		}
+		if firstIndex == -1 || index < firstIndex {
+			firstIndex = index
+			firstOp = op
+		}
+	}
+
+	return firstIndex, firstOp
+}
+
+// parsePoetryDependency parses a Poetry dependency value (string or inline table) and
+// returns either an exact version or the original version range.
+func parsePoetryDependency(val any) (version, versionRange string, ok bool) {
 	var versionStr string
 	switch v := val.(type) {
 	case string:
 		versionStr = v
 	case map[string]any:
+		for _, directRefKey := range []string{"path", "git", "url"} {
+			if _, exists := v[directRefKey]; exists {
+				return "", "", false
+			}
+		}
 		versionStr, ok = v["version"].(string)
 		if !ok {
-			return "", false
+			return "", "", false
 		}
 	default:
-		return "", false
+		return "", "", false
 	}
 
 	versionStr = strings.TrimSpace(versionStr)
+	if versionStr == "" || strings.HasPrefix(versionStr, "===") {
+		return "", "", false
+	}
 
-	// Poetry bare version string "2.28.0" is an implicit exact pin
+	// Poetry bare version string "2.28.0" is an implicit exact pin.
+	// Other digit-starting constraints, such as "1.*", are still ranges.
 	if len(versionStr) > 0 && !strings.ContainsAny(string(versionStr[0]), "=!<>~^*") {
 		if strings.Contains(versionStr, ",") {
-			return "", false
+			return "", versionStr, true
 		}
 		if isConcreteVersion(versionStr) {
-			return versionStr, true
+			return versionStr, "", true
 		}
 
-		return "", false
+		return "", versionStr, true
 	}
 
-	// reject === (arbitrary equality) and any non-== operator
-	if !strings.HasPrefix(versionStr, "==") || strings.HasPrefix(versionStr, "===") {
-		return "", false
+	if strings.HasPrefix(versionStr, "==") {
+		after := strings.TrimSpace(versionStr[2:])
+
+		if !strings.Contains(after, ",") && isConcreteVersion(after) {
+			return after, "", true
+		}
+
+		return "", versionStr, true
 	}
 
-	after := strings.TrimSpace(versionStr[2:])
-
-	// reject multi-constraint: "==2.28.0,!=2.28.1" is not an exact pin
-	if strings.Contains(after, ",") {
-		return "", false
-	}
-
-	if isConcreteVersion(after) {
-		return after, true
-	}
-
-	return "", false
+	return "", versionStr, true
 }
 
 // isConcreteVersion returns true if version looks like a fully-specified version

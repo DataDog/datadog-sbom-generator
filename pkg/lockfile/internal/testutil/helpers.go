@@ -47,9 +47,10 @@ func PackageToString(pkg lockfile.PackageDetails) string {
 	}
 
 	return fmt.Sprintf(
-		"%s@%s {ecosystem=%q targetVersions=%v packageManager=%q commit=%q depGroups=%v exclusions=%v targetFrameworks=%v isDirect=%t blockLocation=%s nameLocation=%s versionLocation=%s}",
+		"%s@%s {versionRange=%q ecosystem=%q targetVersions=%v packageManager=%q commit=%q depGroups=%v exclusions=%v targetFrameworks=%v isDirect=%t requiresTransitiveEnrichment=%t blockLocation=%s nameLocation=%s versionLocation=%s}",
 		pkg.Name,
 		pkg.Version,
+		pkg.VersionRange,
 		pkg.Ecosystem,
 		pkg.TargetVersions,
 		pkg.PackageManager,
@@ -58,6 +59,7 @@ func PackageToString(pkg lockfile.PackageDetails) string {
 		pkg.Exclusions,
 		pkg.TargetFrameworks,
 		pkg.IsDirect,
+		pkg.RequiresTransitiveEnrichment,
 		formatLoc(pkg.BlockLocation),
 		formatLocPtr(pkg.NameLocation),
 		formatLocPtr(pkg.VersionLocation),

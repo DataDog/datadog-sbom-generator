@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -253,4 +254,25 @@ func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
 
 	assert.Empty(t, sanitizedPackages)
 	assert.Len(t, errors, 3)
+}
+
+func Test_sanitizeScannedPackages_VersionRangesAreAllowed(t *testing.T) {
+	t.Parallel()
+
+	scannedPackages := []lockfile.PackageDetails{
+		{
+			Name:         "requests",
+			VersionRange: ">=2.0,<3.0",
+			Ecosystem:    models.EcosystemPyPI,
+			IsDirect:     true,
+		},
+	}
+
+	sanitizedPackages, errors := sanitizeScannedPackages(scannedPackages)
+
+	assert.Empty(t, errors)
+	require.Len(t, sanitizedPackages, 1)
+	assert.Empty(t, sanitizedPackages[0].Version)
+	assert.Equal(t, ">=2.0,<3.0", sanitizedPackages[0].VersionRange)
+	assert.Equal(t, "pkg:pypi/requests", sanitizedPackages[0].PURL)
 }
