@@ -127,12 +127,16 @@ func resolveNpmAlias(specifier string) string {
 
 func hasVersionToken(specifier string) bool {
 	for _, field := range strings.Fields(specifier) {
-		if versionTokenRegex.MatchString(field) {
+		if isWildcardVersionRange(field) || versionTokenRegex.MatchString(field) {
 			return true
 		}
 	}
 
 	return false
+}
+
+func isWildcardVersionRange(specifier string) bool {
+	return specifier == "*" || strings.EqualFold(specifier, "x")
 }
 
 type packageJSONRaw struct {
@@ -236,11 +240,14 @@ func (e PackageJSONExtractor) Extract(f lockfile.DepFile, context lockfile.ScanC
 			case hasVersionToken(effectiveSpec):
 				versionRange = effectiveSpec
 			}
+			if version == "" && versionRange == "" {
+				continue
+			}
 
 			// Exact-version entries are keyed by name@version (one entry per version).
-			// Range and no-version entries share a key by name alone: if multiple aliases
-			// resolve to the same package at different ranges, the alphabetically-first
-			// alias name wins and subsequent ones are dropped.
+			// Range entries share a key by name alone: if multiple aliases resolve to
+			// the same package at different ranges, the alphabetically-first alias name
+			// wins and subsequent ones are dropped.
 			dedupKey := resolvedName
 			if version != "" {
 				dedupKey = resolvedName + "@" + version
