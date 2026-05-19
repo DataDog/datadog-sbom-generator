@@ -127,12 +127,16 @@ func resolveNpmAlias(specifier string) string {
 
 func hasVersionToken(specifier string) bool {
 	for _, field := range strings.Fields(specifier) {
-		if versionTokenRegex.MatchString(field) {
+		if isWildcardVersionRange(field) || versionTokenRegex.MatchString(field) {
 			return true
 		}
 	}
 
 	return false
+}
+
+func isWildcardVersionRange(specifier string) bool {
+	return specifier == "*" || strings.EqualFold(specifier, "x")
 }
 
 type packageJSONRaw struct {
