@@ -63,8 +63,10 @@ func (e GradleLockExtractor) PackageManager() models.PackageManager {
 func (e GradleLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	pkgs := make([]lockfile.PackageDetails, 0)
 	scanner := bufio.NewScanner(f)
+	lineNumber := 0
 
 	for scanner.Scan() {
+		lineNumber++
 		lockLine := strings.TrimSpace(scanner.Text())
 		if !isGradleLockFileDepLine(lockLine) {
 			continue
@@ -74,6 +76,13 @@ func (e GradleLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCo
 		if err != nil {
 			continue
 		}
+
+		pkg.BlockLocation = models.FilePosition{
+			Line:     models.Position{Start: lineNumber, End: lineNumber},
+			Column:   models.Position{Start: 1, End: len(scanner.Text()) + 1},
+			Filename: f.Path(),
+		}
+		pkg.LocationRole = models.LocationRoleLockfile
 
 		pkgs = append(pkgs, pkg)
 	}

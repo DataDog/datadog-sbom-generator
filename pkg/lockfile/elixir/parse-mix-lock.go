@@ -34,10 +34,12 @@ func (e MixLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 	re := cachedregexp.MustCompile(`^ +"(\w+)": \{.+,$`)
 
 	scanner := bufio.NewScanner(f)
+	lineNumber := 0
 
 	var packages []lockfile.PackageDetails
 
 	for scanner.Scan() {
+		lineNumber++
 		line := scanner.Text()
 
 		match := re.FindStringSubmatch(line)
@@ -79,6 +81,11 @@ func (e MixLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanConte
 			PackageManager: mixPackageManager,
 			Ecosystem:      models.EcosystemHex,
 			Commit:         commit,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: lineNumber, End: lineNumber},
+				Column:   models.Position{Start: 1, End: len(line) + 1},
+				Filename: f.Path(),
+			},
 		})
 	}
 

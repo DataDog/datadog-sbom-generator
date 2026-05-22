@@ -1,13 +1,16 @@
 package swift
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"path/filepath"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -35,9 +38,17 @@ func (e PackageResolvedExtractor) PackageManager() models.PackageManager {
 func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var resolved packageResolvedFile
 
-	if err := json.NewDecoder(f).Decode(&resolved); err != nil {
+	content, err := io.ReadAll(f)
+	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
+
+	if err := json.NewDecoder(bytes.NewReader(content)).Decode(&resolved); err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
+	}
+
+	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
+	positions := pinPositionsByIdentity(lines)
 
 	// Normalize pins from v1 or v2/v3 into a common representation.
 	type normalizedPin struct {
@@ -114,7 +125,7 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 			version = pin.branch
 		}
 
-		packages = append(packages, lockfile.PackageDetails{
+		pkgDetails := lockfile.PackageDetails{
 			Name:           name,
 			Version:        version,
 			Commit:         pin.revision,
@@ -122,10 +133,81 @@ func (e PackageResolvedExtractor) Extract(f lockfile.DepFile, _ lockfile.ScanCon
 			Ecosystem:      models.EcosystemSwiftURL,
 			IsDirect:       false,
 			LocationRole:   models.LocationRoleLockfile,
-		})
+		}
+
+		if pos, ok := positions[pin.identity]; ok {
+			blockLocation := *pos
+			blockLocation.Filename = f.Path()
+			pkgDetails.BlockLocation = blockLocation
+		}
+
+		packages = append(packages, pkgDetails)
 	}
 
 	return packages, nil
+}
+
+// identityRegexp matches the "identity" key inside a pin object.
+var identityRegexp = cachedregexp.MustCompile(`"identity"\s*:\s*"([^"]+)"`)
+
+// pinPositionsByIdentity scans the raw JSON lines and returns a FilePosition for each
+// pin block, keyed by the pin's identity value.  Each block starts at the "{" line
+// that precedes the "identity" field and ends at the matching "}".
+func pinPositionsByIdentity(lines []string) map[string]*models.FilePosition {
+	positions := make(map[string]*models.FilePosition)
+
+	for i, line := range lines {
+		m := identityRegexp.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+
+		identity := m[1]
+
+		// Walk backwards to find the opening "{" of this pin block.
+		blockStart := i
+		for blockStart > 0 && !strings.Contains(lines[blockStart], "{") {
+			blockStart--
+		}
+
+		// Walk forward to find the matching closing "}".
+		depth := 0
+		blockEnd := blockStart
+
+		for blockEnd < len(lines) {
+			for _, ch := range lines[blockEnd] {
+				if ch == '{' {
+					depth++
+				} else if ch == '}' {
+					depth--
+				}
+			}
+
+			if depth <= 0 {
+				break
+			}
+
+			blockEnd++
+		}
+
+		colStart := fileposition.GetFirstNonEmptyCharacterIndexInLine(lines[blockStart])
+		colEnd := fileposition.GetLastNonEmptyCharacterIndexInLine(lines[blockEnd])
+
+		if colStart < 1 {
+			colStart = 1
+		}
+
+		if colEnd < 1 {
+			colEnd = 1
+		}
+
+		positions[identity] = &models.FilePosition{
+			Line:   models.Position{Start: blockStart + 1, End: blockEnd + 1},
+			Column: models.Position{Start: colStart, End: colEnd},
+		}
+	}
+
+	return positions
 }
 
 // nameFromRepoURL extracts a purl-compatible name from a repository URL.

@@ -4,6 +4,8 @@ import (
 	"io/fs"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/swift"
@@ -112,7 +114,8 @@ func TestParsePackageResolved_OnePackageV1(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	// v1 pins have no "identity" field — BlockLocation is not set.
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.4.3",
@@ -134,7 +137,7 @@ func TestParsePackageResolved_OnePackageV2(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.6.1",
@@ -156,7 +159,7 @@ func TestParsePackageResolved_OnePackageV3(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.9.0",
@@ -178,7 +181,7 @@ func TestParsePackageResolved_TwoPackagesV2(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.6.1",
@@ -200,6 +203,29 @@ func TestParsePackageResolved_TwoPackagesV2(t *testing.T) {
 	})
 }
 
+func TestParsePackageResolved_TwoPackagesV2_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	packages, err := swift.ParsePackageResolved("../fixtures/swift/two-packages-v2.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	alamofire := packages[0]
+	assert.Equal(t, 3, alamofire.BlockLocation.Line.Start)
+	assert.Equal(t, 11, alamofire.BlockLocation.Line.End)
+	assert.Equal(t, 5, alamofire.BlockLocation.Column.Start)
+	assert.Equal(t, 7, alamofire.BlockLocation.Column.End)
+	assert.Contains(t, alamofire.BlockLocation.Filename, "two-packages-v2.json")
+
+	parser := packages[1]
+	assert.Equal(t, 12, parser.BlockLocation.Line.Start)
+	assert.Equal(t, 20, parser.BlockLocation.Line.End)
+	assert.Equal(t, 5, parser.BlockLocation.Column.Start)
+	assert.Equal(t, 6, parser.BlockLocation.Column.End)
+	assert.Contains(t, parser.BlockLocation.Filename, "two-packages-v2.json")
+}
+
 func TestParsePackageResolved_MixedStatesV2(t *testing.T) {
 	t.Parallel()
 
@@ -209,7 +235,7 @@ func TestParsePackageResolved_MixedStatesV2(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.6.1",
@@ -240,7 +266,7 @@ func TestParsePackageResolved_SSHUrlV2(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.6.1",
@@ -262,7 +288,7 @@ func TestParsePackageResolved_RegistryPinV2(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "apple.swift-argument-parser",
 			Version:        "1.2.0",
@@ -284,7 +310,7 @@ func TestParsePackageResolved_LocalPackageSkipped(t *testing.T) {
 	}
 
 	// localSourceControl pins should be skipped
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "github.com/Alamofire/Alamofire",
 			Version:        "5.6.1",

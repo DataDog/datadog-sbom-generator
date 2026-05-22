@@ -62,6 +62,57 @@ func TestParseYarnLock_v2_OnePackage(t *testing.T) {
 	})
 }
 
+func TestParseYarnLock_v2_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/yarn/one-package.v2.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if len(packages) != 1 {
+		t.Fatalf("Expected 1 package, got %d", len(packages))
+	}
+
+	pkg := packages[0]
+	assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0")
+	assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0")
+	assert.Equal(t, path, pkg.BlockLocation.Filename)
+
+	// "balanced-match@npm:^1.0.0" block is at lines 8-13 in one-package.v2.lock
+	assert.Equal(t, 8, pkg.BlockLocation.Line.Start)
+	assert.Equal(t, 13, pkg.BlockLocation.Line.End)
+}
+
+func TestParseYarnLock_v2_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/yarn/two-packages.v2.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.Start, "BlockLocation.Column.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Column.End, "BlockLocation.Column.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
+}
+
 //nolint:paralleltest
 func TestParseYarnLock_v2_OnePackage_MatcherFailed(t *testing.T) {
 	dir, err := os.Getwd()
@@ -820,6 +871,7 @@ func TestParseYarnLock_v2_WorkspacesComplex(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
+	lockfilePath := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/yarn.lock"))
 	rootPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/package.json"))
 	workspace1Path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/workspace-1/package.json"))
 	workspace2Path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-complex/nested/workspace-2/package.json"))
@@ -858,7 +910,13 @@ func TestParseYarnLock_v2_WorkspacesComplex(t *testing.T) {
 					PackageManager: models.Yarn,
 					Ecosystem:      models.EcosystemNPM,
 					DepGroups:      []string{"dev"},
-					Dependencies:   make([]*lockfile.PackageDetails, 0),
+					BlockLocation: models.FilePosition{
+						Line:     models.Position{Start: 8, End: 13},
+						Column:   models.Position{Start: 1, End: 17},
+						Filename: lockfilePath,
+					},
+					LocationRole: models.LocationRoleLockfile,
+					Dependencies: make([]*lockfile.PackageDetails, 0),
 				},
 			},
 		},
@@ -868,10 +926,15 @@ func TestParseYarnLock_v2_WorkspacesComplex(t *testing.T) {
 			TargetVersions: []string{"^1.4.0"},
 			PackageManager: models.Yarn,
 			Ecosystem:      models.EcosystemNPM,
-			BlockLocation:  models.FilePosition{},
-			IsDirect:       false, // is a dependency of group-dependencies@0.0.11
-			DepGroups:      []string{"dev"},
-			Dependencies:   make([]*lockfile.PackageDetails, 0),
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 8, End: 13},
+				Column:   models.Position{Start: 1, End: 17},
+				Filename: lockfilePath,
+			},
+			LocationRole: models.LocationRoleLockfile,
+			IsDirect:     false, // is a dependency of group-dependencies@0.0.11
+			DepGroups:    []string{"dev"},
+			Dependencies: make([]*lockfile.PackageDetails, 0),
 		},
 		{
 			Name:           "semver",

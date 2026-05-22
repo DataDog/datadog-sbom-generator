@@ -2,6 +2,8 @@ package elixir_test
 
 import (
 	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/elixir"
@@ -10,6 +12,8 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile/internal/testutil"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMixLockExtractor_ShouldExtract(t *testing.T) {
@@ -93,7 +97,7 @@ func TestParseMixLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "plug",
 			Version:        "1.11.1",
@@ -102,6 +106,33 @@ func TestParseMixLock_OnePackage(t *testing.T) {
 			Commit:         "f2992bac66fdae679453c9e86134a4201f6f43a687d8ff1cd1b2862d53c80259",
 		},
 	})
+}
+
+func TestParseMixLock_OnePackage_BlockLocation(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/mix/one-package.lock"))
+	packages, err := elixir.ParseMixLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.Positive(t, pkg.BlockLocation.Line.Start,
+			"package %s@%s should have BlockLocation.Line.Start > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Line.End,
+			"package %s@%s should have BlockLocation.Line.End > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Column.Start,
+			"package %s@%s should have BlockLocation.Column.Start > 0", pkg.Name, pkg.Version)
+		assert.Positive(t, pkg.BlockLocation.Column.End,
+			"package %s@%s should have BlockLocation.Column.End > 0", pkg.Name, pkg.Version)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"package %s@%s should have BlockLocation.Filename set", pkg.Name, pkg.Version)
+	}
 }
 
 func TestParseMixLock_TwoPackages(t *testing.T) {
@@ -113,7 +144,7 @@ func TestParseMixLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "plug",
 			Version:        "1.11.1",
@@ -140,7 +171,7 @@ func TestParseMixLock_Many(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "backoff",
 			Version:        "1.1.6",
@@ -300,7 +331,7 @@ func TestParseMixLock_GitPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "foe",
 			Version:        "",

@@ -11,6 +11,7 @@ import (
 
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/bmatcuk/doublestar/v4"
 )
 
@@ -63,8 +64,8 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 			depGroup = "optional"
 		}
 
-		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.BlockLocation.Line.Start != 0 {
-			// If it is a dev or optional dependency definition and we already found a package location,
+		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.LocationRole == models.LocationRoleManifest {
+			// If it is a dev or optional dependency definition and we already found a manifest location,
 			// we skip it to prioritize non-dev dependencies
 			pkgIndexes = []int{}
 		}

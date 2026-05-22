@@ -55,7 +55,7 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -74,7 +74,7 @@ func TestParseNuGetLock_v1_OneFramework_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -92,6 +92,36 @@ func TestParseNuGetLock_v1_OneFramework_TwoPackages(t *testing.T) {
 	})
 }
 
+func TestParseNuGetLock_v1_OneFramework_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	packages, err := dotnet.ParseNuGetLock("../fixtures/nuget/one-framework-two-packages/packages.lock.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packagesByName := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		packagesByName[pkg.Name] = pkg
+	}
+
+	// Test.Core block: lines 5-10 within "net6.0" framework
+	testCore := packagesByName["Test.Core"]
+	assert.Equal(t, 5, testCore.BlockLocation.Line.Start)
+	assert.Equal(t, 10, testCore.BlockLocation.Line.End)
+	assert.Equal(t, 7, testCore.BlockLocation.Column.Start)
+	assert.Equal(t, 8, testCore.BlockLocation.Column.End)
+	assert.Contains(t, testCore.BlockLocation.Filename, "one-framework-two-packages")
+
+	// Test.System block: lines 11-19 within "net6.0" framework
+	testSystem := packagesByName["Test.System"]
+	assert.Equal(t, 11, testSystem.BlockLocation.Line.Start)
+	assert.Equal(t, 19, testSystem.BlockLocation.Line.End)
+	assert.Equal(t, 7, testSystem.BlockLocation.Column.Start)
+	assert.Equal(t, 8, testSystem.BlockLocation.Column.End)
+	assert.Contains(t, testSystem.BlockLocation.Filename, "one-framework-two-packages")
+}
+
 func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 	t.Parallel()
 
@@ -100,7 +130,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_MixedPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -133,7 +163,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_DifferentPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -159,7 +189,7 @@ func TestParseNuGetLock_v1_TwoFrameworks_DuplicatePackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -202,7 +232,7 @@ func TestParseNuGetLock_v1_OneFramework_OnePackage_MatchedFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "Test.Core",
 			Version:        "6.0.5",
@@ -318,6 +348,11 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
+	absoluteLockfilePath, err := filepath.Abs("../fixtures/nuget/multiple-versions-with-lockfile/packages.lock.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
 	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
 		{
 			Name:             "Newtonsoft.Json",
@@ -350,7 +385,12 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       true,
-			BlockLocation:  models.FilePosition{},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 13},
+				Column:   models.Position{Start: 7, End: 8},
+				Filename: absoluteLockfilePath,
+			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 		{
 			Name:             "Newtonsoft.Json",
@@ -383,7 +423,12 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 			PackageManager: models.NuGet,
 			Ecosystem:      models.EcosystemNuGet,
 			IsDirect:       false,
-			BlockLocation:  models.FilePosition{},
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 20, End: 24},
+				Column:   models.Position{Start: 7, End: 8},
+				Filename: absoluteLockfilePath,
+			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 	})
 }

@@ -112,7 +112,7 @@ func TestParsePoetryLock_OnePackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",
@@ -157,7 +157,7 @@ func TestParsePoetryLock_OnePackage_MatcherFailed(t *testing.T) {
 	_ = r.Close()
 
 	assert.Contains(t, buffer.String(), matcherError.Error())
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",
@@ -183,7 +183,7 @@ func TestParsePoetryLock_TwoPackages(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "proto-plus",
 			Version:        "1.22.0",
@@ -212,7 +212,7 @@ func TestParsePoetryLock_PackageWithMetadata(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "emoji",
 			Version:        "2.0.0",
@@ -235,7 +235,7 @@ func TestParsePoetryLock_PackageWithGitSource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "ike",
 			Version:        "0.2.0",
@@ -259,7 +259,7 @@ func TestParsePoetryLock_PackageWithLegacySource(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "appdirs",
 			Version:        "1.4.4",
@@ -283,7 +283,7 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 		t.Errorf("Got unexpected error: %v", err)
 	}
 
-	testutil.ExpectPackages(t, packages, []lockfile.PackageDetails{
+	testutil.ExpectPackagesWithoutLocations(t, packages, []lockfile.PackageDetails{
 		{
 			Name:           "numpy",
 			Version:        "1.23.3",
@@ -292,4 +292,48 @@ func TestParsePoetryLock_OptionalPackage(t *testing.T) {
 			DepGroups:      []string{"optional"},
 		},
 	})
+}
+
+func TestParsePoetryLock_TwoPackages_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("../fixtures/poetry/two-packages.lock")
+	if err != nil {
+		t.Fatalf("could not get absolute path: %v", err)
+	}
+
+	packages, err := python.ParsePoetryLock(path)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	// two-packages.lock has:
+	// line 1: "[[package]]"  (proto-plus block, lines 1-13)
+	// line 15: "[[package]]" (protobuf block, lines 15-21)
+	// line 23: "[metadata]"  (not a package)
+	assert.Len(t, packages, 2, "expected 2 packages")
+
+	for _, pkg := range packages {
+		assert.NotEqual(t, 0, pkg.BlockLocation.Line.Start,
+			"expected BlockLocation.Line.Start to be set for package %s", pkg.Name)
+		assert.NotEmpty(t, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to be set for package %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename,
+			"expected BlockLocation.Filename to match the lockfile path for package %s", pkg.Name)
+	}
+
+	// Verify specific positions
+	pkgMap := make(map[string]lockfile.PackageDetails)
+	for _, pkg := range packages {
+		pkgMap[pkg.Name] = pkg
+	}
+
+	// proto-plus starts at line 1
+	assert.Equal(t, 1, pkgMap["proto-plus"].BlockLocation.Line.Start)
+
+	// protobuf starts at line 15
+	assert.Equal(t, 15, pkgMap["protobuf"].BlockLocation.Line.Start)
+
+	// Verify path is absolute
+	assert.True(t, filepath.IsAbs(path), "path should be absolute")
 }

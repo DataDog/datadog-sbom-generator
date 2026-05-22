@@ -1,11 +1,14 @@
 package python
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
@@ -62,7 +65,12 @@ func findRootPackage(allPackages []*UvLockPackage) (*UvLockPackage, error) {
 func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
 	var parsedLockfile *UvLockFile
 
-	_, err := toml.NewDecoder(f).Decode(&parsedLockfile)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return []lockfile.PackageDetails{}, fmt.Errorf("could not read %s: %w", f.Path(), err)
+	}
+
+	_, err = toml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
@@ -71,6 +79,16 @@ func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 	if err != nil {
 		return []lockfile.PackageDetails{}, errors.New("error getting root package")
 	}
+
+	// Compute BlockLocation for ALL toml packages (including root) using InTOML
+	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
+	allPositions := make([]models.FilePosition, len(parsedLockfile.Packages))
+	positionPtrs := make([]*models.FilePosition, len(parsedLockfile.Packages))
+	for i := range allPositions {
+		positionPtrs[i] = &allPositions[i]
+	}
+
+	fileposition.InTOML("[[package]]", "", positionPtrs, lines)
 
 	// This will hold packages we will return
 	packages := make([]lockfile.PackageDetails, 0, len(parsedLockfile.Packages))
@@ -84,7 +102,7 @@ func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 			}
 		}
 
-		for _, lockPackage := range parsedLockfile.Packages {
+		for i, lockPackage := range parsedLockfile.Packages {
 			// Skip root package because root files describe what it depends on, but isn't itself a dependency
 			// https://docs.astral.sh/uv/concepts/projects/layout/
 			if isRoot(lockPackage) {
@@ -100,6 +118,9 @@ func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 				depGroups = append(depGroups, "dev")
 			}
 
+			blockLocation := allPositions[i]
+			blockLocation.Filename = f.Path()
+
 			pkgDetails := lockfile.PackageDetails{
 				Name:           lockPackage.Name,
 				Version:        lockPackage.Version,
@@ -107,6 +128,7 @@ func (e UvLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContex
 				PackageManager: uvPackageManager,
 				Ecosystem:      models.EcosystemPyPI,
 				IsDirect:       isDirect || isDevDependency,
+				BlockLocation:  blockLocation,
 			}
 
 			if len(depGroups) > 0 {

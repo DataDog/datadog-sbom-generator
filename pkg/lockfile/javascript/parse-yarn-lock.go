@@ -3,7 +3,6 @@ package javascript
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -53,12 +53,42 @@ func parseYarnPackageBlock(block []string) []YarnPackage {
 	return packages
 }
 
-func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
+// findLastNonEmptyLineInRange finds the 1-indexed line number of the last non-empty line
+// within the 0-indexed range [startIdx, endIdx].
+func findLastNonEmptyLineInRange(lines []string, startIdx, endIdx int) int {
+	if endIdx >= len(lines) {
+		endIdx = len(lines) - 1
+	}
+
+	for i := endIdx; i >= startIdx; i-- {
+		if strings.TrimSpace(lines[i]) != "" {
+			return i + 1 // 1-indexed
+		}
+	}
+
+	return startIdx + 1
+}
+
+// buildYarnBlockPosition creates a FilePosition from 1-indexed start and end line numbers.
+func buildYarnBlockPosition(lines []string, startLine, endLine int) models.FilePosition {
+	colStart := fileposition.GetFirstNonEmptyCharacterIndexInLine(lines[startLine-1])
+	colEnd := fileposition.GetLastNonEmptyCharacterIndexInLine(lines[endLine-1])
+
+	return models.FilePosition{
+		Line:   models.Position{Start: startLine, End: endLine},
+		Column: models.Position{Start: colStart, End: colEnd},
+	}
+}
+
+func groupYarnPackageLines(scanner *bufio.Scanner, lines []string) []YarnPackage {
 	var groups []YarnPackage
 	var group []string
+	var blockStartLine int // 1-indexed line number of block start
 
+	lineNum := 0
 	var line string
 	for scanner.Scan() {
+		lineNum++
 		line = scanner.Text()
 
 		if shouldSkipYarnLine(line) {
@@ -69,9 +99,15 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 		if !strings.HasPrefix(line, " ") {
 			if len(group) > 0 {
 				packages := parseYarnPackageBlock(group)
+				// Set BlockLocation on each package
+				blockEndLine := findLastNonEmptyLineInRange(lines, blockStartLine-1, lineNum-2)
+				for i := range packages {
+					packages[i].BlockLocation = buildYarnBlockPosition(lines, blockStartLine, blockEndLine)
+				}
 				groups = append(groups, packages...)
 			}
 			group = make([]string, 0)
+			blockStartLine = lineNum
 		}
 
 		group = append(group, line)
@@ -79,6 +115,10 @@ func groupYarnPackageLines(scanner *bufio.Scanner) []YarnPackage {
 
 	if len(group) > 0 {
 		packages := parseYarnPackageBlock(group)
+		blockEndLine := findLastNonEmptyLineInRange(lines, blockStartLine-1, len(lines)-1)
+		for i := range packages {
+			packages[i].BlockLocation = buildYarnBlockPosition(lines, blockStartLine, blockEndLine)
+		}
 		groups = append(groups, packages...)
 	}
 
@@ -336,7 +376,7 @@ func buildDependencyTree(rootPkgName, rootPkgTargetVersion, rootPkgRegistry stri
 	return results
 }
 
-func parseYarnPackage(dependency YarnPackage) lockfile.PackageDetails {
+func parseYarnPackage(dependency YarnPackage, filePath string) lockfile.PackageDetails {
 	if dependency.Version == "" {
 		_, _ = fmt.Fprintf(
 			os.Stderr,
@@ -350,6 +390,9 @@ func parseYarnPackage(dependency YarnPackage) lockfile.PackageDetails {
 		nameLocation = &models.FilePosition{Filename: dependency.WorkspacePath}
 	}
 
+	blockLocation := dependency.BlockLocation
+	blockLocation.Filename = filePath
+
 	return lockfile.PackageDetails{
 		Name:           dependency.Name,
 		Version:        dependency.Version,
@@ -358,6 +401,8 @@ func parseYarnPackage(dependency YarnPackage) lockfile.PackageDetails {
 		Ecosystem:      models.EcosystemNPM,
 		Commit:         tryExtractCommit(dependency.Resolution),
 		NameLocation:   nameLocation,
+		BlockLocation:  blockLocation,
+		LocationRole:   models.LocationRoleLockfile,
 	}
 }
 
@@ -450,12 +495,110 @@ func isJSONFormat(content []byte) bool {
 //
 // Returns a slice of YarnPackage structs compatible with the existing YAML parser output,
 // allowing the rest of the extraction logic to work identically for both formats.
-func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
+// extractYarnBerryJSONPositions scans JSON lines for entry keys within the "entries" object.
+// Entry keys appear as "    \"package@npm:^1.0.0\": {" at 4-space indent inside "entries".
+func extractYarnBerryJSONPositions(lines []string) map[string]models.FilePosition {
+	positions := make(map[string]models.FilePosition)
+
+	inEntries := false
+	var currentKey string
+	braceDepth := 0
+
+	for i, line := range lines {
+		lineNum := i + 1
+		trimmed := strings.TrimSpace(line)
+
+		// Detect "entries": {
+		if !inEntries && strings.Contains(trimmed, `"entries"`) && strings.HasSuffix(trimmed, "{") {
+			inEntries = true
+			braceDepth = 1
+
+			continue
+		}
+
+		if !inEntries {
+			continue
+		}
+
+		// Track brace depth
+		for _, ch := range trimmed {
+			if ch == '{' {
+				braceDepth++
+			} else if ch == '}' {
+				braceDepth--
+			}
+		}
+
+		if braceDepth <= 0 {
+			// Close last entry
+			if currentKey != "" {
+				closeBerryEntry(positions, currentKey, i, lines)
+				currentKey = ""
+			}
+
+			inEntries = false
+
+			continue
+		}
+
+		// Entry key at depth 1 (exactly 4-space indent, opens an object): "    \"package@npm:^1.0.0\": {"
+		// Require HasSuffix("{") to avoid false positives on internal fields like "checksum": "..."
+		// which also sit at depth 2 but do not open a new brace.
+		if braceDepth == 2 && strings.HasSuffix(trimmed, "{") && strings.HasPrefix(line, "    ") {
+			// This is a new entry key
+			if currentKey != "" {
+				closeBerryEntry(positions, currentKey, i, lines)
+			}
+
+			// Extract the key between quotes
+			firstQuote := strings.Index(trimmed, `"`)
+			lastQuote := strings.Index(trimmed[firstQuote+1:], `"`)
+
+			if firstQuote >= 0 && lastQuote >= 0 {
+				key := trimmed[firstQuote+1 : firstQuote+1+lastQuote]
+				currentKey = key
+
+				colStart := fileposition.GetFirstNonEmptyCharacterIndexInLine(line)
+
+				positions[currentKey] = models.FilePosition{
+					Line:   models.Position{Start: lineNum, End: 0},
+					Column: models.Position{Start: colStart, End: 0},
+				}
+			}
+		}
+	}
+
+	if currentKey != "" {
+		closeBerryEntry(positions, currentKey, len(lines), lines)
+	}
+
+	return positions
+}
+
+func closeBerryEntry(positions map[string]models.FilePosition, key string, beforeIndex int, lines []string) {
+	pos := positions[key]
+	lastNonEmpty := beforeIndex - 1
+	for lastNonEmpty >= 0 && strings.TrimSpace(lines[lastNonEmpty]) == "" {
+		lastNonEmpty--
+	}
+
+	if lastNonEmpty >= 0 {
+		pos.Line.End = lastNonEmpty + 1
+		pos.Column.End = fileposition.GetLastNonEmptyCharacterIndexInLine(lines[lastNonEmpty])
+	} else {
+		pos.Line.End = pos.Line.Start
+	}
+
+	positions[key] = pos
+}
+
+func parseYarnBerryJSON(content []byte, lines []string) ([]YarnPackage, error) {
 	var berryJSON YarnBerryJSON
 	if err := json.Unmarshal(content, &berryJSON); err != nil {
 		return nil, fmt.Errorf("failed to parse yarn.lock JSON: %w", err)
 	}
 
+	positions := extractYarnBerryJSONPositions(lines)
 	packages := make([]YarnPackage, 0, len(berryJSON.Entries))
 
 	for entryKey, entry := range berryJSON.Entries {
@@ -484,6 +627,12 @@ func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
 			})
 		}
 
+		// Look up position by entry key
+		var blockPos models.FilePosition
+		if pos, ok := positions[entryKey]; ok {
+			blockPos = pos
+		}
+
 		// Create one YarnPackage per target version
 		for _, targetVersion := range targetVersions {
 			packages = append(packages, YarnPackage{
@@ -493,6 +642,7 @@ func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
 				Resolution:    resolution,
 				Dependencies:  dependencies,
 				WorkspacePath: workspacePath,
+				BlockLocation: blockPos,
 			})
 		}
 	}
@@ -501,41 +651,24 @@ func parseYarnBerryJSON(content []byte) ([]YarnPackage, error) {
 }
 
 func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanContext) ([]lockfile.PackageDetails, error) {
-	// Peek first bytes to detect format without loading entire file into memory
-	buf := make([]byte, 200)
-	n, err := f.Read(buf)
-	if err != nil && !errors.Is(err, io.EOF) {
+	content, err := io.ReadAll(f)
+	if err != nil {
 		return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock: %w", err)
 	}
 
-	// Try to reset file position for streaming
-	var reader io.Reader = f
-	if seeker, ok := f.(io.Seeker); ok {
-		if _, err := seeker.Seek(0, 0); err != nil {
-			return []lockfile.PackageDetails{}, fmt.Errorf("error seeking yarn.lock: %w", err)
-		}
-	} else {
-		// If we can't seek, prepend the peeked bytes back to the reader
-		reader = io.MultiReader(strings.NewReader(string(buf[:n])), f)
-	}
+	lines := fileposition.BytesToLines(content)
 
 	var yarnPackages []YarnPackage
-	if isJSONFormat(buf[:n]) {
+	if isJSONFormat(content) {
 		// Parse JSON format (Yarn v4+)
-		// JSON requires loading entire file into memory for parsing
-		content, err := io.ReadAll(reader)
-		if err != nil {
-			return []lockfile.PackageDetails{}, fmt.Errorf("error reading yarn.lock JSON: %w", err)
-		}
-		yarnPackages, err = parseYarnBerryJSON(content)
+		yarnPackages, err = parseYarnBerryJSON(content, lines)
 		if err != nil {
 			return []lockfile.PackageDetails{}, err
 		}
 	} else {
-		// Parse YAML format (Yarn v1-3) using streaming scanner
-		// This avoids loading the entire file into memory
-		scanner := bufio.NewScanner(reader)
-		yarnPackages = groupYarnPackageLines(scanner)
+		// Parse YAML-like format (Yarn v1-3)
+		scanner := bufio.NewScanner(strings.NewReader(string(content)))
+		yarnPackages = groupYarnPackageLines(scanner, lines)
 
 		if err := scanner.Err(); err != nil {
 			return []lockfile.PackageDetails{}, fmt.Errorf("error while scanning %s: %w", f.Path(), err)
@@ -561,7 +694,7 @@ func (e YarnLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCont
 	}
 
 	dependencyWorkspaces := createDependencyWorkspaceMap(workspaces, allResolvedPackages)
-	packages := createPackageDetails(allResolvedPackages, dependencyWorkspaces)
+	packages := createPackageDetails(allResolvedPackages, dependencyWorkspaces, f.Path())
 
 	pkgIndex := indexByNameAndVersions(packages)
 	for index, pkg := range packages {
@@ -608,12 +741,12 @@ func createDependencyWorkspaceMap(workspaces []YarnPackage, allResolvedPackages 
 	return dependencyWorkspaces
 }
 
-func createPackageDetails(allResolvedPackages []YarnPackage, dependencyWorkspaces map[string][]string) []lockfile.PackageDetails {
+func createPackageDetails(allResolvedPackages []YarnPackage, dependencyWorkspaces map[string][]string, filePath string) []lockfile.PackageDetails {
 	packages := make([]lockfile.PackageDetails, 0, len(allResolvedPackages))
 
 	// Create lockfile.PackageDetails for regular packages, with workspace information where applicable
 	for _, yarnPackage := range allResolvedPackages {
-		basePackage := parseYarnPackage(yarnPackage)
+		basePackage := parseYarnPackage(yarnPackage, filePath)
 		depKey := getWorkspaceDependencyKey(yarnPackage.Name, yarnPackage.Version, yarnPackage.TargetVersion)
 
 		if workspacePaths, exists := dependencyWorkspaces[depKey]; exists {
