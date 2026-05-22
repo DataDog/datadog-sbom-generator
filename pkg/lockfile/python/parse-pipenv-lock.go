@@ -94,6 +94,7 @@ func addPkgDetails(
 				blockLocation := *pos
 				blockLocation.Filename = filePath
 				pkgDetails.BlockLocation = blockLocation
+				pkgDetails.LocationRole = models.LocationRoleLockfile
 			}
 			details[name+"@"+version] = pkgDetails
 		}

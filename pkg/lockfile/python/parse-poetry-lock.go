@@ -67,6 +67,7 @@ func (e PoetryLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCo
 
 	for i := range packages {
 		packages[i].BlockLocation.Filename = f.Path()
+		packages[i].LocationRole = models.LocationRoleLockfile
 	}
 
 	return packages, nil

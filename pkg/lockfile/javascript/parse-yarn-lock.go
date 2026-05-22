@@ -402,6 +402,7 @@ func parseYarnPackage(dependency YarnPackage, filePath string) lockfile.PackageD
 		Commit:         tryExtractCommit(dependency.Resolution),
 		NameLocation:   nameLocation,
 		BlockLocation:  blockLocation,
+		LocationRole:   models.LocationRoleLockfile,
 	}
 }
 

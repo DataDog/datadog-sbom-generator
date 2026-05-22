@@ -740,8 +740,9 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 3, End: 32},
 				Filename: lockfilePath,
 			},
-			IsDirect:  false, // is a dependency of group-dependencies@0.0.11
-			DepGroups: []string{"dev"},
+			LocationRole: models.LocationRoleLockfile,
+			IsDirect:     false, // is a dependency of group-dependencies@0.0.11
+			DepGroups:    []string{"dev"},
 		},
 		{
 			Name:           "semver",

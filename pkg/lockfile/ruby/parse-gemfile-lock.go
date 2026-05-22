@@ -45,6 +45,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Ecosystem:      models.EcosystemRubyGems,
 			Commit:         parser.currentGemCommit,
 			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 
 		return
@@ -71,6 +72,7 @@ func (parser *gemfileLockfileParser) addDependency(name string, version string) 
 			Commit:         parser.currentGemCommit,
 			IsDirect:       true,
 			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 }

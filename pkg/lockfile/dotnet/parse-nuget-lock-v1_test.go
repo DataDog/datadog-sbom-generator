@@ -390,6 +390,7 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 				Column:   models.Position{Start: 7, End: 8},
 				Filename: absoluteLockfilePath,
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 		{
 			Name:             "Newtonsoft.Json",
@@ -427,6 +428,7 @@ func TestMultipleVersionsNonDeterministicOrder(t *testing.T) {
 				Column:   models.Position{Start: 7, End: 8},
 				Filename: absoluteLockfilePath,
 			},
+			LocationRole: models.LocationRoleLockfile,
 		},
 	})
 }

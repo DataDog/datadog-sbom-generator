@@ -111,6 +111,7 @@ func (e GradleVerificationMetadataExtractor) Extract(f lockfile.DepFile, context
 				pos := posList[idx]
 				pos.Filename = f.Path()
 				pkg.BlockLocation = pos
+				pkg.LocationRole = models.LocationRoleLockfile
 				consumed[key] = idx + 1
 			}
 		}

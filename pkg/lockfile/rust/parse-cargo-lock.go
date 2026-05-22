@@ -62,6 +62,7 @@ func (e CargoLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCon
 
 	for i := range packages {
 		packages[i].BlockLocation.Filename = f.Path()
+		packages[i].LocationRole = models.LocationRoleLockfile
 	}
 
 	return packages, nil

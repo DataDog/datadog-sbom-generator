@@ -289,6 +289,7 @@ func parsePnpmLegacyLock(sourceFile PnpmLegacyLockfile, positions map[string]mod
 			DepGroups:      depGroups,
 			IsDirect:       isDirect,
 			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 

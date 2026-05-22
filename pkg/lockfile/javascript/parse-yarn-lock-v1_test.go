@@ -1171,6 +1171,7 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 						Column:   models.Position{Start: 1, End: 108},
 						Filename: lockfilePath,
 					},
+					LocationRole: models.LocationRoleLockfile,
 					Dependencies: make([]*lockfile.PackageDetails, 0),
 				},
 			},
@@ -1186,6 +1187,7 @@ func TestParseYarnLock_v1_WorkspacesComplex(t *testing.T) {
 				Column:   models.Position{Start: 1, End: 108},
 				Filename: lockfilePath,
 			},
+			LocationRole: models.LocationRoleLockfile,
 			IsDirect:     false, // is a dependency of group-dependencies@0.0.11
 			DepGroups:    []string{"dev"},
 			Dependencies: make([]*lockfile.PackageDetails, 0),

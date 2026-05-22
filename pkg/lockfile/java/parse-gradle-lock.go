@@ -82,6 +82,7 @@ func (e GradleLockExtractor) Extract(f lockfile.DepFile, context lockfile.ScanCo
 			Column:   models.Position{Start: 1, End: len(scanner.Text()) + 1},
 			Filename: f.Path(),
 		}
+		pkg.LocationRole = models.LocationRoleLockfile
 
 		pkgs = append(pkgs, pkg)
 	}

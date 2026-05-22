@@ -134,6 +134,7 @@ func (e ComposerLockExtractor) Extract(f lockfile.DepFile, context lockfile.Scan
 		if posIdx < len(blockPositions) {
 			pkg.BlockLocation = blockPositions[posIdx]
 			pkg.BlockLocation.Filename = f.Path()
+			pkg.LocationRole = models.LocationRoleLockfile
 			posIdx++
 		}
 		packages = append(packages, pkg)
@@ -151,6 +152,7 @@ func (e ComposerLockExtractor) Extract(f lockfile.DepFile, context lockfile.Scan
 		if posIdx < len(blockPositions) {
 			pkg.BlockLocation = blockPositions[posIdx]
 			pkg.BlockLocation.Filename = f.Path()
+			pkg.LocationRole = models.LocationRoleLockfile
 			posIdx++
 		}
 		packages = append(packages, pkg)

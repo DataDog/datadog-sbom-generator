@@ -108,6 +108,7 @@ func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, t
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
 				BlockLocation:  lookupPnpmPosition(depName, version, depVersion, filePath, positions),
+				LocationRole:   models.LocationRoleLockfile,
 			}
 			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
@@ -125,6 +126,7 @@ func extractTransitiveDeps(sourceFile PnpmLockfile, root PnpmDirectDependency, t
 				PackageManager: models.Pnpm,
 				IsDirect:       false,
 				BlockLocation:  lookupPnpmPosition(depName, version, depVersion, filePath, positions),
+				LocationRole:   models.LocationRoleLockfile,
 			}
 			addDependencyToPackageDetails(transitiveDep, getPnpmDependencyKey(transitiveDep), deps)
 			childKey := depName + "@" + depVersion
@@ -156,6 +158,7 @@ func extractDirectDependencies(sourceFile PnpmLockfile, roots []PnpmDirectDepend
 				IsDirect:       true,
 				NameLocation:   nameLocation,
 				BlockLocation:  lookupPnpmPosition(dependencyName, version, dependency.Version, filePath, positions),
+				LocationRole:   models.LocationRoleLockfile,
 			},
 			Dep:           dependency,
 			WorkspacePath: workspacePath,
