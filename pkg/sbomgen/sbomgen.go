@@ -1,0 +1,85 @@
+// Package sbomgen provides a library API for generating CycloneDX SBOMs.
+//
+// This package wraps the scanner and output internals to provide a simple,
+// programmatic interface for SBOM generation without requiring CLI dependencies.
+//
+// Usage:
+//
+//	result, err := sbomgen.GenerateSBOM([]string{"./my-project"}, sbomgen.DefaultOptions())
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Println(string(result))
+package sbomgen
+
+import (
+	"bytes"
+	"errors"
+
+	"github.com/CycloneDX/cyclonedx-go"
+	"github.com/DataDog/datadog-sbom-generator/internal/output"
+	"github.com/DataDog/datadog-sbom-generator/internal/output/sbom"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+	"github.com/DataDog/datadog-sbom-generator/pkg/scanner"
+)
+
+// Options controls the behavior of GenerateSBOM.
+type Options struct {
+	// Recursive controls whether subdirectories are scanned.
+	Recursive bool
+
+	// ExcludePaths is a list of glob patterns to exclude from scanning.
+	ExcludePaths []string
+}
+
+// DefaultOptions returns Options with sensible defaults:
+// recursive scanning enabled and no exclusions.
+func DefaultOptions() Options {
+	return Options{
+		Recursive:    true,
+		ExcludePaths: []string{},
+	}
+}
+
+// GenerateSBOM scans the given directories for lockfiles and returns a
+// CycloneDX 1.5 SBOM as pretty-printed JSON bytes.
+//
+// It returns an error if dirs is empty or if the scan finds no packages.
+func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
+	if len(dirs) == 0 {
+		return nil, errors.New("at least one directory must be provided")
+	}
+
+	actions := scanner.ScannerActions{
+		DirectoryPaths: dirs,
+		ExcludePaths:   opts.ExcludePaths,
+		Recursive:      opts.Recursive,
+	}
+
+	r := reporter.NewCycloneDXReporter(&bytes.Buffer{}, &bytes.Buffer{}, reporter.WarnLevel)
+
+	vulnResults, err := scanner.DoScan(actions, r)
+	if err != nil {
+		return nil, err
+	}
+
+	tool := sbom.Tool{
+		Name:    "datadog-sbom-generator",
+		Version: "library",
+	}
+
+	bom, bomErr := output.CreateCycloneDXBOM(tool, &vulnResults)
+	if bom == nil {
+		return nil, bomErr
+	}
+
+	var buf bytes.Buffer
+	encoder := cyclonedx.NewBOMEncoder(&buf, cyclonedx.BOMFileFormatJSON)
+	encoder.SetPretty(true)
+
+	if encErr := encoder.EncodeVersion(bom, bom.SpecVersion); encErr != nil {
+		return nil, errors.Join(encErr, bomErr)
+	}
+
+	return buf.Bytes(), bomErr
+}
