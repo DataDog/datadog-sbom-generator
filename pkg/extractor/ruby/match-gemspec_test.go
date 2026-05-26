@@ -1,0 +1,160 @@
+package ruby_test
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/internal/testutility"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/internal/testutil"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/ruby"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var gemspecFileMatcher = ruby.GemspecFileMatcher{}
+
+func TestGemspecFileMatcher_GetSourceFile_FileDoesNotExist(t *testing.T) {
+	t.Parallel()
+
+	lockFile, err := extractor.OpenLocalDepFile("../fixtures/bundler/no-gemspec/Gemfile.lock")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := gemspecFileMatcher.GetSourceFile(lockFile)
+	assert.Nil(t, sourceFile)
+	assert.NoError(t, err)
+}
+
+func TestGemspecFileMatcher_GetSourceFile(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	basePath := "../fixtures/bundler/gemspec/"
+	sourcefilePath := filepath.FromSlash(filepath.Join(dir, basePath+"test.gemspec"))
+
+	lockFile, err := extractor.OpenLocalDepFile(basePath + "Gemfile.lock")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := gemspecFileMatcher.GetSourceFile(lockFile)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.Equal(t, sourcefilePath, sourceFile.Path())
+}
+
+func TestGemspecFileMatcher_Match(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/bundler/gemspec/test.gemspec")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "base64",
+			Version:        "0.2.0",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "json",
+			Version:        "2.9.1",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "thor",
+			Version:        "1.3.2",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "timeout",
+			Version:        "0.4.3",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "useragent",
+			Version:        "0.16.11",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "websocket-driver",
+			Version:        "0.7.7",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "websocket-extensions",
+			Version:        "0.1.5",
+			PackageManager: models.Bundler,
+		},
+		{
+			Name:           "zeitwerk",
+			Version:        "2.7.1",
+			PackageManager: models.Bundler,
+		},
+	}
+
+	err = gemspecFileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutility.NewSnapshot().WithJSONNormalization().MatchJSON(t, packages)
+}
+
+func TestGemfileMatcher_Filter_Not_In_Lockfile(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/bundler/lockfile-not-synced/Gemfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "zeitwerk",
+			Version:        "2.6.0",
+			PackageManager: models.Bundler,
+		},
+	}
+
+	err = gemfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutility.NewSnapshot().WithJSONNormalization().MatchJSON(t, packages)
+}
+
+func TestGemspecFileMatcher_NotInLockfile(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/bundler/lockfile-not-synced-with-gemspec/test.gemspec")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "rake",
+			Version:        "13.0",
+			PackageManager: models.Bundler,
+		},
+	}
+
+	err = gemspecFileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutility.NewSnapshot().WithJSONNormalization().MatchJSON(t, packages)
+}

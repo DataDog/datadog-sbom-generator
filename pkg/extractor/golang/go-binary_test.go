@@ -1,0 +1,149 @@
+package golang_test
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
+
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/internal/testutil"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+)
+
+func TestGoBinaryExtractor_ShouldExtract(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "",
+			path: "",
+			want: false,
+		},
+		{
+			name: "",
+			path: "binary.json",
+			want: false,
+		},
+		{
+			name: "",
+			path: "path/to/my/binary.json",
+			want: false,
+		},
+		{
+			name: "",
+			path: "path/to/my/binary-lock.json/file",
+			want: true,
+		},
+		{
+			name: "",
+			path: "path/to/my/binary",
+			want: true,
+		},
+		{
+			name: "",
+			path: "path/to/my/binary.exe",
+			want: true,
+		},
+		{
+			name: "",
+			path: "path/to/my/.hidden-binary",
+			want: false,
+		},
+		{
+			name: "",
+			path: "path/to/my/binary.exe.1",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			e := golang.GoBinaryExtractor{}
+			got := e.ShouldExtract(tt.path)
+			if got != tt.want {
+				t.Errorf("Extract(%v) got = %v, want %v", tt.path, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtractGoBinary_NoPackages(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/go/binaries/just-go"))
+
+	if err != nil {
+		t.Fatalf("could not open file %v", err)
+	}
+
+	packages, err := golang.ParseGoBinaryLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "stdlib",
+			Version:        "1.21.10",
+			Ecosystem:      models.EcosystemGo,
+			PackageManager: models.Golang,
+		},
+	})
+}
+
+func TestExtractGoBinary_OnePackage(t *testing.T) {
+	t.Parallel()
+
+	file, err := extractor.OpenLocalDepFile("../fixtures/go/binaries/has-one-dep")
+	if err != nil {
+		t.Fatalf("could not open file %v", err)
+	}
+
+	packages, err := golang.GoBinaryExtractor{}.Extract(file, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "stdlib",
+			Version:        "1.21.10",
+			Ecosystem:      models.EcosystemGo,
+			PackageManager: models.Golang,
+		},
+		{
+			Name:           "github.com/BurntSushi/toml",
+			Version:        "1.4.0",
+			Ecosystem:      models.EcosystemGo,
+			PackageManager: models.Golang,
+		},
+	})
+}
+
+func TestExtractGoBinary_NotAGoBinary(t *testing.T) {
+	t.Parallel()
+
+	file, err := extractor.OpenLocalDepFile("../fixtures/go/one-package.mod")
+	if err != nil {
+		t.Fatalf("could not open file %v", err)
+	}
+
+	packages, err := golang.GoBinaryExtractor{}.Extract(file, testutil.GetTestContext())
+	if err == nil {
+		t.Errorf("did not get expected error when extracting")
+	}
+
+	if len(packages) != 0 {
+		t.Errorf("packages not empty")
+	}
+}

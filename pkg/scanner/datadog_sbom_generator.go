@@ -13,23 +13,23 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/output"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 
 	// Import all language-specific lockfile packages to register their extractors
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/cpp"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/dart"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/dotnet"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/elixir"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/golang"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/java"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/javascript"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/php"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/python"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/renv"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/ruby"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/rust"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/swift"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/lockfile/system"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/cpp"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/dart"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/dotnet"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/elixir"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/javascript"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/php"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/python"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/renv"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/ruby"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/rust"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/swift"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/system"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -78,7 +78,7 @@ var ErrAPIFailed = models.ErrAPIFailed
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string) ([]lockfile.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string) ([]extractor.PackageDetails, []models.ScannedArtifact, error) {
 	scanRoot := dir
 	// Normalize the scan root once before exclusion matching.
 	if absPath, err := filepath.Abs(dir); err == nil {
@@ -97,7 +97,7 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 
 	root := true
 
-	var scannedPackages []lockfile.PackageDetails
+	var scannedPackages []extractor.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	return scannedPackages, scannedArtifacts, filepath.WalkDir(dir, func(rawPath string, info os.DirEntry, err error) error {
@@ -135,7 +135,7 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 		}
 
 		if !info.IsDir() {
-			if extractor, _ := lockfile.FindExtractor(path, enabledParsers); extractor != nil {
+			if ext, _ := extractor.FindExtractor(path, enabledParsers); ext != nil {
 				match, err := matchExclusion(r, scanRoot, repoRoot, path, cliExcludePaths, configExcludePaths)
 				if err != nil {
 					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
@@ -150,7 +150,7 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 					return nil
 				}
 
-				context := lockfile.ScanContext{EnabledParsers: enabledParsers, RootDir: dir, Reporter: r}
+				context := extractor.ScanContext{EnabledParsers: enabledParsers, RootDir: dir, Reporter: r}
 				pkgs, artifact, err := scanLockfile(path, context)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
@@ -205,17 +205,17 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 
 // scanLockfile will load, identify, and parse the lockfile path passed in, and add the dependencies specified
 // within to `query`
-func scanLockfile(path string, context lockfile.ScanContext) (lockfile.Packages, *models.ScannedArtifact, error) {
+func scanLockfile(path string, context extractor.ScanContext) (extractor.Packages, *models.ScannedArtifact, error) {
 	var err error
-	var parsedLockfile lockfile.Lockfile
+	var parsedLockfile extractor.Lockfile
 
-	file, err := lockfile.OpenLocalDepFile(path)
+	file, err := extractor.OpenLocalDepFile(path)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer file.Close()
 
-	parsedLockfile, err = lockfile.ExtractDeps(file, context)
+	parsedLockfile, err = extractor.ExtractDeps(file, context)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -241,15 +241,15 @@ func initializeEnabledParsers(enabledParsers []string, r reporter.Reporter) map[
 
 	if len(enabledParsers) == 0 {
 		// If the list is empty, it means the flag is not set on the CLI, everything should be enabled
-		for _, parser := range lockfile.ListExtractorNames() {
+		for _, parser := range extractor.ListExtractorNames() {
 			result[parser] = true
 		}
 	} else {
 		// We allow users to pass languages to bulk enable parsers for that language
 		// If a parser is directly passed (do not match a language, we pass it as it)
-		expandedParsers := lockfile.ExpandLanguagesAndPackageManagersToExtractors(enabledParsers)
+		expandedParsers := extractor.ExpandLanguagesAndPackageManagersToExtractors(enabledParsers)
 		for _, parser := range expandedParsers {
-			if lockfile.IsSupportedExtractor(parser) {
+			if extractor.IsSupportedExtractor(parser) {
 				result[parser] = true
 				r.Verbosef("[parser] Enabling: %s\n", parser)
 			} else {
@@ -269,7 +269,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	enabledParsers := initializeEnabledParsers(actions.EnableParsers, r)
 	if actions.ManifestParsers && len(actions.EnableParsers) == 0 {
-		for _, name := range lockfile.ListManifestExtractorNames() {
+		for _, name := range extractor.ListManifestExtractorNames() {
 			enabledParsers[name] = true
 		}
 	}
@@ -286,7 +286,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
 	}
 
-	var scannedPackages []lockfile.PackageDetails
+	var scannedPackages []extractor.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
 	if actions.Debug {
@@ -355,7 +355,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 // packageHasRangedVersion checks if the package version is a ranged version
 // which we do not support for now.
-func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
+func packageHasRangedVersion(scannedPackage extractor.PackageDetails) bool {
 	return strings.ContainsAny(scannedPackage.Version, ",><")
 }
 
@@ -364,8 +364,8 @@ func packageHasRangedVersion(scannedPackage lockfile.PackageDetails) bool {
 // 2. creates a PURL for each package and drops the package if it cannot be created
 // Packages with VersionRange are allowed through with an empty Version so that
 // downstream services can resolve them.
-func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockfile.PackageDetails, []string) {
-	finalPackages := make([]lockfile.PackageDetails, 0, len(scannedPackages))
+func sanitizeScannedPackages(scannedPackages []extractor.PackageDetails) ([]extractor.PackageDetails, []string) {
+	finalPackages := make([]extractor.PackageDetails, 0, len(scannedPackages))
 	droppedReasons := make([]string, 0, len(scannedPackages))
 
 	for _, pkg := range scannedPackages {
@@ -387,7 +387,7 @@ func sanitizeScannedPackages(scannedPackages []lockfile.PackageDetails) ([]lockf
 }
 
 // getDirectPackagePurls returns a list of PURLs for packages that are directly imported.
-func getDirectPackagePurls(scannedPackages []lockfile.PackageDetails) []string {
+func getDirectPackagePurls(scannedPackages []extractor.PackageDetails) []string {
 	uniquePurls := make(map[string]struct{})
 	for _, scannedPackage := range scannedPackages {
 		if scannedPackage.IsDirect {

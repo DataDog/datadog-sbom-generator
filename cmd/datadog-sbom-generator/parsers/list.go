@@ -5,7 +5,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
 )
@@ -23,7 +23,7 @@ func ListCommand(stdout io.Writer) *cli.Command {
 }
 
 func action(stdout io.Writer) {
-	extractorsResult := lockfile.ListSupportedExtractors()
+	extractorsResult := extractor.ListSupportedExtractors()
 	t := table.NewWriter()
 	t.SetOutputMirror(stdout)
 	t.AppendHeader(table.Row{"Language", "Package Manager", "Lockfile Parsers"})

@@ -219,10 +219,10 @@ Returns sensible defaults: recursive scanning enabled, no path exclusions.
 
 #### `Options`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `Recursive` | `bool` | Scan subdirectories recursively (default: `true`) |
-| `ExcludePaths` | `[]string` | Glob patterns to exclude from scanning |
+| Field          | Type       | Description                                       |
+| -------------- | ---------- | ------------------------------------------------- |
+| `Recursive`    | `bool`     | Scan subdirectories recursively (default: `true`) |
+| `ExcludePaths` | `[]string` | Glob patterns to exclude from scanning            |
 
 ## Contributing
 

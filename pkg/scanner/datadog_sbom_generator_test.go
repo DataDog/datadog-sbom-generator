@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/lockfile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/stretchr/testify/assert"
@@ -158,7 +158,7 @@ func Test_scanDir_ConfigExclusionsSupportPrefixAndDoublestarMatching(t *testing.
 func Test_getDirectPackagePurls(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []lockfile.PackageDetails{
+	scannedPackages := []extractor.PackageDetails{
 		{
 			PURL:     "pkg:maven/org.example/pkg1@1.0.0",
 			IsDirect: true,
@@ -226,7 +226,7 @@ func Test_packageHasRangedVersion(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tc.includesRange, packageHasRangedVersion(lockfile.PackageDetails{Version: tc.version}))
+			assert.Equal(t, tc.includesRange, packageHasRangedVersion(extractor.PackageDetails{Version: tc.version}))
 		})
 	}
 }
@@ -234,7 +234,7 @@ func Test_packageHasRangedVersion(t *testing.T) {
 func Test_sanitizeScannedPackages_Empty(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []lockfile.PackageDetails{}
+	scannedPackages := []extractor.PackageDetails{}
 	sanitizedPackages, errors := sanitizeScannedPackages(scannedPackages)
 
 	assert.Empty(t, sanitizedPackages)
@@ -244,7 +244,7 @@ func Test_sanitizeScannedPackages_Empty(t *testing.T) {
 func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []lockfile.PackageDetails{
+	scannedPackages := []extractor.PackageDetails{
 		{Version: InvalidRangedVersion1},
 		{Version: InvalidRangedVersion2},
 		{Version: InvalidRangedVersion3},
@@ -259,7 +259,7 @@ func Test_sanitizeScannedPackages_RangedVersionAreFiltered(t *testing.T) {
 func Test_sanitizeScannedPackages_VersionRangesAreAllowed(t *testing.T) {
 	t.Parallel()
 
-	scannedPackages := []lockfile.PackageDetails{
+	scannedPackages := []extractor.PackageDetails{
 		{
 			Name:         "requests",
 			VersionRange: ">=2.0,<3.0",

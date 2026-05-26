@@ -50,11 +50,11 @@ Enriches extracted packages from a source file (e.g., `Cargo.toml` enriches `Car
 
 ### Registration
 
-Extractors self-register via `init()` calling `lockfile.RegisterExtractor()`. The `pkg/lockfile/parsers/parsers.go` file blank-imports all language packages.
+Extractors self-register via `init()` calling `lockfile.RegisterExtractor()`. The `pkg/extractor/parsers/parsers.go` file blank-imports all language packages.
 
 ## Adding a New Parser
 
-1. Create `pkg/lockfile/{language}/` with:
+1. Create `pkg/extractor/{language}/` with:
    - `types.go` - struct definitions, constants
    - `parse-{lockfile}.go` - Extractor implementation + `init()` registration
    - `match-{source}.go` - Matcher implementation (if enrichment from source file is needed)
@@ -63,10 +63,10 @@ Extractors self-register via `init()` calling `lockfile.RegisterExtractor()`. Th
    - `lockfile.go` - `ParsedFilePath` constant for the lockfile name
    - `package_manager.go` - `PackageManager` constant + entry in `PackageManagerToLanguage`
    - `ecosystem.go` - `Ecosystem` constant if new ecosystem
-3. Add blank import in `pkg/lockfile/parsers/parsers.go`
-4. Add test fixtures in `pkg/lockfile/fixtures/`
+3. Add blank import in `pkg/extractor/parsers/parsers.go`
+4. Add test fixtures in `pkg/extractor/fixtures/`
 
-Reference implementation: `pkg/lockfile/rust/` (simple, clean, has both extractor and matcher).
+Reference implementation: `pkg/extractor/rust/` (simple, clean, has both extractor and matcher).
 
 ## Testing Patterns
 
