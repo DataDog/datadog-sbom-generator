@@ -174,6 +174,56 @@ NPM, Yarn and PNPM have workspace support
 - When Xcode writes the lockfile at `.swiftpm/configuration/Package.resolved`, `Package.swift` enrichment is not available because the manifest is two directory levels above the lockfile.
 - `IsDirect` is only set for packages declared with a URL in `Package.swift`. Registry-based dependencies (`.package(id: ...)`) are always reported as transitive.
 
+## Using as a Go library
+
+In addition to the CLI binary, `datadog-sbom-generator` can be imported as a Go library.
+
+### Installation
+
+```bash
+go get github.com/DataDog/datadog-sbom-generator/pkg/sbomgen
+```
+
+### Usage
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/DataDog/datadog-sbom-generator/pkg/sbomgen"
+)
+
+func main() {
+    result, err := sbomgen.GenerateSBOM([]string{"/path/to/repo"}, sbomgen.DefaultOptions())
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(string(result)) // CycloneDX 1.5 JSON
+}
+```
+
+### API
+
+#### `GenerateSBOM(dirs []string, opts Options) ([]byte, error)`
+
+Scans the given directories for lockfiles and returns a CycloneDX 1.5 SBOM as pretty-printed JSON bytes.
+
+Returns an error if `dirs` is empty or if the scan fails.
+
+#### `DefaultOptions() Options`
+
+Returns sensible defaults: recursive scanning enabled, no path exclusions.
+
+#### `Options`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Recursive` | `bool` | Scan subdirectories recursively (default: `true`) |
+| `ExcludePaths` | `[]string` | Glob patterns to exclude from scanning |
+
 ## Contributing
 
 Contributions are welcome! You can contribute by:
