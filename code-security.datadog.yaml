@@ -1,5 +1,5 @@
 schema-version: v1.1
 sca:
   ignore-paths:
-    - pkg/lockfile/fixtures/**
+    - pkg/extractor/fixtures/**
     - cmd/datadog-sbom-generator/fixtures/**
