@@ -218,40 +218,41 @@ func TestGetBuildFileTrees_EmptySBOM(t *testing.T) {
 	}
 }
 
-func TestDefaultFileTypeFromFilename(t *testing.T) {
+func TestFileTypeFromBasename(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		filename string
 		expected FileType
-		found    bool
 	}{
-		{"Cargo.toml", FileTypeCargoToml, true},
-		{"package.json", FileTypePackageJSON, true},
-		{"pom.xml", FileTypePomXML, true},
-		{"build.gradle", FileTypeBuildGradle, true},
-		{"build.gradle.kts", FileTypeBuildGradleKts, true},
-		{"composer.json", FileTypeComposerJSON, true},
-		{"Gemfile", FileTypeGemfile, true},
-		{"Package.swift", FileTypePackageSwift, true},
-		{"pyproject.toml", FileTypePyprojectToml, true},
-		{"Pipfile", FileTypePipfile, true},
-		{"requirements.txt", FileTypeRequirementsTxt, true},
-		{"myapp.csproj", FileTypeCsproj, true},
-		{"Some.Other.csproj", FileTypeCsproj, true},
-		// Unknown files
-		{"unknown.txt", "", false},
-		{"Cargo.lock", "", false},
-		{"yarn.lock", "", false},
+		// Known exact types: FileType is the basename itself.
+		{"Cargo.toml", FileTypeCargoToml},
+		{"package.json", FileTypePackageJSON},
+		{"pom.xml", FileTypePomXML},
+		{"build.gradle", FileTypeBuildGradle},
+		{"build.gradle.kts", FileTypeBuildGradleKts},
+		{"composer.json", FileTypeComposerJSON},
+		{"Gemfile", FileTypeGemfile},
+		{"Package.swift", FileTypePackageSwift},
+		{"pyproject.toml", FileTypePyprojectToml},
+		{"Pipfile", FileTypePipfile},
+		{"requirements.txt", FileTypeRequirementsTxt},
+		// Dynamic suffix types: normalised to their constant.
+		{"myapp.csproj", FileTypeCsproj},
+		{"Some.Other.csproj", FileTypeCsproj},
+		// requirements variants: normalised to FileTypeRequirementsTxt.
+		{"requirements-dev.txt", FileTypeRequirementsTxt},
+		{"requirements-test.txt", FileTypeRequirementsTxt},
+		{"requirements_prod.txt", FileTypeRequirementsTxt},
+		// Unknown files: returned as-is.
+		{"unknown.txt", FileType("unknown.txt")},
+		{"Cargo.lock", FileType("Cargo.lock")},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.filename, func(t *testing.T) {
 			t.Parallel()
-			ft, ok := fileTypeFromBasename(tt.filename)
-			if ok != tt.found {
-				t.Errorf("fileTypeFromBasename(%q) found=%v, want %v", tt.filename, ok, tt.found)
-			}
+			ft := fileTypeFromBasename(tt.filename)
 			if ft != tt.expected {
 				t.Errorf("fileTypeFromBasename(%q) = %q, want %q", tt.filename, ft, tt.expected)
 			}
@@ -295,9 +296,47 @@ func TestGetBuildFileTrees_CsprojWildcard(t *testing.T) {
 	}
 }
 
-func TestGetBuildFileTrees_UnknownManifestIgnored(t *testing.T) {
+func TestGetBuildFileTrees_RequirementsVariantsNormalized(t *testing.T) {
 	t.Parallel()
 
+	// requirements-dev.txt and requirements-test.txt are valid manifests
+	// produced by RequirementsTxtExtractor; they must be reachable via the
+	// FileTypeRequirementsTxt filter, not silently excluded.
+	comp1 := componentWithOccurrences("requests", "2.31.0",
+		makeLocation("requirements-dev.txt", "manifest"),
+	)
+	comp2 := componentWithOccurrences("pytest", "7.0.0",
+		makeLocation("requirements-test.txt", "manifest"),
+	)
+	comp3 := componentWithOccurrences("flask", "3.0.0",
+		makeLocation("requirements.txt", "manifest"),
+	)
+	sbom := makeSBOM([]cyclonedx.Component{comp1, comp2, comp3})
+
+	// Unfiltered: all three collapse to FileTypeRequirementsTxt.
+	result := GetBuildFileTrees(sbom)
+	if len(result) != 3 {
+		t.Fatalf("expected 3 entries, got %d: %v", len(result), result)
+	}
+	for _, path := range []string{"requirements-dev.txt", "requirements-test.txt", "requirements.txt"} {
+		bf := BuildFile{FileType: FileTypeRequirementsTxt, FilePath: path}
+		if _, ok := result[bf]; !ok {
+			t.Errorf("expected key %+v not found in result: %v", bf, result)
+		}
+	}
+
+	// Filtered: all three are returned when filtering by FileTypeRequirementsTxt.
+	filtered := GetBuildFileTrees(sbom, FileTypeRequirementsTxt)
+	if len(filtered) != 3 {
+		t.Fatalf("filtered: expected 3 entries, got %d: %v", len(filtered), filtered)
+	}
+}
+
+func TestGetBuildFileTrees_UnknownManifestIncluded(t *testing.T) {
+	t.Parallel()
+
+	// Any file the SBOM marks as role=manifest is included, even if its type
+	// is not one of the known FileType constants. The FileType is the basename.
 	comp := componentWithOccurrences("something", "1.0.0",
 		makeLocation("unknown-manifest.xyz", "manifest"),
 	)
@@ -305,7 +344,8 @@ func TestGetBuildFileTrees_UnknownManifestIgnored(t *testing.T) {
 
 	result := GetBuildFileTrees(sbom)
 
-	if len(result) != 0 {
-		t.Errorf("expected empty map for unknown manifest type, got %v", result)
+	expected := BuildFile{FileType: FileType("unknown-manifest.xyz"), FilePath: "unknown-manifest.xyz"}
+	if _, ok := result[expected]; !ok {
+		t.Errorf("expected unknown manifest type to be included, got: %v", result)
 	}
 }

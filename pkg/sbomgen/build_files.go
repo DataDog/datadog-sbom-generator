@@ -26,22 +26,6 @@ const (
 	FileTypeCsproj          FileType = "*.csproj"
 )
 
-// exactFileTypes maps exact basenames to their FileType.
-// build.gradle.kts is checked before build.gradle to avoid false matches.
-var exactFileTypes = map[string]FileType{
-	"pom.xml":          FileTypePomXML,
-	"Cargo.toml":       FileTypeCargoToml,
-	"package.json":     FileTypePackageJSON,
-	"build.gradle.kts": FileTypeBuildGradleKts,
-	"build.gradle":     FileTypeBuildGradle,
-	"composer.json":    FileTypeComposerJSON,
-	"Gemfile":          FileTypeGemfile,
-	"Package.swift":    FileTypePackageSwift,
-	"pyproject.toml":   FileTypePyprojectToml,
-	"Pipfile":          FileTypePipfile,
-	"requirements.txt": FileTypeRequirementsTxt,
-}
-
 // BuildFile identifies a build/manifest file within a repository.
 type BuildFile struct {
 	FileType FileType
@@ -49,19 +33,22 @@ type BuildFile struct {
 	RepoPath string // absolute filesystem path of the repo root (empty when not available)
 }
 
-// fileTypeFromBasename returns the FileType for the given filename base,
-// or ("", false) if the filename is not a recognized manifest type.
-func fileTypeFromBasename(basename string) (FileType, bool) {
-	// Check exact matches first.
-	if ft, ok := exactFileTypes[basename]; ok {
-		return ft, true
-	}
-	// Wildcard: *.csproj
+// fileTypeFromBasename returns the FileType for the given filename basename.
+// For most files it is derived directly from the name (e.g. "Cargo.toml").
+// Dynamic-name types with a known suffix or prefix pattern are normalised to
+// their corresponding constant so callers can filter by FileType reliably:
+//   - "*.csproj"            → FileTypeCsproj
+//   - "requirements*.txt"   → FileTypeRequirementsTxt
+func fileTypeFromBasename(basename string) FileType {
 	if strings.HasSuffix(basename, ".csproj") {
-		return FileTypeCsproj, true
+		return FileTypeCsproj
 	}
 
-	return "", false
+	if strings.HasPrefix(basename, "requirements") && strings.HasSuffix(basename, ".txt") {
+		return FileTypeRequirementsTxt
+	}
+
+	return FileType(basename)
 }
 
 // occurrenceLocation is the subset of models.PackageLocations we need to parse
@@ -112,15 +99,11 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 				continue
 			}
 
-			if loc.Block.Role == "lockfile" || loc.Block.FileName == "" {
+			if loc.Block.Role != "manifest" || loc.Block.FileName == "" {
 				continue
 			}
 
-			basename := filepath.Base(loc.Block.FileName)
-			ft, ok := fileTypeFromBasename(basename)
-			if !ok {
-				continue
-			}
+			ft := fileTypeFromBasename(filepath.Base(loc.Block.FileName))
 
 			if len(filterSet) > 0 {
 				if _, match := filterSet[ft]; !match {
