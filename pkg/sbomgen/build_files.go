@@ -63,8 +63,14 @@ type occurrenceLocation struct {
 // GetBuildFileTrees parses a CycloneDX JSON SBOM and returns a map of all
 // manifest build files found in component evidence occurrences.
 //
-// Each map key is a deduplicated BuildFile. Map values are empty slices
-// (reserved for future transitive dependency tree support).
+// Build files are grouped by FileType and dispatched to a registered
+// BuildFileProcessor for that type. Each processor receives deduplicated
+// BuildFiles of its type and returns them enriched with their related files
+// (e.g. sub-modules, parent POMs). Results from all processors are merged
+// into the returned map.
+//
+// If no processor is registered for a FileType, a no-op processor is used
+// that returns each file with an empty children slice.
 //
 // If filters are provided, only BuildFiles whose FileType matches one of
 // the filters are included.
@@ -88,6 +94,10 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 	for _, f := range filters {
 		filterSet[f] = struct{}{}
 	}
+
+	// Collect build files grouped by FileType, deduplicating across components.
+	grouped := make(map[FileType][]BuildFile)
+	seen := make(map[BuildFile]struct{})
 
 	for _, comp := range *bom.Components {
 		if comp.Evidence == nil || comp.Evidence.Occurrences == nil {
@@ -115,9 +125,21 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 				FileType: ft,
 				FilePath: loc.Block.FileName,
 			}
-			if _, exists := result[bf]; !exists {
-				result[bf] = []BuildFile{}
+			if _, exists := seen[bf]; !exists {
+				seen[bf] = struct{}{}
+				grouped[ft] = append(grouped[ft], bf)
 			}
+		}
+	}
+
+	// Dispatch each group to its registered processor and merge the results.
+	for ft, files := range grouped {
+		p, ok := processors[ft]
+		if !ok {
+			p = noopProcessor{}
+		}
+		for bf, children := range p.Process(files) {
+			result[bf] = children
 		}
 	}
 

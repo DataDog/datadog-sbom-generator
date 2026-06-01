@@ -349,3 +349,53 @@ func TestGetBuildFileTrees_UnknownManifestIncluded(t *testing.T) {
 		t.Errorf("expected unknown manifest type to be included, got: %v", result)
 	}
 }
+
+// stubbedProcessor is a BuildFileProcessor that records received files and
+// returns them with a fixed sentinel child for easy assertion in tests.
+type stubbedProcessor struct {
+	received []BuildFile
+	child    BuildFile
+}
+
+func (p *stubbedProcessor) Process(files []BuildFile) map[BuildFile][]BuildFile {
+	p.received = append(p.received, files...)
+	result := make(map[BuildFile][]BuildFile, len(files))
+	for _, f := range files {
+		result[f] = []BuildFile{p.child}
+	}
+
+	return result
+}
+
+//nolint:paralleltest // mutates the global processors registry; cannot run in parallel
+func TestGetBuildFileTrees_RegisteredProcessorIsCalled(t *testing.T) {
+	sentinel := BuildFile{FileType: FileType("sentinel"), FilePath: "sentinel"}
+	stub := &stubbedProcessor{child: sentinel}
+
+	const testType FileType = "test-manifest.xyz"
+	RegisterBuildFileProcessor(testType, stub)
+	defer delete(processors, testType)
+
+	comp := componentWithOccurrences("pkg", "1.0.0",
+		makeLocation("test-manifest.xyz", "manifest"),
+	)
+	sbom := makeSBOM([]cyclonedx.Component{comp})
+
+	result := GetBuildFileTrees(sbom)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 entry, got %d: %v", len(result), result)
+	}
+
+	expected := BuildFile{FileType: testType, FilePath: "test-manifest.xyz"}
+	children, ok := result[expected]
+	if !ok {
+		t.Fatalf("expected key %+v not found", expected)
+	}
+	if len(children) != 1 || children[0] != sentinel {
+		t.Errorf("expected sentinel child, got %v", children)
+	}
+	if len(stub.received) != 1 || stub.received[0] != expected {
+		t.Errorf("processor received unexpected files: %v", stub.received)
+	}
+}
