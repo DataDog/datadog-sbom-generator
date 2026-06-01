@@ -48,6 +48,10 @@ type ScannerActions struct {
 	ManifestParsers     bool
 	DDEnvVars           DDEnvVars
 	ExitOnConfigFailure bool
+	// ExtractMavenPomArtifactIds controls whether Maven pom.xml artifact IDs
+	// and parent dependency relationships are extracted and included in the SBOM.
+	// When false, ScannedArtifact entries are never produced.
+	ExtractMavenPomArtifactIds bool
 }
 
 type DDEnvVars struct {
@@ -78,7 +82,7 @@ var ErrAPIFailed = models.ErrAPIFailed
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string) ([]extractor.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string, extractMavenPomArtifactIds bool) ([]extractor.PackageDetails, []models.ScannedArtifact, error) {
 	scanRoot := dir
 	// Normalize the scan root once before exclusion matching.
 	if absPath, err := filepath.Abs(dir); err == nil {
@@ -150,7 +154,7 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 					return nil
 				}
 
-				context := extractor.ScanContext{EnabledParsers: enabledParsers, RootDir: dir, Reporter: r}
+				context := extractor.ScanContext{EnabledParsers: enabledParsers, RootDir: dir, Reporter: r, ExtractMavenPomArtifactIds: extractMavenPomArtifactIds}
 				pkgs, artifact, err := scanLockfile(path, context)
 				if err != nil {
 					r.Warnf("Attempted to scan lockfile but failed: %s (%v)\n", path, err.Error())
@@ -299,7 +303,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			absolutePath = absPath
 		}
 		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
-		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, configExcludePaths)
+		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, configExcludePaths, actions.ExtractMavenPomArtifactIds)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}

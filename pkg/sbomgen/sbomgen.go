@@ -30,14 +30,20 @@ type Options struct {
 
 	// ExcludePaths is a list of glob patterns to exclude from scanning.
 	ExcludePaths []string
+
+	// ExtractMavenPomArtifactIds controls whether Maven pom.xml artifact IDs
+	// and parent dependency relationships are extracted and included in the SBOM.
+	// Defaults to true in DefaultOptions.
+	ExtractMavenPomArtifactIds bool
 }
 
 // DefaultOptions returns Options with sensible defaults:
-// recursive scanning enabled and no exclusions.
+// recursive scanning enabled, no exclusions, and artifact extraction enabled.
 func DefaultOptions() Options {
 	return Options{
-		Recursive:    true,
-		ExcludePaths: []string{},
+		Recursive:                  true,
+		ExcludePaths:               []string{},
+		ExtractMavenPomArtifactIds: true,
 	}
 }
 
@@ -51,9 +57,10 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 	}
 
 	actions := scanner.ScannerActions{
-		DirectoryPaths: dirs,
-		ExcludePaths:   opts.ExcludePaths,
-		Recursive:      opts.Recursive,
+		DirectoryPaths:             dirs,
+		ExcludePaths:               opts.ExcludePaths,
+		Recursive:                  opts.Recursive,
+		ExtractMavenPomArtifactIds: opts.ExtractMavenPomArtifactIds,
 	}
 
 	r := reporter.NewCycloneDXReporter(&bytes.Buffer{}, &bytes.Buffer{}, reporter.WarnLevel)
