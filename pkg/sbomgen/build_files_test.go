@@ -92,15 +92,15 @@ func TestGetBuildFileTrees_ManifestOnly(t *testing.T) {
 		FileType: FileTypeCargoToml,
 		FilePath: "Cargo.toml",
 	}
-	val, ok := result[expected]
+	rel, ok := result[expected]
 	if !ok {
 		t.Fatalf("expected key %+v not found in result: %v", expected, result)
 	}
-	if val == nil {
-		t.Error("expected non-nil empty slice, got nil")
+	if rel.Dependencies == nil {
+		t.Error("expected non-nil Dependencies slice, got nil")
 	}
-	if len(val) != 0 {
-		t.Errorf("expected empty children slice, got %v", val)
+	if len(rel.Dependencies) != 0 {
+		t.Errorf("expected empty Dependencies slice, got %v", rel.Dependencies)
 	}
 }
 
@@ -163,12 +163,12 @@ func TestGetBuildFileTrees_NoFilter(t *testing.T) {
 		{FileType: FileTypeCargoToml, FilePath: "Cargo.toml"},
 		{FileType: FileTypePackageJSON, FilePath: "package.json"},
 	} {
-		val, ok := result[expected]
+		rel, ok := result[expected]
 		if !ok {
 			t.Errorf("expected key %+v not found", expected)
 		}
-		if val == nil {
-			t.Errorf("expected non-nil slice for %+v", expected)
+		if rel.Dependencies == nil {
+			t.Errorf("expected non-nil Dependencies slice for %+v", expected)
 		}
 	}
 }
@@ -350,6 +350,53 @@ func TestGetBuildFileTrees_UnknownManifestIncluded(t *testing.T) {
 	}
 }
 
+// fileTypeComponent creates a CycloneDX component of type "file" with the given
+// BOMRef/Name, as produced by ExtractMavenPomArtifactIds for manifest files.
+func fileTypeComponent(filename string) cyclonedx.Component {
+	return cyclonedx.Component{
+		Type:   cyclonedx.ComponentTypeFile,
+		BOMRef: filename,
+		Name:   filename,
+	}
+}
+
+func TestGetBuildFileTrees_FileTypeComponentCollected(t *testing.T) {
+	t.Parallel()
+
+	// A file-type component with no evidence occurrences (e.g. a parent POM that
+	// declares no dependencies and never appears in package occurrence locations).
+	comp := fileTypeComponent("pom.xml")
+	sbom := makeSBOM([]cyclonedx.Component{comp})
+
+	result := GetBuildFileTrees(sbom, FileTypePomXML)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 build file from file-type component, got %d: %v", len(result), result)
+	}
+	expected := BuildFile{FileType: FileTypePomXML, FilePath: "pom.xml"}
+	if _, ok := result[expected]; !ok {
+		t.Errorf("expected key %+v not found in result: %v", expected, result)
+	}
+}
+
+func TestGetBuildFileTrees_FileTypeComponentDeduplicatedWithOccurrence(t *testing.T) {
+	t.Parallel()
+
+	// When the same file appears both as a file-type component and in an
+	// occurrence of a package component, it must be deduplicated to one entry.
+	fileComp := fileTypeComponent("pom.xml")
+	pkgComp := componentWithOccurrences("com.example:child", "1.0.0",
+		makeLocation("pom.xml", "manifest"),
+	)
+	sbom := makeSBOM([]cyclonedx.Component{fileComp, pkgComp})
+
+	result := GetBuildFileTrees(sbom, FileTypePomXML)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 deduplicated entry, got %d: %v", len(result), result)
+	}
+}
+
 // stubbedProcessor is a BuildFileProcessor that records received files and
 // returns them with a fixed sentinel child for easy assertion in tests.
 type stubbedProcessor struct {
@@ -357,11 +404,11 @@ type stubbedProcessor struct {
 	child    BuildFile
 }
 
-func (p *stubbedProcessor) Process(files []BuildFile) map[BuildFile][]BuildFile {
+func (p *stubbedProcessor) Process(files []BuildFile, _ ProcessorContext) map[BuildFile]BuildFileRelations {
 	p.received = append(p.received, files...)
-	result := make(map[BuildFile][]BuildFile, len(files))
+	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
-		result[f] = []BuildFile{p.child}
+		result[f] = BuildFileRelations{Dependencies: []BuildFile{p.child}}
 	}
 
 	return result
@@ -388,12 +435,12 @@ func TestGetBuildFileTrees_RegisteredProcessorIsCalled(t *testing.T) {
 	}
 
 	expected := BuildFile{FileType: testType, FilePath: "test-manifest.xyz"}
-	children, ok := result[expected]
+	rel, ok := result[expected]
 	if !ok {
 		t.Fatalf("expected key %+v not found", expected)
 	}
-	if len(children) != 1 || children[0] != sentinel {
-		t.Errorf("expected sentinel child, got %v", children)
+	if len(rel.Dependencies) != 1 || rel.Dependencies[0] != sentinel {
+		t.Errorf("expected sentinel dependency, got %v", rel.Dependencies)
 	}
 	if len(stub.received) != 1 || stub.received[0] != expected {
 		t.Errorf("processor received unexpected files: %v", stub.received)

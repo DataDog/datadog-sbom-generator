@@ -19,6 +19,14 @@ const (
 	fileComponentType    = "file"
 )
 
+const (
+	// mavenParentPomProperty is a CycloneDX component property that records the
+	// path of the parent POM for a Maven file-type component. It unambiguously
+	// identifies the <parent> relationship, as opposed to ordinary module
+	// dependencies that also appear in the bom.Dependencies section.
+	mavenParentPomProperty = "maven:parentPom"
+)
+
 var SeverityMapper = map[models.SeverityType]cyclonedx.ScoringMethod{
 	models.SeverityCVSSV2: cyclonedx.ScoringMethodCVSSv2,
 	models.SeverityCVSSV3: cyclonedx.ScoringMethodCVSSv3,

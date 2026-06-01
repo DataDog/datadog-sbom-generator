@@ -284,19 +284,22 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 		}
 
 		component := cyclonedx.Component{}
-		properties := make([]cyclonedx.Property, 1)
 		component.Name = artifact.Filename
 		component.BOMRef = artifact.Filename
 		component.Type = fileComponentType
-		properties[0] = cyclonedx.Property{
-			Name:  "osv-scanner:package",
-			Value: artifactPURL.String(),
+		properties := []cyclonedx.Property{
+			{Name: "osv-scanner:package", Value: artifactPURL.String()},
 		}
-		component.Properties = &properties
-		components[component.BOMRef] = component
-
 		// Computing parent dependency
 		if artifact.DependsOn != nil {
+			// Record the parent POM as an explicit property so consumers can
+			// unambiguously identify the <parent> relationship without confusing
+			// it with ordinary module-dependency edges added by createFileComponents.
+			properties = append(properties, cyclonedx.Property{
+				Name:  mavenParentPomProperty,
+				Value: artifact.DependsOn.Filename,
+			})
+
 			if dependency, ok := dependsOn[artifact.Filename]; ok {
 				dependencies := append(*dependency.Dependencies, artifact.DependsOn.Filename)
 				slices.Sort(dependencies)
@@ -312,6 +315,9 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 				}
 			}
 		}
+
+		component.Properties = &properties
+		components[component.BOMRef] = component
 	}
 
 	return components, dependsOn

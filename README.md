@@ -201,7 +201,16 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Println(string(result)) // CycloneDX 1.5 JSON
+    fmt.Println(string(sbom)) // CycloneDX 1.5 JSON
+
+    // Extract the manifest build files and their transitive dependencies.
+    buildFiles := sbomgen.GetBuildFileTrees(sbom)
+    for bf, rels := range buildFiles {
+        fmt.Printf("[%s] %s (id: %s)\n", bf.FileType, bf.FilePath, rels.ID)
+        for _, dep := range rels.Dependencies {
+            fmt.Printf("  dep: %s\n", dep.FilePath)
+        }
+    }
 }
 ```
 
@@ -213,16 +222,31 @@ Scans the given directories for lockfiles and returns a CycloneDX 1.5 SBOM as pr
 
 Returns an error if `dirs` is empty or if the scan fails.
 
+#### `GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFileRelations`
+
+Parses a CycloneDX SBOM (as returned by `GenerateSBOM`) and returns all manifest build files enriched with their transitive dependencies.
+
+Each `BuildFile` carries the file type (e.g. `FileTypePomXML`) and its path relative to the repository root. Each `BuildFileRelations` value holds an `ID` string (ecosystem-specific identifier, e.g. Maven "groupId:artifactId") and a `Dependencies` slice containing all transitively reachable build files sorted by file path.
+
+Pass one or more `FileType` constants to restrict the result to a specific ecosystem:
+
+```go
+// Only pom.xml files, with Maven transitive dependencies resolved.
+mavenFiles := sbomgen.GetBuildFileTrees(sbom, sbomgen.FileTypePomXML)
+```
+
+
 #### `DefaultOptions() Options`
 
 Returns sensible defaults: recursive scanning enabled, no path exclusions.
 
 #### `Options`
 
-| Field          | Type       | Description                                       |
-| -------------- | ---------- | ------------------------------------------------- |
-| `Recursive`    | `bool`     | Scan subdirectories recursively (default: `true`) |
-| `ExcludePaths` | `[]string` | Glob patterns to exclude from scanning            |
+| Field                      | Type       | Description                                                                                  |
+| -------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| `Recursive`                | `bool`     | Scan subdirectories recursively (default: `true`)                                            |
+| `ExcludePaths`             | `[]string` | Glob patterns to exclude from scanning                                                       |
+| `ExtractMavenPomArtifactIds` | `bool`   | Emit file-type components and dependency edges for Maven POMs, enabling `GetBuildFileTrees` dependency and ID resolution (default: `true`) |
 
 ## Contributing
 

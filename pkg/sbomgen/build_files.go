@@ -51,6 +51,24 @@ func fileTypeFromBasename(basename string) FileType {
 	return FileType(basename)
 }
 
+// addBuildFile adds a build file identified by filePath to the grouped map if it
+// passes the filterSet check and has not been seen before.
+func addBuildFile(filePath string, filterSet map[FileType]struct{}, seen map[BuildFile]struct{}, grouped map[FileType][]BuildFile) {
+	ft := fileTypeFromBasename(filepath.Base(filePath))
+
+	if len(filterSet) > 0 {
+		if _, match := filterSet[ft]; !match {
+			return
+		}
+	}
+
+	bf := BuildFile{FileType: ft, FilePath: filePath}
+	if _, exists := seen[bf]; !exists {
+		seen[bf] = struct{}{}
+		grouped[ft] = append(grouped[ft], bf)
+	}
+}
+
 // occurrenceLocation is the subset of models.PackageLocations we need to parse
 // from the SBOM occurrence location JSON string.
 type occurrenceLocation struct {
@@ -61,21 +79,22 @@ type occurrenceLocation struct {
 }
 
 // GetBuildFileTrees parses a CycloneDX JSON SBOM and returns a map of all
-// manifest build files found in component evidence occurrences.
+// manifest build files found in component evidence occurrences, each enriched
+// with its resolved relationships (parent, children).
 //
 // Build files are grouped by FileType and dispatched to a registered
 // BuildFileProcessor for that type. Each processor receives deduplicated
-// BuildFiles of its type and returns them enriched with their related files
-// (e.g. sub-modules, parent POMs). Results from all processors are merged
-// into the returned map.
+// BuildFiles of its type and a ProcessorContext derived from the SBOM
+// dependencies section, and returns the files enriched with their
+// relationships. Results from all processors are merged into the returned map.
 //
 // If no processor is registered for a FileType, a no-op processor is used
-// that returns each file with an empty children slice.
+// that returns each file with empty relations.
 //
 // If filters are provided, only BuildFiles whose FileType matches one of
 // the filters are included.
-func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFile {
-	result := make(map[BuildFile][]BuildFile)
+func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFileRelations {
+	result := make(map[BuildFile]BuildFileRelations)
 
 	if len(sbom) == 0 {
 		return result
@@ -100,6 +119,14 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 	seen := make(map[BuildFile]struct{})
 
 	for _, comp := range *bom.Components {
+		// File-type components (produced by ExtractMavenPomArtifactIds) represent
+		// build/manifest files directly. Their BOMRef is the filename relative to
+		// the repo root. Collect them so parent POMs with no package occurrences
+		// are never missed.
+		if comp.Type == cyclonedx.ComponentTypeFile && comp.BOMRef != "" {
+			addBuildFile(comp.BOMRef, filterSet, seen, grouped)
+		}
+
 		if comp.Evidence == nil || comp.Evidence.Occurrences == nil {
 			continue
 		}
@@ -113,24 +140,12 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 				continue
 			}
 
-			ft := fileTypeFromBasename(filepath.Base(loc.Block.FileName))
-
-			if len(filterSet) > 0 {
-				if _, match := filterSet[ft]; !match {
-					continue
-				}
-			}
-
-			bf := BuildFile{
-				FileType: ft,
-				FilePath: loc.Block.FileName,
-			}
-			if _, exists := seen[bf]; !exists {
-				seen[bf] = struct{}{}
-				grouped[ft] = append(grouped[ft], bf)
-			}
+			addBuildFile(loc.Block.FileName, filterSet, seen, grouped)
 		}
 	}
+
+	// Build the ProcessorContext from the SBOM dependencies section.
+	ctx := buildProcessorContext(&bom)
 
 	// Dispatch each group to its registered processor and merge the results.
 	for ft, files := range grouped {
@@ -138,10 +153,100 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile][]BuildFi
 		if !ok {
 			p = noopProcessor{}
 		}
-		for bf, children := range p.Process(files) {
-			result[bf] = children
+		for bf, rels := range p.Process(files, ctx) {
+			result[bf] = rels
 		}
 	}
 
 	return result
+}
+
+// mavenParentPomProperty is the CycloneDX component property name that records
+// the parent POM path for a Maven file-type component. It mirrors the constant
+// in internal/output/sbom/models.go; kept here to avoid an internal→pkg import
+// cycle.
+const mavenParentPomProperty = "maven:parentPom"
+
+// osvScannerPackageProperty is the CycloneDX component property name that
+// records the package URL for a file-type component. For Maven components the
+// purl format is "pkg:maven/{groupId}/{artifactId}@{version}".
+const osvScannerPackageProperty = "osv-scanner:package"
+
+// buildProcessorContext extracts enrichment data from the SBOM into a
+// ProcessorContext.
+//
+// MavenParents is populated from the "maven:parentPom" property on file-type
+// components — the authoritative signal for Maven <parent> relationships.
+//
+// FileDependencies is populated from bom.Dependencies for processors that need
+// the raw dependency graph (note: for Maven, this section mixes parent edges
+// with ordinary module-dependency edges and must not be used for parent
+// resolution).
+// parseMavenArtifactID extracts "groupId:artifactId" from a Maven purl.
+// For example, "pkg:maven/com.example/my-module@1.0" yields "com.example:my-module".
+// Returns "" if the purl is not a Maven purl or cannot be parsed.
+func parseMavenArtifactID(purl string) string {
+	const prefix = "pkg:maven/"
+	if !strings.HasPrefix(purl, prefix) {
+		return ""
+	}
+	rest := purl[len(prefix):]
+
+	// Split into groupId/artifactId[@version]
+	slash := strings.IndexByte(rest, '/')
+	if slash < 0 {
+		return ""
+	}
+	groupID := rest[:slash]
+	artifactAndVersion := rest[slash+1:]
+
+	// Strip @version if present.
+	artifactID := artifactAndVersion
+	if at := strings.IndexByte(artifactAndVersion, '@'); at >= 0 {
+		artifactID = artifactAndVersion[:at]
+	}
+
+	if groupID == "" || artifactID == "" {
+		return ""
+	}
+
+	return groupID + ":" + artifactID
+}
+
+func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
+	ctx := ProcessorContext{
+		FileDependencies: make(map[string][]string),
+		MavenParents:     make(map[string]string),
+		MavenArtifactIDs: make(map[string]string),
+	}
+
+	for _, comp := range *bom.Components {
+		if comp.Type != cyclonedx.ComponentTypeFile || comp.Properties == nil {
+			continue
+		}
+		for _, prop := range *comp.Properties {
+			if prop.Name == mavenParentPomProperty && prop.Value != "" {
+				ctx.MavenParents[comp.BOMRef] = prop.Value
+			}
+			if prop.Name == osvScannerPackageProperty && prop.Value != "" {
+				if id := parseMavenArtifactID(prop.Value); id != "" {
+					ctx.MavenArtifactIDs[comp.BOMRef] = id
+				}
+			}
+		}
+	}
+
+	if bom.Dependencies == nil {
+		return ctx
+	}
+
+	for _, dep := range *bom.Dependencies {
+		if dep.Dependencies == nil {
+			continue
+		}
+
+		ctx.FileDependencies[dep.Ref] = *dep.Dependencies
+	}
+
+	return ctx
 }

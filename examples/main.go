@@ -1,5 +1,5 @@
 // This program demonstrates using the sbomgen library to generate a CycloneDX SBOM
-// and extract build file information from it.
+// and extract build file dependencies from it.
 //
 // Usage:
 //
@@ -56,10 +56,17 @@ func main() {
 	})
 
 	for _, bf := range keys {
+		rels := buildFiles[bf]
 		if bf.RepoPath != "" {
 			fmt.Fprintf(os.Stderr, "  [%s] %s (repo: %s)\n", bf.FileType, bf.FilePath, bf.RepoPath)
 		} else {
 			fmt.Fprintf(os.Stderr, "  [%s] %s\n", bf.FileType, bf.FilePath)
+		}
+		if rels.ID != "" {
+			fmt.Fprintf(os.Stderr, "    id: %s\n", rels.ID)
+		}
+		for _, dep := range rels.Dependencies {
+			fmt.Fprintf(os.Stderr, "    dep: %s\n", dep.FilePath)
 		}
 	}
 }
