@@ -178,6 +178,20 @@ NPM, Yarn and PNPM have workspace support
 
 In addition to the CLI binary, `datadog-sbom-generator` can be imported as a Go library.
 
+### Quick start — run the bundled example
+
+The repository ships with a ready-made example program at `examples/main.go` that you can run directly against any local directory to see the full library output:
+
+```bash
+# Scan the built-in Cargo.lock fixture (no arguments needed)
+go run examples/main.go
+
+# Scan your own repository
+go run examples/main.go /path/to/your/repo
+```
+
+The program prints the generated CycloneDX SBOM JSON to stdout and a summary of all manifest build files (with their dependencies) to stderr. It is the fastest way to verify library behaviour end-to-end without writing any code.
+
 ### Installation
 
 ```bash
@@ -235,18 +249,17 @@ Pass one or more `FileType` constants to restrict the result to a specific ecosy
 mavenFiles := sbomgen.GetBuildFileTrees(sbom, sbomgen.FileTypePomXML)
 ```
 
-
 #### `DefaultOptions() Options`
 
 Returns sensible defaults: recursive scanning enabled, no path exclusions.
 
 #### `Options`
 
-| Field                      | Type       | Description                                                                                  |
-| -------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| `Recursive`                | `bool`     | Scan subdirectories recursively (default: `true`)                                            |
-| `ExcludePaths`             | `[]string` | Glob patterns to exclude from scanning                                                       |
-| `ExtractMavenPomArtifactIds` | `bool`   | Emit file-type components and dependency edges for Maven POMs, enabling `GetBuildFileTrees` dependency and ID resolution (default: `true`) |
+| Field                        | Type       | Description                                                                                                                                |
+| ---------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Recursive`                  | `bool`     | Scan subdirectories recursively (default: `true`)                                                                                          |
+| `ExcludePaths`               | `[]string` | Glob patterns to exclude from scanning                                                                                                     |
+| `ExtractMavenPomArtifactIds` | `bool`     | Emit file-type components and dependency edges for Maven POMs, enabling `GetBuildFileTrees` dependency and ID resolution (default: `true`) |
 
 ## Contributing
 
