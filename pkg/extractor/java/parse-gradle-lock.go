@@ -3,9 +3,11 @@ package java
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -92,6 +94,59 @@ func (e GradleLockExtractor) Extract(f extractor.DepFile, context extractor.Scan
 	}
 
 	return pkgs, nil
+}
+
+// GetArtifact extracts a ScannedArtifact from a Gradle lockfile by reading the
+// project-level group assignment from the accompanying build.gradle or
+// build.gradle.kts file. The artifact name is "group:projectDirName".
+func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	if !ctx.ExtractMavenPomArtifactIds {
+		return nil, nil
+	}
+
+	group, buildFilePath := extractGradleGroup(f)
+	if group == "" {
+		return nil, nil
+	}
+
+	projectName := filepath.Base(filepath.Dir(f.Path()))
+
+	return &models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Name:      group + ":" + projectName,
+			Filename:  buildFilePath,
+			Ecosystem: models.EcosystemMaven,
+		},
+	}, nil
+}
+
+// extractGradleGroup reads the project-level group assignment from a
+// build.gradle or build.gradle.kts file adjacent to the lockfile.
+// It matches only top-level "group = 'value'" or 'group = "value"' assignments,
+// NOT dependency kwargs like "group: 'x'" or method calls like "group("x")".
+func extractGradleGroup(f extractor.DepFile) (group string, buildFilePath string) {
+	groupRegex := cachedregexp.MustCompile(`(?m)^[\t ]*group\s*=\s*['"]([^'"]+)['"]`)
+
+	for _, name := range []string{buildGradleFilename, buildGradleKtsFilename} {
+		candidate := filepath.Join(filepath.Dir(f.Path()), name)
+		df, err := f.Open(candidate)
+		if err != nil {
+			continue
+		}
+
+		content, err := io.ReadAll(df)
+		_ = df.Close()
+		if err != nil {
+			continue
+		}
+
+		matches := groupRegex.FindSubmatch(content)
+		if matches != nil {
+			return string(matches[1]), candidate
+		}
+	}
+
+	return "", ""
 }
 
 var GradleExtractor = GradleLockExtractor{

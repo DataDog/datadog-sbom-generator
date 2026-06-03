@@ -16,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGradleLockExtractor_ShouldExtract(t *testing.T) {
@@ -277,6 +278,81 @@ func TestParseGradleLock_MultiplePackage(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 		},
 	})
+}
+
+func TestGradleLockExtractor_GetArtifact(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	tests := []struct {
+		name             string
+		fixturePath      string
+		expectNil        bool
+		expectedName     string
+		expectedFilename string // just the basename to check
+	}{
+		{
+			name:             "groovy_with_group",
+			fixturePath:      "../fixtures/build-gradle/with-group-groovy/gradle.lockfile",
+			expectNil:        false,
+			expectedName:     "com.example:with-group-groovy",
+			expectedFilename: "build.gradle",
+		},
+		{
+			name:             "kotlin_with_group",
+			fixturePath:      "../fixtures/build-gradle/with-group-kotlin/gradle.lockfile",
+			expectNil:        false,
+			expectedName:     "com.example:with-group-kotlin",
+			expectedFilename: "build.gradle.kts",
+		},
+		{
+			name:        "no_group",
+			fixturePath: "../fixtures/build-gradle/one-package-groovy/gradle.lockfile",
+			expectNil:   true,
+		},
+		{
+			name:        "missing_build_file",
+			fixturePath: "../fixtures/gradle-lockfile/one-pkg",
+			expectNil:   true,
+		},
+		{
+			name:        "group_in_dependency_kwarg_only",
+			fixturePath: "../fixtures/build-gradle/one-package-kotlin-extended/gradle.lockfile",
+			expectNil:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			absPath := filepath.FromSlash(filepath.Join(dir, tt.fixturePath))
+			f, err := extractor.OpenLocalDepFile(absPath)
+			if err != nil {
+				t.Fatalf("failed to open fixture %s: %v", tt.fixturePath, err)
+			}
+			defer f.Close()
+
+			ctx := extractor.ScanContext{ExtractMavenPomArtifactIds: true}
+			e := java.GradleLockExtractor{}
+			artifact, err := e.GetArtifact(f, ctx)
+
+			require.NoError(t, err)
+
+			if tt.expectNil {
+				assert.Nil(t, artifact, "expected nil artifact")
+			} else if assert.NotNil(t, artifact, "expected non-nil artifact") {
+				assert.Equal(t, tt.expectedName, artifact.Name)
+				assert.Contains(t, artifact.Filename, tt.expectedFilename)
+				assert.Equal(t, models.EcosystemMaven, artifact.Ecosystem)
+				assert.Nil(t, artifact.DependsOn)
+			}
+		})
+	}
 }
 
 func TestParseGradleLock_WithInvalidLines(t *testing.T) {
