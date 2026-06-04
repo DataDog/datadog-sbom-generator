@@ -173,12 +173,6 @@ const mavenParentPomProperty = "datadog:maven-parent-pom"
 // cycle.
 const mavenPackageProperty = "datadog:maven-package"
 
-// buildProcessorContext extracts enrichment data from the SBOM into a
-// ProcessorContext.
-//
-// FileDependencies is populated from bom.Dependencies for processors that need
-// the raw dependency graph.
-//
 // parseMavenArtifactID extracts "groupId:artifactId" from a Maven purl.
 // For example, "pkg:maven/com.example/my-module@1.0" yields "com.example:my-module".
 // Returns "" if the purl is not a Maven purl or cannot be parsed.
@@ -210,6 +204,11 @@ func parseMavenArtifactID(purl string) string {
 	return groupID + ":" + artifactID
 }
 
+// buildProcessorContext extracts enrichment data from the SBOM into a
+// ProcessorContext.
+//
+// FileDependencies is populated from bom.Dependencies for processors that need
+// the raw dependency graph.
 func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	ctx := ProcessorContext{
 		FileDependencies: make(map[string][]string),
