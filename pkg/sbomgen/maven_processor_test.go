@@ -9,7 +9,7 @@ import (
 
 // mavenFileComponent creates a file-type CycloneDX component representing a
 // pom.xml, as produced by ExtractMavenPomArtifactIds. If parentPath is
-// non-empty it sets the maven:parentPom property, encoding the <parent>
+// non-empty it sets the datadog:maven-parent-pom property, encoding the <parent>
 // relationship unambiguously.
 func mavenFileComponent(pomPath, parentPath string) cyclonedx.Component {
 	props := []cyclonedx.Property{

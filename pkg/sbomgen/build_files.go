@@ -165,7 +165,7 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 // the parent POM path for a Maven file-type component. It mirrors the constant
 // in internal/output/sbom/models.go; kept here to avoid an internal→pkg import
 // cycle.
-const mavenParentPomProperty = "maven:parentPom"
+const mavenParentPomProperty = "datadog:maven-parent-pom"
 
 // osvScannerPackageProperty is the CycloneDX component property name that
 // records the package URL for a file-type component. For Maven components the
@@ -175,13 +175,9 @@ const osvScannerPackageProperty = "osv-scanner:package"
 // buildProcessorContext extracts enrichment data from the SBOM into a
 // ProcessorContext.
 //
-// MavenParents is populated from the "maven:parentPom" property on file-type
-// components — the authoritative signal for Maven <parent> relationships.
-//
 // FileDependencies is populated from bom.Dependencies for processors that need
-// the raw dependency graph (note: for Maven, this section mixes parent edges
-// with ordinary module-dependency edges and must not be used for parent
-// resolution).
+// the raw dependency graph.
+//
 // parseMavenArtifactID extracts "groupId:artifactId" from a Maven purl.
 // For example, "pkg:maven/com.example/my-module@1.0" yields "com.example:my-module".
 // Returns "" if the purl is not a Maven purl or cannot be parsed.
@@ -216,7 +212,6 @@ func parseMavenArtifactID(purl string) string {
 func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	ctx := ProcessorContext{
 		FileDependencies: make(map[string][]string),
-		MavenParents:     make(map[string]string),
 		MavenArtifactIDs: make(map[string]string),
 	}
 
@@ -225,9 +220,6 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 			continue
 		}
 		for _, prop := range *comp.Properties {
-			if prop.Name == mavenParentPomProperty && prop.Value != "" {
-				ctx.MavenParents[comp.BOMRef] = prop.Value
-			}
 			if prop.Name == osvScannerPackageProperty && prop.Value != "" {
 				if id := parseMavenArtifactID(prop.Value); id != "" {
 					ctx.MavenArtifactIDs[comp.BOMRef] = id

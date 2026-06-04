@@ -23,13 +23,6 @@ type ProcessorContext struct {
 	// on, as declared in the SBOM dependencies section.
 	FileDependencies map[string][]string
 
-	// MavenParents maps each Maven child POM path to its parent POM path, as
-	// recorded by the "maven:parentPom" property on file-type components.
-	// This is the authoritative source for <parent> relationships because the
-	// bom.Dependencies section can mix parent edges with ordinary module
-	// dependency edges, making them indistinguishable.
-	MavenParents map[string]string
-
 	// MavenArtifactIDs maps each Maven file path to its "groupId:artifactId"
 	// string, extracted from the "osv-scanner:package" purl property on
 	// file-type components.

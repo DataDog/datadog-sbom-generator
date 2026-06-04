@@ -24,7 +24,7 @@ const (
 	// path of the parent POM for a Maven file-type component. It unambiguously
 	// identifies the <parent> relationship, as opposed to ordinary module
 	// dependencies that also appear in the bom.Dependencies section.
-	mavenParentPomProperty = "maven:parentPom"
+	mavenParentPomProperty = "datadog:maven-parent-pom"
 )
 
 var SeverityMapper = map[models.SeverityType]cyclonedx.ScoringMethod{
