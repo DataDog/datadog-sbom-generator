@@ -12,7 +12,7 @@ import "sort"
 // restricted to build files present in the SBOM.
 //
 // The ID field is populated with "groupId:artifactId" from the
-// "osv-scanner:package" purl property via ProcessorContext.MavenArtifactIDs.
+// "datadog:maven-package" purl property via ProcessorContext.MavenArtifactIDs.
 type MavenProcessor struct{}
 
 // Process resolves transitive dependencies and IDs for a set of pom.xml BuildFiles.

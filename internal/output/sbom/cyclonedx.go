@@ -288,7 +288,7 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 		component.BOMRef = artifact.Filename
 		component.Type = fileComponentType
 		properties := []cyclonedx.Property{
-			{Name: "osv-scanner:package", Value: artifactPURL.String()},
+			{Name: mavenPackageProperty, Value: artifactPURL.String()},
 		}
 		// Computing parent dependency
 		if artifact.DependsOn != nil {

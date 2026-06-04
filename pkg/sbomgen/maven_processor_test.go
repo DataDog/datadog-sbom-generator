@@ -13,7 +13,7 @@ import (
 // relationship unambiguously.
 func mavenFileComponent(pomPath, parentPath string) cyclonedx.Component {
 	props := []cyclonedx.Property{
-		{Name: "osv-scanner:package", Value: "pkg:maven/com.example/" + pomPath + "@1.0"},
+		{Name: mavenPackageProperty, Value: "pkg:maven/com.example/" + pomPath + "@1.0"},
 	}
 	if parentPath != "" {
 		props = append(props, cyclonedx.Property{

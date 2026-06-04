@@ -24,7 +24,7 @@ type ProcessorContext struct {
 	FileDependencies map[string][]string
 
 	// MavenArtifactIDs maps each Maven file path to its "groupId:artifactId"
-	// string, extracted from the "osv-scanner:package" purl property on
+	// string, extracted from the "datadog:maven-package" purl property on
 	// file-type components.
 	MavenArtifactIDs map[string]string
 }

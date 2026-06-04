@@ -167,10 +167,11 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 // cycle.
 const mavenParentPomProperty = "datadog:maven-parent-pom"
 
-// osvScannerPackageProperty is the CycloneDX component property name that
-// records the package URL for a file-type component. For Maven components the
-// purl format is "pkg:maven/{groupId}/{artifactId}@{version}".
-const osvScannerPackageProperty = "osv-scanner:package"
+// mavenPackageProperty is the CycloneDX component property name that records
+// the package URL for a Maven file-type component. It mirrors the constant in
+// internal/output/sbom/models.go; kept here to avoid an internal→pkg import
+// cycle.
+const mavenPackageProperty = "datadog:maven-package"
 
 // buildProcessorContext extracts enrichment data from the SBOM into a
 // ProcessorContext.
@@ -220,7 +221,7 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 			continue
 		}
 		for _, prop := range *comp.Properties {
-			if prop.Name == osvScannerPackageProperty && prop.Value != "" {
+			if prop.Name == mavenPackageProperty && prop.Value != "" {
 				if id := parseMavenArtifactID(prop.Value); id != "" {
 					ctx.MavenArtifactIDs[comp.BOMRef] = id
 				}

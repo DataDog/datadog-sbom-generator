@@ -25,6 +25,10 @@ const (
 	// identifies the <parent> relationship, as opposed to ordinary module
 	// dependencies that also appear in the bom.Dependencies section.
 	mavenParentPomProperty = "datadog:maven-parent-pom"
+
+	// mavenPackageProperty is a CycloneDX component property that records the
+	// package URL for a Maven file-type component.
+	mavenPackageProperty = "datadog:maven-package"
 )
 
 var SeverityMapper = map[models.SeverityType]cyclonedx.ScoringMethod{
