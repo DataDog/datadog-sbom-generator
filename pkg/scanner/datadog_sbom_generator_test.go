@@ -62,7 +62,7 @@ func Test_scanDir(t *testing.T) {
 	var excludedGlobs []string
 	var configExcludedGlobs []string
 	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
-	packages, artifacts, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
+	packages, artifacts, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
 
 	// Validate results
 	require.NoError(t, err)
@@ -71,7 +71,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir
 	excludedGlobs = []string{filepath.Join("subdir", "*")}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 2) // Only package-lock.json and yarn.lock should be scanned (subdir/package-lock.json is excluded)
@@ -79,7 +79,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir and yarn.lock (precisely one file)
 	excludedGlobs = []string{filepath.Join("subdir", "*"), "yarn.lock"}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 1) // Only package-lock.json should be scanned (yarn.lock and subdir/package-lock.json is excluded)
@@ -107,7 +107,7 @@ func Test_scanDir_ConfigExclusionsUseRepositoryRoot(t *testing.T) {
 	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
 
 	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
-	packages, artifacts, err := scanDir(mockReporter, scanDirPath, repoRoot, true, false, enabledParsers, nil, []string{"subdir/*"})
+	packages, artifacts, err := scanDir(mockReporter, scanDirPath, repoRoot, true, false, enabledParsers, nil, []string{"subdir/*"}, false)
 
 	require.NoError(t, err)
 	assert.Empty(t, packages)
@@ -146,6 +146,7 @@ func Test_scanDir_ConfigExclusionsSupportPrefixAndDoublestarMatching(t *testing.
 		enabledParsers,
 		nil,
 		[]string{"subdir/dist", "subdir/**/*.lock"},
+		false,
 	)
 
 	require.NoError(t, err)

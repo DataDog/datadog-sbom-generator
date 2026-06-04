@@ -12619,28 +12619,6 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
   },
   "components": [
     {
-      "bom-ref": "libs/pom.xml",
-      "type": "file",
-      "name": "libs/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/com.foobar/common@1.0-SNAPSHOT"
-        }
-      ]
-    },
-    {
-      "bom-ref": "other-dir/pom.xml",
-      "type": "file",
-      "name": "other-dir/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/kafka-commons-client@1.0-SNAPSHOT"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:maven/com.foobar/common@1.0-SNAPSHOT",
       "type": "library",
       "name": "com.foobar:common",
@@ -12711,26 +12689,6 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pom.xml",
-      "type": "file",
-      "name": "pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/integration-tests@1.0-SNAPSHOT"
-        }
-      ]
-    }
-  ],
-  "dependencies": [
-    {
-      "ref": "other-dir/pom.xml",
-      "dependsOn": [
-        "libs/pom.xml",
-        "pom.xml"
-      ]
     }
   ]
 }
@@ -12787,17 +12745,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
     }
   },
   "components": [
-    {
-      "bom-ref": "maven-spring/pom.xml",
-      "type": "file",
-      "name": "maven-spring/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
-        }
-      ]
-    },
     {
       "bom-ref": "pkg:cargo/addr2line@0.15.2",
       "type": "library",
@@ -18743,25 +18690,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pom.xml",
-      "type": "file",
-      "name": "pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/test/foobar"
-        }
-      ]
-    }
-  ],
-  "dependencies": [
-    {
-      "ref": "maven-spring/pom.xml",
-      "dependsOn": [
-        "pom.xml"
-      ]
     }
   ]
 }
@@ -18792,17 +18720,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
   },
   "components": [
     {
-      "bom-ref": "maven-spring/pom.xml",
-      "type": "file",
-      "name": "maven-spring/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:cargo/addr2line@0.15.2",
       "type": "library",
       "name": "addr2line",
@@ -24672,25 +24589,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pom.xml",
-      "type": "file",
-      "name": "pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/test/foobar"
-        }
-      ]
-    }
-  ],
-  "dependencies": [
-    {
-      "ref": "maven-spring/pom.xml",
-      "dependsOn": [
-        "pom.xml"
-      ]
     }
   ]
 }
@@ -24721,17 +24619,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
   },
   "components": [
     {
-      "bom-ref": "maven-spring/pom.xml",
-      "type": "file",
-      "name": "maven-spring/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/com.example/my-project@0.0.1-SNAPSHOT"
-        }
-      ]
-    },
-    {
       "bom-ref": "pkg:cargo/addr2line@0.15.2",
       "type": "library",
       "name": "addr2line",
@@ -30601,25 +30488,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pom.xml",
-      "type": "file",
-      "name": "pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/test/foobar"
-        }
-      ]
-    }
-  ],
-  "dependencies": [
-    {
-      "ref": "maven-spring/pom.xml",
-      "dependsOn": [
-        "pom.xml"
-      ]
     }
   ]
 }
@@ -30649,28 +30517,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
     }
   },
   "components": [
-    {
-      "bom-ref": "libs/pom.xml",
-      "type": "file",
-      "name": "libs/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/com.foobar/common@1.0-SNAPSHOT"
-        }
-      ]
-    },
-    {
-      "bom-ref": "other-dir/pom.xml",
-      "type": "file",
-      "name": "other-dir/pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/kafka-commons-client@1.0-SNAPSHOT"
-        }
-      ]
-    },
     {
       "bom-ref": "pkg:maven/com.foobar/common@1.0-SNAPSHOT",
       "type": "library",
@@ -30718,26 +30564,6 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           }
         ]
       }
-    },
-    {
-      "bom-ref": "pom.xml",
-      "type": "file",
-      "name": "pom.xml",
-      "properties": [
-        {
-          "name": "osv-scanner:package",
-          "value": "pkg:maven/integration-tests@1.0-SNAPSHOT"
-        }
-      ]
-    }
-  ],
-  "dependencies": [
-    {
-      "ref": "other-dir/pom.xml",
-      "dependsOn": [
-        "libs/pom.xml",
-        "pom.xml"
-      ]
     }
   ]
 }
