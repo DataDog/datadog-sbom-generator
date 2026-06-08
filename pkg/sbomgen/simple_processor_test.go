@@ -2,18 +2,24 @@ package sbomgen
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/CycloneDX/cyclonedx-go"
 )
 
 // mavenFileComponent creates a file-type CycloneDX component representing a
-// pom.xml, as produced by ExtractMavenPomArtifactIds. If parentPath is
-// non-empty it sets the datadog:maven-parent-pom property, encoding the <parent>
+// pom.xml, as produced by ExtractArtifacts. artifactID is the Maven
+// "groupId:artifactId" (e.g. "com.example:child"). If parentPath is non-empty
+// it sets the datadog:maven-parent-pom property, encoding the <parent>
 // relationship unambiguously.
-func mavenFileComponent(pomPath, parentPath string) cyclonedx.Component {
+func mavenFileComponent(pomPath, artifactID, parentPath string) cyclonedx.Component {
+	// Build a realistic Maven purl from the artifactID: "group:name" -> "pkg:maven/group/name@1.0"
+	parts := strings.SplitN(artifactID, ":", 2)
+	purl := "pkg:maven/" + parts[0] + "/" + parts[1] + "@1.0"
+
 	props := []cyclonedx.Property{
-		{Name: mavenPackageProperty, Value: "pkg:maven/com.example/" + pomPath + "@1.0"},
+		{Name: mavenPackageProperty, Value: purl},
 	}
 	if parentPath != "" {
 		props = append(props, cyclonedx.Property{
@@ -67,13 +73,13 @@ func pomFile(path string) BuildFile {
 
 // --- Tests ---
 
-// TestMavenProcessor_SingleRootPom verifies that a standalone pom.xml
+// TestSimpleProcessor_Maven_SingleRootPom verifies that a standalone pom.xml
 // (no parent, no modules) gets empty dependencies and an ID from the purl.
-func TestMavenProcessor_SingleRootPom(t *testing.T) {
+func TestSimpleProcessor_Maven_SingleRootPom(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOM([]cyclonedx.Component{
-		mavenFileComponent("pom.xml", ""),
+		mavenFileComponent("pom.xml", "com.example:app", ""),
 		mavenComponent("com.example:app", "pom.xml"),
 	})
 
@@ -83,27 +89,27 @@ func TestMavenProcessor_SingleRootPom(t *testing.T) {
 		t.Fatalf("expected 1 entry, got %d: %v", len(result), result)
 	}
 	rel := result[pomFile("pom.xml")]
-	if rel.ID != "com.example:pom.xml" {
-		t.Errorf("expected ID=com.example:pom.xml, got %q", rel.ID)
+	if rel.ID != "com.example:app" {
+		t.Errorf("expected ID=com.example:app, got %q", rel.ID)
 	}
 	if len(rel.Dependencies) != 0 {
 		t.Errorf("expected no Dependencies, got %v", rel.Dependencies)
 	}
 }
 
-// TestMavenProcessor_ParentChild verifies a simple two-level hierarchy:
+// TestSimpleProcessor_Maven_ParentChild verifies a simple two-level hierarchy:
 //
 //	pom.xml
 //	└── child/pom.xml
 //
 // child depends on pom.xml (its parent). root has no dependencies.
-func TestMavenProcessor_ParentChild(t *testing.T) {
+func TestSimpleProcessor_Maven_ParentChild(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", ""),
-			mavenFileComponent("child/pom.xml", "pom.xml"),
+			mavenFileComponent("pom.xml", "com.example:parent", ""),
+			mavenFileComponent("child/pom.xml", "com.example:child", "pom.xml"),
 			mavenComponent("com.example:parent", "pom.xml"),
 			mavenComponent("com.example:child", "child/pom.xml"),
 		},
@@ -119,23 +125,23 @@ func TestMavenProcessor_ParentChild(t *testing.T) {
 	}
 
 	root := result[pomFile("pom.xml")]
-	if root.ID != "com.example:pom.xml" {
-		t.Errorf("root: expected ID=com.example:pom.xml, got %q", root.ID)
+	if root.ID != "com.example:parent" {
+		t.Errorf("root: expected ID=com.example:parent, got %q", root.ID)
 	}
 	if len(root.Dependencies) != 0 {
 		t.Errorf("root: expected no Dependencies, got %v", root.Dependencies)
 	}
 
 	child := result[pomFile("child/pom.xml")]
-	if child.ID != "com.example:child/pom.xml" {
-		t.Errorf("child: expected ID=com.example:child/pom.xml, got %q", child.ID)
+	if child.ID != "com.example:child" {
+		t.Errorf("child: expected ID=com.example:child, got %q", child.ID)
 	}
 	if len(child.Dependencies) != 1 || child.Dependencies[0] != pomFile("pom.xml") {
 		t.Errorf("child: expected Dependencies=[pom.xml], got %v", child.Dependencies)
 	}
 }
 
-// TestMavenProcessor_MultiModule verifies a flat multi-module layout:
+// TestSimpleProcessor_Maven_MultiModule verifies a flat multi-module layout:
 //
 //	pom.xml (aggregator)
 //	├── core/pom.xml
@@ -143,15 +149,15 @@ func TestMavenProcessor_ParentChild(t *testing.T) {
 //	└── integration-tests/pom.xml
 //
 // Each child depends on pom.xml (its parent). Root has no dependencies.
-func TestMavenProcessor_MultiModule(t *testing.T) {
+func TestSimpleProcessor_Maven_MultiModule(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", ""),
-			mavenFileComponent("core/pom.xml", "pom.xml"),
-			mavenFileComponent("web/pom.xml", "pom.xml"),
-			mavenFileComponent("integration-tests/pom.xml", "pom.xml"),
+			mavenFileComponent("pom.xml", "com.example:parent", ""),
+			mavenFileComponent("core/pom.xml", "com.example:core", "pom.xml"),
+			mavenFileComponent("web/pom.xml", "com.example:web", "pom.xml"),
+			mavenFileComponent("integration-tests/pom.xml", "com.example:integration-tests", "pom.xml"),
 			mavenComponent("com.example:parent", "pom.xml"),
 			mavenComponent("com.example:core", "core/pom.xml"),
 			mavenComponent("com.example:web", "web/pom.xml"),
@@ -171,16 +177,21 @@ func TestMavenProcessor_MultiModule(t *testing.T) {
 	}
 
 	root := result[pomFile("pom.xml")]
-	if root.ID != "com.example:pom.xml" {
-		t.Errorf("root: expected ID=com.example:pom.xml, got %q", root.ID)
+	if root.ID != "com.example:parent" {
+		t.Errorf("root: expected ID=com.example:parent, got %q", root.ID)
 	}
 	if len(root.Dependencies) != 0 {
 		t.Errorf("root: expected no Dependencies, got %v", root.Dependencies)
 	}
 
+	expectedIDs := map[string]string{
+		"core/pom.xml":              "com.example:core",
+		"integration-tests/pom.xml": "com.example:integration-tests",
+		"web/pom.xml":               "com.example:web",
+	}
 	for _, childPath := range []string{"core/pom.xml", "integration-tests/pom.xml", "web/pom.xml"} {
 		rel := result[pomFile(childPath)]
-		expectedID := "com.example:" + childPath
+		expectedID := expectedIDs[childPath]
 		if rel.ID != expectedID {
 			t.Errorf("%s: expected ID=%s, got %q", childPath, expectedID, rel.ID)
 		}
@@ -190,7 +201,7 @@ func TestMavenProcessor_MultiModule(t *testing.T) {
 	}
 }
 
-// TestMavenProcessor_DeepHierarchy verifies a three-level chain:
+// TestSimpleProcessor_Maven_DeepHierarchy verifies a three-level chain:
 //
 //	pom.xml
 //	└── module/pom.xml
@@ -198,14 +209,14 @@ func TestMavenProcessor_MultiModule(t *testing.T) {
 //
 // Transitive closure: root.Dependencies=[], mid.Dependencies=[pom.xml],
 // leaf.Dependencies=[module/pom.xml, pom.xml] (sorted by FilePath).
-func TestMavenProcessor_DeepHierarchy(t *testing.T) {
+func TestSimpleProcessor_Maven_DeepHierarchy(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", ""),
-			mavenFileComponent("module/pom.xml", "pom.xml"),
-			mavenFileComponent("module/sub/pom.xml", "module/pom.xml"),
+			mavenFileComponent("pom.xml", "com.example:root", ""),
+			mavenFileComponent("module/pom.xml", "com.example:module", "pom.xml"),
+			mavenFileComponent("module/sub/pom.xml", "com.example:sub", "module/pom.xml"),
 			mavenComponent("com.example:root", "pom.xml"),
 			mavenComponent("com.example:module", "module/pom.xml"),
 			mavenComponent("com.example:sub", "module/sub/pom.xml"),
@@ -219,24 +230,24 @@ func TestMavenProcessor_DeepHierarchy(t *testing.T) {
 	result := GetBuildFileTrees(sbom, FileTypePomXML)
 
 	root := result[pomFile("pom.xml")]
-	if root.ID != "com.example:pom.xml" {
-		t.Errorf("root: expected ID=com.example:pom.xml, got %q", root.ID)
+	if root.ID != "com.example:root" {
+		t.Errorf("root: expected ID=com.example:root, got %q", root.ID)
 	}
 	if len(root.Dependencies) != 0 {
 		t.Errorf("root: expected no Dependencies, got %v", root.Dependencies)
 	}
 
 	mid := result[pomFile("module/pom.xml")]
-	if mid.ID != "com.example:module/pom.xml" {
-		t.Errorf("module: expected ID=com.example:module/pom.xml, got %q", mid.ID)
+	if mid.ID != "com.example:module" {
+		t.Errorf("module: expected ID=com.example:module, got %q", mid.ID)
 	}
 	if len(mid.Dependencies) != 1 || mid.Dependencies[0] != pomFile("pom.xml") {
 		t.Errorf("module: expected Dependencies=[pom.xml], got %v", mid.Dependencies)
 	}
 
 	leaf := result[pomFile("module/sub/pom.xml")]
-	if leaf.ID != "com.example:module/sub/pom.xml" {
-		t.Errorf("sub: expected ID=com.example:module/sub/pom.xml, got %q", leaf.ID)
+	if leaf.ID != "com.example:sub" {
+		t.Errorf("sub: expected ID=com.example:sub, got %q", leaf.ID)
 	}
 	// Transitive: leaf depends on module/pom.xml AND pom.xml, sorted by FilePath.
 	if len(leaf.Dependencies) != 2 {
@@ -250,17 +261,17 @@ func TestMavenProcessor_DeepHierarchy(t *testing.T) {
 	}
 }
 
-// TestMavenProcessor_ExternalParentIgnored verifies that a dependency edge
+// TestSimpleProcessor_Maven_ExternalParentIgnored verifies that a dependency edge
 // pointing to a POM path not present in the SBOM (e.g. a parent from Maven
 // Central) is silently ignored — the file has no dependencies.
-func TestMavenProcessor_ExternalParentIgnored(t *testing.T) {
+func TestSimpleProcessor_Maven_ExternalParentIgnored(t *testing.T) {
 	t.Parallel()
 
 	const externalParent = "https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-starter-parent/3.0.0/spring-boot-starter-parent-3.0.0.pom"
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", externalParent),
+			mavenFileComponent("pom.xml", "com.example:child", externalParent),
 			mavenComponent("com.example:child", "pom.xml"),
 		},
 		[]cyclonedx.Dependency{
@@ -271,15 +282,15 @@ func TestMavenProcessor_ExternalParentIgnored(t *testing.T) {
 	result := GetBuildFileTrees(sbom, FileTypePomXML)
 
 	rel := result[pomFile("pom.xml")]
-	if rel.ID != "com.example:pom.xml" {
-		t.Errorf("expected ID=com.example:pom.xml, got %q", rel.ID)
+	if rel.ID != "com.example:child" {
+		t.Errorf("expected ID=com.example:child, got %q", rel.ID)
 	}
 	if len(rel.Dependencies) != 0 {
 		t.Errorf("expected no Dependencies for external parent, got %v", rel.Dependencies)
 	}
 }
 
-// TestMavenProcessor_SiblingModuleIncludedAsDependency verifies that when a
+// TestSimpleProcessor_Maven_SiblingModuleDependency verifies that when a
 // module depends on a sibling module (ordinary Maven <dependency>) in addition
 // to a <parent>, BOTH the parent and the sibling appear in Dependencies.
 // bom.Dependencies carries both edge types (parent from addFileDependencies,
@@ -291,14 +302,14 @@ func TestMavenProcessor_ExternalParentIgnored(t *testing.T) {
 //	pom.xml (root aggregator)
 //	├── module-a/pom.xml  (parent=pom.xml, <dependency> on module-b)
 //	└── module-b/pom.xml  (parent=pom.xml)
-func TestMavenProcessor_SiblingModuleIncludedAsDependency(t *testing.T) {
+func TestSimpleProcessor_Maven_SiblingModuleDependency(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", ""),
-			mavenFileComponent("module-a/pom.xml", "pom.xml"),
-			mavenFileComponent("module-b/pom.xml", "pom.xml"),
+			mavenFileComponent("pom.xml", "com.example:root", ""),
+			mavenFileComponent("module-a/pom.xml", "com.example:module-a", "pom.xml"),
+			mavenFileComponent("module-b/pom.xml", "com.example:module-b", "pom.xml"),
 			mavenComponent("com.example:root", "pom.xml"),
 			mavenComponent("com.example:module-a", "module-a/pom.xml"),
 			mavenComponent("com.example:module-b", "module-b/pom.xml"),
@@ -342,7 +353,7 @@ func TestMavenProcessor_SiblingModuleIncludedAsDependency(t *testing.T) {
 	}
 }
 
-// TestMavenProcessor_ParentPomViaFileComponent verifies that a parent POM which
+// TestSimpleProcessor_Maven_ParentPomViaFileComponent verifies that a parent POM which
 // has no package occurrences of its own is still discovered via the file-type
 // component emitted by ExtractMavenPomArtifactIds, and appears in the child's
 // Dependencies.
@@ -351,13 +362,13 @@ func TestMavenProcessor_SiblingModuleIncludedAsDependency(t *testing.T) {
 //
 //	pom.xml        ← file-type component only (no package occurrences)
 //	└── child/pom.xml  ← normal package occurrence
-func TestMavenProcessor_ParentPomViaFileComponent(t *testing.T) {
+func TestSimpleProcessor_Maven_ParentPomViaFileComponent(t *testing.T) {
 	t.Parallel()
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			mavenFileComponent("pom.xml", ""),
-			mavenFileComponent("child/pom.xml", "pom.xml"),
+			mavenFileComponent("pom.xml", "com.example:parent", ""),
+			mavenFileComponent("child/pom.xml", "com.example:child", "pom.xml"),
 			mavenComponent("com.example:child", "child/pom.xml"),
 		},
 		[]cyclonedx.Dependency{
