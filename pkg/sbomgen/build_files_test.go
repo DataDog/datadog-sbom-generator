@@ -446,3 +446,64 @@ func TestGetBuildFileTrees_RegisteredProcessorIsCalled(t *testing.T) {
 		t.Errorf("processor received unexpected files: %v", stub.received)
 	}
 }
+
+func TestParseArtifactID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		purl     string
+		expected string
+	}{
+		{
+			name:     "Maven purl returns namespace:name",
+			purl:     "pkg:maven/com.example/my-module@1.0",
+			expected: "com.example:my-module",
+		},
+		{
+			name:     "Maven purl without version",
+			purl:     "pkg:maven/com.example/my-module",
+			expected: "com.example:my-module",
+		},
+		{
+			name:     "PyPI purl returns name only",
+			purl:     "pkg:pypi/mylib@1.0",
+			expected: "mylib",
+		},
+		{
+			name:     "PyPI purl without version",
+			purl:     "pkg:pypi/mylib",
+			expected: "mylib",
+		},
+		{
+			name:     "npm purl with namespace returns namespace:name",
+			purl:     "pkg:npm/%40angular/core@12.0.0",
+			expected: "@angular:core",
+		},
+		{
+			name:     "npm purl without namespace returns name only",
+			purl:     "pkg:npm/lodash@4.17.21",
+			expected: "lodash",
+		},
+		{
+			name:     "invalid purl returns empty",
+			purl:     "not-a-purl",
+			expected: "",
+		},
+		{
+			name:     "empty string returns empty",
+			purl:     "",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := parseArtifactID(tt.purl)
+			if got != tt.expected {
+				t.Errorf("parseArtifactID(%q) = %q, want %q", tt.purl, got, tt.expected)
+			}
+		})
+	}
+}

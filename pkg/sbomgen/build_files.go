@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CycloneDX/cyclonedx-go"
+	packageurl "github.com/package-url/packageurl-go"
 )
 
 // FileType represents a recognized build/manifest file type.
@@ -173,35 +174,21 @@ const mavenParentPomProperty = "datadog:maven-parent-pom"
 // cycle.
 const mavenPackageProperty = "datadog:maven-package"
 
-// parseMavenArtifactID extracts "groupId:artifactId" from a Maven purl.
-// For example, "pkg:maven/com.example/my-module@1.0" yields "com.example:my-module".
-// Returns "" if the purl is not a Maven purl or cannot be parsed.
-func parseMavenArtifactID(purl string) string {
-	const prefix = "pkg:maven/"
-	if !strings.HasPrefix(purl, prefix) {
-		return ""
-	}
-	rest := purl[len(prefix):]
-
-	// Split into groupId/artifactId[@version]
-	slash := strings.IndexByte(rest, '/')
-	if slash < 0 {
-		return ""
-	}
-	groupID := rest[:slash]
-	artifactAndVersion := rest[slash+1:]
-
-	// Strip @version if present.
-	artifactID := artifactAndVersion
-	if at := strings.IndexByte(artifactAndVersion, '@'); at >= 0 {
-		artifactID = artifactAndVersion[:at]
-	}
-
-	if groupID == "" || artifactID == "" {
+// parseArtifactID extracts an ecosystem-specific artifact identifier from a
+// purl string. For purls with a namespace (e.g. Maven, npm) it returns
+// "namespace:name"; for purls without a namespace (e.g. PyPI) it returns the
+// name alone. Returns "" if the purl cannot be parsed.
+func parseArtifactID(purl string) string {
+	parsed, err := packageurl.FromString(purl)
+	if err != nil || parsed.Name == "" {
 		return ""
 	}
 
-	return groupID + ":" + artifactID
+	if parsed.Namespace != "" {
+		return parsed.Namespace + ":" + parsed.Name
+	}
+
+	return parsed.Name
 }
 
 // buildProcessorContext extracts enrichment data from the SBOM into a
@@ -212,7 +199,7 @@ func parseMavenArtifactID(purl string) string {
 func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	ctx := ProcessorContext{
 		FileDependencies: make(map[string][]string),
-		MavenArtifactIDs: make(map[string]string),
+		ArtifactIDs: make(map[string]string),
 	}
 
 	for _, comp := range *bom.Components {
@@ -221,8 +208,8 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 		}
 		for _, prop := range *comp.Properties {
 			if prop.Name == mavenPackageProperty && prop.Value != "" {
-				if id := parseMavenArtifactID(prop.Value); id != "" {
-					ctx.MavenArtifactIDs[comp.BOMRef] = id
+				if id := parseArtifactID(prop.Value); id != "" {
+					ctx.ArtifactIDs[comp.BOMRef] = id
 				}
 			}
 		}
