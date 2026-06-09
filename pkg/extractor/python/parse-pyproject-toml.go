@@ -372,6 +372,9 @@ func (e PyProjectTOMLExtractor) GetArtifact(f extractor.DepFile, ctx extractor.S
 	}
 
 	name := normalizedRequirementName(pyproject.Project.Name)
+	if name == "" && pyproject.Tool.Poetry != nil {
+		name = normalizedRequirementName(pyproject.Tool.Poetry.Name)
+	}
 	if name == "" {
 		return nil, nil
 	}

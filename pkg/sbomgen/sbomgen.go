@@ -62,6 +62,7 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 		DirectoryPaths:     dirs,
 		ExcludePaths:       opts.ExcludePaths,
 		Recursive:          opts.Recursive,
+		ManifestParsers:    opts.ExtractArtifactIds,
 		ExtractArtifactIds: opts.ExtractArtifactIds,
 	}
 

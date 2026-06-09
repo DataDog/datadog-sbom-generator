@@ -65,4 +65,5 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 func init() {
 	RegisterBuildFileProcessor(FileTypePomXML, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeRequirementsTxt, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypePyprojectToml, &SimpleProcessor{})
 }

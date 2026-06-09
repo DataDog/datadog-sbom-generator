@@ -162,7 +162,7 @@ func buildDatadogProperty(metadataKey string, value string) cyclonedx.Property {
 
 func findArtifact(name string, version string, artifacts []models.ScannedArtifact) *models.ScannedArtifact {
 	for _, artifact := range artifacts {
-		if artifact.Name == name && (version == "" || artifact.Version == version) {
+		if artifact.Name == name && (version == "" || artifact.Version == "" || artifact.Version == version) {
 			return &artifact
 		}
 	}

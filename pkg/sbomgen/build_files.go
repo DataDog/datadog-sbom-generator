@@ -153,18 +153,21 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 	// Build the ProcessorContext from the SBOM dependencies section.
 	ctx := buildProcessorContext(&bom)
 
-	// Second pass: resolve cross-type dependency targets.
+	// Second pass: resolve cross-type dependency targets to a fixed point.
 	//
 	// A file-type component may have a different basename than the lockfile
-	// that depends on it (e.g. setup.py is a dependency target of
-	// requirements.txt). When a filter is active, such targets are missed by
-	// the first pass because their FileType doesn't match the filter.
+	// that depends on it (e.g. pyproject.toml is a dependency target of
+	// requirements.txt). Such targets are missed by the first pass because
+	// their FileType doesn't match the requesting file's FileType.
 	//
-	// We fix this by scanning dependency edges of already-collected files:
-	// if a dependency target is a known file-type component that wasn't
-	// collected, we add it to the same FileType group as its dependent so
-	// the processor can resolve it during BFS.
-	if len(filterSet) > 0 {
+	// We fix this by repeatedly scanning dependency edges of already-collected
+	// files: if a dependency target is a known file-type component that hasn't
+	// been added to a group yet, we add it under the same FileType as its
+	// dependent so the processor can resolve it during BFS. We loop until no
+	// new files are added (fixed point), resolving chains like:
+	//   requirements.txt → libs/a/pyproject.toml → libs/b/pyproject.toml
+	for {
+		added := false
 		for ft, files := range grouped {
 			for _, f := range files {
 				for _, depPath := range ctx.FileDependencies[f.FilePath] {
@@ -175,9 +178,13 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 					if _, exists := seen[bf]; !exists {
 						seen[bf] = struct{}{}
 						grouped[ft] = append(grouped[ft], bf)
+						added = true
 					}
 				}
 			}
+		}
+		if !added {
+			break
 		}
 	}
 

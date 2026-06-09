@@ -49,6 +49,39 @@ version = "1.0.0"
 	}
 }
 
+func TestPyProjectTOMLExtractor_GetArtifact_PoetryName(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	// Poetry layout: name is under [tool.poetry], not [project]
+	pyprojectPath := filepath.Join(dir, "pyproject.toml")
+	err := os.WriteFile(pyprojectPath, []byte(`[tool.poetry]
+name = "my-poetry-lib"
+version = "2.0.0"
+`), 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f, err := extractor.OpenLocalDepFile(pyprojectPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifactIds: true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if artifact == nil {
+		t.Fatal("expected artifact from [tool.poetry].name, got nil")
+	}
+	if artifact.Name != "my-poetry-lib" {
+		t.Errorf("expected name 'my-poetry-lib', got %q", artifact.Name)
+	}
+}
+
 func TestPyProjectTOMLExtractor_GetArtifact_NoName(t *testing.T) {
 	t.Parallel()
 
