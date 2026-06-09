@@ -1,6 +1,8 @@
 package python
 
-import "github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+import (
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+)
 
 func (m PyprojectTOMLMatcher) GetSourceFile(depFile extractor.DepFile) (extractor.DepFile, error) {
 	return depFile.Open("pyproject.toml")

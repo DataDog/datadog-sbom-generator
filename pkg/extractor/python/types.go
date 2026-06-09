@@ -187,6 +187,7 @@ type PyProjectBuildSystem struct {
 }
 
 type PyProjectProject struct {
+	Name                 string              `toml:"name"`
 	Dependencies         []string            `toml:"dependencies"`
 	OptionalDependencies map[string][]string `toml:"optional-dependencies"`
 }
