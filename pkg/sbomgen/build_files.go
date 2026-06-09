@@ -119,12 +119,17 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 	grouped := make(map[FileType][]BuildFile)
 	seen := make(map[BuildFile]struct{})
 
+	// Track all file-type component paths so we can resolve cross-type
+	// dependency targets in the second pass below.
+	fileComponentPaths := make(map[string]struct{})
+
 	for _, comp := range *bom.Components {
-		// File-type components (produced by ExtractMavenPomArtifactIds) represent
+		// File-type components (produced by ExtractArtifactIds) represent
 		// build/manifest files directly. Their BOMRef is the filename relative to
 		// the repo root. Collect them so parent POMs with no package occurrences
 		// are never missed.
 		if comp.Type == cyclonedx.ComponentTypeFile && comp.BOMRef != "" {
+			fileComponentPaths[comp.BOMRef] = struct{}{}
 			addBuildFile(comp.BOMRef, filterSet, seen, grouped)
 		}
 
@@ -147,6 +152,34 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 
 	// Build the ProcessorContext from the SBOM dependencies section.
 	ctx := buildProcessorContext(&bom)
+
+	// Second pass: resolve cross-type dependency targets.
+	//
+	// A file-type component may have a different basename than the lockfile
+	// that depends on it (e.g. setup.py is a dependency target of
+	// requirements.txt). When a filter is active, such targets are missed by
+	// the first pass because their FileType doesn't match the filter.
+	//
+	// We fix this by scanning dependency edges of already-collected files:
+	// if a dependency target is a known file-type component that wasn't
+	// collected, we add it to the same FileType group as its dependent so
+	// the processor can resolve it during BFS.
+	if len(filterSet) > 0 {
+		for ft, files := range grouped {
+			for _, f := range files {
+				for _, depPath := range ctx.FileDependencies[f.FilePath] {
+					if _, isFileComponent := fileComponentPaths[depPath]; !isFileComponent {
+						continue
+					}
+					bf := BuildFile{FileType: ft, FilePath: depPath}
+					if _, exists := seen[bf]; !exists {
+						seen[bf] = struct{}{}
+						grouped[ft] = append(grouped[ft], bf)
+					}
+				}
+			}
+		}
+	}
 
 	// Dispatch each group to its registered processor and merge the results.
 	for ft, files := range grouped {

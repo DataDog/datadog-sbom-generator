@@ -64,4 +64,5 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 //nolint:gochecknoinits
 func init() {
 	RegisterBuildFileProcessor(FileTypePomXML, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeRequirementsTxt, &SimpleProcessor{})
 }

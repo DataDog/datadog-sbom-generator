@@ -351,7 +351,7 @@ func TestGetBuildFileTrees_UnknownManifestIncluded(t *testing.T) {
 }
 
 // fileTypeComponent creates a CycloneDX component of type "file" with the given
-// BOMRef/Name, as produced by ExtractMavenPomArtifactIds for manifest files.
+// BOMRef/Name, as produced by ExtractArtifactIds for manifest files.
 func fileTypeComponent(filename string) cyclonedx.Component {
 	return cyclonedx.Component{
 		Type:   cyclonedx.ComponentTypeFile,

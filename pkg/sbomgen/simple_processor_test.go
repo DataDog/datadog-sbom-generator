@@ -9,7 +9,7 @@ import (
 )
 
 // mavenFileComponent creates a file-type CycloneDX component representing a
-// pom.xml, as produced by ExtractArtifacts. artifactID is the Maven
+// pom.xml, as produced by ExtractArtifactIds. artifactID is the Maven
 // "groupId:artifactId" (e.g. "com.example:child"). If parentPath is non-empty
 // it sets the datadog:maven-parent-pom property, encoding the <parent>
 // relationship unambiguously.
@@ -353,9 +353,134 @@ func TestSimpleProcessor_Maven_SiblingModuleDependency(t *testing.T) {
 	}
 }
 
+// --- Python requirements.txt tests ---
+
+// pythonFileComponent creates a file-type CycloneDX component representing a
+// Python source file (setup.py or pyproject.toml), as produced by
+// ExtractArtifactIds. packageName is the normalized Python package name.
+func pythonFileComponent(sourcePath, packageName string) cyclonedx.Component {
+	purl := "pkg:pypi/" + packageName + "@1.0"
+
+	props := []cyclonedx.Property{
+		{Name: mavenPackageProperty, Value: purl},
+	}
+
+	return cyclonedx.Component{
+		Type:       cyclonedx.ComponentTypeFile,
+		BOMRef:     sourcePath,
+		Name:       sourcePath,
+		Properties: &props,
+	}
+}
+
+// pythonComponent builds a CycloneDX component with a manifest occurrence for
+// the given requirements.txt path, as the SBOM generator would emit it.
+func pythonComponent(name, requirementsPath string) cyclonedx.Component {
+	return componentWithOccurrences(name, "1.0", makeLocation(requirementsPath, "manifest"))
+}
+
+// reqFile is a shorthand for a requirements.txt BuildFile.
+func reqFile(path string) BuildFile {
+	return BuildFile{FileType: FileTypeRequirementsTxt, FilePath: path}
+}
+
+// TestSimpleProcessor_RequirementsTxt_InterModuleDependency verifies the
+// end-to-end inter-module flow:
+//
+//	app/requirements.txt  →  depends on mylib (resolved via libs/mylib/setup.py)
+//	libs/mylib/setup.py   →  file-type component with pkg:pypi/mylib@1.0
+//
+// GetBuildFileTrees should return app/requirements.txt with a dependency on
+// libs/mylib/setup.py, and the setup.py entry with ID="mylib".
+func TestSimpleProcessor_RequirementsTxt_InterModuleDependency(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			pythonFileComponent("libs/mylib/setup.py", "mylib"),
+			pythonComponent("mylib", "app/requirements.txt"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/requirements.txt", Dependencies: &[]string{"libs/mylib/setup.py"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeRequirementsTxt)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries (requirements.txt + setup.py), got %d: %v", len(result), result)
+	}
+
+	// app/requirements.txt should depend on libs/mylib/setup.py.
+	req := result[reqFile("app/requirements.txt")]
+	if len(req.Dependencies) != 1 {
+		t.Fatalf("app/requirements.txt: expected 1 dependency, got %v", req.Dependencies)
+	}
+	if req.Dependencies[0].FilePath != "libs/mylib/setup.py" {
+		t.Errorf("app/requirements.txt: expected dep on libs/mylib/setup.py, got %v", req.Dependencies[0])
+	}
+
+	// libs/mylib/setup.py should have ID="mylib" and no dependencies.
+	setupPy := result[reqFile("libs/mylib/setup.py")]
+	if setupPy.ID != "mylib" {
+		t.Errorf("libs/mylib/setup.py: expected ID=mylib, got %q", setupPy.ID)
+	}
+	if len(setupPy.Dependencies) != 0 {
+		t.Errorf("libs/mylib/setup.py: expected no Dependencies, got %v", setupPy.Dependencies)
+	}
+}
+
+// TestSimpleProcessor_RequirementsTxt_NoInterModuleDeps verifies that a
+// standalone requirements.txt with no file-type components or dependency edges
+// gets empty dependencies.
+func TestSimpleProcessor_RequirementsTxt_NoInterModuleDeps(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOM([]cyclonedx.Component{
+		pythonComponent("requests", "requirements.txt"),
+	})
+
+	result := GetBuildFileTrees(sbom, FileTypeRequirementsTxt)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 entry, got %d: %v", len(result), result)
+	}
+
+	rel := result[reqFile("requirements.txt")]
+	if len(rel.Dependencies) != 0 {
+		t.Errorf("expected no Dependencies, got %v", rel.Dependencies)
+	}
+	if rel.ID != "" {
+		t.Errorf("expected empty ID, got %q", rel.ID)
+	}
+}
+
+// TestSimpleProcessor_RequirementsTxt_ArtifactID verifies that ArtifactIDs
+// are correctly populated from a pkg:pypi purl on a file-type component.
+func TestSimpleProcessor_RequirementsTxt_ArtifactID(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			pythonFileComponent("libs/mylib/setup.py", "mylib"),
+			pythonComponent("mylib", "app/requirements.txt"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/requirements.txt", Dependencies: &[]string{"libs/mylib/setup.py"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeRequirementsTxt)
+
+	setupPy := result[reqFile("libs/mylib/setup.py")]
+	if setupPy.ID != "mylib" {
+		t.Errorf("expected ID=mylib, got %q", setupPy.ID)
+	}
+}
+
 // TestSimpleProcessor_Maven_ParentPomViaFileComponent verifies that a parent POM which
 // has no package occurrences of its own is still discovered via the file-type
-// component emitted by ExtractMavenPomArtifactIds, and appears in the child's
+// component emitted by ExtractArtifactIds, and appears in the child's
 // Dependencies.
 //
 // Layout:
