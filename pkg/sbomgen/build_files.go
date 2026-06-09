@@ -232,7 +232,7 @@ func parseArtifactID(purl string) string {
 func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	ctx := ProcessorContext{
 		FileDependencies: make(map[string][]string),
-		ArtifactIDs: make(map[string]string),
+		ArtifactIDs:      make(map[string]string),
 	}
 
 	for _, comp := range *bom.Components {

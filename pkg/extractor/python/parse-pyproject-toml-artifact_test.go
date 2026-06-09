@@ -31,7 +31,7 @@ version = "1.0.0"
 	}
 	defer f.Close()
 
-	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifacts: true})
+	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifactIds: true})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -69,7 +69,7 @@ version = "1.0.0"
 	}
 	defer f.Close()
 
-	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifacts: true})
+	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifactIds: true})
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
@@ -78,7 +78,7 @@ version = "1.0.0"
 	}
 }
 
-func TestPyProjectTOMLExtractor_GetArtifact_ExtractArtifactsDisabled(t *testing.T) {
+func TestPyProjectTOMLExtractor_GetArtifact_ExtractArtifactIdsDisabled(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -97,13 +97,13 @@ name = "my-lib"
 	}
 	defer f.Close()
 
-	// ExtractArtifacts is false — should return nil
-	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifacts: false})
+	// ExtractArtifactIds is false — should return nil
+	artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifactIds: false})
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
 	if artifact != nil {
-		t.Errorf("expected nil artifact when ExtractArtifacts is false, got %+v", artifact)
+		t.Errorf("expected nil artifact when ExtractArtifactIds is false, got %+v", artifact)
 	}
 }
 
@@ -155,7 +155,7 @@ func TestPyProjectTOMLExtractor_GetArtifact_NormalizesName(t *testing.T) {
 			}
 			defer f.Close()
 
-			artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifacts: true})
+			artifact, err := python.PyProjectExtractor.GetArtifact(f, extractor.ScanContext{ExtractArtifactIds: true})
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

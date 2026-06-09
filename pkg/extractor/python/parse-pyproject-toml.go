@@ -357,7 +357,7 @@ func isConcreteVersion(version string) bool {
 // own path as Filename so that findArtifact can match packages from sibling
 // lockfiles (e.g. requirements.txt) against this module.
 func (e PyProjectTOMLExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
-	if !ctx.ExtractArtifacts {
+	if !ctx.ExtractArtifactIds {
 		return nil, nil
 	}
 
