@@ -274,21 +274,24 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 	dependsOn := make(map[string]cyclonedx.Dependency)
 
 	for _, artifact := range artifacts {
-		artifactPURL, err := purl.From(models.PackageInfo{
-			Name:      artifact.Name,
-			Version:   artifact.Version,
-			Ecosystem: string(artifact.Ecosystem),
-		})
-		if err != nil {
-			continue
-		}
-
 		component := cyclonedx.Component{}
 		component.Name = artifact.Filename
 		component.BOMRef = artifact.Filename
 		component.Type = fileComponentType
-		properties := []cyclonedx.Property{
-			{Name: mavenPackageProperty, Value: artifactPURL.String()},
+
+		var properties []cyclonedx.Property
+		if artifact.Name != "" {
+			artifactPURL, err := purl.From(models.PackageInfo{
+				Name:      artifact.Name,
+				Version:   artifact.Version,
+				Ecosystem: string(artifact.Ecosystem),
+			})
+			if err == nil {
+				properties = append(properties, cyclonedx.Property{
+					Name:  mavenPackageProperty,
+					Value: artifactPURL.String(),
+				})
+			}
 		}
 		// Computing parent dependency
 		if artifact.DependsOn != nil {
@@ -316,7 +319,9 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 			}
 		}
 
-		component.Properties = &properties
+		if len(properties) > 0 {
+			component.Properties = &properties
+		}
 		components[component.BOMRef] = component
 	}
 

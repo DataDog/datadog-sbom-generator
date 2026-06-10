@@ -208,6 +208,14 @@ func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
 				parsedLockfile.Artifact = artifact
 			}
 		}
+		// Even if GetArtifact is not implemented or returned nil, emit a bare
+		// file-type component so every scanned build file appears in GetBuildFileTrees,
+		// regardless of whether it has an artifact identity or any packages.
+		if parsedLockfile.Artifact == nil {
+			parsedLockfile.Artifact = &models.ScannedArtifact{
+				ArtifactDetail: models.ArtifactDetail{Filename: f.Path()},
+			}
+		}
 	}
 
 	return parsedLockfile, err

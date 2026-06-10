@@ -63,6 +63,16 @@
   },
   "components": [
     {
+      "bom-ref": "lib1/pom.xml",
+      "type": "file",
+      "name": "lib1/pom.xml"
+    },
+    {
+      "bom-ref": "lib2/pom.xml",
+      "type": "file",
+      "name": "lib2/pom.xml"
+    },
+    {
       "bom-ref": "pkg:maven/dev.foo/lib1@1.0-SNAPSHOT",
       "type": "library",
       "name": "dev.foo:lib1",
@@ -75,6 +85,11 @@
       "name": "dev.foo:lib2",
       "version": "1.0-SNAPSHOT",
       "purl": "pkg:maven/dev.foo/lib2@1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pom.xml",
+      "type": "file",
+      "name": "pom.xml"
     }
   ],
   "dependencies": [
@@ -137,6 +152,11 @@
       "name": "com.nobody:mine1",
       "version": "1.2.3",
       "purl": "pkg:maven/com.nobody/mine1@1.2.3"
+    },
+    {
+      "bom-ref": "pom.xml",
+      "type": "file",
+      "name": "pom.xml"
     }
   ]
 }
@@ -163,11 +183,35 @@
   },
   "components": [
     {
+      "bom-ref": "parent/pom.xml",
+      "type": "file",
+      "name": "parent/pom.xml"
+    },
+    {
       "bom-ref": "pkg:maven/com.nobody/mine1@1.2.3",
       "type": "library",
       "name": "com.nobody:mine1",
       "version": "1.2.3",
       "purl": "pkg:maven/com.nobody/mine1@1.2.3"
+    },
+    {
+      "bom-ref": "pom.xml",
+      "type": "file",
+      "name": "pom.xml",
+      "properties": [
+        {
+          "name": "datadog:maven-parent-pom",
+          "value": "parent/pom.xml"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pom.xml",
+      "dependsOn": [
+        "parent/pom.xml"
+      ]
     }
   ]
 }
