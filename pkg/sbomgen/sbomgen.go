@@ -31,10 +31,17 @@ type Options struct {
 	// ExcludePaths is a list of glob patterns to exclude from scanning.
 	ExcludePaths []string
 
+	// ManifestParsers enables extractors that read manifest files (e.g.
+	// pyproject.toml, package.json) as package sources when no lockfile is
+	// present. Additive to the default lockfile extractor set.
+	ManifestParsers bool
+
 	// ExtractArtifactIds controls whether build file artifact IDs and dependency
 	// relationships are extracted and included in the SBOM. When true, extractors
 	// that implement ArtifactExtractor produce file-type components and dependency
 	// edges, enabling GetBuildFileTrees dependency and ID resolution.
+	// Enabling this also activates manifest parsers internally, because manifest
+	// extractors (e.g. PyProjectTOMLExtractor) are needed to call GetArtifact.
 	// Defaults to true in DefaultOptions.
 	ExtractArtifactIds bool
 }
@@ -62,7 +69,7 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 		DirectoryPaths:     dirs,
 		ExcludePaths:       opts.ExcludePaths,
 		Recursive:          opts.Recursive,
-		ManifestParsers:    opts.ExtractArtifactIds,
+		ManifestParsers:    opts.ManifestParsers || opts.ExtractArtifactIds,
 		ExtractArtifactIds: opts.ExtractArtifactIds,
 	}
 
