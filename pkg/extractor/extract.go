@@ -207,13 +207,14 @@ func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
 			if err == nil {
 				parsedLockfile.Artifact = artifact
 			}
-		}
-		// Even if GetArtifact is not implemented or returned nil, emit a bare
-		// file-type component so every scanned build file appears in GetBuildFileTrees,
-		// regardless of whether it has an artifact identity or any packages.
-		if parsedLockfile.Artifact == nil {
-			parsedLockfile.Artifact = &models.ScannedArtifact{
-				ArtifactDetail: models.ArtifactDetail{Filename: f.Path()},
+			// Even if GetArtifact returned nil, emit a bare file-type component
+			// so every build file that opts in (by implementing ArtifactExtractor)
+			// appears in GetBuildFileTrees. Lockfile-only extractors that do not
+			// implement ArtifactExtractor are intentionally excluded.
+			if parsedLockfile.Artifact == nil {
+				parsedLockfile.Artifact = &models.ScannedArtifact{
+					ArtifactDetail: models.ArtifactDetail{Filename: f.Path()},
+				}
 			}
 		}
 	}
