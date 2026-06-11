@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/CycloneDX/cyclonedx-go"
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -274,25 +273,10 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 	dependsOn := make(map[string]cyclonedx.Dependency)
 
 	for _, artifact := range artifacts {
-		artifactPURL, err := purl.From(models.PackageInfo{
-			Name:      artifact.Name,
-			Version:   artifact.Version,
-			Ecosystem: string(artifact.Ecosystem),
-		})
-		if err != nil {
-			continue
-		}
-
 		component := cyclonedx.Component{}
-		properties := make([]cyclonedx.Property, 1)
 		component.Name = artifact.Filename
 		component.BOMRef = artifact.Filename
 		component.Type = fileComponentType
-		properties[0] = cyclonedx.Property{
-			Name:  "osv-scanner:package",
-			Value: artifactPURL.String(),
-		}
-		component.Properties = &properties
 		components[component.BOMRef] = component
 
 		// Computing parent dependency
