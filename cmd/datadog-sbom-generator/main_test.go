@@ -390,6 +390,25 @@ func TestRun_WithCycloneDX15(t *testing.T) {
 	})
 }
 
+func TestRun_CycloneDX15DoesNotEmitLegacyPropertyPrefixes(t *testing.T) {
+	t.Parallel()
+	args := []string{
+		"",
+		"--format=cyclonedx-1-5",
+		"--pretty",
+		"./fixtures/integration-test-locks",
+	}
+
+	stdout, _ := runCli(t, cliTestCase{
+		name: "CycloneDX15DoesNotEmitLegacyPropertyPrefixes",
+		args: args,
+		exit: 0,
+	})
+
+	assert.NotContains(t, stdout, "osv-scanner:")
+	assert.NotContains(t, stdout, "datadog-sbom-generator:")
+}
+
 func TestRun_WithEmptyCycloneDX15(t *testing.T) {
 	t.Parallel()
 	args := []string{
