@@ -431,7 +431,18 @@ var RequirementsExtractor = RequirementsTxtExtractor{
 	extractor.WithMatcher{Matchers: []extractor.Matcher{&RequirementsInMatcher{}}},
 }
 
+// GetArtifact implements extractor.ArtifactExtractor.
+// Requirements files do not carry module-identity metadata themselves,
+// so this always returns nil. The implementation exists so that
+// requirements.txt files are emitted as bare file-type SBOM components
+// when ExtractArtifactIds is enabled, allowing them to appear in
+// GetBuildFileTrees even when they contain no identifiable packages.
+func (e RequirementsTxtExtractor) GetArtifact(_ extractor.DepFile, _ extractor.ScanContext) (*models.ScannedArtifact, error) {
+	return nil, nil
+}
+
 var _ extractor.Extractor = RequirementsExtractor
+var _ extractor.ArtifactExtractor = RequirementsExtractor
 
 //nolint:gochecknoinits
 func init() {

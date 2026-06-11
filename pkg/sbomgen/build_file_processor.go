@@ -23,10 +23,11 @@ type ProcessorContext struct {
 	// on, as declared in the SBOM dependencies section.
 	FileDependencies map[string][]string
 
-	// MavenArtifactIDs maps each Maven file path to its "groupId:artifactId"
-	// string, extracted from the "datadog:maven-package" purl property on
-	// file-type components.
-	MavenArtifactIDs map[string]string
+	// ArtifactIDs maps each file path to its ecosystem-specific artifact
+	// identifier, extracted from the "datadog:maven-package" purl property on
+	// file-type components. For Maven this is "groupId:artifactId"; for PyPI
+	// it is the normalized package name.
+	ArtifactIDs map[string]string
 }
 
 // BuildFileProcessor enriches a group of build files of the same FileType.

@@ -255,11 +255,11 @@ Returns sensible defaults: recursive scanning enabled, no path exclusions.
 
 #### `Options`
 
-| Field                        | Type       | Description                                                                                                                                |
-| ---------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Recursive`                  | `bool`     | Scan subdirectories recursively (default: `true`)                                                                                          |
-| `ExcludePaths`               | `[]string` | Glob patterns to exclude from scanning                                                                                                     |
-| `ExtractMavenPomArtifactIds` | `bool`     | Emit file-type components and dependency edges for Maven POMs, enabling `GetBuildFileTrees` dependency and ID resolution (default: `true`) |
+| Field                | Type       | Description                                                                                                                                 |
+| -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Recursive`          | `bool`     | Scan subdirectories recursively (default: `true`)                                                                                           |
+| `ExcludePaths`       | `[]string` | Glob patterns to exclude from scanning                                                                                                      |
+| `ExtractArtifactIds` | `bool`     | Emit file-type components and dependency edges for build files, enabling `GetBuildFileTrees` dependency and ID resolution (default: `true`) |
 
 ## Contributing
 

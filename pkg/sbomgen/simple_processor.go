@@ -2,21 +2,19 @@ package sbomgen
 
 import "sort"
 
-// MavenProcessor enriches pom.xml BuildFiles with transitive dependencies and
-// ecosystem-specific IDs derived from the SBOM.
-//
-// ProcessorContext.FileDependencies contains all direct dependency edges for
-// each POM — both <parent> relationships (from addFileDependencies) and
-// local-module <dependency> relationships (from createFileComponents). The
-// processor computes the full transitive closure via BFS over this graph,
+// SimpleProcessor enriches BuildFiles with transitive dependencies and
+// ecosystem-specific IDs derived from the SBOM. It uses BFS over
+// ProcessorContext.FileDependencies to compute the full transitive closure,
 // restricted to build files present in the SBOM.
 //
-// The ID field is populated with "groupId:artifactId" from the
-// "datadog:maven-package" purl property via ProcessorContext.MavenArtifactIDs.
-type MavenProcessor struct{}
+// The ID field is populated from ProcessorContext.ArtifactIDs.
+//
+// SimpleProcessor is suitable for any file type that follows the "BFS +
+// optional artifact ID" pattern. Register it for each such FileType in init().
+type SimpleProcessor struct{}
 
-// Process resolves transitive dependencies and IDs for a set of pom.xml BuildFiles.
-func (p *MavenProcessor) Process(files []BuildFile, ctx ProcessorContext) map[BuildFile]BuildFileRelations {
+// Process resolves transitive dependencies and IDs for a set of BuildFiles.
+func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[BuildFile]BuildFileRelations {
 	// Index files by path for O(1) lookup.
 	filesByPath := make(map[string]BuildFile, len(files))
 	for _, f := range files {
@@ -24,8 +22,6 @@ func (p *MavenProcessor) Process(files []BuildFile, ctx ProcessorContext) map[Bu
 	}
 
 	// Build the result map with full transitive closure via BFS for each file.
-	// FileDependencies contains both parent edges and local-module dependency
-	// edges, so BFS captures all reachable local build files in one pass.
 	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
 		var deps []BuildFile
@@ -57,7 +53,7 @@ func (p *MavenProcessor) Process(files []BuildFile, ctx ProcessorContext) map[Bu
 		}
 
 		result[f] = BuildFileRelations{
-			ID:           ctx.MavenArtifactIDs[f.FilePath],
+			ID:           ctx.ArtifactIDs[f.FilePath],
 			Dependencies: deps,
 		}
 	}
@@ -67,5 +63,7 @@ func (p *MavenProcessor) Process(files []BuildFile, ctx ProcessorContext) map[Bu
 
 //nolint:gochecknoinits
 func init() {
-	RegisterBuildFileProcessor(FileTypePomXML, &MavenProcessor{})
+	RegisterBuildFileProcessor(FileTypePomXML, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeRequirementsTxt, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypePyprojectToml, &SimpleProcessor{})
 }

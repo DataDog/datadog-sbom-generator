@@ -187,6 +187,7 @@ type PyProjectBuildSystem struct {
 }
 
 type PyProjectProject struct {
+	Name                 string              `toml:"name"`
 	Dependencies         []string            `toml:"dependencies"`
 	OptionalDependencies map[string][]string `toml:"optional-dependencies"`
 }
@@ -198,6 +199,7 @@ type PyProjectToolSections struct {
 }
 
 type PyProjectPoetry struct {
+	Name            string                          `toml:"name"`
 	Dependencies    map[string]any                  `toml:"dependencies"`
 	DevDependencies map[string]any                  `toml:"dev-dependencies"`
 	Group           map[string]PyProjectPoetryGroup `toml:"group"`

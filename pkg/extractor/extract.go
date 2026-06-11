@@ -149,10 +149,10 @@ var ErrExtractorNotFound = errors.New("could not determine extractor")
 // ScanContext is used to pass context to extractors
 // It is passed to extractors to allow them to access the root directory of the scan as well as the reporter
 type ScanContext struct {
-	EnabledParsers             map[string]bool
-	RootDir                    string
-	Reporter                   reporter.Reporter
-	ExtractMavenPomArtifactIds bool
+	EnabledParsers     map[string]bool
+	RootDir            string
+	Reporter           reporter.Reporter
+	ExtractArtifactIds bool
 }
 
 func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
@@ -201,11 +201,20 @@ func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
 		return parsedLockfile, err
 	}
 	defer depFile.Close()
-	if context.ExtractMavenPomArtifactIds {
+	if context.ExtractArtifactIds {
 		if e, ok := extractor.(ArtifactExtractor); ok {
 			artifact, err := e.GetArtifact(depFile, context)
 			if err == nil {
 				parsedLockfile.Artifact = artifact
+			}
+			// Even if GetArtifact returned nil, emit a bare file-type component
+			// so every build file that opts in (by implementing ArtifactExtractor)
+			// appears in GetBuildFileTrees. Lockfile-only extractors that do not
+			// implement ArtifactExtractor are intentionally excluded.
+			if parsedLockfile.Artifact == nil {
+				parsedLockfile.Artifact = &models.ScannedArtifact{
+					ArtifactDetail: models.ArtifactDetail{Filename: f.Path()},
+				}
 			}
 		}
 	}

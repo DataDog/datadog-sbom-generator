@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CycloneDX/cyclonedx-go"
+	packageurl "github.com/package-url/packageurl-go"
 )
 
 // FileType represents a recognized build/manifest file type.
@@ -118,12 +119,17 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 	grouped := make(map[FileType][]BuildFile)
 	seen := make(map[BuildFile]struct{})
 
+	// Track all file-type component paths so we can resolve cross-type
+	// dependency targets in the second pass below.
+	fileComponentPaths := make(map[string]struct{})
+
 	for _, comp := range *bom.Components {
-		// File-type components (produced by ExtractMavenPomArtifactIds) represent
+		// File-type components (produced by ExtractArtifactIds) represent
 		// build/manifest files directly. Their BOMRef is the filename relative to
 		// the repo root. Collect them so parent POMs with no package occurrences
 		// are never missed.
 		if comp.Type == cyclonedx.ComponentTypeFile && comp.BOMRef != "" {
+			fileComponentPaths[comp.BOMRef] = struct{}{}
 			addBuildFile(comp.BOMRef, filterSet, seen, grouped)
 		}
 
@@ -146,6 +152,41 @@ func GetBuildFileTrees(sbom []byte, filters ...FileType) map[BuildFile]BuildFile
 
 	// Build the ProcessorContext from the SBOM dependencies section.
 	ctx := buildProcessorContext(&bom)
+
+	// Second pass: resolve cross-type dependency targets to a fixed point.
+	//
+	// A file-type component may have a different basename than the lockfile
+	// that depends on it (e.g. pyproject.toml is a dependency target of
+	// requirements.txt). Such targets are missed by the first pass because
+	// their FileType doesn't match the requesting file's FileType.
+	//
+	// We fix this by repeatedly scanning dependency edges of already-collected
+	// files: if a dependency target is a known file-type component that hasn't
+	// been added to a group yet, we add it under the same FileType as its
+	// dependent so the processor can resolve it during BFS. We loop until no
+	// new files are added (fixed point), resolving chains like:
+	//   requirements.txt → libs/a/pyproject.toml → libs/b/pyproject.toml
+	for {
+		added := false
+		for ft, files := range grouped {
+			for _, f := range files {
+				for _, depPath := range ctx.FileDependencies[f.FilePath] {
+					if _, isFileComponent := fileComponentPaths[depPath]; !isFileComponent {
+						continue
+					}
+					bf := BuildFile{FileType: ft, FilePath: depPath}
+					if _, exists := seen[bf]; !exists {
+						seen[bf] = struct{}{}
+						grouped[ft] = append(grouped[ft], bf)
+						added = true
+					}
+				}
+			}
+		}
+		if !added {
+			break
+		}
+	}
 
 	// Dispatch each group to its registered processor and merge the results.
 	for ft, files := range grouped {
@@ -173,35 +214,21 @@ const mavenParentPomProperty = "datadog:maven-parent-pom"
 // cycle.
 const mavenPackageProperty = "datadog:maven-package"
 
-// parseMavenArtifactID extracts "groupId:artifactId" from a Maven purl.
-// For example, "pkg:maven/com.example/my-module@1.0" yields "com.example:my-module".
-// Returns "" if the purl is not a Maven purl or cannot be parsed.
-func parseMavenArtifactID(purl string) string {
-	const prefix = "pkg:maven/"
-	if !strings.HasPrefix(purl, prefix) {
-		return ""
-	}
-	rest := purl[len(prefix):]
-
-	// Split into groupId/artifactId[@version]
-	slash := strings.IndexByte(rest, '/')
-	if slash < 0 {
-		return ""
-	}
-	groupID := rest[:slash]
-	artifactAndVersion := rest[slash+1:]
-
-	// Strip @version if present.
-	artifactID := artifactAndVersion
-	if at := strings.IndexByte(artifactAndVersion, '@'); at >= 0 {
-		artifactID = artifactAndVersion[:at]
-	}
-
-	if groupID == "" || artifactID == "" {
+// parseArtifactID extracts an ecosystem-specific artifact identifier from a
+// purl string. For purls with a namespace (e.g. Maven, npm) it returns
+// "namespace:name"; for purls without a namespace (e.g. PyPI) it returns the
+// name alone. Returns "" if the purl cannot be parsed.
+func parseArtifactID(purl string) string {
+	parsed, err := packageurl.FromString(purl)
+	if err != nil || parsed.Name == "" {
 		return ""
 	}
 
-	return groupID + ":" + artifactID
+	if parsed.Namespace != "" {
+		return parsed.Namespace + ":" + parsed.Name
+	}
+
+	return parsed.Name
 }
 
 // buildProcessorContext extracts enrichment data from the SBOM into a
@@ -212,7 +239,7 @@ func parseMavenArtifactID(purl string) string {
 func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	ctx := ProcessorContext{
 		FileDependencies: make(map[string][]string),
-		MavenArtifactIDs: make(map[string]string),
+		ArtifactIDs:      make(map[string]string),
 	}
 
 	for _, comp := range *bom.Components {
@@ -221,8 +248,8 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 		}
 		for _, prop := range *comp.Properties {
 			if prop.Name == mavenPackageProperty && prop.Value != "" {
-				if id := parseMavenArtifactID(prop.Value); id != "" {
-					ctx.MavenArtifactIDs[comp.BOMRef] = id
+				if id := parseArtifactID(prop.Value); id != "" {
+					ctx.ArtifactIDs[comp.BOMRef] = id
 				}
 			}
 		}

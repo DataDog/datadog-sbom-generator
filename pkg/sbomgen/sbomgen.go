@@ -31,19 +31,28 @@ type Options struct {
 	// ExcludePaths is a list of glob patterns to exclude from scanning.
 	ExcludePaths []string
 
-	// ExtractMavenPomArtifactIds controls whether Maven pom.xml artifact IDs
-	// and parent dependency relationships are extracted and included in the SBOM.
+	// ManifestParsers enables extractors that read manifest files (e.g.
+	// pyproject.toml, package.json) as package sources when no lockfile is
+	// present. Additive to the default lockfile extractor set.
+	ManifestParsers bool
+
+	// ExtractArtifactIds controls whether build file artifact IDs and dependency
+	// relationships are extracted and included in the SBOM. When true, extractors
+	// that implement ArtifactExtractor produce file-type components and dependency
+	// edges, enabling GetBuildFileTrees dependency and ID resolution.
+	// Enabling this also activates manifest parsers internally, because manifest
+	// extractors (e.g. PyProjectTOMLExtractor) are needed to call GetArtifact.
 	// Defaults to true in DefaultOptions.
-	ExtractMavenPomArtifactIds bool
+	ExtractArtifactIds bool
 }
 
 // DefaultOptions returns Options with sensible defaults:
 // recursive scanning enabled, no exclusions, and artifact extraction enabled.
 func DefaultOptions() Options {
 	return Options{
-		Recursive:                  true,
-		ExcludePaths:               []string{},
-		ExtractMavenPomArtifactIds: true,
+		Recursive:          true,
+		ExcludePaths:       []string{},
+		ExtractArtifactIds: true,
 	}
 }
 
@@ -57,10 +66,11 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 	}
 
 	actions := scanner.ScannerActions{
-		DirectoryPaths:             dirs,
-		ExcludePaths:               opts.ExcludePaths,
-		Recursive:                  opts.Recursive,
-		ExtractMavenPomArtifactIds: opts.ExtractMavenPomArtifactIds,
+		DirectoryPaths:     dirs,
+		ExcludePaths:       opts.ExcludePaths,
+		Recursive:          opts.Recursive,
+		ManifestParsers:    opts.ManifestParsers || opts.ExtractArtifactIds,
+		ExtractArtifactIds: opts.ExtractArtifactIds,
 	}
 
 	r := reporter.NewCycloneDXReporter(&bytes.Buffer{}, &bytes.Buffer{}, reporter.WarnLevel)

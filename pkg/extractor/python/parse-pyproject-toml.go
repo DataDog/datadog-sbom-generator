@@ -352,6 +352,42 @@ func isConcreteVersion(version string) bool {
 	return version != "" && !strings.Contains(version, "*") && !strings.ContainsAny(version, " \t")
 }
 
+// GetArtifact extracts the Python package identity from a pyproject.toml file.
+// It returns the [project].name field as the artifact name, using the file's
+// own path as Filename so that findArtifact can match packages from sibling
+// lockfiles (e.g. requirements.txt) against this module.
+func (e PyProjectTOMLExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	if !ctx.ExtractArtifactIds {
+		return nil, nil
+	}
+
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	var pyproject PyProjectTOML
+	if err := toml.Unmarshal(content, &pyproject); err != nil {
+		return nil, err
+	}
+
+	name := normalizedRequirementName(pyproject.Project.Name)
+	if name == "" && pyproject.Tool.Poetry != nil {
+		name = normalizedRequirementName(pyproject.Tool.Poetry.Name)
+	}
+	if name == "" {
+		return nil, nil
+	}
+
+	return &models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Name:      name,
+			Filename:  f.Path(),
+			Ecosystem: models.EcosystemPyPI,
+		},
+	}, nil
+}
+
 var PyProjectExtractor = PyProjectTOMLExtractor{}
 
 func ParsePyProjectTOML(pathToLockfile string) ([]extractor.PackageDetails, error) {
@@ -360,6 +396,7 @@ func ParsePyProjectTOML(pathToLockfile string) ([]extractor.PackageDetails, erro
 
 var _ extractor.Extractor = PyProjectExtractor
 var _ extractor.ManifestExtractor = PyProjectExtractor
+var _ extractor.ArtifactExtractor = PyProjectExtractor
 
 //nolint:gochecknoinits
 func init() {
