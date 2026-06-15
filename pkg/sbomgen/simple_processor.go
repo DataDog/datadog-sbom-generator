@@ -13,6 +13,13 @@ import "sort"
 // optional artifact ID" pattern. Register it for each such FileType in init().
 type SimpleProcessor struct{}
 
+// bfsNode is an entry in the BFS queue carrying both the path and the hop
+// depth at which it was reached from the source file.
+type bfsNode struct {
+	path  string
+	depth int
+}
+
 // Process resolves transitive dependencies and IDs for a set of BuildFiles.
 func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[BuildFile]BuildFileRelations {
 	// Index files by path for O(1) lookup.
@@ -24,21 +31,21 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 	// Build the result map with full transitive closure via BFS for each file.
 	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
-		var deps []BuildFile
+		var deps []BuildFileWithHopCount
 		visited := map[string]struct{}{f.FilePath: {}} // cycle protection
-		queue := []string{f.FilePath}
+		queue := []bfsNode{{path: f.FilePath, depth: 0}}
 
 		for len(queue) > 0 {
-			current := queue[0]
+			node := queue[0]
 			queue = queue[1:]
-			for _, depPath := range ctx.FileDependencies[current] {
+			for _, depPath := range ctx.FileDependencies[node.path] {
 				if _, seen := visited[depPath]; seen {
 					continue
 				}
 				visited[depPath] = struct{}{}
 				if dep, known := filesByPath[depPath]; known {
-					deps = append(deps, dep)
-					queue = append(queue, depPath)
+					deps = append(deps, BuildFileWithHopCount{BuildFile: dep, HopCount: node.depth + 1})
+					queue = append(queue, bfsNode{path: depPath, depth: node.depth + 1})
 				}
 			}
 		}
@@ -49,7 +56,7 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 		})
 
 		if deps == nil {
-			deps = []BuildFile{}
+			deps = []BuildFileWithHopCount{}
 		}
 
 		result[f] = BuildFileRelations{

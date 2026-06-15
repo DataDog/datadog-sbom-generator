@@ -66,7 +66,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "    id: %s\n", rels.ID)
 		}
 		for _, dep := range rels.Dependencies {
-			fmt.Fprintf(os.Stderr, "    dep: %s\n", dep.FilePath)
+			fmt.Fprintf(os.Stderr, "    dep (hop=%d): %s\n", dep.HopCount, dep.FilePath)
 		}
 	}
 }

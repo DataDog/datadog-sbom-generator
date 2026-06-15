@@ -71,6 +71,11 @@ func pomFile(path string) BuildFile {
 	return BuildFile{FileType: FileTypePomXML, FilePath: path}
 }
 
+// pomFileWithHop is a shorthand for a pom.xml BuildFileWithHopCount.
+func pomFileWithHop(path string, hop int) BuildFileWithHopCount {
+	return BuildFileWithHopCount{BuildFile: pomFile(path), HopCount: hop}
+}
+
 // --- Tests ---
 
 // TestSimpleProcessor_Maven_SingleRootPom verifies that a standalone pom.xml
@@ -136,8 +141,8 @@ func TestSimpleProcessor_Maven_ParentChild(t *testing.T) {
 	if child.ID != "com.example:child" {
 		t.Errorf("child: expected ID=com.example:child, got %q", child.ID)
 	}
-	if len(child.Dependencies) != 1 || child.Dependencies[0] != pomFile("pom.xml") {
-		t.Errorf("child: expected Dependencies=[pom.xml], got %v", child.Dependencies)
+	if len(child.Dependencies) != 1 || child.Dependencies[0] != pomFileWithHop("pom.xml", 1) {
+		t.Errorf("child: expected Dependencies=[pom.xml hop=1], got %v", child.Dependencies)
 	}
 }
 
@@ -195,8 +200,8 @@ func TestSimpleProcessor_Maven_MultiModule(t *testing.T) {
 		if rel.ID != expectedID {
 			t.Errorf("%s: expected ID=%s, got %q", childPath, expectedID, rel.ID)
 		}
-		if len(rel.Dependencies) != 1 || rel.Dependencies[0] != pomFile("pom.xml") {
-			t.Errorf("%s: expected Dependencies=[pom.xml], got %v", childPath, rel.Dependencies)
+		if len(rel.Dependencies) != 1 || rel.Dependencies[0] != pomFileWithHop("pom.xml", 1) {
+			t.Errorf("%s: expected Dependencies=[pom.xml hop=1], got %v", childPath, rel.Dependencies)
 		}
 	}
 }
@@ -241,23 +246,23 @@ func TestSimpleProcessor_Maven_DeepHierarchy(t *testing.T) {
 	if mid.ID != "com.example:module" {
 		t.Errorf("module: expected ID=com.example:module, got %q", mid.ID)
 	}
-	if len(mid.Dependencies) != 1 || mid.Dependencies[0] != pomFile("pom.xml") {
-		t.Errorf("module: expected Dependencies=[pom.xml], got %v", mid.Dependencies)
+	if len(mid.Dependencies) != 1 || mid.Dependencies[0] != pomFileWithHop("pom.xml", 1) {
+		t.Errorf("module: expected Dependencies=[pom.xml hop=1], got %v", mid.Dependencies)
 	}
 
 	leaf := result[pomFile("module/sub/pom.xml")]
 	if leaf.ID != "com.example:sub" {
 		t.Errorf("sub: expected ID=com.example:sub, got %q", leaf.ID)
 	}
-	// Transitive: leaf depends on module/pom.xml AND pom.xml, sorted by FilePath.
+	// Transitive: leaf depends on module/pom.xml (hop=1) AND pom.xml (hop=2), sorted by FilePath.
 	if len(leaf.Dependencies) != 2 {
 		t.Fatalf("sub: expected 2 Dependencies, got %v", leaf.Dependencies)
 	}
-	if leaf.Dependencies[0] != pomFile("module/pom.xml") {
-		t.Errorf("sub: expected Dependencies[0]=module/pom.xml, got %v", leaf.Dependencies[0])
+	if leaf.Dependencies[0] != pomFileWithHop("module/pom.xml", 1) {
+		t.Errorf("sub: expected Dependencies[0]=module/pom.xml hop=1, got %v", leaf.Dependencies[0])
 	}
-	if leaf.Dependencies[1] != pomFile("pom.xml") {
-		t.Errorf("sub: expected Dependencies[1]=pom.xml, got %v", leaf.Dependencies[1])
+	if leaf.Dependencies[1] != pomFileWithHop("pom.xml", 2) {
+		t.Errorf("sub: expected Dependencies[1]=pom.xml hop=2, got %v", leaf.Dependencies[1])
 	}
 }
 
@@ -340,16 +345,16 @@ func TestSimpleProcessor_Maven_SiblingModuleDependency(t *testing.T) {
 	if len(modA.Dependencies) != 2 {
 		t.Fatalf("module-a: expected 2 Dependencies, got %v", modA.Dependencies)
 	}
-	if modA.Dependencies[0] != pomFile("module-b/pom.xml") {
-		t.Errorf("module-a: expected Dependencies[0]=module-b/pom.xml, got %v", modA.Dependencies[0])
+	if modA.Dependencies[0] != pomFileWithHop("module-b/pom.xml", 1) {
+		t.Errorf("module-a: expected Dependencies[0]=module-b/pom.xml hop=1, got %v", modA.Dependencies[0])
 	}
-	if modA.Dependencies[1] != pomFile("pom.xml") {
-		t.Errorf("module-a: expected Dependencies[1]=pom.xml, got %v", modA.Dependencies[1])
+	if modA.Dependencies[1] != pomFileWithHop("pom.xml", 1) {
+		t.Errorf("module-a: expected Dependencies[1]=pom.xml hop=1, got %v", modA.Dependencies[1])
 	}
 
 	modB := result[pomFile("module-b/pom.xml")]
-	if len(modB.Dependencies) != 1 || modB.Dependencies[0] != pomFile("pom.xml") {
-		t.Errorf("module-b: expected Dependencies=[pom.xml], got %v", modB.Dependencies)
+	if len(modB.Dependencies) != 1 || modB.Dependencies[0] != pomFileWithHop("pom.xml", 1) {
+		t.Errorf("module-b: expected Dependencies=[pom.xml hop=1], got %v", modB.Dependencies)
 	}
 }
 
@@ -513,7 +518,7 @@ func TestSimpleProcessor_Maven_ParentPomViaFileComponent(t *testing.T) {
 	}
 
 	child := result[pomFile("child/pom.xml")]
-	if len(child.Dependencies) != 1 || child.Dependencies[0] != pomFile("pom.xml") {
-		t.Errorf("child: expected Dependencies=[pom.xml], got %v", child.Dependencies)
+	if len(child.Dependencies) != 1 || child.Dependencies[0] != pomFileWithHop("pom.xml", 1) {
+		t.Errorf("child: expected Dependencies=[pom.xml hop=1], got %v", child.Dependencies)
 	}
 }

@@ -1,5 +1,13 @@
 package sbomgen
 
+// BuildFileWithHopCount wraps a BuildFile with its hop distance from the
+// source file. HopCount is 1 for direct dependencies, 2 for
+// dependencies-of-dependencies, and so on.
+type BuildFileWithHopCount struct {
+	BuildFile
+	HopCount int
+}
+
 // BuildFileRelations holds the resolved relationships of a build file.
 //
 // ID is an ecosystem-specific identifier (e.g. Maven "groupId:artifactId").
@@ -12,8 +20,8 @@ type BuildFileRelations struct {
 	// For Maven this is "groupId:artifactId"; for other ecosystems it is empty.
 	ID string
 	// Dependencies lists all transitively reachable build files, sorted by
-	// FilePath.
-	Dependencies []BuildFile
+	// FilePath, each annotated with its hop distance from this file.
+	Dependencies []BuildFileWithHopCount
 }
 
 // ProcessorContext carries SBOM-derived data that processors can use for
@@ -57,7 +65,7 @@ type noopProcessor struct{}
 func (noopProcessor) Process(files []BuildFile, _ ProcessorContext) map[BuildFile]BuildFileRelations {
 	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
-		result[f] = BuildFileRelations{Dependencies: []BuildFile{}}
+		result[f] = BuildFileRelations{Dependencies: []BuildFileWithHopCount{}}
 	}
 
 	return result

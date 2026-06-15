@@ -408,7 +408,7 @@ func (p *stubbedProcessor) Process(files []BuildFile, _ ProcessorContext) map[Bu
 	p.received = append(p.received, files...)
 	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
-		result[f] = BuildFileRelations{Dependencies: []BuildFile{p.child}}
+		result[f] = BuildFileRelations{Dependencies: []BuildFileWithHopCount{{BuildFile: p.child, HopCount: 1}}}
 	}
 
 	return result
@@ -439,7 +439,7 @@ func TestGetBuildFileTrees_RegisteredProcessorIsCalled(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected key %+v not found", expected)
 	}
-	if len(rel.Dependencies) != 1 || rel.Dependencies[0] != sentinel {
+	if len(rel.Dependencies) != 1 || rel.Dependencies[0].BuildFile != sentinel {
 		t.Errorf("expected sentinel dependency, got %v", rel.Dependencies)
 	}
 	if len(stub.received) != 1 || stub.received[0] != expected {
