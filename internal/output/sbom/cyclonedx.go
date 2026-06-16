@@ -319,6 +319,25 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 			}
 		}
 
+		// Direct project-level build file dependencies (e.g. Gradle project(':...') refs).
+		// These produce build-file → build-file edges that GetBuildFileTrees can traverse.
+		for _, dep := range artifact.ProjectDeps {
+			if dep.Filename == "" {
+				continue
+			}
+			if dependency, ok := dependsOn[artifact.Filename]; ok {
+				dependencies := append(*dependency.Dependencies, dep.Filename)
+				slices.Sort(dependencies)
+				dependency.Dependencies = &dependencies
+				dependsOn[artifact.Filename] = dependency
+			} else {
+				dependsOn[artifact.Filename] = cyclonedx.Dependency{
+					Ref:          artifact.Filename,
+					Dependencies: &[]string{dep.Filename},
+				}
+			}
+		}
+
 		if len(properties) > 0 {
 			component.Properties = &properties
 		}

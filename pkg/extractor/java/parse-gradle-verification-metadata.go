@@ -122,6 +122,50 @@ func (e GradleVerificationMetadataExtractor) Extract(f extractor.DepFile, contex
 	return pkgs, nil
 }
 
+// GetArtifact implements extractor.ArtifactExtractor.
+// verification-metadata.xml lives at <root>/gradle/verification-metadata.xml,
+// so the build file is one level up (../build.gradle or ../build.gradle.kts).
+// The build file is read to extract group and project deps, mirroring
+// GradleLockExtractor.GetArtifact. If no build file is found, nil is returned.
+func (e GradleVerificationMetadataExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	for _, name := range []string{"../" + buildGradleFilename, "../" + buildGradleKtsFilename} {
+		buildFile, err := f.Open(name)
+		if err != nil {
+			continue
+		}
+
+		content, err := io.ReadAll(buildFile)
+		buildFilePath := buildFile.Path()
+		_ = buildFile.Close()
+		if err != nil {
+			return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: buildFilePath}}, err
+		}
+
+		artifact := &models.ScannedArtifact{
+			ArtifactDetail: models.ArtifactDetail{
+				Filename:  buildFilePath,
+				Ecosystem: models.EcosystemMaven,
+			},
+		}
+
+		// verification-metadata.xml is at <root>/gradle/; project dir is two levels up.
+		if group := extractTopLevelGroup(content); group != "" {
+			projectName := filepath.Base(filepath.Dir(filepath.Dir(f.Path())))
+			artifact.Name = group + ":" + projectName
+		}
+
+		if ctx.RootDir != "" {
+			artifact.ProjectDeps = extractGradleProjectDeps(content, ctx.RootDir)
+		}
+
+		return artifact, nil
+	}
+
+	return nil, nil
+}
+
+var _ extractor.ArtifactExtractor = GradleVerificationMetadataExtractor{}
+
 var GradleVerificationExtractor = GradleVerificationMetadataExtractor{
 	extractor.WithMatcher{Matchers: []extractor.Matcher{&BuildGradleMatcher{}}},
 }

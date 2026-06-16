@@ -16,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGradleLockExtractor_ShouldExtract(t *testing.T) {
@@ -308,4 +309,144 @@ func TestParseGradleLock_WithInvalidLines(t *testing.T) {
 			Ecosystem:      models.EcosystemMaven,
 		},
 	})
+}
+
+// Compile-time check: GradleLockExtractor must satisfy ArtifactExtractor.
+var _ extractor.ArtifactExtractor = java.GradleLockExtractor{}
+
+func TestGradleLockExtractor_GetArtifact_ReturnsBuildGradleKts(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	lockfilePath := filepath.Join(dir, "gradle.lockfile")
+	buildFilePath := filepath.Join(dir, "build.gradle.kts")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte(""), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}
+
+func TestGradleLockExtractor_GetArtifact_ReturnsBuildGradle(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	lockfilePath := filepath.Join(dir, "gradle.lockfile")
+	buildFilePath := filepath.Join(dir, "build.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte(""), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}
+
+func TestGradleLockExtractor_GetArtifact_ReturnsNilWhenNoBuildFile(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	lockfilePath := filepath.Join(dir, "gradle.lockfile")
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	assert.Nil(t, artifact)
+}
+
+func TestGradleLockExtractor_GetArtifact_SetsGroupArtifactName(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	lockfilePath := filepath.Join(dir, "gradle.lockfile")
+	buildFilePath := filepath.Join(dir, "build.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("group = 'com.example'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	// Name = "group:projectDirName" where projectDirName = basename of the lockfile's parent dir.
+	assert.Equal(t, "com.example:"+filepath.Base(dir), artifact.Name)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}
+
+func TestGradleLockExtractor_GetArtifact_ExtractsProjectDeps(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	moduleDir := filepath.Join(root, "app")
+	require.NoError(t, os.Mkdir(moduleDir, 0700))
+
+	libDir := filepath.Join(root, "lib")
+	require.NoError(t, os.Mkdir(libDir, 0700))
+
+	lockfilePath := filepath.Join(moduleDir, "gradle.lockfile")
+	buildFilePath := filepath.Join(moduleDir, "build.gradle")
+	libBuildFile := filepath.Join(libDir, "build.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("implementation project(':lib')\n"), 0600))
+	require.NoError(t, os.WriteFile(libBuildFile, []byte(""), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	require.Len(t, artifact.ProjectDeps, 1)
+	assert.Equal(t, libBuildFile, artifact.ProjectDeps[0].Filename)
+}
+
+func TestGradleLockExtractor_GetArtifact_SkipsNonExistentProjectDeps(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	moduleDir := filepath.Join(root, "app")
+	require.NoError(t, os.Mkdir(moduleDir, 0700))
+
+	lockfilePath := filepath.Join(moduleDir, "gradle.lockfile")
+	buildFilePath := filepath.Join(moduleDir, "build.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	// references :nonexistent which has no build.gradle
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("implementation project(':nonexistent')\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Empty(t, artifact.ProjectDeps)
 }
