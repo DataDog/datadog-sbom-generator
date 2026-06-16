@@ -73,4 +73,6 @@ func init() {
 	RegisterBuildFileProcessor(FileTypePomXML, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeRequirementsTxt, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypePyprojectToml, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeBuildGradle, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeBuildGradleKts, &SimpleProcessor{})
 }
