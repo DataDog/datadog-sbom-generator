@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/CycloneDX/cyclonedx-go"
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
@@ -280,19 +279,6 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 		component.Type = fileComponentType
 
 		var properties []cyclonedx.Property
-		if artifact.Name != "" {
-			artifactPURL, err := purl.From(models.PackageInfo{
-				Name:      artifact.Name,
-				Version:   artifact.Version,
-				Ecosystem: string(artifact.Ecosystem),
-			})
-			if err == nil {
-				properties = append(properties, cyclonedx.Property{
-					Name:  mavenPackageProperty,
-					Value: artifactPURL.String(),
-				})
-			}
-		}
 		// Computing parent dependency
 		if artifact.DependsOn != nil {
 			// Record the parent POM as an explicit property so consumers can
