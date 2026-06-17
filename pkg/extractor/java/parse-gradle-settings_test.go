@@ -119,13 +119,16 @@ func TestParseGradleSettingsProjectName_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", name)
 }
 
-func TestExtractGroupFromRootBuildFile_TopLevel(t *testing.T) {
+func TestExtractGroupFromRootBuildFile_TopLevel_NotInherited(t *testing.T) {
 	t.Parallel()
 
+	// A top-level `group = 'x'` in the root build file only applies to the root
+	// project in Gradle, not to subprojects. extractGroupFromRootBuildFile must
+	// not return it, to avoid incorrectly assigning it to ungrouped subprojects.
 	root := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle"), []byte("group = 'com.example'\n"), 0600))
 
-	assert.Equal(t, "com.example", extractGroupFromRootBuildFile(root))
+	assert.Equal(t, "", extractGroupFromRootBuildFile(root))
 }
 
 func TestExtractGroupFromRootBuildFile_AllprojectsBlock(t *testing.T) {
@@ -138,11 +141,12 @@ func TestExtractGroupFromRootBuildFile_AllprojectsBlock(t *testing.T) {
 	assert.Equal(t, "com.datadoghq", extractGroupFromRootBuildFile(root))
 }
 
-func TestExtractGroupFromRootBuildFile_KotlinDSL(t *testing.T) {
+func TestExtractGroupFromRootBuildFile_KotlinDSL_AllprojectsBlock(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle.kts"), []byte("group = \"com.example.kts\"\n"), 0600))
+	content := "allprojects {\n    group = \"com.example.kts\"\n}\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle.kts"), []byte(content), 0600))
 
 	assert.Equal(t, "com.example.kts", extractGroupFromRootBuildFile(root))
 }

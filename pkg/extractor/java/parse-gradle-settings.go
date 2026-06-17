@@ -29,6 +29,14 @@ var (
 	// include argument list. Requiring the leading ':' avoids false positives from
 	// inline comments or other quoted strings in the same line.
 	includeRefRe = cachedregexp.MustCompile(`['"](:(?:[^'"]+))['"]`)
+
+	// Matches group inside allprojects { } or subprojects { } blocks.
+	// (?s) makes '.' match newlines so the pattern spans the block body.
+	// This is intentionally restricted to inherited group declarations:
+	// a top-level `group = 'x'` in the root build file applies only to the root
+	// project in Gradle, not to subprojects, so we must not use it as a fallback
+	// for subproject group resolution.
+	inheritedGroupRe = cachedregexp.MustCompile(`(?s)(?:allprojects|subprojects)\s*\{.*?group\s*=\s*['"]([^'"]+)['"]`)
 )
 
 // parseGradleSettingsProjectName reads settings.gradle (or settings.gradle.kts) from
@@ -38,6 +46,13 @@ var (
 func parseGradleSettingsProjectName(rootDir, projectDir string) string {
 	if rootDir == "" {
 		return ""
+	}
+
+	// Normalize rootDir so filepath.Rel works when the scanner is invoked with a
+	// relative path (e.g. "datadog-sbom-generator scan ."). DepFile.Path() returns
+	// an absolute path, so a relative rootDir would cause filepath.Rel to fail.
+	if abs, err := filepath.Abs(rootDir); err == nil {
+		rootDir = abs
 	}
 
 	content := readSettingsFile(rootDir)
@@ -101,9 +116,10 @@ func readSettingsFile(dir string) []byte {
 }
 
 // extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts
-// and extracts the group defined there (e.g. via allprojects { group = '...' } or
-// a top-level group = '...' assignment). Used as a fallback when a subproject's
-// own build file does not declare group, inheriting it from the root instead.
+// and extracts the group declared inside an allprojects {} or subprojects {} block.
+// A top-level `group = 'x'` in the root build file only applies to the root project
+// in Gradle and is intentionally NOT used here, to avoid assigning it to subprojects
+// that have no group of their own.
 func extractGroupFromRootBuildFile(rootDir string) string {
 	if rootDir == "" {
 		return ""
@@ -115,8 +131,8 @@ func extractGroupFromRootBuildFile(rootDir string) string {
 			continue
 		}
 
-		if group := extractTopLevelGroup(data); group != "" {
-			return group
+		if m := inheritedGroupRe.FindSubmatch(data); m != nil {
+			return string(m[1])
 		}
 	}
 
