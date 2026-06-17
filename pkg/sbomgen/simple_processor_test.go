@@ -596,6 +596,52 @@ func TestSimpleProcessor_Gradle_SingleBuildFile(t *testing.T) {
 	}
 }
 
+// TestSimpleProcessor_Gradle_ProjectDepWithNoLockfile verifies that a Gradle
+// subproject that declares a project(':lib') dependency — but where lib/ has no
+// lockfile of its own — still appears in GetBuildFileTrees after the fix that
+// emits a stub file component for the ProjectDep target.
+//
+// Layout:
+//
+//	app/build.gradle  →  project(':lib')
+//	lib/build.gradle  ← stub file component (no lockfile, no package occurrences)
+func TestSimpleProcessor_Gradle_ProjectDepWithNoLockfile(t *testing.T) {
+	t.Parallel()
+
+	// app/build.gradle has package occurrences (its lockfile was parsed).
+	// lib/build.gradle is a stub file component only — no lockfile, no packages.
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			gradleComponent("com.example:app", "app/build.gradle"),
+			// lib/build.gradle: stub file component produced by the cyclonedx fix.
+			{
+				Type:   cyclonedx.ComponentTypeFile,
+				BOMRef: "lib/build.gradle",
+				Name:   "lib/build.gradle",
+			},
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/build.gradle", Dependencies: &[]string{"lib/build.gradle"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeBuildGradle)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries (app + lib), got %d: %v", len(result), result)
+	}
+
+	app := result[gradleFile("app/build.gradle")]
+	if len(app.Dependencies) != 1 || app.Dependencies[0].BuildFile != gradleFile("lib/build.gradle") {
+		t.Errorf("app: expected Dependencies=[lib/build.gradle hop=1], got %v", app.Dependencies)
+	}
+
+	lib := result[gradleFile("lib/build.gradle")]
+	if len(lib.Dependencies) != 0 {
+		t.Errorf("lib: expected no Dependencies, got %v", lib.Dependencies)
+	}
+}
+
 // TestSimpleProcessor_GradleKts_SingleBuildFile verifies that a standalone
 // build.gradle.kts with no file-type components or dependency edges gets empty
 // dependencies and empty ID.
