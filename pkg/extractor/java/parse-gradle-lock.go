@@ -3,9 +3,12 @@ package java
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
@@ -93,6 +96,100 @@ func (e GradleLockExtractor) Extract(f extractor.DepFile, context extractor.Scan
 
 	return pkgs, nil
 }
+
+// GetArtifact implements extractor.ArtifactExtractor.
+// It looks for a build.gradle or build.gradle.kts file in the same directory
+// as the lockfile, reads it to extract:
+//   - the top-level group assignment (group:projectDir → artifact Name for findArtifact matching)
+//   - project(':...') references → ProjectDeps for cross-subproject dependency edges
+//
+// If no build file is found, nil is returned.
+func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	for _, name := range []string{buildGradleFilename, buildGradleKtsFilename} {
+		buildFile, err := f.Open(name)
+		if err != nil {
+			continue
+		}
+
+		content, err := io.ReadAll(buildFile)
+		buildFilePath := buildFile.Path()
+		_ = buildFile.Close()
+		if err != nil {
+			return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: buildFilePath}}, err
+		}
+
+		artifact := &models.ScannedArtifact{
+			ArtifactDetail: models.ArtifactDetail{
+				Filename:  buildFilePath,
+				Ecosystem: models.EcosystemMaven,
+			},
+		}
+
+		// Set artifact.Name = "group:projectDir" so findArtifact can match this
+		// subproject when it appears as a dependency in another module's lockfile.
+		if group := extractTopLevelGroup(content); group != "" {
+			projectName := filepath.Base(filepath.Dir(f.Path()))
+			artifact.Name = group + ":" + projectName
+		}
+
+		// Extract project(':submodule') references to build inter-module dep edges.
+		if ctx.RootDir != "" {
+			artifact.ProjectDeps = extractGradleProjectDeps(content, ctx.RootDir)
+		}
+
+		return artifact, nil
+	}
+
+	return nil, nil
+}
+
+// extractTopLevelGroup extracts the value of a top-level `group = "..."` or
+// `group = '...'` assignment from Gradle build file content.
+// It ignores dependency kwargs like `group: 'x'` or method calls like `group("x")`.
+func extractTopLevelGroup(content []byte) string {
+	groupRegex := cachedregexp.MustCompile(`(?m)^[\t ]*group\s*=\s*['"]([^'"]+)['"]`)
+	if m := groupRegex.FindSubmatch(content); m != nil {
+		return string(m[1])
+	}
+
+	return ""
+}
+
+// extractGradleProjectDeps parses project(':submodule') and project(':sub:module')
+// references from Gradle build file content and returns ArtifactDetail entries
+// whose Filename points to the corresponding build.gradle (or build.gradle.kts)
+// under rootDir. Refs that cannot be resolved to an existing file are skipped.
+func extractGradleProjectDeps(content []byte, rootDir string) []models.ArtifactDetail {
+	projectRegex := cachedregexp.MustCompile(`project\(['"]([^'"]+)['"]\)`)
+	matches := projectRegex.FindAllSubmatch(content, -1)
+
+	var deps []models.ArtifactDetail
+	seen := make(map[string]struct{})
+
+	for _, m := range matches {
+		ref := string(m[1]) // e.g. ":communication" or ":dd-java-agent:agent-tooling"
+		// Convert Gradle project path to filesystem path: strip leading ':', replace ':' with '/'.
+		subPath := strings.ReplaceAll(strings.TrimPrefix(ref, ":"), ":", string(filepath.Separator))
+
+		for _, buildFileName := range []string{buildGradleFilename, buildGradleKtsFilename} {
+			depPath := filepath.Join(rootDir, subPath, buildFileName)
+			if _, err := os.Stat(depPath); err != nil {
+				continue
+			}
+			if _, dup := seen[depPath]; dup {
+				break
+			}
+			seen[depPath] = struct{}{}
+			deps = append(deps, models.ArtifactDetail{Filename: depPath})
+
+			break
+		}
+	}
+
+	return deps
+}
+
+var _ extractor.ArtifactExtractor = GradleLockExtractor{}
 
 var GradleExtractor = GradleLockExtractor{
 	extractor.WithMatcher{Matchers: []extractor.Matcher{&BuildGradleMatcher{}}},

@@ -522,3 +522,147 @@ func TestSimpleProcessor_Maven_ParentPomViaFileComponent(t *testing.T) {
 		t.Errorf("child: expected Dependencies=[pom.xml hop=1], got %v", child.Dependencies)
 	}
 }
+
+// --- Gradle build.gradle tests ---
+
+// gradleComponent builds a CycloneDX component with a manifest occurrence for
+// the given build.gradle path, as the SBOM generator would emit it.
+func gradleComponent(name, buildGradlePath string) cyclonedx.Component {
+	return componentWithOccurrences(name, "1.0.0", makeLocation(buildGradlePath, "manifest"))
+}
+
+// gradleFile is a shorthand for a build.gradle BuildFile.
+func gradleFile(path string) BuildFile {
+	return BuildFile{FileType: FileTypeBuildGradle, FilePath: path}
+}
+
+// gradleKtsFile is a shorthand for a build.gradle.kts BuildFile.
+func gradleKtsFile(path string) BuildFile {
+	return BuildFile{FileType: FileTypeBuildGradleKts, FilePath: path}
+}
+
+// TestSimpleProcessor_Gradle_ProcessorRegistered verifies that SimpleProcessor
+// (not noopProcessor) is registered for build.gradle. We distinguish them by
+// providing a dependency edge: SimpleProcessor resolves it via BFS, while
+// noopProcessor would ignore it.
+func TestSimpleProcessor_Gradle_ProcessorRegistered(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			gradleComponent("com.example:app", "app/build.gradle"),
+			gradleComponent("com.example:lib", "lib/build.gradle"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/build.gradle", Dependencies: &[]string{"lib/build.gradle"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeBuildGradle)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries, got %d: %v", len(result), result)
+	}
+
+	app := result[gradleFile("app/build.gradle")]
+	// SimpleProcessor resolves the dependency edge; noopProcessor would return empty.
+	if len(app.Dependencies) != 1 || app.Dependencies[0].BuildFile != gradleFile("lib/build.gradle") {
+		t.Errorf("app: expected Dependencies=[lib/build.gradle], got %v", app.Dependencies)
+	}
+}
+
+// TestSimpleProcessor_Gradle_SingleBuildFile verifies that a standalone
+// build.gradle with no file-type components or dependency edges gets empty
+// dependencies and empty ID.
+func TestSimpleProcessor_Gradle_SingleBuildFile(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOM([]cyclonedx.Component{
+		gradleComponent("com.example:app", "build.gradle"),
+	})
+
+	result := GetBuildFileTrees(sbom, FileTypeBuildGradle)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 entry, got %d: %v", len(result), result)
+	}
+
+	rel := result[gradleFile("build.gradle")]
+	if rel.ID != "" {
+		t.Errorf("expected empty ID, got %q", rel.ID)
+	}
+	if len(rel.Dependencies) != 0 {
+		t.Errorf("expected no Dependencies, got %v", rel.Dependencies)
+	}
+}
+
+// TestSimpleProcessor_Gradle_ProjectDepWithNoLockfile verifies that a Gradle
+// subproject that declares a project(':lib') dependency — but where lib/ has no
+// lockfile of its own — still appears in GetBuildFileTrees after the fix that
+// emits a stub file component for the ProjectDep target.
+//
+// Layout:
+//
+//	app/build.gradle  →  project(':lib')
+//	lib/build.gradle  ← stub file component (no lockfile, no package occurrences)
+func TestSimpleProcessor_Gradle_ProjectDepWithNoLockfile(t *testing.T) {
+	t.Parallel()
+
+	// app/build.gradle has package occurrences (its lockfile was parsed).
+	// lib/build.gradle is a stub file component only — no lockfile, no packages.
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			gradleComponent("com.example:app", "app/build.gradle"),
+			// lib/build.gradle: stub file component produced by the cyclonedx fix.
+			{
+				Type:   cyclonedx.ComponentTypeFile,
+				BOMRef: "lib/build.gradle",
+				Name:   "lib/build.gradle",
+			},
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/build.gradle", Dependencies: &[]string{"lib/build.gradle"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeBuildGradle)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries (app + lib), got %d: %v", len(result), result)
+	}
+
+	app := result[gradleFile("app/build.gradle")]
+	if len(app.Dependencies) != 1 || app.Dependencies[0].BuildFile != gradleFile("lib/build.gradle") {
+		t.Errorf("app: expected Dependencies=[lib/build.gradle hop=1], got %v", app.Dependencies)
+	}
+
+	lib := result[gradleFile("lib/build.gradle")]
+	if len(lib.Dependencies) != 0 {
+		t.Errorf("lib: expected no Dependencies, got %v", lib.Dependencies)
+	}
+}
+
+// TestSimpleProcessor_GradleKts_SingleBuildFile verifies that a standalone
+// build.gradle.kts with no file-type components or dependency edges gets empty
+// dependencies and empty ID.
+func TestSimpleProcessor_GradleKts_SingleBuildFile(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOM([]cyclonedx.Component{
+		componentWithOccurrences("com.example:app", "1.0.0", makeLocation("build.gradle.kts", "manifest")),
+	})
+
+	result := GetBuildFileTrees(sbom, FileTypeBuildGradleKts)
+
+	if len(result) != 1 {
+		t.Fatalf("expected 1 entry, got %d: %v", len(result), result)
+	}
+
+	rel := result[gradleKtsFile("build.gradle.kts")]
+	if rel.ID != "" {
+		t.Errorf("expected empty ID, got %q", rel.ID)
+	}
+	if len(rel.Dependencies) != 0 {
+		t.Errorf("expected no Dependencies, got %v", rel.Dependencies)
+	}
+}

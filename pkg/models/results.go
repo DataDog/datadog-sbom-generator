@@ -15,7 +15,8 @@ type ArtifactDetail struct {
 
 type ScannedArtifact struct {
 	ArtifactDetail
-	DependsOn *ArtifactDetail
+	DependsOn   *ArtifactDetail
+	ProjectDeps []ArtifactDetail // direct project-level build file dependencies (e.g. Gradle subproject refs)
 }
 
 type SourceInfo struct {

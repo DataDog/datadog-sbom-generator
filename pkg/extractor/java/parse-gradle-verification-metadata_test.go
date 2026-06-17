@@ -16,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGradleVerificationMetadataExtractor_ShouldExtract(t *testing.T) {
@@ -776,4 +777,53 @@ func TestParseGradleVerificationMetadata_TwoPackages_BlockLocation(t *testing.T)
 	assert.Equal(t, absoluteLockfilePath, javaparserPkg.BlockLocation.Filename)
 	assert.Equal(t, 18, javaparserPkg.BlockLocation.Line.Start)
 	assert.Equal(t, 22, javaparserPkg.BlockLocation.Line.End)
+}
+
+// Compile-time check: GradleVerificationMetadataExtractor must satisfy ArtifactExtractor.
+var _ extractor.ArtifactExtractor = java.GradleVerificationMetadataExtractor{}
+
+func TestGradleVerificationMetadataExtractor_GetArtifact_ReturnsBuildGradle(t *testing.T) {
+	t.Parallel()
+
+	// verification-metadata.xml lives at <root>/gradle/verification-metadata.xml
+	// so the build file is at <root>/build.gradle.kts (one level up).
+	rootDir := t.TempDir()
+	gradleDir := filepath.Join(rootDir, "gradle")
+	require.NoError(t, os.Mkdir(gradleDir, 0700))
+
+	metadataPath := filepath.Join(gradleDir, "verification-metadata.xml")
+	buildFilePath := filepath.Join(rootDir, "build.gradle.kts")
+
+	require.NoError(t, os.WriteFile(metadataPath, []byte("<verification-metadata/>"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte(""), 0600))
+
+	f, err := extractor.OpenLocalDepFile(metadataPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleVerificationMetadataExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}
+
+func TestGradleVerificationMetadataExtractor_GetArtifact_ReturnsNilWhenNoBuildFile(t *testing.T) {
+	t.Parallel()
+
+	rootDir := t.TempDir()
+	gradleDir := filepath.Join(rootDir, "gradle")
+	require.NoError(t, os.Mkdir(gradleDir, 0700))
+
+	metadataPath := filepath.Join(gradleDir, "verification-metadata.xml")
+	require.NoError(t, os.WriteFile(metadataPath, []byte("<verification-metadata/>"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(metadataPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleVerificationMetadataExtractor{}.GetArtifact(f, extractor.ScanContext{})
+
+	require.NoError(t, err)
+	assert.Nil(t, artifact)
 }

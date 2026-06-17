@@ -319,6 +319,32 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 			}
 		}
 
+		// Direct project-level build file dependencies (e.g. Gradle project(':...') refs).
+		// These produce build-file → build-file edges that GetBuildFileTrees can traverse.
+		for _, dep := range artifact.ProjectDeps {
+			// Ensure the target build file has a file component so GetBuildFileTrees
+			// can traverse the edge. A subproject with no lockfile of its own won't
+			// appear in artifacts, so we create a stub component here.
+			if _, exists := components[dep.Filename]; !exists {
+				components[dep.Filename] = cyclonedx.Component{
+					Name:   dep.Filename,
+					BOMRef: dep.Filename,
+					Type:   fileComponentType,
+				}
+			}
+			if dependency, ok := dependsOn[artifact.Filename]; ok {
+				dependencies := append(*dependency.Dependencies, dep.Filename)
+				slices.Sort(dependencies)
+				dependency.Dependencies = &dependencies
+				dependsOn[artifact.Filename] = dependency
+			} else {
+				dependsOn[artifact.Filename] = cyclonedx.Dependency{
+					Ref:          artifact.Filename,
+					Dependencies: &[]string{dep.Filename},
+				}
+			}
+		}
+
 		if len(properties) > 0 {
 			component.Properties = &properties
 		}
