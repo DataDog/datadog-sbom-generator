@@ -97,3 +97,26 @@ func readSettingsFile(dir string) []byte {
 
 	return nil
 }
+
+// extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts
+// and extracts the group defined there (e.g. via allprojects { group = '...' } or
+// a top-level group = '...' assignment). Used as a fallback when a subproject's
+// own build file does not declare group, inheriting it from the root instead.
+func extractGroupFromRootBuildFile(rootDir string) string {
+	if rootDir == "" {
+		return ""
+	}
+
+	for _, name := range []string{buildGradleFilename, buildGradleKtsFilename} {
+		data, err := os.ReadFile(filepath.Join(rootDir, name))
+		if err != nil {
+			continue
+		}
+
+		if group := extractTopLevelGroup(data); group != "" {
+			return group
+		}
+	}
+
+	return ""
+}

@@ -499,3 +499,34 @@ func TestGradleLockExtractor_GetArtifact_SkipsNonExistentProjectDeps(t *testing.
 	require.NotNil(t, artifact)
 	assert.Empty(t, artifact.ProjectDeps)
 }
+
+func TestGradleLockExtractor_GetArtifact_InheritsGroupFromRootBuildFile(t *testing.T) {
+	t.Parallel()
+
+	// Simulates the common pattern where only the root build.gradle declares group
+	// (via allprojects { group = '...' }) and subprojects inherit it.
+	root := t.TempDir()
+	moduleDir := filepath.Join(root, "communication")
+	require.NoError(t, os.Mkdir(moduleDir, 0700))
+
+	rootBuild := filepath.Join(root, "build.gradle")
+	lockfilePath := filepath.Join(moduleDir, "gradle.lockfile")
+	buildFilePath := filepath.Join(moduleDir, "build.gradle")
+	settingsPath := filepath.Join(root, "settings.gradle")
+
+	require.NoError(t, os.WriteFile(rootBuild, []byte("allprojects {\n  group = 'com.datadoghq'\n}\n"), 0600))
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("// no group declaration — inherited from root\n"), 0600))
+	require.NoError(t, os.WriteFile(settingsPath, []byte("include ':communication'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "com.datadoghq:communication", artifact.Name)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}

@@ -119,6 +119,47 @@ func TestParseGradleSettingsProjectName_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", name)
 }
 
+func TestExtractGroupFromRootBuildFile_TopLevel(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle"), []byte("group = 'com.example'\n"), 0600))
+
+	assert.Equal(t, "com.example", extractGroupFromRootBuildFile(root))
+}
+
+func TestExtractGroupFromRootBuildFile_AllprojectsBlock(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	content := "allprojects {\n  group = 'com.datadoghq'\n}\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle"), []byte(content), 0600))
+
+	assert.Equal(t, "com.datadoghq", extractGroupFromRootBuildFile(root))
+}
+
+func TestExtractGroupFromRootBuildFile_KotlinDSL(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle.kts"), []byte("group = \"com.example.kts\"\n"), 0600))
+
+	assert.Equal(t, "com.example.kts", extractGroupFromRootBuildFile(root))
+}
+
+func TestExtractGroupFromRootBuildFile_NoBuildFile(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	assert.Equal(t, "", extractGroupFromRootBuildFile(root))
+}
+
+func TestExtractGroupFromRootBuildFile_EmptyRootDir(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, "", extractGroupFromRootBuildFile(""))
+}
+
 func TestParseGradleSettingsProjectName_KotlinDSLNameOverride(t *testing.T) {
 	t.Parallel()
 
