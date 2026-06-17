@@ -808,6 +808,32 @@ func TestGradleVerificationMetadataExtractor_GetArtifact_ReturnsBuildGradle(t *t
 	assert.Equal(t, buildFilePath, artifact.Filename)
 }
 
+func TestGradleVerificationMetadataExtractor_GetArtifact_UsesSettingsGradleName(t *testing.T) {
+	t.Parallel()
+
+	rootDir := t.TempDir()
+	gradleDir := filepath.Join(rootDir, "gradle")
+	require.NoError(t, os.Mkdir(gradleDir, 0700))
+
+	metadataPath := filepath.Join(gradleDir, "verification-metadata.xml")
+	buildFilePath := filepath.Join(rootDir, "build.gradle")
+	settingsPath := filepath.Join(rootDir, "settings.gradle")
+
+	require.NoError(t, os.WriteFile(metadataPath, []byte("<verification-metadata/>"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("group = 'com.example'\n"), 0600))
+	require.NoError(t, os.WriteFile(settingsPath, []byte("rootProject.name = 'my-app'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(metadataPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleVerificationMetadataExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: rootDir})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "com.example:my-app", artifact.Name)
+}
+
 func TestGradleVerificationMetadataExtractor_GetArtifact_ReturnsNilWhenNoBuildFile(t *testing.T) {
 	t.Parallel()
 

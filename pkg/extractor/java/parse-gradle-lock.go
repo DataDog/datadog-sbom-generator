@@ -125,10 +125,16 @@ func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Scan
 			},
 		}
 
-		// Set artifact.Name = "group:projectDir" so findArtifact can match this
+		// Set artifact.Name = "group:projectName" so findArtifact can match this
 		// subproject when it appears as a dependency in another module's lockfile.
+		// The project name is resolved from settings.gradle when available,
+		// falling back to the directory basename.
 		if group := extractTopLevelGroup(content); group != "" {
-			projectName := filepath.Base(filepath.Dir(f.Path()))
+			projectDir := filepath.Dir(f.Path())
+			projectName := parseGradleSettingsProjectName(ctx.RootDir, projectDir)
+			if projectName == "" {
+				projectName = filepath.Base(projectDir)
+			}
 			artifact.Name = group + ":" + projectName
 		}
 

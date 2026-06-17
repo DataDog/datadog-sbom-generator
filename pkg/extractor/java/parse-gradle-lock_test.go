@@ -396,6 +396,55 @@ func TestGradleLockExtractor_GetArtifact_SetsGroupArtifactName(t *testing.T) {
 	assert.Equal(t, buildFilePath, artifact.Filename)
 }
 
+func TestGradleLockExtractor_GetArtifact_UsesSettingsGradleName(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	lockfilePath := filepath.Join(root, "gradle.lockfile")
+	buildFilePath := filepath.Join(root, "build.gradle")
+	settingsPath := filepath.Join(root, "settings.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("group = 'com.example'\n"), 0600))
+	require.NoError(t, os.WriteFile(settingsPath, []byte("rootProject.name = 'my-app'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "com.example:my-app", artifact.Name)
+}
+
+func TestGradleLockExtractor_GetArtifact_UsesSettingsGradleSubprojectName(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	subDir := filepath.Join(root, "subA")
+	require.NoError(t, os.Mkdir(subDir, 0700))
+
+	lockfilePath := filepath.Join(subDir, "gradle.lockfile")
+	buildFilePath := filepath.Join(subDir, "build.gradle")
+	settingsPath := filepath.Join(root, "settings.gradle")
+
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("empty=0\n"), 0600))
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("group = 'com.example'\n"), 0600))
+	require.NoError(t, os.WriteFile(settingsPath, []byte("include ':subA'\nproject(':subA').name = 'renamed'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "com.example:renamed", artifact.Name)
+}
+
 func TestGradleLockExtractor_GetArtifact_ExtractsProjectDeps(t *testing.T) {
 	t.Parallel()
 
