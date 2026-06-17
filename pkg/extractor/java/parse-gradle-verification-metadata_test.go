@@ -853,3 +853,35 @@ func TestGradleVerificationMetadataExtractor_GetArtifact_ReturnsNilWhenNoBuildFi
 	require.NoError(t, err)
 	assert.Nil(t, artifact)
 }
+
+func TestGradleVerificationMetadataExtractor_GetArtifact_InheritsGroupFromRootBuildFile(t *testing.T) {
+	t.Parallel()
+
+	// Simulates the common pattern where only the root build.gradle declares group
+	// (via allprojects { group = '...' }) and the project inherits it.
+	// verification-metadata.xml lives at <root>/gradle/verification-metadata.xml,
+	// so the project dir is two levels up (the root itself in this case).
+	rootDir := t.TempDir()
+	gradleDir := filepath.Join(rootDir, "gradle")
+	require.NoError(t, os.Mkdir(gradleDir, 0700))
+
+	metadataPath := filepath.Join(gradleDir, "verification-metadata.xml")
+	buildFilePath := filepath.Join(rootDir, "build.gradle")
+	settingsPath := filepath.Join(rootDir, "settings.gradle")
+
+	require.NoError(t, os.WriteFile(metadataPath, []byte("<verification-metadata/>"), 0600))
+	// Root build.gradle declares group via allprojects — not redeclared in project build file.
+	require.NoError(t, os.WriteFile(buildFilePath, []byte("allprojects {\n  group = 'com.datadoghq'\n}\n"), 0600))
+	require.NoError(t, os.WriteFile(settingsPath, []byte("rootProject.name = 'dd-trace-java'\n"), 0600))
+
+	f, err := extractor.OpenLocalDepFile(metadataPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := java.GradleVerificationMetadataExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: rootDir})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "com.datadoghq:dd-trace-java", artifact.Name)
+	assert.Equal(t, buildFilePath, artifact.Filename)
+}

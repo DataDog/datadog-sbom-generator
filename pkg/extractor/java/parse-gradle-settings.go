@@ -25,8 +25,10 @@ var (
 	// project(':subA').name = 'renamed' or project(":subA").name = "renamed"
 	projectNameRe = cachedregexp.MustCompile(`(?m)^\s*project\(\s*['"]([^'"]+)['"]\s*\)\.name\s*=\s*['"]([^'"]+)['"]`)
 
-	// Matches individual quoted project references like ':subA' or ":subA" within an include argument list.
-	includeRefRe = cachedregexp.MustCompile(`['"]([^'"]+)['"]`)
+	// Matches Gradle project path references like ':subA' or ":sub:module" within an
+	// include argument list. Requiring the leading ':' avoids false positives from
+	// inline comments or other quoted strings in the same line.
+	includeRefRe = cachedregexp.MustCompile(`['"](:(?:[^'"]+))['"]`)
 )
 
 // parseGradleSettingsProjectName reads settings.gradle (or settings.gradle.kts) from

@@ -172,3 +172,37 @@ func TestParseGradleSettingsProjectName_KotlinDSLNameOverride(t *testing.T) {
 	name := parseGradleSettingsProjectName(root, subDir)
 	assert.Equal(t, "renamed-kts", name)
 }
+
+func TestParseGradleSettingsProjectName_MultilineInclude_SingleItem(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	subDir := filepath.Join(root, "subA")
+	require.NoError(t, os.Mkdir(subDir, 0700))
+	// A single-item multiline include is supported: \s* in the regex crosses the
+	// line boundary between include( and the quoted path on the next line.
+	settings := "include(\n  \":subA\"\n)\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle.kts"), []byte(settings), 0600))
+
+	assert.Equal(t, "subA", parseGradleSettingsProjectName(root, subDir))
+}
+
+func TestParseGradleSettingsProjectName_MultilineInclude_MultiItem_NotSupported(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	subA := filepath.Join(root, "subA")
+	subB := filepath.Join(root, "subB")
+	require.NoError(t, os.MkdirAll(subA, 0700))
+	require.NoError(t, os.MkdirAll(subB, 0700))
+	// Multi-item multiline include is NOT fully supported: only the first item on the
+	// matched line is captured; subsequent items on separate lines are missed.
+	// The call site falls back to the directory basename for unresolved projects.
+	settings := "include(\n  \":subA\",\n  \":subB\"\n)\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle.kts"), []byte(settings), 0600))
+
+	// subA is found (first item captured by the regex match).
+	assert.Equal(t, "subA", parseGradleSettingsProjectName(root, subA))
+	// subB is NOT found — falls back to "" at this layer; call site uses dir basename.
+	assert.Equal(t, "", parseGradleSettingsProjectName(root, subB))
+}
