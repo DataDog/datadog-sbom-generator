@@ -56,7 +56,7 @@ func NewJavaReachableDetector(r reporter.Reporter) (*ReachabilityJava, error) {
 	return &ReachabilityJava{
 		tsParser:               tsParser,
 		tsQueriesPerSymbolType: tsQueriesPerSymbolType,
-		reporter:               r,
+		reporter:               reporter.Effective(r),
 	}, nil
 }
 
