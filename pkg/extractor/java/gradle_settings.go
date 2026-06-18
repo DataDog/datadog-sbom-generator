@@ -119,14 +119,58 @@ func readSettingsFile(dir string) []byte {
 	return nil
 }
 
+// stripGradleComments returns a copy of src with Groovy/Kotlin comment content
+// replaced by spaces, preserving byte positions and newlines so that all regexp
+// matches on the result remain aligned with the original source.
+// Single-line comments (// … \n) and block comments (/* … */) are both handled.
+func stripGradleComments(src []byte) []byte {
+	out := make([]byte, len(src))
+	copy(out, src)
+	i := 0
+	for i < len(out) {
+		if i+1 < len(out) && out[i] == '/' && out[i+1] == '/' {
+			// Single-line comment: blank everything up to (but not including) the newline.
+			for i < len(out) && out[i] != '\n' {
+				out[i] = ' '
+				i++
+			}
+		} else if i+1 < len(out) && out[i] == '/' && out[i+1] == '*' {
+			// Block comment: blank everything including the delimiters, preserve newlines.
+			out[i] = ' '
+			out[i+1] = ' '
+			i += 2
+			for i < len(out) {
+				if i+1 < len(out) && out[i] == '*' && out[i+1] == '/' {
+					out[i] = ' '
+					out[i+1] = ' '
+					i += 2
+
+					break
+				}
+				if out[i] != '\n' {
+					out[i] = ' '
+				}
+				i++
+			}
+		} else {
+			i++
+		}
+	}
+
+	return out
+}
+
 // extractBlockGroup scans all blocks matched by findHeader in src and returns the
 // group from the LAST such block that contains a group assignment. Using the last
 // assignment mirrors Gradle's evaluation order: when a root build file has both
 // allprojects { group = 'com.root' } and subprojects { group = 'com.sub' }, the
 // later block wins for subprojects, so we must not stop at the first match.
+// Comments are stripped first so that commented-out blocks are not treated as
+// live overrides.
 // Pass blockHeaderRe.FindIndex to search both allprojects and subprojects blocks;
 // pass allProjectsBlockHeaderRe.FindIndex to restrict to allprojects only.
 func extractBlockGroup(src []byte, findHeader func([]byte) []int) string {
+	src = stripGradleComments(src)
 	last := ""
 	for searchFrom := 0; searchFrom < len(src); {
 		loc := findHeader(src[searchFrom:])
