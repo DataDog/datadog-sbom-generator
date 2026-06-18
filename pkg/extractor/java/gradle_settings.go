@@ -32,6 +32,14 @@ var (
 
 	// Matches group inside allprojects { } or subprojects { } blocks.
 	// (?s) makes '.' match newlines so the pattern spans the block body.
+	// The lazy .*? captures the FIRST `group =` in the block; because the
+	// allprojects/subprojects block delimiter itself prevents matching a
+	// top-level `group =` from a different block.
+	// Known limitation: if the block contains a task with `group = "foo"`
+	// before the real `group = 'real'` assignment, the task group would be
+	// captured instead. This construction is extremely rare in practice and
+	// is outweighed by correctly handling the common case of `group =` appearing
+	// after a `repositories { }` or similar nested block.
 	// This is intentionally restricted to inherited group declarations:
 	// a top-level `group = 'x'` in the root build file applies only to the root
 	// project in Gradle, not to subprojects, so we must not use it as a fallback
