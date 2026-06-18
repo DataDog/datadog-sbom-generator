@@ -127,16 +127,24 @@ func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Scan
 
 		// Set artifact.Name = "group:projectName" so findArtifact can match this
 		// subproject when it appears as a dependency in another module's lockfile.
-		// Group: prefer own build file; fall back to root build.gradle (subprojects
-		// commonly inherit group via allprojects { group = '...' } without redeclaring it).
+		// Group: prefer own build file; fall back to root build.gradle.
+		// - Root project: inherits from allprojects { } only (subprojects { } does not apply).
+		// - Subproject: inherits from allprojects { } or subprojects { }.
 		// Name: prefer settings.gradle canonical name; fall back to directory basename.
 		projectDir := filepath.Dir(f.Path())
 		group := extractTopLevelGroup(content)
-		if group == "" {
-			// Only fall back to root build file for subprojects: the root project is
-			// excluded from subprojects { } blocks, so a subprojects-only group in the
-			// root build file must not be assigned to the root artifact itself.
-			if ctx.RootDir != "" && projectDir != ctx.RootDir {
+		if group == "" && ctx.RootDir != "" {
+			// Normalize to absolute so the root-vs-subproject check is reliable even
+			// when the scanner is invoked with a relative path (e.g. "scan .").
+			absRootDir := ctx.RootDir
+			if abs, err := filepath.Abs(ctx.RootDir); err == nil {
+				absRootDir = abs
+			}
+			if projectDir == absRootDir {
+				// Root project: only allprojects { } applies.
+				group = extractAllProjectsGroupFromRootBuildFile(ctx.RootDir)
+			} else {
+				// Subproject: allprojects { } and subprojects { } both apply.
 				group = extractGroupFromRootBuildFile(ctx.RootDir)
 			}
 		}

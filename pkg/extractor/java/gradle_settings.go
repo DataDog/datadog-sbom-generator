@@ -34,6 +34,10 @@ var (
 	// Used by extractBlockGroup to locate where to start brace-counting.
 	blockHeaderRe = cachedregexp.MustCompile(`(?:allprojects|subprojects)\s*\{`)
 
+	// allProjectsBlockHeaderRe matches the opening of an allprojects { } block only.
+	// Gradle's allprojects { } applies to the root project; subprojects { } does not.
+	allProjectsBlockHeaderRe = cachedregexp.MustCompile(`allprojects\s*\{`)
+
 	// groupAssignRe matches a group = '...' or group = "..." assignment.
 	// Used inside the extracted block body after brace-counting delimits the block.
 	groupAssignRe = cachedregexp.MustCompile(`\bgroup\s*=\s*['"]([^'"]+)['"]`)
@@ -115,14 +119,14 @@ func readSettingsFile(dir string) []byte {
 	return nil
 }
 
-// extractBlockGroup finds the first `allprojects { }` or `subprojects { }` block in
-// src, extracts its body using brace counting so the match is strictly bounded by
-// the block's closing `}`, then returns the first `group = '...'` found inside.
-// Because the block body is extracted before searching, a top-level `group =` that
-// appears after the block's closing `}` is never captured.
-func extractBlockGroup(src []byte) string {
+// extractBlockGroup finds the first block matched by findHeader in src, extracts its
+// body using brace counting so the match is strictly bounded by the block's closing
+// `}`, then returns the first `group = '...'` found inside that body.
+// Pass blockHeaderRe.FindIndex to search both allprojects and subprojects blocks;
+// pass allProjectsBlockHeaderRe.FindIndex to restrict to allprojects only.
+func extractBlockGroup(src []byte, findHeader func([]byte) []int) string {
 	for searchFrom := 0; searchFrom < len(src); {
-		loc := blockHeaderRe.FindIndex(src[searchFrom:])
+		loc := findHeader(src[searchFrom:])
 		if loc == nil {
 			return ""
 		}
@@ -152,8 +156,8 @@ func extractBlockGroup(src []byte) string {
 		}
 
 		blockBody := src[absOpen+1 : blockEnd]
-		if m := groupAssignRe.FindSubmatch(blockBody); m != nil {
-			return string(m[1])
+		if g := findGroupAtTopLevel(blockBody); g != "" {
+			return g
 		}
 
 		// No group = in this block — advance past the closing brace and try next.
@@ -163,11 +167,48 @@ func extractBlockGroup(src []byte) string {
 	return ""
 }
 
-// extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts
-// and extracts the group declared inside an allprojects {} or subprojects {} block.
-// A top-level `group = 'x'` in the root build file only applies to the root project
-// in Gradle and is intentionally NOT used here, to avoid assigning it to subprojects
-// that have no group of their own.
+// findGroupAtTopLevel scans blockBody for a `group = '...'` assignment at the top
+// level of the block only (not inside any nested { } sub-block such as a task
+// registration). It builds a flat copy of blockBody where nested block contents are
+// blanked out, then applies groupAssignRe to find the first top-level group value.
+func findGroupAtTopLevel(blockBody []byte) string {
+	depth := 0
+	flat := make([]byte, len(blockBody))
+	for i, b := range blockBody {
+		switch b {
+		case '{':
+			if depth == 0 {
+				flat[i] = b
+			} else {
+				flat[i] = ' '
+			}
+			depth++
+		case '}':
+			if depth > 0 {
+				depth--
+			}
+			if depth == 0 {
+				flat[i] = b
+			} else {
+				flat[i] = ' '
+			}
+		default:
+			if depth == 0 {
+				flat[i] = b
+			} else {
+				flat[i] = ' '
+			}
+		}
+	}
+	if m := groupAssignRe.FindSubmatch(flat); m != nil {
+		return string(m[1])
+	}
+	return ""
+}
+
+// extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts and
+// returns the group declared inside an allprojects {} or subprojects {} block.
+// Used as a fallback for subprojects that do not declare their own group.
 func extractGroupFromRootBuildFile(rootDir string) string {
 	if rootDir == "" {
 		return ""
@@ -179,7 +220,30 @@ func extractGroupFromRootBuildFile(rootDir string) string {
 			continue
 		}
 
-		if g := extractBlockGroup(data); g != "" {
+		if g := extractBlockGroup(data, blockHeaderRe.FindIndex); g != "" {
+			return g
+		}
+	}
+
+	return ""
+}
+
+// extractAllProjectsGroupFromRootBuildFile reads the root build.gradle /
+// build.gradle.kts and returns the group declared inside an allprojects {} block.
+// Unlike extractGroupFromRootBuildFile, it excludes subprojects {} blocks because
+// Gradle's allprojects { } applies to the root project while subprojects { } does not.
+func extractAllProjectsGroupFromRootBuildFile(rootDir string) string {
+	if rootDir == "" {
+		return ""
+	}
+
+	for _, name := range []string{buildGradleFilename, buildGradleKtsFilename} {
+		data, err := os.ReadFile(filepath.Join(rootDir, name))
+		if err != nil {
+			continue
+		}
+
+		if g := extractBlockGroup(data, allProjectsBlockHeaderRe.FindIndex); g != "" {
 			return g
 		}
 	}

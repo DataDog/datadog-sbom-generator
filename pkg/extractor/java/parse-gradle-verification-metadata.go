@@ -149,20 +149,24 @@ func (e GradleVerificationMetadataExtractor) GetArtifact(f extractor.DepFile, ct
 		}
 
 		// verification-metadata.xml is at <root>/gradle/; project dir is two levels up.
-		// Group: prefer own build file; fall back to root build.gradle (subprojects
-		// commonly inherit group via allprojects { group = '...' } without redeclaring it).
-		// Name: prefer settings.gradle canonical name; fall back to directory basename.
-		// verification-metadata.xml is at <root>/gradle/; project dir is two levels up.
-		// Group: prefer own build file; fall back to root build.gradle (subprojects
-		// commonly inherit group via allprojects { group = '...' } without redeclaring it).
-		// Only apply the root-file fallback for subprojects: the root project is excluded
-		// from subprojects { } blocks, so a subprojects-only group must not be assigned
-		// to the root artifact itself.
+		// Group: prefer own build file; fall back to root build.gradle.
+		// - Root project: inherits from allprojects { } only (subprojects { } does not apply).
+		// - Subproject: inherits from allprojects { } or subprojects { }.
 		// Name: prefer settings.gradle canonical name; fall back to directory basename.
 		projectDir := filepath.Dir(filepath.Dir(f.Path()))
 		group := extractTopLevelGroup(content)
-		if group == "" {
-			if ctx.RootDir != "" && projectDir != ctx.RootDir {
+		if group == "" && ctx.RootDir != "" {
+			// Normalize to absolute so the root-vs-subproject check is reliable even
+			// when the scanner is invoked with a relative path (e.g. "scan .").
+			absRootDir := ctx.RootDir
+			if abs, err := filepath.Abs(ctx.RootDir); err == nil {
+				absRootDir = abs
+			}
+			if projectDir == absRootDir {
+				// Root project: only allprojects { } applies.
+				group = extractAllProjectsGroupFromRootBuildFile(ctx.RootDir)
+			} else {
+				// Subproject: allprojects { } and subprojects { } both apply.
 				group = extractGroupFromRootBuildFile(ctx.RootDir)
 			}
 		}
