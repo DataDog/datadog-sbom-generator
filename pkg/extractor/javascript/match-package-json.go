@@ -3,7 +3,6 @@ package javascript
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,6 +11,7 @@ import (
 	jsonUtils "github.com/DataDog/datadog-sbom-generator/internal/json"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/bmatcuk/doublestar/v4"
 )
 
@@ -26,7 +26,9 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	var parsed map[string]interface{}
 	unmarshallErr := json.Unmarshal(data, &parsed)
 	if unmarshallErr != nil {
-		log.Printf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
+		if depMap.reporter != nil {
+			depMap.reporter.Errorf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
+		}
 	}
 
 	dependencyNames := make(map[string]bool)
@@ -139,7 +141,7 @@ func (m PackageJSONMatcher) Match(sourceFile extractor.DepFile, packages []extra
 
 	// Match root package.json with root-level packages
 	if len(packagesWithoutKnownLocationIndices) > 0 {
-		err = m.matchFileWithIndices(sourceFile, packages, packagesWithoutKnownLocationIndices, content)
+		err = m.matchFileWithIndices(sourceFile, packages, packagesWithoutKnownLocationIndices, content, context.Reporter)
 		if err != nil {
 			return err
 		}
@@ -149,7 +151,7 @@ func (m PackageJSONMatcher) Match(sourceFile extractor.DepFile, packages []extra
 	if err := json.Unmarshal(content, &workspacesJSON); err != nil {
 		// If no workspaces, try matching all packages against root
 		if len(packagesWithoutKnownLocationIndices) == 0 && len(packages) > 0 {
-			err = m.matchFile(sourceFile, packages, content)
+			err = m.matchFile(sourceFile, packages, content, context.Reporter)
 			if err != nil {
 				return err
 			}
@@ -167,7 +169,7 @@ func (m PackageJSONMatcher) Match(sourceFile extractor.DepFile, packages []extra
 			for _, match := range matches {
 				matchPath := filepath.Dir(match)
 				if matchPath == workspacePath {
-					m.matchWorkspaceFile(sourceFile, match, packages, indices)
+					m.matchWorkspaceFile(sourceFile, match, packages, indices, context.Reporter)
 				}
 			}
 		}
@@ -181,18 +183,18 @@ func (m PackageJSONMatcher) Match(sourceFile extractor.DepFile, packages []extra
 	return nil
 }
 
-func (m PackageJSONMatcher) matchFile(file extractor.DepFile, packages []extractor.PackageDetails, content []byte) error {
+func (m PackageJSONMatcher) matchFile(file extractor.DepFile, packages []extractor.PackageDetails, content []byte, r reporter.Reporter) error {
 	allIndices := make([]int, len(packages))
 	for i := range packages {
 		allIndices[i] = i
 	}
 
-	return m.matchFileWithIndices(file, packages, allIndices, content)
+	return m.matchFileWithIndices(file, packages, allIndices, content, r)
 }
 
-func (m PackageJSONMatcher) matchFileWithIndices(file extractor.DepFile, allPackages []extractor.PackageDetails, indices []int, content []byte) error {
+func (m PackageJSONMatcher) matchFileWithIndices(file extractor.DepFile, allPackages []extractor.PackageDetails, indices []int, content []byte, r reporter.Reporter) error {
 	contentStr := string(content)
-	jsonFile := m.createPackageJSONFile(file, contentStr)
+	jsonFile := m.createPackageJSONFile(file, contentStr, r)
 
 	// Create pointers only to the packages at specified indices
 	packagesPtr := make([]*extractor.PackageDetails, len(indices))
@@ -207,7 +209,7 @@ func (m PackageJSONMatcher) matchFileWithIndices(file extractor.DepFile, allPack
 	return json.Unmarshal(content, &jsonFile)
 }
 
-func (m PackageJSONMatcher) matchWorkspaceFile(sourcefile extractor.DepFile, match string, packages []extractor.PackageDetails, indices []int) {
+func (m PackageJSONMatcher) matchWorkspaceFile(sourcefile extractor.DepFile, match string, packages []extractor.PackageDetails, indices []int, r reporter.Reporter) {
 	workspacePkg, err := sourcefile.Open(match)
 	if err != nil {
 		return
@@ -219,7 +221,7 @@ func (m PackageJSONMatcher) matchWorkspaceFile(sourcefile extractor.DepFile, mat
 		return
 	}
 
-	_ = m.matchFileWithIndices(workspacePkg, packages, indices, workspaceContent)
+	_ = m.matchFileWithIndices(workspacePkg, packages, indices, workspaceContent, r)
 }
 
 func (m PackageJSONMatcher) matchPackagesWithoutKnownLocation(sourcefile extractor.DepFile, matches []string, packages []extractor.PackageDetails, packagesWithoutKnownLocationIndices []int, context extractor.ScanContext) {
@@ -237,11 +239,11 @@ func (m PackageJSONMatcher) matchPackagesWithoutKnownLocation(sourcefile extract
 			continue
 		}
 
-		_ = m.matchFileWithIndices(workspacePkg, packages, packagesWithoutKnownLocationIndices, workspaceContent)
+		_ = m.matchFileWithIndices(workspacePkg, packages, packagesWithoutKnownLocationIndices, workspaceContent, context.Reporter)
 	}
 }
 
-func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, contentStr string) packageJSONFile {
+func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, contentStr string, r reporter.Reporter) packageJSONFile {
 	return packageJSONFile{
 		Dependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -249,6 +251,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("dependencies", contentStr),
 			},
+			reporter: r,
 		},
 		DevDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -256,6 +259,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("devDependencies", contentStr),
 			},
+			reporter: r,
 		},
 		OptionalDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -263,6 +267,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("optionalDependencies", contentStr),
 			},
+			reporter: r,
 		},
 	}
 }

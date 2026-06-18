@@ -5,6 +5,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"gopkg.in/yaml.v3"
 )
@@ -303,6 +304,7 @@ a different type to have a clear UnmarshallJSON method for the json decoder and 
 */
 type packageJSONDependencyMap struct {
 	extractor.MatcherDependencyMap
+	reporter reporter.Reporter
 }
 
 type packageJSONFile struct {

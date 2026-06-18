@@ -150,6 +150,7 @@ func (e PyProjectTOMLExtractor) Extract(f extractor.DepFile, context extractor.S
 		lines:          lines,
 		path:           f.Path(),
 		packageManager: pm,
+		reporter:       context.Reporter,
 	}
 
 	for _, dep := range pyproject.Project.Dependencies {

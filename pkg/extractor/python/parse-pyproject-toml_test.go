@@ -2,7 +2,6 @@ package python_test
 
 import (
 	"bytes"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/python"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func fixturePath(t *testing.T, rel string) string {
@@ -308,9 +308,7 @@ func TestParsePyProjectTOML_ConflictingRangesAreSourceOrderedAndLogged(t *testin
 	t.Parallel()
 
 	var logs bytes.Buffer
-	previousLogOutput := log.Writer()
-	log.SetOutput(&logs)
-	defer log.SetOutput(previousLogOutput)
+	r := reporter.NewCycloneDXReporterWithPretty(os.Stdout, &logs, reporter.WarnLevel, true)
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "pyproject.toml")
@@ -331,7 +329,8 @@ dev = [
 		t.Fatalf("could not write pyproject fixture: %v", err)
 	}
 
-	packages, err := python.ParsePyProjectTOML(path)
+	ctx := extractor.ScanContext{Reporter: r}
+	packages, err := extractor.ExtractFromFileWithContext(path, python.PyProjectExtractor, ctx)
 
 	expectNilErr(t, err)
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{

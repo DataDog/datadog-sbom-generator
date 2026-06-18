@@ -2,7 +2,6 @@ package python
 
 import (
 	"cmp"
-	"log"
 	"maps"
 	"math"
 	"slices"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 type pyprojectPackageCollector struct {
@@ -17,12 +17,13 @@ type pyprojectPackageCollector struct {
 	lines          []string
 	path           string
 	packageManager models.PackageManager
+	reporter       reporter.Reporter
 }
 
 func (c *pyprojectPackageCollector) addDependency(dependency pep508Dependency, groups []string, isPoetry bool) {
 	if (dependency.Version == "") == (dependency.VersionRange == "") {
-		log.Printf(
-			"Invalid pyproject dependency state for %q from %s: expected exactly one of version or version range, got version=%q versionRange=%q\n",
+		c.reporter.Warnf(
+			"Invalid pyproject dependency state for %q from %s: expected exactly one of version or version range, got version=%q versionRange=%q",
 			dependency.Name,
 			c.path,
 			dependency.Version,
@@ -91,8 +92,8 @@ func (c *pyprojectPackageCollector) logVersionRangeConflict(pkg extractor.Packag
 			continue
 		}
 
-		log.Printf(
-			"Multiple pyproject version ranges for dependency %q from %s collapse to the same unversioned PURL; CycloneDX output will keep the earliest source declaration. Saw ranges %q and %q\n",
+		c.reporter.Warnf(
+			"Multiple pyproject version ranges for dependency %q from %s collapse to the same unversioned PURL; CycloneDX output will keep the earliest source declaration. Saw ranges %q and %q",
 			pkg.Name,
 			c.path,
 			existing.VersionRange,
