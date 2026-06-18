@@ -11,6 +11,7 @@ func Effective(r Reporter) Reporter {
 	if r == nil {
 		return &VoidReporter{}
 	}
+
 	return r
 }
 
