@@ -3,7 +3,6 @@ package scanner
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -341,9 +340,9 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	scannedPackages, droppedReasons := sanitizeScannedPackages(scannedPackages)
 	if len(droppedReasons) > 0 {
-		log.Println("Note that some scanned packages were dropped:")
+		r.Warnf("Note that some scanned packages were dropped:")
 		for _, reason := range droppedReasons {
-			log.Printf(" - %s\n", reason)
+			r.Warnf(" - %s", reason)
 		}
 	}
 

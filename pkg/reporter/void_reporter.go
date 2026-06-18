@@ -5,6 +5,16 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// Effective returns r if non-nil, otherwise a VoidReporter that silently discards all output.
+// Use this when constructing structs that hold a Reporter to guarantee the field is never nil.
+func Effective(r Reporter) Reporter {
+	if r == nil {
+		return &VoidReporter{}
+	}
+
+	return r
+}
+
 type VoidReporter struct {
 	hasErrored bool
 }

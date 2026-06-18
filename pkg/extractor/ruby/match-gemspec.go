@@ -1,7 +1,6 @@
 package ruby
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func (matcher GemspecFileMatcher) GetSourceFile(sourceFile extractor.DepFile) (extractor.DepFile, error) {
@@ -44,7 +44,7 @@ func (matcher GemspecFileMatcher) Match(sourceFile extractor.DepFile, packages [
 	if err != nil {
 		return err
 	}
-	matcher.enrichPackagesWithLocation(sourceFile, gems, packagesByName)
+	matcher.enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, gems, packagesByName)
 
 	return nil
 }
@@ -117,13 +117,13 @@ func (matcher GemspecFileMatcher) findGemspecs(node *extractor.Node) ([]gemspecM
 	return gems, nil
 }
 
-func (matcher GemspecFileMatcher) enrichPackagesWithLocation(sourceFile extractor.DepFile, gems []gemspecMetadata, packagesByName map[string]*extractor.PackageDetails) {
+func (matcher GemspecFileMatcher) enrichPackagesWithLocation(r reporter.Reporter, sourceFile extractor.DepFile, gems []gemspecMetadata, packagesByName map[string]*extractor.PackageDetails) {
 	for _, gem := range gems {
 		pkg, ok := packagesByName[gem.name]
 		// If packages exist in a .gemspec but not in the Gemfile.lock, we skip the package as we treat the lockfile as
 		// the source of truth
 		if !ok {
-			log.Printf("Skipping package %q from gemspec as it does not exist in the Gemfile.lock\n", gem.name)
+			r.Verbosef("Skipping package %q from gemspec as it does not exist in the Gemfile.lock", gem.name)
 			continue
 		}
 

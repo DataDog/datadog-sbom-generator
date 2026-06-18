@@ -1,7 +1,6 @@
 package ruby
 
 import (
-	"log"
 	"path/filepath"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -9,6 +8,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func (matcher GemfileMatcher) GetSourceFile(sourceFile extractor.DepFile) (extractor.DepFile, error) {
@@ -32,13 +32,13 @@ func (matcher GemfileMatcher) Match(sourceFile extractor.DepFile, packages []ext
 	if err != nil {
 		return err
 	}
-	enrichPackagesWithLocation(sourceFile, rootGems, packagesByName)
+	enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, rootGems, packagesByName)
 
 	remainingGems, err := findGroupedGems(treeResult.Node)
 	if err != nil {
 		return err
 	}
-	enrichPackagesWithLocation(sourceFile, remainingGems, packagesByName)
+	enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, remainingGems, packagesByName)
 
 	return nil
 }
@@ -194,13 +194,13 @@ func indexPackages(packages []extractor.PackageDetails) map[string]*extractor.Pa
 	return result
 }
 
-func enrichPackagesWithLocation(sourceFile extractor.DepFile, gems []gemMetadata, packagesByName map[string]*extractor.PackageDetails) {
+func enrichPackagesWithLocation(r reporter.Reporter, sourceFile extractor.DepFile, gems []gemMetadata, packagesByName map[string]*extractor.PackageDetails) {
 	for _, gem := range gems {
 		pkg, ok := packagesByName[gem.name]
 		// If packages exist in the Gemfile but not in the Gemfile.lock, we skip the package as we treat the lockfile as
 		// the source of truth
 		if !ok {
-			log.Printf("Skipping package %q from Gemfile as it does not exist in the Gemfile.lock\n", gem.name)
+			r.Verbosef("Skipping package %q from Gemfile as it does not exist in the Gemfile.lock", gem.name)
 			continue
 		}
 

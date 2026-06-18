@@ -40,7 +40,7 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 	eg.SetLimit(workerCount)
 
 	for range workerCount {
-		detector, err := codefile.NewJavaReachableDetector()
+		detector, err := codefile.NewJavaReachableDetector(r)
 		if err != nil {
 			r.Errorf("[reachability] Failed to create Java reachability detector: %v", err)
 			return models.ReachabilityAnalysis{}

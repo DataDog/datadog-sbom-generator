@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,7 +13,7 @@ import (
 
 func Test_NewJavaReachableDetector(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector()
+	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -21,7 +22,7 @@ func Test_NewJavaReachableDetector(t *testing.T) {
 
 func Test_Detect_NoAdvisories(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector()
+	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -38,7 +39,7 @@ func Test_Detect_NoAdvisories(t *testing.T) {
 
 func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector()
+	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 

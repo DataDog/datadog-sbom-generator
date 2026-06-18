@@ -10,6 +10,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 var pyprojectSiblingLockfiles = []string{
@@ -150,6 +151,7 @@ func (e PyProjectTOMLExtractor) Extract(f extractor.DepFile, context extractor.S
 		lines:          lines,
 		path:           f.Path(),
 		packageManager: pm,
+		reporter:       reporter.Effective(context.Reporter),
 	}
 
 	for _, dep := range pyproject.Project.Dependencies {
