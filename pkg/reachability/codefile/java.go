@@ -3,13 +3,13 @@ package codefile
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 	tree_sitter_java "github.com/tree-sitter/tree-sitter-java/bindings/go"
@@ -27,12 +27,13 @@ var symbolTypeToTSQuery = map[string]string{
 type ReachabilityJava struct {
 	tsParser               *treesitter.Parser
 	tsQueriesPerSymbolType map[string]*treesitter.Query
+	reporter               reporter.Reporter
 }
 
 // NewJavaReachableDetector creates a new JavaReachableDetector instance that once
 // instantiated can be used to parse Java files. You should call Close() on the
 // instance once you're finished parsing.
-func NewJavaReachableDetector() (*ReachabilityJava, error) {
+func NewJavaReachableDetector(r reporter.Reporter) (*ReachabilityJava, error) {
 	tsLanguage := treesitter.NewLanguage(tree_sitter_java.Language())
 
 	tsParser := treesitter.NewParser()
@@ -55,6 +56,7 @@ func NewJavaReachableDetector() (*ReachabilityJava, error) {
 	return &ReachabilityJava{
 		tsParser:               tsParser,
 		tsQueriesPerSymbolType: tsQueriesPerSymbolType,
+		reporter:               r,
 	}, nil
 }
 
@@ -102,7 +104,7 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 		for _, s := range advisoryToCheck.Symbols {
 			query := r.tsQueriesPerSymbolType[s.Type]
 			if query == nil {
-				log.Printf("No query found for symbol type %s\n", s.Type)
+				r.reporter.Warnf("No query found for symbol type %s", s.Type)
 				continue
 			}
 
@@ -170,12 +172,11 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 }
 
 // readFileContent is a thin wrapper over os.ReadFile that reads the content of a file
-// and returns it as a byte slice while logging any errors.
+// and returns it as a byte slice.
 // TODO(daniel.strong): find a better place for this function
 func readFileContent(filePath string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("Error reading file %s: %v", filePath, err)
 		return nil, err
 	}
 
