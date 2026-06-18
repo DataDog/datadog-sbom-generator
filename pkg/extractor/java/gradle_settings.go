@@ -203,6 +203,7 @@ func findGroupAtTopLevel(blockBody []byte) string {
 	if m := groupAssignRe.FindSubmatch(flat); m != nil {
 		return string(m[1])
 	}
+
 	return ""
 }
 
