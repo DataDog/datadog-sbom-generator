@@ -119,16 +119,19 @@ func readSettingsFile(dir string) []byte {
 	return nil
 }
 
-// extractBlockGroup finds the first block matched by findHeader in src, extracts its
-// body using brace counting so the match is strictly bounded by the block's closing
-// `}`, then returns the first `group = '...'` found inside that body.
+// extractBlockGroup scans all blocks matched by findHeader in src and returns the
+// group from the LAST such block that contains a group assignment. Using the last
+// assignment mirrors Gradle's evaluation order: when a root build file has both
+// allprojects { group = 'com.root' } and subprojects { group = 'com.sub' }, the
+// later block wins for subprojects, so we must not stop at the first match.
 // Pass blockHeaderRe.FindIndex to search both allprojects and subprojects blocks;
 // pass allProjectsBlockHeaderRe.FindIndex to restrict to allprojects only.
 func extractBlockGroup(src []byte, findHeader func([]byte) []int) string {
+	last := ""
 	for searchFrom := 0; searchFrom < len(src); {
 		loc := findHeader(src[searchFrom:])
 		if loc == nil {
-			return ""
+			break
 		}
 
 		// absOpen is the absolute position of '{' (last char of the match) in src.
@@ -157,14 +160,14 @@ func extractBlockGroup(src []byte, findHeader func([]byte) []int) string {
 
 		blockBody := src[absOpen+1 : blockEnd]
 		if g := findGroupAtTopLevel(blockBody); g != "" {
-			return g
+			last = g
 		}
 
-		// No group = in this block — advance past the closing brace and try next.
+		// Advance past the closing brace and continue scanning for later blocks.
 		searchFrom = blockEnd + 1
 	}
 
-	return ""
+	return last
 }
 
 // findGroupAtTopLevel scans blockBody for a `group = '...'` assignment at the top
