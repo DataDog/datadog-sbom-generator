@@ -44,7 +44,7 @@ func (matcher GemspecFileMatcher) Match(sourceFile extractor.DepFile, packages [
 	if err != nil {
 		return err
 	}
-	matcher.enrichPackagesWithLocation(context.Reporter, sourceFile, gems, packagesByName)
+	matcher.enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, gems, packagesByName)
 
 	return nil
 }

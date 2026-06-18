@@ -32,13 +32,13 @@ func (matcher GemfileMatcher) Match(sourceFile extractor.DepFile, packages []ext
 	if err != nil {
 		return err
 	}
-	enrichPackagesWithLocation(context.Reporter, sourceFile, rootGems, packagesByName)
+	enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, rootGems, packagesByName)
 
 	remainingGems, err := findGroupedGems(treeResult.Node)
 	if err != nil {
 		return err
 	}
-	enrichPackagesWithLocation(context.Reporter, sourceFile, remainingGems, packagesByName)
+	enrichPackagesWithLocation(reporter.Effective(context.Reporter), sourceFile, remainingGems, packagesByName)
 
 	return nil
 }
