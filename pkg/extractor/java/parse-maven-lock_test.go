@@ -135,6 +135,11 @@ func TestParseMavenLock_ShouldRemoveComments(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 22},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 9, End: 25},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 45, End: 50},
@@ -175,6 +180,11 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 				Column:   models.Position{Start: 10, End: 24},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 9, End: 25},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 19, End: 24},
@@ -198,6 +208,11 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 				Column:   models.Position{Start: 9, End: 24},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 21, End: 21},
+				Column:   models.Position{Start: 9, End: 25},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 9, End: 12},
@@ -219,6 +234,11 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 34, End: 34},
 				Column:   models.Position{Start: 1, End: 16},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 31, End: 31},
+				Column:   models.Position{Start: 10, End: 26},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -259,6 +279,11 @@ func TestParseMavenLock_OnePackage(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 19, End: 33},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 16, End: 32},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -302,6 +327,11 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 32},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 16, End: 35},
+				Filename: path,
+			},
 			IsDirect: true,
 		},
 	})
@@ -335,6 +365,11 @@ func TestParseMavenLock_OnePackageWithMultipleVersionVariable(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 19, End: 33},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 16, End: 32},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -377,6 +412,11 @@ func TestParseMavenLock_TwoPackageWithMixedVersionDefinition(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 16, End: 38},
@@ -398,6 +438,11 @@ func TestParseMavenLock_TwoPackageWithMixedVersionDefinition(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 19, End: 48},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 16, End: 25},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -440,6 +485,11 @@ func TestParseMavenLock_TwoPackages(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 10, End: 10},
 				Column:   models.Position{Start: 16, End: 28},
@@ -461,6 +511,11 @@ func TestParseMavenLock_TwoPackages(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 14, End: 14},
 				Column:   models.Position{Start: 19, End: 32},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 13, End: 13},
+				Column:   models.Position{Start: 16, End: 25},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -503,6 +558,11 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 23, End: 23},
 				Column:   models.Position{Start: 18, End: 30},
@@ -524,6 +584,11 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 19, End: 32},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 16, End: 25},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -566,6 +631,11 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 12, End: 12},
 				Column:   models.Position{Start: 23, End: 28},
@@ -589,6 +659,11 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 29},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 25, End: 25},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 25, End: 30},
@@ -610,6 +685,11 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 32, End: 32},
 				Column:   models.Position{Start: 19, End: 33},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 31, End: 31},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -653,6 +733,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 25},
 				Filename: parentPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 27, End: 27},
+				Column:   models.Position{Start: 16, End: 40},
+				Filename: parentPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 18, End: 23},
@@ -674,6 +759,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 15, End: 15},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -699,6 +789,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 32},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 16, End: 25},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 21, End: 21},
 				Column:   models.Position{Start: 16, End: 22},
@@ -720,6 +815,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 25, End: 25},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 24, End: 24},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -745,6 +845,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 29},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 29, End: 29},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 25, End: 30},
@@ -766,6 +871,11 @@ func TestMavenLock_WithParent(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
 				Column:   models.Position{Start: 19, End: 22},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 34, End: 34},
+				Column:   models.Position{Start: 16, End: 23},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -809,6 +919,11 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 25},
 				Filename: parentPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 26, End: 26},
+				Column:   models.Position{Start: 16, End: 40},
+				Filename: parentPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 19, End: 19},
 				Column:   models.Position{Start: 18, End: 23},
@@ -830,6 +945,11 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 15, End: 15},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -855,6 +975,11 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 32},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 16, End: 25},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 21, End: 21},
 				Column:   models.Position{Start: 16, End: 22},
@@ -878,6 +1003,11 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 24, End: 24},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 23, End: 28},
@@ -899,6 +1029,11 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 30, End: 30},
 				Column:   models.Position{Start: 19, End: 29},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 29, End: 29},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -942,6 +1077,11 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 25},
 				Filename: parentPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 26, End: 26},
+				Column:   models.Position{Start: 16, End: 40},
+				Filename: parentPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 19, End: 19},
 				Column:   models.Position{Start: 18, End: 23},
@@ -963,6 +1103,11 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 14, End: 14},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -988,6 +1133,11 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 32},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 18, End: 18},
+				Column:   models.Position{Start: 16, End: 25},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 16, End: 22},
@@ -1011,6 +1161,11 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 23, End: 28},
@@ -1032,6 +1187,11 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 29, End: 29},
 				Column:   models.Position{Start: 19, End: 29},
+				Filename: childPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 28, End: 28},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: childPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1073,6 +1233,11 @@ func TestMavenLock_WithParent_Child_Project(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 13, End: 13},
 				Column:   models.Position{Start: 19, End: 25},
+				Filename: parentPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 16, End: 40},
 				Filename: parentPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1117,6 +1282,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 25},
 				Filename: rootPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 27, End: 27},
+				Column:   models.Position{Start: 16, End: 40},
+				Filename: rootPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 18, End: 23},
@@ -1138,6 +1308,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: parentPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 15, End: 15},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: parentPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1163,6 +1338,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 32},
 				Filename: parentPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 19, End: 19},
+				Column:   models.Position{Start: 16, End: 25},
+				Filename: parentPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 21, End: 21},
 				Column:   models.Position{Start: 16, End: 22},
@@ -1184,6 +1364,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 25, End: 25},
 				Column:   models.Position{Start: 19, End: 28},
+				Filename: parentPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 24, End: 24},
+				Column:   models.Position{Start: 16, End: 24},
 				Filename: parentPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1209,6 +1394,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 29},
 				Filename: childPath,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 15, End: 15},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: childPath,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 20, End: 42},
@@ -1230,6 +1420,11 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
 				Column:   models.Position{Start: 19, End: 22},
+				Filename: parentPath,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 34, End: 34},
+				Column:   models.Position{Start: 16, End: 23},
 				Filename: parentPath,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1374,6 +1569,11 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 22},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 16, End: 19},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 6, End: 6},
 				Column:   models.Position{Start: 16, End: 21},
@@ -1396,6 +1596,11 @@ func TestParseMavenLock_WithScope(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 11, End: 11},
 				Column:   models.Position{Start: 19, End: 24},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 10, End: 10},
+				Column:   models.Position{Start: 16, End: 21},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1440,6 +1645,11 @@ func TestParseMavenLock_WithUnusedDependencyManagementDependencies(t *testing.T)
 				Column:   models.Position{Start: 19, End: 28},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 18, End: 18},
+				Column:   models.Position{Start: 16, End: 24},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 20, End: 20},
 				Column:   models.Position{Start: 16, End: 28},
@@ -1480,6 +1690,11 @@ func TestParseMavenLock_WithOverriddenDependencyVersions(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 16, End: 16},
 				Column:   models.Position{Start: 19, End: 24},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 15, End: 15},
+				Column:   models.Position{Start: 16, End: 21},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1524,6 +1739,11 @@ func TestParseMavenLock_WithProjectVersionProperty(t *testing.T) {
 				Column:   models.Position{Start: 19, End: 22},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 16, End: 23},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 5, End: 5},
 				Column:   models.Position{Start: 12, End: 24},
@@ -1547,6 +1767,11 @@ func TestParseMavenLock_WithProjectVersionProperty(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 15, End: 15},
 				Column:   models.Position{Start: 19, End: 22},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 14, End: 14},
+				Column:   models.Position{Start: 16, End: 23},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1587,6 +1812,11 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 				Column:   models.Position{Start: 21, End: 30},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 18, End: 26},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 4, End: 4},
 				Column:   models.Position{Start: 20, End: 32},
@@ -1612,6 +1842,11 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 				Column:   models.Position{Start: 24, End: 30},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 21, End: 45},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{
 				Line:     models.Position{Start: 3, End: 3},
 				Column:   models.Position{Start: 20, End: 42},
@@ -1635,6 +1870,11 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 38, End: 38},
 				Column:   models.Position{Start: 19, End: 35},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 9, End: 9},
+				Column:   models.Position{Start: 17, End: 24},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{
@@ -1693,6 +1933,11 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 				Column:   models.Position{Start: 16, End: 40},
 				Filename: path,
 			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 39, End: 39},
+				Column:   models.Position{Start: 13, End: 37},
+				Filename: path,
+			},
 			VersionLocation: &models.FilePosition{},
 			DepGroups:       []string{"test"},
 			IsDirect:        true,
@@ -1711,6 +1956,11 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 35, End: 35},
 				Column:   models.Position{Start: 16, End: 39},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 34, End: 34},
+				Column:   models.Position{Start: 13, End: 37},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{},
@@ -1747,6 +1997,11 @@ func TestParseMavenLock_TwoExclusions(t *testing.T) {
 			NameLocation: &models.FilePosition{
 				Line:     models.Position{Start: 9, End: 9},
 				Column:   models.Position{Start: 19, End: 33},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 8, End: 8},
+				Column:   models.Position{Start: 16, End: 32},
 				Filename: path,
 			},
 			VersionLocation: &models.FilePosition{

@@ -466,7 +466,7 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 	details := map[string]extractor.PackageDetails{}
 
 	for _, lockPackage := range parsedLockfile.Dependencies.Dependencies {
-		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile, context)
+		resolvedGroupID, groupIDPosition := lockPackage.ResolveGroupID(*parsedLockfile, context)
 		resolvedArtifactID, artifactPosition := lockPackage.ResolveArtifactID(*parsedLockfile, context)
 		resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
 		finalName := resolvedGroupID + ":" + resolvedArtifactID
@@ -486,6 +486,10 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 			versionPosition = lockPackage.Version.FilePosition
 			versionPosition.Filename = lockPackage.SourceFile
 		}
+		if groupIDPosition == (models.FilePosition{}) {
+			groupIDPosition = lockPackage.GroupID.FilePosition
+			groupIDPosition.Filename = lockPackage.SourceFile
+		}
 
 		var exclusions []string
 		if len(lockPackage.Exclusions) > 0 {
@@ -496,16 +500,17 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		}
 
 		pkgDetails := extractor.PackageDetails{
-			Name:            finalName,
-			Version:         resolvedVersion,
-			Ecosystem:       models.EcosystemMaven,
-			BlockLocation:   blockLocation,
-			LocationRole:    models.LocationRoleManifest,
-			NameLocation:    &artifactPosition,
-			VersionLocation: &versionPosition,
-			PackageManager:  mavenPackageManager,
-			IsDirect:        true,
-			Exclusions:      exclusions,
+			Name:              finalName,
+			Version:           resolvedVersion,
+			Ecosystem:         models.EcosystemMaven,
+			BlockLocation:     blockLocation,
+			LocationRole:      models.LocationRoleManifest,
+			NameLocation:      &artifactPosition,
+			NamespaceLocation: &groupIDPosition,
+			VersionLocation:   &versionPosition,
+			PackageManager:    mavenPackageManager,
+			IsDirect:          true,
+			Exclusions:        exclusions,
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
 			// Only append non-default scope (compile is the default scope).
