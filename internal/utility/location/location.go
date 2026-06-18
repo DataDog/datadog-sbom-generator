@@ -5,7 +5,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-func NewPackageLocations(block models.FilePosition, name *models.FilePosition, version *models.FilePosition, role string) models.PackageLocations {
+func NewPackageLocations(block models.FilePosition, name *models.FilePosition, version *models.FilePosition, namespace *models.FilePosition, role string) models.PackageLocations {
 	result := models.PackageLocations{
 		Block: models.PackageLocation{
 			Filename:    block.Filename,
@@ -34,6 +34,16 @@ func NewPackageLocations(block models.FilePosition, name *models.FilePosition, v
 			LineEnd:     version.Line.End,
 			ColumnStart: version.Column.Start,
 			ColumnEnd:   version.Column.End,
+			Role:        role,
+		}
+	}
+	if namespace != nil && fileposition.IsFilePositionExtractedSuccessfully(*namespace) {
+		result.Namespace = &models.PackageLocation{
+			Filename:    namespace.Filename,
+			LineStart:   namespace.Line.Start,
+			LineEnd:     namespace.Line.End,
+			ColumnStart: namespace.Column.Start,
+			ColumnEnd:   namespace.Column.End,
 			Role:        role,
 		}
 	}
