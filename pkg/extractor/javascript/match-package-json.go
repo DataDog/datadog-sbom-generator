@@ -26,9 +26,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	var parsed map[string]interface{}
 	unmarshallErr := json.Unmarshal(data, &parsed)
 	if unmarshallErr != nil {
-		if depMap.reporter != nil {
-			depMap.reporter.Warnf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
-		}
+		depMap.reporter.Warnf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
 	}
 
 	dependencyNames := make(map[string]bool)
@@ -244,6 +242,7 @@ func (m PackageJSONMatcher) matchPackagesWithoutKnownLocation(sourcefile extract
 }
 
 func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, contentStr string, r reporter.Reporter) packageJSONFile {
+	effectiveReporter := reporter.Effective(r)
 	return packageJSONFile{
 		Dependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -251,7 +250,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("dependencies", contentStr),
 			},
-			reporter: r,
+			reporter: effectiveReporter,
 		},
 		DevDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -259,7 +258,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("devDependencies", contentStr),
 			},
-			reporter: r,
+			reporter: effectiveReporter,
 		},
 		OptionalDependencies: packageJSONDependencyMap{
 			MatcherDependencyMap: extractor.MatcherDependencyMap{
@@ -267,7 +266,7 @@ func (m PackageJSONMatcher) createPackageJSONFile(file extractor.DepFile, conten
 				FilePath:   file.Path(),
 				LineOffset: jsonUtils.GetSectionOffset("optionalDependencies", contentStr),
 			},
-			reporter: r,
+			reporter: effectiveReporter,
 		},
 	}
 }
