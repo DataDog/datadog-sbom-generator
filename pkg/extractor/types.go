@@ -19,6 +19,7 @@ type PackageDetails struct {
 	LocationRole                 string                `json:"locationRole,omitempty"`
 	VersionLocation              *models.FilePosition  `json:"versionLocation,omitempty"`
 	NameLocation                 *models.FilePosition  `json:"nameLocation,omitempty"`
+	NamespaceLocation            *models.FilePosition  `json:"namespaceLocation,omitempty"`
 	PackageManager               models.PackageManager `json:"packageManager,omitempty"`
 	IsDirect                     bool                  `json:"isDirect,omitempty"`
 	RequiresTransitiveEnrichment bool                  `json:"requiresTransitiveEnrichment,omitempty"`
