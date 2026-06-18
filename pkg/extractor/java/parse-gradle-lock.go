@@ -133,7 +133,12 @@ func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Scan
 		projectDir := filepath.Dir(f.Path())
 		group := extractTopLevelGroup(content)
 		if group == "" {
-			group = extractGroupFromRootBuildFile(ctx.RootDir)
+			// Only fall back to root build file for subprojects: the root project is
+			// excluded from subprojects { } blocks, so a subprojects-only group in the
+			// root build file must not be assigned to the root artifact itself.
+			if ctx.RootDir != "" && projectDir != ctx.RootDir {
+				group = extractGroupFromRootBuildFile(ctx.RootDir)
+			}
 		}
 		if group != "" {
 			projectName := parseGradleSettingsProjectName(ctx.RootDir, projectDir)

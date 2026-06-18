@@ -30,21 +30,13 @@ var (
 	// inline comments or other quoted strings in the same line.
 	includeRefRe = cachedregexp.MustCompile(`['"](:(?:[^'"]+))['"]`)
 
-	// Matches group inside allprojects { } or subprojects { } blocks.
-	// (?s) makes '.' match newlines so the pattern spans the block body.
-	// The lazy .*? captures the FIRST `group =` in the block; because the
-	// allprojects/subprojects block delimiter itself prevents matching a
-	// top-level `group =` from a different block.
-	// Known limitation: if the block contains a task with `group = "foo"`
-	// before the real `group = 'real'` assignment, the task group would be
-	// captured instead. This construction is extremely rare in practice and
-	// is outweighed by correctly handling the common case of `group =` appearing
-	// after a `repositories { }` or similar nested block.
-	// This is intentionally restricted to inherited group declarations:
-	// a top-level `group = 'x'` in the root build file applies only to the root
-	// project in Gradle, not to subprojects, so we must not use it as a fallback
-	// for subproject group resolution.
-	inheritedGroupRe = cachedregexp.MustCompile(`(?s)(?:allprojects|subprojects)\s*\{.*?group\s*=\s*['"]([^'"]+)['"]`)
+	// blockHeaderRe matches the opening of an allprojects { } or subprojects { } block.
+	// Used by extractBlockGroup to locate where to start brace-counting.
+	blockHeaderRe = cachedregexp.MustCompile(`(?:allprojects|subprojects)\s*\{`)
+
+	// groupAssignRe matches a group = '...' or group = "..." assignment.
+	// Used inside the extracted block body after brace-counting delimits the block.
+	groupAssignRe = cachedregexp.MustCompile(`\bgroup\s*=\s*['"]([^'"]+)['"]`)
 )
 
 // parseGradleSettingsProjectName reads settings.gradle (or settings.gradle.kts) from
@@ -123,6 +115,54 @@ func readSettingsFile(dir string) []byte {
 	return nil
 }
 
+// extractBlockGroup finds the first `allprojects { }` or `subprojects { }` block in
+// src, extracts its body using brace counting so the match is strictly bounded by
+// the block's closing `}`, then returns the first `group = '...'` found inside.
+// Because the block body is extracted before searching, a top-level `group =` that
+// appears after the block's closing `}` is never captured.
+func extractBlockGroup(src []byte) string {
+	for searchFrom := 0; searchFrom < len(src); {
+		loc := blockHeaderRe.FindIndex(src[searchFrom:])
+		if loc == nil {
+			return ""
+		}
+
+		// absOpen is the absolute position of '{' (last char of the match) in src.
+		absOpen := searchFrom + loc[1] - 1
+		depth, blockEnd := 0, -1
+
+		for i := absOpen; i < len(src); i++ {
+			switch src[i] {
+			case '{':
+				depth++
+			case '}':
+				depth--
+				if depth == 0 {
+					blockEnd = i
+				}
+			}
+			if blockEnd >= 0 {
+				break
+			}
+		}
+
+		if blockEnd < 0 {
+			// No matching closing brace — malformed file, stop searching.
+			break
+		}
+
+		blockBody := src[absOpen+1 : blockEnd]
+		if m := groupAssignRe.FindSubmatch(blockBody); m != nil {
+			return string(m[1])
+		}
+
+		// No group = in this block — advance past the closing brace and try next.
+		searchFrom = blockEnd + 1
+	}
+
+	return ""
+}
+
 // extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts
 // and extracts the group declared inside an allprojects {} or subprojects {} block.
 // A top-level `group = 'x'` in the root build file only applies to the root project
@@ -139,8 +179,8 @@ func extractGroupFromRootBuildFile(rootDir string) string {
 			continue
 		}
 
-		if m := inheritedGroupRe.FindSubmatch(data); m != nil {
-			return string(m[1])
+		if g := extractBlockGroup(data); g != "" {
+			return g
 		}
 	}
 

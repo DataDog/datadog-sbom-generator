@@ -164,6 +164,31 @@ func TestExtractGroupFromRootBuildFile_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", extractGroupFromRootBuildFile(""))
 }
 
+func TestExtractGroupFromRootBuildFile_TopLevelAfterBlock_NotInherited(t *testing.T) {
+	t.Parallel()
+
+	// A top-level `group = 'com.root'` that appears AFTER an allprojects block must
+	// not be captured. The brace-counting approach ensures the search is bounded to
+	// the block body and does not spill beyond the closing `}`.
+	root := t.TempDir()
+	content := "allprojects {\n  repositories {\n    mavenCentral()\n  }\n}\ngroup = 'com.root'\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle"), []byte(content), 0600))
+
+	assert.Equal(t, "", extractGroupFromRootBuildFile(root))
+}
+
+func TestExtractGroupFromRootBuildFile_GroupAfterNestedBlock(t *testing.T) {
+	t.Parallel()
+
+	// group = '...' that appears after a nested repositories {} block inside
+	// allprojects is a common Gradle pattern and must be found correctly.
+	root := t.TempDir()
+	content := "allprojects {\n  repositories {\n    mavenCentral()\n  }\n  group = 'com.datadoghq'\n}\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "build.gradle"), []byte(content), 0600))
+
+	assert.Equal(t, "com.datadoghq", extractGroupFromRootBuildFile(root))
+}
+
 func TestParseGradleSettingsProjectName_KotlinDSLNameOverride(t *testing.T) {
 	t.Parallel()
 

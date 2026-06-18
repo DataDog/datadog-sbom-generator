@@ -152,10 +152,19 @@ func (e GradleVerificationMetadataExtractor) GetArtifact(f extractor.DepFile, ct
 		// Group: prefer own build file; fall back to root build.gradle (subprojects
 		// commonly inherit group via allprojects { group = '...' } without redeclaring it).
 		// Name: prefer settings.gradle canonical name; fall back to directory basename.
+		// verification-metadata.xml is at <root>/gradle/; project dir is two levels up.
+		// Group: prefer own build file; fall back to root build.gradle (subprojects
+		// commonly inherit group via allprojects { group = '...' } without redeclaring it).
+		// Only apply the root-file fallback for subprojects: the root project is excluded
+		// from subprojects { } blocks, so a subprojects-only group must not be assigned
+		// to the root artifact itself.
+		// Name: prefer settings.gradle canonical name; fall back to directory basename.
 		projectDir := filepath.Dir(filepath.Dir(f.Path()))
 		group := extractTopLevelGroup(content)
 		if group == "" {
-			group = extractGroupFromRootBuildFile(ctx.RootDir)
+			if ctx.RootDir != "" && projectDir != ctx.RootDir {
+				group = extractGroupFromRootBuildFile(ctx.RootDir)
+			}
 		}
 		if group != "" {
 			projectName := parseGradleSettingsProjectName(ctx.RootDir, projectDir)
