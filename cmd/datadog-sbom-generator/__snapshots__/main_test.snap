@@ -12637,7 +12637,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":20,/"line_end/":24,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":22,/"line_end/":22,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":9,/"line_end/":9,/"column_start/":12,/"column_end/":24,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":20,/"line_end/":24,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/integration-test-locks/other-dir/pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":16,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":22,/"line_end/":22,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":9,/"line_end/":9,/"column_start/":12,/"column_end/":24,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -12661,7 +12661,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/integration-test-locks/pom.xml/",/"line_start/":28,/"line_end/":28,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -17784,7 +17784,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-8/pom.xml/",/"line_start/":28,/"line_end/":28,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -17915,7 +17915,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-8/maven-spring/pom.xml/",/"line_start/":39,/"line_end/":39,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -17938,7 +17938,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-8/maven-spring/pom.xml/",/"line_start/":34,/"line_end/":34,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -23711,7 +23711,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-16/pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -23842,7 +23842,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-16/maven-spring/pom.xml/",/"line_start/":39,/"line_end/":39,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -23865,7 +23865,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/UTF-16/maven-spring/pom.xml/",/"line_start/":34,/"line_end/":34,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -29610,7 +29610,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":30,/"line_end/":30,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -29741,7 +29741,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":38,/"line_end/":42,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/maven-spring/pom.xml/",/"line_start/":39,/"line_end/":39,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":40,/"line_end/":40,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -29764,7 +29764,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":33,/"line_end/":36,/"column_start/":3,/"column_end/":16,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/encoding-integration-test-locks/Windows-1252/maven-spring/pom.xml/",/"line_start/":34,/"line_end/":34,/"column_start/":13,/"column_end/":37,/"role/":/"manifest/"},/"name/":{/"file_name/":/"maven-spring/pom.xml/",/"line_start/":35,/"line_end/":35,/"column_start/":16,/"column_end/":39,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -30536,7 +30536,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":20,/"line_end/":24,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":22,/"line_end/":22,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":9,/"line_end/":9,/"column_start/":12,/"column_end/":24,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":20,/"line_end/":24,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/integration-test-locks/other-dir/pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":16,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"other-dir/pom.xml/",/"line_start/":22,/"line_end/":22,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":9,/"line_end/":9,/"column_start/":12,/"column_end/":24,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -30560,7 +30560,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"<rootdir>/fixtures/integration-test-locks/pom.xml/",/"line_start/":28,/"line_end/":28,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
           }
         ]
       }
