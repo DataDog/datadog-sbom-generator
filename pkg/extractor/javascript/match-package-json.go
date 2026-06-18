@@ -27,7 +27,7 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 	unmarshallErr := json.Unmarshal(data, &parsed)
 	if unmarshallErr != nil {
 		if depMap.reporter != nil {
-			depMap.reporter.Errorf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
+			depMap.reporter.Warnf("could not unmarshal %s, received error of %s", packageJSONContent, unmarshallErr)
 		}
 	}
 
