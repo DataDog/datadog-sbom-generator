@@ -7,8 +7,8 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
-	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 func (matcher GemfileMatcher) GetSourceFile(sourceFile extractor.DepFile) (extractor.DepFile, error) {
