@@ -115,6 +115,7 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
+		"BUILD.bazel",
 		"bun.lock",
 		"Cargo.lock",
 		"composer.lock",
@@ -235,7 +236,7 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 
 	// Test case expand package manager and language while remove duplicates
 	result = extractor.ExpandLanguagesAndPackageManagersToExtractors([]string{"java", "gradle"})
-	expected = []string{"gradle.lockfile", "gradle/verification-metadata.xml", "maven_install.json", "pom.xml"}
+	expected = []string{"BUILD.bazel", "gradle.lockfile", "gradle/verification-metadata.xml", "maven_install.json", "pom.xml"}
 	assert.Equal(t, expected, result)
 
 	// Test invalid language/parser names (should be still be passed - validation is not done here)
@@ -272,6 +273,7 @@ func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
 
 func filesToParsers() map[string]string {
 	return map[string]string{
+		"BUILD.bazel":                      "BUILD.bazel",
 		"buildscript-gradle.lockfile":      "gradle.lockfile",
 		"bun.lock":                         "bun.lock",
 		"Cargo.lock":                       "Cargo.lock",

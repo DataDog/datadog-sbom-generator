@@ -12403,6 +12403,7 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Dart       | Pub             | pubspec.lock                     |
 | Elixir     | Hex             | mix.lock                         |
 | Go         | Golang          | go.mod                           |
+| Java       | Bazel           | BUILD.bazel                      |
 | Java       | Gradle          | gradle.lockfile                  |
 | Java       | Gradle          | gradle/verification-metadata.xml |
 | Java       | Maven           | maven_install.json               |
