@@ -149,8 +149,11 @@ func (e GradleVerificationMetadataExtractor) GetArtifact(f extractor.DepFile, ct
 		}
 
 		// verification-metadata.xml is at <root>/gradle/; project dir is two levels up.
-		if group := extractTopLevelGroup(content); group != "" {
-			projectName := filepath.Base(filepath.Dir(filepath.Dir(f.Path())))
+		// Set artifact.Name = "group:projectName" so findArtifact can match this
+		// subproject when it appears as a dependency in another module's lockfile.
+		projectDir := filepath.Dir(filepath.Dir(f.Path()))
+		group, projectName := resolveGradleArtifactName(ctx, projectDir, content)
+		if group != "" {
 			artifact.Name = group + ":" + projectName
 		}
 
