@@ -20,7 +20,8 @@ var (
 
 	// include ':subA', ':subB' or include(':subA', ':subB')
 	// Captures the full argument string after include.
-	includeRe = cachedregexp.MustCompile(`(?m)^\s*include\s*\(?\s*([^)\n]+?)\s*\)?\s*$`)
+	// The \b word boundary prevents matching includeBuild, includeFlat, etc.
+	includeRe = cachedregexp.MustCompile(`(?m)^\s*include\b\s*\(?\s*([^)\n]+?)\s*\)?\s*$`)
 
 	// project(':subA').name = 'renamed' or project(":subA").name = "renamed"
 	projectNameRe = cachedregexp.MustCompile(`(?m)^\s*project\(\s*['"]([^'"]+)['"]\s*\)\.name\s*=\s*['"]([^'"]+)['"]`)

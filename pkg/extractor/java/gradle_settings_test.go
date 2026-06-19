@@ -119,6 +119,19 @@ func TestParseGradleSettingsProjectName_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", name)
 }
 
+func TestParseGradleSettingsProjectName_IncludeBuildNotMatchedAsSubproject(t *testing.T) {
+	t.Parallel()
+
+	// includeBuild, includeFlat, etc. must not be treated as include statements.
+	root := t.TempDir()
+	subDir := filepath.Join(root, "lib")
+	require.NoError(t, os.Mkdir(subDir, 0700))
+	settings := "includeBuild '../lib'\nincludeFlat 'sibling'\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle"), []byte(settings), 0600))
+
+	assert.Equal(t, "", parseGradleSettingsProjectName(root, subDir))
+}
+
 func TestExtractGroupFromRootBuildFile_TopLevel_NotInherited(t *testing.T) {
 	t.Parallel()
 
