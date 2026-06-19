@@ -119,6 +119,23 @@ func TestParseGradleSettingsProjectName_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", name)
 }
 
+func TestParseGradleSettingsProjectName_IncludeWithoutLeadingColon(t *testing.T) {
+	t.Parallel()
+
+	// Gradle supports include 'app' (without leading colon) as well as include ':app'.
+	root := t.TempDir()
+	subA := filepath.Join(root, "communication")
+	subB := filepath.Join(root, "lib-core")
+	require.NoError(t, os.Mkdir(subA, 0700))
+	require.NoError(t, os.Mkdir(subB, 0700))
+	settings := "include 'communication'\ninclude 'lib-core'\nproject(':lib-core').name = 'comms-core'\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle"), []byte(settings), 0600))
+
+	assert.Equal(t, "communication", parseGradleSettingsProjectName(root, subA))
+	// Name override still applies when the include is colon-less.
+	assert.Equal(t, "comms-core", parseGradleSettingsProjectName(root, subB))
+}
+
 func TestParseGradleSettingsProjectName_IncludeBuildNotMatchedAsSubproject(t *testing.T) {
 	t.Parallel()
 

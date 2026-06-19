@@ -26,10 +26,11 @@ var (
 	// project(':subA').name = 'renamed' or project(":subA").name = "renamed"
 	projectNameRe = cachedregexp.MustCompile(`(?m)^\s*project\(\s*['"]([^'"]+)['"]\s*\)\.name\s*=\s*['"]([^'"]+)['"]`)
 
-	// Matches Gradle project path references like ':subA' or ":sub:module" within an
-	// include argument list. Requiring the leading ':' avoids false positives from
-	// inline comments or other quoted strings in the same line.
-	includeRefRe = cachedregexp.MustCompile(`['"](:(?:[^'"]+))['"]`)
+	// Matches Gradle project path references within an include argument list.
+	// Both ':app' (with leading colon) and 'app' (without) are valid Gradle include forms.
+	// The leading colon is optional and consumed outside the capture group so the
+	// captured value is always the bare path (e.g. "app", "sub:module").
+	includeRefRe = cachedregexp.MustCompile(`['\"]:?([^'"]+)['"]`)
 
 	// blockHeaderRe matches the opening of an allprojects { } or subprojects { } block.
 	// Used by extractBlockGroup to locate where to start brace-counting.
@@ -96,7 +97,13 @@ func parseGradleSettingsProjectName(rootDir, projectDir string) string {
 		argStr := string(m[1])
 		// Extract individual project references from the argument string.
 		for _, ref := range includeRefRe.FindAllStringSubmatch(argStr, -1) {
-			if ref[1] == gradlePath {
+			// includeRefRe captures the path without the optional leading colon;
+			// normalize to Gradle project path format for comparison with gradlePath.
+			refPath := ref[1]
+			if !strings.HasPrefix(refPath, ":") {
+				refPath = ":" + refPath
+			}
+			if refPath == gradlePath {
 				// Return the last segment of the Gradle path as the project name.
 				parts := strings.Split(gradlePath, ":")
 				return parts[len(parts)-1]
