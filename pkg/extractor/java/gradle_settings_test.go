@@ -149,6 +149,44 @@ func TestParseGradleSettingsProjectName_IncludeBuildNotMatchedAsSubproject(t *te
 	assert.Equal(t, "", parseGradleSettingsProjectName(root, subDir))
 }
 
+func TestStripGradleComments_SingleLineComment(t *testing.T) {
+	t.Parallel()
+
+	// The space before '//' is preserved; only the comment text is blanked.
+	src := []byte("group = 'com.example' // this is the group\n")
+	got := string(stripGradleComments(src))
+	assert.Equal(t, "group = 'com.example'                     \n", got)
+}
+
+func TestStripGradleComments_BlockComment(t *testing.T) {
+	t.Parallel()
+
+	// '/* block */' (11 chars) + trailing space = 12 blanked positions before 'group'.
+	src := []byte("/* block */ group = 'x'\n")
+	got := string(stripGradleComments(src))
+	assert.Equal(t, "            group = 'x'\n", got)
+}
+
+func TestStripGradleComments_PreservesURLsInStrings(t *testing.T) {
+	t.Parallel()
+
+	// '//' inside a quoted string must not be treated as a comment delimiter;
+	// the closing brace on the same line must be preserved so brace-counting works.
+	src := []byte(`repositories { maven { url = uri("https://repo.example.com") } }` + "\n")
+	got := stripGradleComments(src)
+	assert.Equal(t, src, got, "string containing // should be left untouched")
+}
+
+func TestStripGradleComments_BlockCommentPreservesNewlines(t *testing.T) {
+	t.Parallel()
+
+	src := []byte("/* line1\nline2 */group = 'x'\n")
+	got := string(stripGradleComments(src))
+	// Newlines inside the block comment must be preserved so line numbers stay aligned.
+	assert.Contains(t, got, "\n")
+	assert.Contains(t, got, "group = 'x'")
+}
+
 func TestExtractGroupFromRootBuildFile_TopLevel_NotInherited(t *testing.T) {
 	t.Parallel()
 

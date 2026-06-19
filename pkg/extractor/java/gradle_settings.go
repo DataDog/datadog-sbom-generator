@@ -131,12 +131,30 @@ func readSettingsFile(dir string) []byte {
 // replaced by spaces, preserving byte positions and newlines so that all regexp
 // matches on the result remain aligned with the original source.
 // Single-line comments (// … \n) and block comments (/* … */) are both handled.
+// String literals (single- or double-quoted) are skipped so that // inside a URL
+// like url = uri("https://repo") is not treated as a comment delimiter.
 func stripGradleComments(src []byte) []byte {
 	out := make([]byte, len(src))
 	copy(out, src)
 	i := 0
 	for i < len(out) {
-		if i+1 < len(out) && out[i] == '/' && out[i+1] == '/' {
+		// Skip over string literals without modification so that // or /* inside
+		// quoted values (e.g. URLs) are not mistaken for comment delimiters.
+		if out[i] == '"' || out[i] == '\'' {
+			quote := out[i]
+			i++
+			for i < len(out) {
+				if out[i] == '\\' {
+					i += 2 // skip escaped character
+					continue
+				}
+				if out[i] == quote {
+					i++
+					break
+				}
+				i++
+			}
+		} else if i+1 < len(out) && out[i] == '/' && out[i+1] == '/' {
 			// Single-line comment: blank everything up to (but not including) the newline.
 			for i < len(out) && out[i] != '\n' {
 				out[i] = ' '
