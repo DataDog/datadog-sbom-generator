@@ -142,10 +142,10 @@ func (e GradleLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Scan
 			}
 			if projectDir == absRootDir {
 				// Root project: only allprojects { } applies.
-				group = extractAllProjectsGroupFromRootBuildFile(ctx.RootDir)
+				group = extractAllProjectsGroupFromRootBuildFile(absRootDir)
 			} else {
 				// Subproject: allprojects { } and subprojects { } both apply.
-				group = extractGroupFromRootBuildFile(ctx.RootDir)
+				group = extractGroupFromRootBuildFile(absRootDir)
 			}
 		}
 		if group != "" {

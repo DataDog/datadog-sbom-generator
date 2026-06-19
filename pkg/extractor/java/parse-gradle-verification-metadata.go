@@ -164,10 +164,10 @@ func (e GradleVerificationMetadataExtractor) GetArtifact(f extractor.DepFile, ct
 			}
 			if projectDir == absRootDir {
 				// Root project: only allprojects { } applies.
-				group = extractAllProjectsGroupFromRootBuildFile(ctx.RootDir)
+				group = extractAllProjectsGroupFromRootBuildFile(absRootDir)
 			} else {
 				// Subproject: allprojects { } and subprojects { } both apply.
-				group = extractGroupFromRootBuildFile(ctx.RootDir)
+				group = extractGroupFromRootBuildFile(absRootDir)
 			}
 		}
 		if group != "" {
