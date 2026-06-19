@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 )
 
 const (
@@ -282,6 +283,38 @@ func findGroupAtTopLevel(blockBody []byte) string {
 	}
 
 	return ""
+}
+
+// resolveGradleArtifactName returns the (group, projectName) pair for the Gradle
+// project at projectDir. It reads the group from buildFileContent if present,
+// falling back to the inherited group declared in the root build file. The project
+// name is read from settings.gradle if available, otherwise the directory basename
+// is used.
+func resolveGradleArtifactName(ctx extractor.ScanContext, projectDir string, buildFileContent []byte) (group, projectName string) {
+	group = extractTopLevelGroup(buildFileContent)
+	if group == "" && ctx.RootDir != "" {
+		// Normalize to absolute so the root-vs-subproject check is reliable even
+		// when the scanner is invoked with a relative path (e.g. "scan .").
+		absRootDir := ctx.RootDir
+		if abs, err := filepath.Abs(ctx.RootDir); err == nil {
+			absRootDir = abs
+		}
+		if projectDir == absRootDir {
+			// Root project: only allprojects { } applies.
+			group = extractAllProjectsGroupFromRootBuildFile(absRootDir)
+		} else {
+			// Subproject: allprojects { } and subprojects { } both apply.
+			group = extractGroupFromRootBuildFile(absRootDir)
+		}
+	}
+	if group != "" {
+		projectName = parseGradleSettingsProjectName(ctx.RootDir, projectDir)
+		if projectName == "" {
+			projectName = filepath.Base(projectDir)
+		}
+	}
+
+	return group, projectName
 }
 
 // extractGroupFromRootBuildFile reads the root build.gradle / build.gradle.kts and
