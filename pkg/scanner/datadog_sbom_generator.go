@@ -320,6 +320,10 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			if pkgs[index].VersionLocation != nil {
 				pkgs[index].VersionLocation.Filename = fileposition.ToRelativePath(dir, pkg.VersionLocation.Filename)
 			}
+
+			if pkgs[index].NamespaceLocation != nil {
+				pkgs[index].NamespaceLocation.Filename = fileposition.ToRelativePath(dir, pkg.NamespaceLocation.Filename)
+			}
 		}
 		for index, artifact := range artifacts {
 			artifacts[index].Filename = fileposition.ToRelativePath(dir, artifact.Filename)
