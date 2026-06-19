@@ -10,6 +10,7 @@ func TestPackageManagerToLanguage(t *testing.T) {
 	t.Parallel()
 
 	expectedMappings := map[PackageManager]Language{
+		Bazel:        Java,
 		Maven:        Java,
 		Gradle:       Java,
 		NPM:          Javascript,

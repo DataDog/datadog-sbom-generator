@@ -642,6 +642,120 @@ func TestSimpleProcessor_Gradle_ProjectDepWithNoLockfile(t *testing.T) {
 	}
 }
 
+// --- BUILD.bazel tests ---
+
+// bazelFile is a shorthand for a BUILD.bazel BuildFile.
+func bazelFile(path string) BuildFile {
+	return BuildFile{FileType: FileTypeBUILDBazel, FilePath: path}
+}
+
+// bazelComponent builds a CycloneDX component with a manifest occurrence for
+// the given BUILD.bazel path, as the SBOM generator would emit it.
+func bazelComponent(name, buildBazelPath string) cyclonedx.Component {
+	return componentWithOccurrences(name, "", makeLocation(buildBazelPath, "manifest"))
+}
+
+// TestSimpleProcessor_BUILDBazel_ProcessorRegistered verifies that
+// SimpleProcessor (not noopProcessor) is registered for BUILD.bazel.
+// We distinguish them by providing a dependency edge: SimpleProcessor resolves
+// it via BFS, while noopProcessor would ignore it.
+func TestSimpleProcessor_BUILDBazel_ProcessorRegistered(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			bazelComponent("app", "app/BUILD.bazel"),
+			bazelComponent("lib", "libs/common/BUILD.bazel"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "app/BUILD.bazel", Dependencies: &[]string{"libs/common/BUILD.bazel"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeBUILDBazel)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries, got %d: %v", len(result), result)
+	}
+
+	app := result[bazelFile("app/BUILD.bazel")]
+	// SimpleProcessor resolves the dependency edge; noopProcessor would return empty.
+	if len(app.Dependencies) != 1 || app.Dependencies[0].BuildFile != bazelFile("libs/common/BUILD.bazel") {
+		t.Errorf("app: expected Dependencies=[libs/common/BUILD.bazel], got %v", app.Dependencies)
+	}
+
+	lib := result[bazelFile("libs/common/BUILD.bazel")]
+	if len(lib.Dependencies) != 0 {
+		t.Errorf("lib: expected no Dependencies, got %v", lib.Dependencies)
+	}
+}
+
+// TestSimpleProcessor_BUILDBazel_TransitiveClosure verifies the BFS transitive
+// closure for a three-level BUILD.bazel dependency graph:
+//
+//	A/BUILD.bazel  →  B/BUILD.bazel, C/BUILD.bazel
+//	B/BUILD.bazel  →  D/BUILD.bazel
+//	C/BUILD.bazel  →  (none)
+//	D/BUILD.bazel  →  (none)
+//
+// A should transitively depend on B(hop=1), C(hop=1), D(hop=2).
+func TestSimpleProcessor_BUILDBazel_TransitiveClosure(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			bazelComponent("a", "A/BUILD.bazel"),
+			bazelComponent("b", "B/BUILD.bazel"),
+			bazelComponent("c", "C/BUILD.bazel"),
+			bazelComponent("d", "D/BUILD.bazel"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "A/BUILD.bazel", Dependencies: &[]string{"B/BUILD.bazel", "C/BUILD.bazel"}},
+			{Ref: "B/BUILD.bazel", Dependencies: &[]string{"D/BUILD.bazel"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypeBUILDBazel)
+
+	if len(result) != 4 {
+		t.Fatalf("expected 4 entries, got %d: %v", len(result), result)
+	}
+
+	a := result[bazelFile("A/BUILD.bazel")]
+	if len(a.Dependencies) != 3 {
+		t.Fatalf("A: expected 3 dependencies (B, C, D), got %v", a.Dependencies)
+	}
+	// Sorted by FilePath: B, C, D
+	expected := []BuildFileWithHopCount{
+		{BuildFile: bazelFile("B/BUILD.bazel"), HopCount: 1},
+		{BuildFile: bazelFile("C/BUILD.bazel"), HopCount: 1},
+		{BuildFile: bazelFile("D/BUILD.bazel"), HopCount: 2},
+	}
+	for i, exp := range expected {
+		if a.Dependencies[i] != exp {
+			t.Errorf("A.Dependencies[%d]: expected %v, got %v", i, exp, a.Dependencies[i])
+		}
+	}
+
+	b := result[bazelFile("B/BUILD.bazel")]
+	if len(b.Dependencies) != 1 {
+		t.Fatalf("B: expected 1 dependency (D), got %v", b.Dependencies)
+	}
+	if b.Dependencies[0] != (BuildFileWithHopCount{BuildFile: bazelFile("D/BUILD.bazel"), HopCount: 1}) {
+		t.Errorf("B: expected D/BUILD.bazel hop=1, got %v", b.Dependencies[0])
+	}
+
+	c := result[bazelFile("C/BUILD.bazel")]
+	if len(c.Dependencies) != 0 {
+		t.Errorf("C: expected no Dependencies, got %v", c.Dependencies)
+	}
+
+	d := result[bazelFile("D/BUILD.bazel")]
+	if len(d.Dependencies) != 0 {
+		t.Errorf("D: expected no Dependencies, got %v", d.Dependencies)
+	}
+}
+
 // TestSimpleProcessor_GradleKts_SingleBuildFile verifies that a standalone
 // build.gradle.kts with no file-type components or dependency edges gets empty
 // dependencies and empty ID.

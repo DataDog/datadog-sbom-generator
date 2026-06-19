@@ -75,4 +75,5 @@ func init() {
 	RegisterBuildFileProcessor(FileTypePyprojectToml, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBuildGradle, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBuildGradleKts, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeBUILDBazel, &SimpleProcessor{})
 }

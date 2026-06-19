@@ -13,6 +13,7 @@ import (
 type FileType string
 
 const (
+	FileTypeBUILDBazel      FileType = "BUILD.bazel"
 	FileTypePomXML          FileType = "pom.xml"
 	FileTypeCargoToml       FileType = "Cargo.toml"
 	FileTypePackageJSON     FileType = "package.json"

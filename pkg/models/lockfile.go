@@ -10,6 +10,7 @@ func (p ParsedFilePath) String() string {
 // Standard lockfile names used by extractors
 const (
 	ApkFilePath                ParsedFilePath = "/lib/apk/db/installed"
+	BazelBuildFilePath         ParsedFilePath = "BUILD.bazel"
 	BunFilePath                ParsedFilePath = "bun.lock"
 	BundlerFilePath            ParsedFilePath = "Gemfile.lock"
 	ComposerFilePath           ParsedFilePath = "composer.lock"
