@@ -491,11 +491,13 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 			groupIDPosition.Filename = lockPackage.SourceFile
 		}
 
-		// Skip namespace location when groupId is inherited via ${project.*} property: the
-		// resolved position carries the parent POM's line/column mapped onto the child file,
-		// which would point to the wrong text.
+		// Skip namespace location when groupId is inherited via ${project.*} or ${pom.*}
+		// property: the resolved position carries the parent POM's line/column mapped onto
+		// the child file, which would point to the wrong text. ${pom.*} is a deprecated
+		// alias for ${project.*} and behaves identically.
 		var namespaceLocation *models.FilePosition
-		if !strings.HasPrefix(lockPackage.GroupID.Value, "${project.") {
+		if !strings.HasPrefix(lockPackage.GroupID.Value, "${project.") &&
+			!strings.HasPrefix(lockPackage.GroupID.Value, "${pom.") {
 			namespaceLocation = &groupIDPosition
 		}
 
