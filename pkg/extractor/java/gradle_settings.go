@@ -16,33 +16,40 @@ const (
 
 // Regex patterns for parsing settings.gradle / settings.gradle.kts.
 var (
-	// rootProject.name = 'my-app' or rootProject.name = "my-app"
+	// rootProjectNameRe matches: rootProject.name = 'my-app' or rootProject.name = "my-app"
+	// https://regex101.com/r/UkXkpf/1
 	rootProjectNameRe = cachedregexp.MustCompile(`(?m)^\s*rootProject\.name\s*=\s*['"]([^'"]+)['"]`)
 
-	// include ':subA', ':subB' or include(':subA', ':subB')
+	// includeRe matches: include ':subA', ':subB' or include(':subA', ':subB')
 	// Captures the full argument string after include.
 	// The \b word boundary prevents matching includeBuild, includeFlat, etc.
+	// https://regex101.com/r/hVdx4O/1
 	includeRe = cachedregexp.MustCompile(`(?m)^\s*include\b\s*\(?\s*([^)\n]+?)\s*\)?\s*$`)
 
-	// project(':subA').name = 'renamed' or project(":subA").name = "renamed"
+	// projectNameRe matches: project(':subA').name = 'renamed' or project(":subA").name = "renamed"
+	// https://regex101.com/r/vBqKpW/1
 	projectNameRe = cachedregexp.MustCompile(`(?m)^\s*project\(\s*['"]([^'"]+)['"]\s*\)\.name\s*=\s*['"]([^'"]+)['"]`)
 
-	// Matches Gradle project path references within an include argument list.
+	// includeRefRe matches Gradle project path references within an include argument list.
 	// Both ':app' (with leading colon) and 'app' (without) are valid Gradle include forms.
 	// The leading colon is optional and consumed outside the capture group so the
 	// captured value is always the bare path (e.g. "app", "sub:module").
+	// https://regex101.com/r/cMjLhT/1
 	includeRefRe = cachedregexp.MustCompile(`['\"]:?([^'"]+)['"]`)
 
 	// blockHeaderRe matches the opening of an allprojects { } or subprojects { } block.
 	// Used by extractBlockGroup to locate where to start brace-counting.
+	// https://regex101.com/r/pNkWqA/1
 	blockHeaderRe = cachedregexp.MustCompile(`(?:allprojects|subprojects)\s*\{`)
 
 	// allProjectsBlockHeaderRe matches the opening of an allprojects { } block only.
 	// Gradle's allprojects { } applies to the root project; subprojects { } does not.
+	// https://regex101.com/r/cZnEsK/1
 	allProjectsBlockHeaderRe = cachedregexp.MustCompile(`allprojects\s*\{`)
 
 	// groupAssignRe matches a group = '...' or group = "..." assignment.
 	// Used inside the extracted block body after brace-counting delimits the block.
+	// https://regex101.com/r/xKvTpL/1
 	groupAssignRe = cachedregexp.MustCompile(`\bgroup\s*=\s*['"]([^'"]+)['"]`)
 )
 
