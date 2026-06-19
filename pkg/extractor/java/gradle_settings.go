@@ -66,6 +66,10 @@ func parseGradleSettingsProjectName(rootDir, projectDir string) string {
 		return ""
 	}
 
+	// Strip comments so that commented-out rootProject.name, include, or
+	// project().name statements are not matched by the regexes below.
+	content = stripGradleComments(content)
+
 	// Compute relative path from rootDir to projectDir.
 	relPath, err := filepath.Rel(rootDir, projectDir)
 	if err != nil {

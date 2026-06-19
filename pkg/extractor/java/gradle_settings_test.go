@@ -119,6 +119,46 @@ func TestParseGradleSettingsProjectName_EmptyRootDir(t *testing.T) {
 	assert.Equal(t, "", name)
 }
 
+func TestParseGradleSettingsProjectName_LineCommentedNameIgnored(t *testing.T) {
+	t.Parallel()
+
+	// A line-commented rootProject.name must not be reported.
+	root := t.TempDir()
+	settings := "// rootProject.name = 'old-name'\nrootProject.name = 'new-name'\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle"), []byte(settings), 0600))
+
+	assert.Equal(t, "new-name", parseGradleSettingsProjectName(root, root))
+}
+
+func TestParseGradleSettingsProjectName_BlockCommentedIncludeIgnored(t *testing.T) {
+	t.Parallel()
+
+	// A block-commented include must not register the project.
+	root := t.TempDir()
+	subDir := filepath.Join(root, "removed-module")
+	require.NoError(t, os.Mkdir(subDir, 0700))
+	app := filepath.Join(root, "app")
+	require.NoError(t, os.Mkdir(app, 0700))
+	settings := "/*\ninclude ':removed-module'\n*/\ninclude ':app'\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle"), []byte(settings), 0600))
+
+	assert.Equal(t, "", parseGradleSettingsProjectName(root, subDir))
+	assert.Equal(t, "app", parseGradleSettingsProjectName(root, app))
+}
+
+func TestParseGradleSettingsProjectName_BlockCommentedNameOverrideIgnored(t *testing.T) {
+	t.Parallel()
+
+	// A block-commented project().name override must not rename the project.
+	root := t.TempDir()
+	subDir := filepath.Join(root, "app")
+	require.NoError(t, os.Mkdir(subDir, 0700))
+	settings := "include ':app'\n/* project(':app').name = 'deprecated-name' */\n"
+	require.NoError(t, os.WriteFile(filepath.Join(root, "settings.gradle"), []byte(settings), 0600))
+
+	assert.Equal(t, "app", parseGradleSettingsProjectName(root, subDir))
+}
+
 func TestParseGradleSettingsProjectName_IncludeWithoutLeadingColon(t *testing.T) {
 	t.Parallel()
 
