@@ -98,4 +98,5 @@ func init() {
 	RegisterBuildFileProcessor(FileTypeBuildGradleKts, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBUILDBazel, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBUILD, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeCsproj, &SimpleProcessor{})
 }

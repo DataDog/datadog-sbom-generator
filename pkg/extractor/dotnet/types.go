@@ -49,7 +49,13 @@ type ItemGroup struct {
 	XMLName           xml.Name           `xml:"ItemGroup"`
 	PackageReferences []PackageReference `xml:"PackageReference"`
 	PackageVersions   []PackageVersion   `xml:"PackageVersion"`
+	ProjectReferences []ProjectReference `xml:"ProjectReference"`
 	ConditionAttr     *string            `xml:"Condition,attr"`
+}
+
+type ProjectReference struct {
+	XMLName     xml.Name `xml:"ProjectReference"`
+	IncludeAttr *string  `xml:"Include,attr"`
 }
 
 type Import struct {
