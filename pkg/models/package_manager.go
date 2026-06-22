@@ -3,6 +3,7 @@ package models
 type PackageManager string
 
 const (
+	Bazel        PackageManager = "Bazel"
 	Bun          PackageManager = "Bun"
 	Bundler      PackageManager = "Bundler"
 	Composer     PackageManager = "Composer"
@@ -28,6 +29,7 @@ const (
 )
 
 var PackageManagerToLanguage = map[PackageManager]Language{
+	Bazel:        Java,
 	Maven:        Java,
 	Gradle:       Java,
 	NPM:          Javascript,

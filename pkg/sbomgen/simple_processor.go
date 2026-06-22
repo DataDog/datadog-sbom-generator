@@ -2,10 +2,27 @@ package sbomgen
 
 import "sort"
 
+// maxHopsForSize returns a BFS depth limit based on the number of build files
+// in scope. Larger repos have shallower limits to keep output manageable:
+//
+//	< 100 files  → 9999 (effectively unlimited)
+//	100–399      → 10
+//	400+         → 5
+func maxHopsForSize(n int) int {
+	switch {
+	case n < 100:
+		return 9999
+	case n < 400:
+		return 10
+	default:
+		return 5
+	}
+}
+
 // SimpleProcessor enriches BuildFiles with transitive dependencies and
 // ecosystem-specific IDs derived from the SBOM. It uses BFS over
-// ProcessorContext.FileDependencies to compute the full transitive closure,
-// restricted to build files present in the SBOM.
+// ProcessorContext.FileDependencies to compute the transitive closure,
+// with a depth limit that scales with the number of build files in scope.
 //
 // The ID field is populated from ProcessorContext.ArtifactIDs.
 //
@@ -29,6 +46,7 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 	}
 
 	// Build the result map with full transitive closure via BFS for each file.
+	maxHops := maxHopsForSize(len(files))
 	result := make(map[BuildFile]BuildFileRelations, len(files))
 	for _, f := range files {
 		var deps []BuildFileWithHopCount
@@ -38,6 +56,9 @@ func (p *SimpleProcessor) Process(files []BuildFile, ctx ProcessorContext) map[B
 		for len(queue) > 0 {
 			node := queue[0]
 			queue = queue[1:]
+			if node.depth >= maxHops {
+				continue
+			}
 			for _, depPath := range ctx.FileDependencies[node.path] {
 				if _, seen := visited[depPath]; seen {
 					continue
@@ -75,4 +96,6 @@ func init() {
 	RegisterBuildFileProcessor(FileTypePyprojectToml, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBuildGradle, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBuildGradleKts, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeBUILDBazel, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeBUILD, &SimpleProcessor{})
 }
