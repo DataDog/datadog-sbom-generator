@@ -76,22 +76,29 @@ func (e BazelBuildExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Scan
 // //path/to/module:target). It resolves each to a filesystem path and returns
 // ArtifactDetail entries for existing BUILD files. Duplicates are deduplicated.
 func extractBazelInternalDeps(content []byte, rootDir string) []models.ArtifactDetail {
-	// Strip load() lines before scanning for internal refs. load() arguments
-	// reference Starlark macro/rule definition files (build infrastructure),
-	// not Java modules that end up in the service binary.
-	var filtered []byte
-	for _, line := range strings.Split(string(content), "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), "load(") {
-			continue
-		}
-		filtered = append(filtered, []byte(line+"\n")...)
+	// Resolve rootDir to an absolute path so that ProjectDeps paths match the
+	// artifact filenames produced by the scanner (which relativizes from cwd).
+	if absRoot, err := filepath.Abs(rootDir); err == nil {
+		rootDir = absRoot
 	}
+
+	// Strip Starlark line comments (#...) so that commented-out labels like
+	// # "//libs/old" are not mistaken for active dependencies.
+	commentRegex := cachedregexp.MustCompile(`(?m)#[^\n]*`)
+	filtered := commentRegex.ReplaceAll(content, nil)
+
+	// Strip load(...) blocks before scanning for internal refs. load() arguments
+	// reference Starlark macro/rule definition files (build infrastructure),
+	// not Java modules that end up in the service binary. We remove the entire
+	// block (including multiline loads) to avoid capturing their string labels.
+	loadBlockRegex := cachedregexp.MustCompile(`(?ms)^\s*load\([^)]*\)`)
+	filtered = loadBlockRegex.ReplaceAll(filtered, nil)
 
 	// Match all string literals that start with // and reference internal targets.
 	// This captures both inline deps = ["//foo"] and variable patterns like
 	// LIBRARY_DEPS = ["//foo"]. The regex intentionally scans the full file
 	// rather than parsing deps blocks, matching the approach described in the spec.
-	internalRefRegex := cachedregexp.MustCompile(`"(//[^"]+)"`)
+	internalRefRegex := cachedregexp.MustCompile(`["'](//[^"']+)["']`)
 	matches := internalRefRegex.FindAllSubmatch(filtered, -1)
 
 	var deps []models.ArtifactDetail

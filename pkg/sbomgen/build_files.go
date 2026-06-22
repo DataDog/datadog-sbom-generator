@@ -14,6 +14,7 @@ type FileType string
 
 const (
 	FileTypeBUILDBazel      FileType = "BUILD.bazel"
+	FileTypeBUILD           FileType = "BUILD"
 	FileTypePomXML          FileType = "pom.xml"
 	FileTypeCargoToml       FileType = "Cargo.toml"
 	FileTypePackageJSON     FileType = "package.json"
