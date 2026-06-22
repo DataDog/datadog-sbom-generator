@@ -15,8 +15,8 @@ const (
 	bazelPackageManager      = models.Bazel
 	bazelOfficiallySupported = true
 
-	bazelBuildFilename    = "BUILD.bazel"
-	bazelBuildFilenamAlt  = "BUILD"
+	bazelBuildFilename   = "BUILD.bazel"
+	bazelBuildFilenamAlt = "BUILD"
 )
 
 // BazelBuildExtractor parses BUILD.bazel files to extract internal module
