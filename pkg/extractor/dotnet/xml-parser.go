@@ -57,6 +57,16 @@ DecodingLoop:
 				packageVersion.SetLineEnd(lineEnd)
 				packageVersion.SetColumnEnd(columnEnd)
 				itemGroup.PackageVersions = append(itemGroup.PackageVersions, packageVersion)
+
+			case "ProjectReference":
+				projectReference := ProjectReference{}
+
+				err := decoder.DecodeElement(&projectReference, &elem)
+				if err != nil {
+					return err
+				}
+
+				itemGroup.ProjectReferences = append(itemGroup.ProjectReferences, projectReference)
 			}
 
 		case xml.EndElement:
