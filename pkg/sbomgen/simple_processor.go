@@ -99,4 +99,5 @@ func init() {
 	RegisterBuildFileProcessor(FileTypeBUILDBazel, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeBUILD, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeCsproj, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeGoMod, &SimpleProcessor{})
 }
