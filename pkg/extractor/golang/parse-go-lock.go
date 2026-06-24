@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -206,6 +207,111 @@ func hasHostnamePrefix(path string) bool {
 	return matcher.MatchString(path)
 }
 
+// GetArtifact implements extractor.ArtifactExtractor.
+// It parses the go.mod file to extract the module name and discovers internal
+// project dependencies via local-path replace directives.
+func (e GoLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, err
+	}
+
+	parsedLockfile, err := modfile.Parse(f.Path(), b, defaultNonCanonicalVersions)
+	if err != nil {
+		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, err
+	}
+
+	var moduleName string
+	if parsedLockfile.Module != nil {
+		moduleName = parsedLockfile.Module.Mod.Path
+	}
+
+	artifact := &models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Name:      moduleName,
+			Filename:  f.Path(),
+			Ecosystem: models.EcosystemGo,
+		},
+	}
+
+	// Build the set of required module keys so we only follow replace
+	// directives that are actually selected by the module graph — matching
+	// the filtering logic already used in Extract(). For version-specific
+	// replaces (replace.Old.Version != ""), we key by "path@version" so that
+	// a replace for v2.0.0 is not emitted when only v1.0.0 is required.
+	required := make(map[string]struct{}, len(parsedLockfile.Require))
+	for _, req := range parsedLockfile.Require {
+		required[req.Mod.Path] = struct{}{}
+		required[req.Mod.Path+"@"+req.Mod.Version] = struct{}{}
+	}
+
+	seen := make(map[string]struct{})
+	goModDir := filepath.Dir(f.Path())
+
+	for _, replace := range parsedLockfile.Replace {
+		if hasHostnamePrefix(replace.New.Path) {
+			continue
+		}
+
+		// Per the Go spec, a replacement with a version on the right-hand side
+		// (replace old => new v1.2.3) is always a module path, never a local
+		// directory. Only version-less replacements can point to a local path.
+		if replace.New.Version != "" {
+			continue
+		}
+
+		// Use the versioned key when the replace targets a specific version,
+		// otherwise fall back to the unversioned path — same logic as Extract().
+		requireKey := replace.Old.Path
+		if replace.Old.Version != "" {
+			requireKey = replace.Old.Path + "@" + replace.Old.Version
+		}
+
+		if _, ok := required[requireKey]; !ok {
+			continue
+		}
+
+		var targetDir string
+		if filepath.IsAbs(replace.New.Path) {
+			targetDir = replace.New.Path
+		} else {
+			targetDir = filepath.Join(goModDir, replace.New.Path)
+		}
+		targetGoMod := filepath.Clean(filepath.Join(targetDir, "go.mod"))
+
+		if _, err := os.Stat(targetGoMod); err != nil {
+			continue
+		}
+
+		// Skip targets outside the scan root: they were never walked by the
+		// scanner, so emitting them would produce dangling BOM references.
+		// Normalize ctx.RootDir to an absolute path first — filepath.Rel
+		// returns an error for mixed relative/absolute inputs (e.g. "." vs
+		// "/abs/path"), which would incorrectly skip all valid replace edges.
+		if ctx.RootDir != "" {
+			absRoot, err := filepath.Abs(ctx.RootDir)
+			if err == nil {
+				rel, err := filepath.Rel(absRoot, targetGoMod)
+				if err != nil || strings.HasPrefix(rel, "..") {
+					continue
+				}
+			}
+		}
+
+		if _, ok := seen[targetGoMod]; ok {
+			continue
+		}
+		seen[targetGoMod] = struct{}{}
+
+		artifact.ProjectDeps = append(artifact.ProjectDeps, models.ArtifactDetail{
+			Filename: targetGoMod,
+		})
+	}
+
+	return artifact, nil
+}
+
+var _ extractor.ArtifactExtractor = GoLockExtractor{}
 var _ extractor.Extractor = GoLockExtractor{}
 
 //nolint:gochecknoinits

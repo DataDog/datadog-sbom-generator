@@ -27,6 +27,7 @@ const (
 	FileTypePipfile         FileType = "Pipfile"
 	FileTypeRequirementsTxt FileType = "requirements.txt"
 	FileTypeCsproj          FileType = "*.csproj"
+	FileTypeGoMod           FileType = "go.mod"
 )
 
 // BuildFile identifies a build/manifest file within a repository.
