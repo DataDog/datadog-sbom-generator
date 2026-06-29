@@ -237,9 +237,12 @@ func isNotRequirementLine(line string) bool {
 func isLineContinuation(line string) bool {
 	// checks that the line ends with an odd number of back slashes,
 	// meaning the last one isn't escaped
-	re := cachedregexp.MustCompile(`([^\\]|^)(\\{2})*\\$`)
+	trailingBackslashes := 0
+	for i := len(line) - 1; i >= 0 && line[i] == '\\'; i-- {
+		trailingBackslashes++
+	}
 
-	return re.MatchString(line)
+	return trailingBackslashes%2 == 1
 }
 
 // Please note the whl filename has been standardized here :
