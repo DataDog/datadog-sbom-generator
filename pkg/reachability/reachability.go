@@ -41,7 +41,7 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 		return models.ReachabilityAnalysis{}
 	}
 
-	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resp)
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(r, resp)
 
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
