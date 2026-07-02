@@ -3,7 +3,9 @@ package codefile
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
@@ -23,6 +25,8 @@ const tsQueryForGoCall = `
 		operand: (identifier) @pkg
 		field: (field_identifier) @fn) @selector)
 `
+
+var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v[0-9]+$`)
 
 type ReachabilityGo struct {
 	tsParser    *treesitter.Parser
@@ -83,6 +87,55 @@ func (r *ReachabilityGo) Close() {
 	r.tsParser.Close()
 	r.importQuery.Close()
 	r.callQuery.Close()
+}
+
+// resolveImportAliases walks all import specs in the parsed tree and returns a map of module
+// import path -> local identifiers used to reference that module in this file. Unaliased
+// imports are assigned a heuristic identifier: the last path segment, with a trailing
+// major-version suffix (e.g. "/v2") stripped, per Go module convention. Dot imports and blank
+// imports are intentionally not resolved to any identifier.
+func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) map[string][]string {
+	moduleToAliases := make(map[string][]string)
+
+	matches := queryCursor.Matches(r.importQuery, tree.RootNode(), fileContent)
+	for match := matches.Next(); match != nil; match = matches.Next() {
+		var alias, modulePath string
+
+		for _, capture := range match.Captures {
+			switch capture.Index {
+			case uint32(r.aliasCaptureIdx):
+				alias = capture.Node.Utf8Text(fileContent)
+			case uint32(r.pathCaptureIdx):
+				modulePath = capture.Node.Utf8Text(fileContent)
+			}
+		}
+
+		if modulePath == "" {
+			continue
+		}
+
+		if alias == "" {
+			alias = defaultIdentifierForModulePath(modulePath)
+		}
+
+		moduleToAliases[modulePath] = append(moduleToAliases[modulePath], alias)
+	}
+
+	return moduleToAliases
+}
+
+// defaultIdentifierForModulePath derives the package identifier Go code would use for an
+// unaliased import, using the last path segment and stripping a trailing major-version suffix
+// (e.g. "github.com/foo/bar/v2" -> "bar").
+func defaultIdentifierForModulePath(modulePath string) string {
+	segments := strings.Split(modulePath, "/")
+	identifier := segments[len(segments)-1]
+
+	if len(segments) > 1 && majorVersionSuffixPattern.MatchString(identifier) {
+		identifier = segments[len(segments)-2]
+	}
+
+	return identifier
 }
 
 func (r *ReachabilityGo) Detect(_ context.Context, _ string, _ string, _ models.DetectionResults, _ []models.AdvisoryToCheck) error {
