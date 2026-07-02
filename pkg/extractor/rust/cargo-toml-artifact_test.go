@@ -40,7 +40,7 @@ version = "0.1.0"
 	require.NotNil(t, artifact)
 
 	assert.Equal(t, "my-crate", artifact.Name)
-	assert.Equal(t, cargoLockPath, artifact.Filename)
+	assert.Equal(t, cargoTomlPath, artifact.Filename)
 	assert.Equal(t, models.EcosystemCratesIO, artifact.Ecosystem)
 	assert.Empty(t, artifact.ProjectDeps)
 }

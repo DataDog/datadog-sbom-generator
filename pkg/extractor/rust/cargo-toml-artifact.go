@@ -21,24 +21,25 @@ func (e CargoLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanC
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, nil
 		}
+
 		return nil, nil
 	}
 	defer cargoTomlFile.Close()
 
 	content, err := io.ReadAll(cargoTomlFile)
 	if err != nil {
-		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, err
+		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: cargoTomlFile.Path()}}, err
 	}
 
 	var parsed CargoToml
 	if err := toml.Unmarshal(content, &parsed); err != nil {
-		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, err
+		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: cargoTomlFile.Path()}}, err
 	}
 
 	artifact := &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
 			Name:      parsed.Package.Name,
-			Filename:  f.Path(),
+			Filename:  cargoTomlFile.Path(),
 			Ecosystem: models.EcosystemCratesIO,
 		},
 	}
