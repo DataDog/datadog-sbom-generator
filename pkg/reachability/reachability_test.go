@@ -99,7 +99,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -162,7 +162,7 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -210,7 +210,7 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -257,7 +257,7 @@ func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
 	ddJwtToken := ""
 
-	mockServer := createMockServer(http.StatusOK, vulnerableGoSymbolsResponse)
+	mockServer := createMockServer(vulnerableGoSymbolsResponse)
 	defer mockServer.Close()
 
 	tempDir := t.TempDir()
@@ -309,9 +309,9 @@ func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func createMockServer(statusCode int, data string) *httptest.Server {
+func createMockServer(data string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(statusCode)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(data))
 	}))
 }
