@@ -99,7 +99,8 @@ func (r *ReachabilityGo) Close() {
 // import path -> local identifiers used to reference that module in this file. Unaliased
 // imports are assigned a heuristic identifier: the last path segment, with a trailing
 // major-version suffix (e.g. "/v2") stripped, per Go module convention. Dot imports and blank
-// imports are intentionally not resolved to any identifier.
+// imports are not callable via a package selector (e.g. "pkg.Func"), so they never produce a
+// call-site match regardless of how they're keyed here.
 func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) map[string][]string {
 	moduleToAliases := make(map[string][]string)
 
