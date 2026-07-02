@@ -162,6 +162,11 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 				scannedPackages = append(scannedPackages, pkgs...)
 				if artifact != nil {
 					scannedArtifacts = append(scannedArtifacts, *artifact)
+					for _, sat := range artifact.Satellites {
+						if sat != nil {
+							scannedArtifacts = append(scannedArtifacts, *sat)
+						}
+					}
 				}
 			}
 		}
