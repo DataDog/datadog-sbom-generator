@@ -131,3 +131,130 @@ func Test_defaultIdentifierForModulePath(t *testing.T) {
 		})
 	}
 }
+
+func Test_Detect_Go_FunctionSymbolFound(t *testing.T) {
+	t.Parallel()
+
+	fixtures := map[string]struct {
+		path              string
+		advisoriesToCheck []models.AdvisoryToCheck
+	}{
+		"aliased import": {
+			path: "testdata/CVE-2025-5678/aliased-import/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar", Name: "Parse"},
+					},
+				},
+			},
+		},
+		"default import": {
+			path: "testdata/CVE-2025-5678/default-import/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar", Name: "Parse"},
+					},
+				},
+			},
+		},
+		"versioned module import": {
+			path: "testdata/CVE-2025-5678/versioned-module-path/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar/v2", Name: "Parse"},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range fixtures {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+			require.NoError(t, err)
+			defer detector.Close()
+
+			detectionResults := models.DetectionResults{}
+			err = detector.Detect(context.Background(), ".", tc.path, detectionResults, tc.advisoriesToCheck)
+			require.NoError(t, err)
+
+			advisories, ok := detectionResults["pkg:golang/github.com/foo/bar@1.2.3"]
+			require.True(t, ok)
+			reachableSymbols, ok := advisories["CVE-2025-5678"]
+			require.True(t, ok)
+			require.Len(t, reachableSymbols, 1)
+
+			assert.Equal(t, "bar.Parse", reachableSymbols[0].Symbol)
+			assert.Equal(t, tc.path, reachableSymbols[0].Filename)
+			assert.Equal(t, 6, reachableSymbols[0].LineStart)
+			assert.Equal(t, 6, reachableSymbols[0].LineEnd)
+			assert.Equal(t, 2, reachableSymbols[0].ColumnStart)
+			assert.Equal(t, 11, reachableSymbols[0].ColumnEnd)
+		})
+	}
+}
+
+func Test_Detect_Go_NoMatchWhenFunctionNameDiffers(t *testing.T) {
+	t.Parallel()
+
+	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	require.NoError(t, err)
+	defer detector.Close()
+
+	advisoriesToCheck := []models.AdvisoryToCheck{
+		{
+			Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+			AdvisoryID: "CVE-2025-5678",
+			Symbols: []models.Symbols{
+				{
+					Type:  "function",
+					Value: "github.com/foo/bar",
+					Name:  "SomeOtherFunc",
+				},
+			},
+		},
+	}
+
+	detectionResults := models.DetectionResults{}
+	err = detector.Detect(context.Background(), ".", "testdata/CVE-2025-5678/aliased-import/main.go", detectionResults, advisoriesToCheck)
+	require.NoError(t, err)
+	assert.Empty(t, detectionResults)
+}
+
+func Test_Detect_Go_UnknownSymbolType(t *testing.T) {
+	t.Parallel()
+
+	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	require.NoError(t, err)
+	defer detector.Close()
+
+	advisoriesToCheck := []models.AdvisoryToCheck{
+		{
+			Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+			AdvisoryID: "CVE-2025-5678",
+			Symbols: []models.Symbols{
+				{
+					Type:  "class",
+					Value: "github.com/foo/bar",
+					Name:  "Parse",
+				},
+			},
+		},
+	}
+
+	detectionResults := models.DetectionResults{}
+	err = detector.Detect(context.Background(), ".", "testdata/CVE-2025-5678/aliased-import/main.go", detectionResults, advisoriesToCheck)
+	require.NoError(t, err)
+	assert.Empty(t, detectionResults)
+}

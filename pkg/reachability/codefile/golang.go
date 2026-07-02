@@ -3,15 +3,21 @@ package codefile
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 	tree_sitter_go "github.com/tree-sitter/tree-sitter-go/bindings/go"
 )
+
+// symbolTypeFunction is the only Go symbol type currently understood.
+const symbolTypeFunction = "function"
 
 const tsQueryForGoImports = `
 (import_spec
@@ -138,6 +144,112 @@ func defaultIdentifierForModulePath(modulePath string) string {
 	return identifier
 }
 
-func (r *ReachabilityGo) Detect(_ context.Context, _ string, _ string, _ models.DetectionResults, _ []models.AdvisoryToCheck) error {
+func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	fileContent, err := readFileContent(path)
+	if err != nil {
+		return err
+	}
+
+	readCallback := func(offset int, position treesitter.Point) []byte {
+		if ctx.Err() != nil {
+			return []byte{}
+		}
+		if offset >= len(fileContent) {
+			return []byte{}
+		}
+
+		return fileContent[offset:]
+	}
+
+	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
+		ProgressCallback: func(_ treesitter.ParseState) bool {
+			return ctx.Err() != nil
+		},
+	})
+	defer tree.Close()
+
+	if len(advisoriesToCheck) == 0 {
+		return nil
+	}
+
+	importCursor := treesitter.NewQueryCursor()
+	defer importCursor.Close()
+	moduleToAliases := r.resolveImportAliases(tree, fileContent, importCursor)
+
+	callCursor := treesitter.NewQueryCursor()
+	defer callCursor.Close()
+
+	for _, advisoryToCheck := range advisoriesToCheck {
+		for _, s := range advisoryToCheck.Symbols {
+			if s.Type != symbolTypeFunction {
+				r.reporter.Warnf("No Go detection support for symbol type %s", s.Type)
+				continue
+			}
+
+			aliases, moduleImported := moduleToAliases[s.Value]
+			if !moduleImported {
+				continue
+			}
+
+			matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
+			for match := matches.Next(); match != nil; match = matches.Next() {
+				var pkgText, fnText string
+				var selectorNode treesitter.Node
+
+				for _, capture := range match.Captures {
+					switch capture.Index {
+					case uint32(r.pkgCaptureIdx):
+						pkgText = capture.Node.Utf8Text(fileContent)
+					case uint32(r.fnCaptureIdx):
+						fnText = capture.Node.Utf8Text(fileContent)
+					case uint32(r.selectorCaptureIdx):
+						selectorNode = capture.Node
+					}
+				}
+
+				if fnText != s.Name || !slices.Contains(aliases, pkgText) {
+					continue
+				}
+
+				startPosition := selectorNode.StartPosition()
+				endPosition := selectorNode.EndPosition()
+
+				if _, ok := detectionResults[advisoryToCheck.Purl]; !ok {
+					detectionResults[advisoryToCheck.Purl] = make(map[string]models.ReachableSymbolLocations)
+				}
+				if _, ok := detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID]; !ok {
+					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = make(models.ReachableSymbolLocations, 0)
+				}
+
+				packageLocation := models.PackageLocation{
+					Filename: fileposition.ToRelativePath(dir, path),
+				}
+				packageLocation.LineStart, err = converter.SafeUIntToInt(startPosition.Row + 1)
+				if err != nil {
+					return err
+				}
+				packageLocation.LineEnd, err = converter.SafeUIntToInt(endPosition.Row + 1)
+				if err != nil {
+					return err
+				}
+				packageLocation.ColumnStart, err = converter.SafeUIntToInt(startPosition.Column + 1)
+				if err != nil {
+					return err
+				}
+				packageLocation.ColumnEnd, err = converter.SafeUIntToInt(endPosition.Column + 1)
+				if err != nil {
+					return err
+				}
+
+				detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = append(
+					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID],
+					models.ReachableSymbolLocation{
+						Symbol:          selectorNode.Utf8Text(fileContent),
+						PackageLocation: packageLocation,
+					})
+			}
+		}
+	}
+
 	return nil
 }
