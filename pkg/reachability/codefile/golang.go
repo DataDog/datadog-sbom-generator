@@ -109,9 +109,9 @@ func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent
 
 		for _, capture := range match.Captures {
 			switch capture.Index {
-			case uint32(r.aliasCaptureIdx):
+			case uint32(r.aliasCaptureIdx): //nolint:gosec
 				alias = capture.Node.Utf8Text(fileContent)
-			case uint32(r.pathCaptureIdx):
+			case uint32(r.pathCaptureIdx): //nolint:gosec
 				modulePath = capture.Node.Utf8Text(fileContent)
 			}
 		}
@@ -198,11 +198,11 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 
 				for _, capture := range match.Captures {
 					switch capture.Index {
-					case uint32(r.pkgCaptureIdx):
+					case uint32(r.pkgCaptureIdx): //nolint:gosec
 						pkgText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.fnCaptureIdx):
+					case uint32(r.fnCaptureIdx): //nolint:gosec
 						fnText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.selectorCaptureIdx):
+					case uint32(r.selectorCaptureIdx): //nolint:gosec
 						selectorNode = capture.Node
 					}
 				}

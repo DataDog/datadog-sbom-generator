@@ -7,9 +7,9 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
-	treesitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	treesitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 func Test_NewGoReachableDetector(t *testing.T) {
@@ -38,9 +38,8 @@ func Test_Detect_Go_NoAdvisories(t *testing.T) {
 	assert.Empty(t, detectionResults)
 }
 
+//nolint:paralleltest
 func Test_resolveImportAliases(t *testing.T) {
-	t.Parallel()
-
 	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
