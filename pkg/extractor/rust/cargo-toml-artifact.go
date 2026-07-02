@@ -52,6 +52,11 @@ func (e CargoLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanC
 		collectPathDeps(deps, cargoTomlDir, ctx, seen, artifact)
 	}
 
+	// Collect workspace member satellites if this is a workspace manifest.
+	if len(parsed.Workspace.Members) > 0 {
+		artifact.Satellites = collectWorkspaceMembers(parsed.Workspace.Members, cargoTomlDir, ctx)
+	}
+
 	return artifact, nil
 }
 
@@ -100,6 +105,79 @@ func collectPathDeps(deps map[string]interface{}, cargoTomlDir string, ctx extra
 			Filename: targetCargoToml,
 		})
 	}
+}
+
+// collectWorkspaceMembers expands workspace member patterns (literal paths
+// and single-star globs) and creates a satellite ScannedArtifact for each
+// member crate that contains a Cargo.toml.
+func collectWorkspaceMembers(members []string, workspaceDir string, ctx extractor.ScanContext) []*models.ScannedArtifact {
+	seen := make(map[string]struct{})
+	var satellites []*models.ScannedArtifact
+
+	for _, pattern := range members {
+		fullPattern := filepath.Join(workspaceDir, pattern)
+		matches, err := filepath.Glob(fullPattern)
+		if err != nil || len(matches) == 0 {
+			// For literal paths that are not globs, try using the pattern directly.
+			matches = []string{fullPattern}
+		}
+
+		for _, match := range matches {
+			memberToml := filepath.Clean(filepath.Join(match, "Cargo.toml"))
+			if _, err := os.Stat(memberToml); err != nil {
+				continue
+			}
+
+			absToml, err := filepath.Abs(memberToml)
+			if err != nil {
+				continue
+			}
+			if _, ok := seen[absToml]; ok {
+				continue
+			}
+			seen[absToml] = struct{}{}
+
+			// Skip members outside the scan root.
+			if ctx.RootDir != "" {
+				absRoot, err := filepath.Abs(ctx.RootDir)
+				if err == nil {
+					rel, err := filepath.Rel(absRoot, absToml)
+					if err != nil || strings.HasPrefix(rel, "..") {
+						continue
+					}
+				}
+			}
+
+			data, err := os.ReadFile(memberToml)
+			if err != nil {
+				continue
+			}
+
+			var memberParsed CargoToml
+			if err := toml.Unmarshal(data, &memberParsed); err != nil {
+				continue
+			}
+
+			sat := &models.ScannedArtifact{
+				ArtifactDetail: models.ArtifactDetail{
+					Name:      memberParsed.Package.Name,
+					Filename:  memberToml,
+					Ecosystem: models.EcosystemCratesIO,
+				},
+			}
+
+			// Collect path deps for this member crate.
+			memberDir := filepath.Dir(memberToml)
+			memberSeen := make(map[string]struct{})
+			for _, deps := range []map[string]interface{}{memberParsed.Dependencies, memberParsed.DevDeps, memberParsed.BuildDeps} {
+				collectPathDeps(deps, memberDir, ctx, memberSeen, sat)
+			}
+
+			satellites = append(satellites, sat)
+		}
+	}
+
+	return satellites
 }
 
 var _ extractor.ArtifactExtractor = CargoLockExtractor{}

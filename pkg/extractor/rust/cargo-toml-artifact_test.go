@@ -242,6 +242,153 @@ nonexistent = { path = "../nonexistent" }
 	assert.Empty(t, artifact.ProjectDeps, "missing target Cargo.toml should be silently skipped")
 }
 
+func TestGetArtifact_WorkspaceVirtualManifest(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	// Cargo.lock at workspace root
+	cargoLockPath := filepath.Join(root, "Cargo.lock")
+	require.NoError(t, os.WriteFile(cargoLockPath, []byte("version = 3\n"), 0600))
+
+	// Virtual manifest: no [package], only [workspace]
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Cargo.toml"), []byte(`[workspace]
+members = ["crate-a", "crate-b"]
+`), 0600))
+
+	// Create member crates
+	for _, name := range []string{"crate-a", "crate-b"} {
+		d := filepath.Join(root, name)
+		require.NoError(t, os.MkdirAll(d, 0755))
+		require.NoError(t, os.WriteFile(filepath.Join(d, "Cargo.toml"), []byte(`[package]
+name = "`+name+`"
+version = "0.1.0"
+`), 0600))
+	}
+
+	f, err := extractor.OpenLocalDepFile(cargoLockPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := rust.CargoLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+
+	// Virtual manifest has no package name
+	assert.Equal(t, "", artifact.Name)
+	assert.Equal(t, filepath.Join(root, "Cargo.toml"), artifact.Filename)
+
+	// Should discover both members as satellites
+	require.Len(t, artifact.Satellites, 2)
+
+	satelliteNames := make(map[string]string)
+	for _, sat := range artifact.Satellites {
+		satelliteNames[sat.Name] = sat.Filename
+	}
+	assert.Contains(t, satelliteNames, "crate-a")
+	assert.Contains(t, satelliteNames, "crate-b")
+	assert.Equal(t, filepath.Join(root, "crate-a", "Cargo.toml"), satelliteNames["crate-a"])
+	assert.Equal(t, filepath.Join(root, "crate-b", "Cargo.toml"), satelliteNames["crate-b"])
+}
+
+func TestGetArtifact_WorkspaceWithCrossDepsBetweenMembers(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	cargoLockPath := filepath.Join(root, "Cargo.lock")
+	require.NoError(t, os.WriteFile(cargoLockPath, []byte("version = 3\n"), 0600))
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Cargo.toml"), []byte(`[workspace]
+members = ["crate-a", "crate-b"]
+`), 0600))
+
+	// crate-a has no path deps
+	crateADir := filepath.Join(root, "crate-a")
+	require.NoError(t, os.MkdirAll(crateADir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(crateADir, "Cargo.toml"), []byte(`[package]
+name = "crate-a"
+version = "0.1.0"
+`), 0600))
+
+	// crate-b depends on crate-a via path
+	crateBDir := filepath.Join(root, "crate-b")
+	require.NoError(t, os.MkdirAll(crateBDir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(crateBDir, "Cargo.toml"), []byte(`[package]
+name = "crate-b"
+version = "0.1.0"
+
+[dependencies]
+crate-a = { path = "../crate-a" }
+`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(cargoLockPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := rust.CargoLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	require.Len(t, artifact.Satellites, 2)
+
+	// Find the crate-b satellite and check its ProjectDeps
+	var crateBSatellite *models.ScannedArtifact
+	for _, sat := range artifact.Satellites {
+		if sat.Name == "crate-b" {
+			crateBSatellite = sat
+
+			break
+		}
+	}
+	require.NotNil(t, crateBSatellite, "crate-b satellite must exist")
+	require.Len(t, crateBSatellite.ProjectDeps, 1)
+	assert.Equal(t, filepath.Join(crateADir, "Cargo.toml"), crateBSatellite.ProjectDeps[0].Filename)
+}
+
+func TestGetArtifact_WorkspaceGlobPattern(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	cargoLockPath := filepath.Join(root, "Cargo.lock")
+	require.NoError(t, os.WriteFile(cargoLockPath, []byte("version = 3\n"), 0600))
+
+	// Workspace with glob pattern
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Cargo.toml"), []byte(`[workspace]
+members = ["crates/*"]
+`), 0600))
+
+	// Create crates directory with two members
+	cratesDir := filepath.Join(root, "crates")
+	require.NoError(t, os.MkdirAll(cratesDir, 0755))
+
+	for _, name := range []string{"foo", "bar"} {
+		d := filepath.Join(cratesDir, name)
+		require.NoError(t, os.MkdirAll(d, 0755))
+		require.NoError(t, os.WriteFile(filepath.Join(d, "Cargo.toml"), []byte(`[package]
+name = "`+name+`"
+version = "0.1.0"
+`), 0600))
+	}
+
+	f, err := extractor.OpenLocalDepFile(cargoLockPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := rust.CargoLockExtractor{}.GetArtifact(f, extractor.ScanContext{RootDir: root})
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+
+	require.Len(t, artifact.Satellites, 2)
+
+	satelliteNames := make(map[string]bool)
+	for _, sat := range artifact.Satellites {
+		satelliteNames[sat.Name] = true
+	}
+	assert.True(t, satelliteNames["foo"], "glob should discover foo")
+	assert.True(t, satelliteNames["bar"], "glob should discover bar")
+}
+
 func TestCargoLockExtractor_GetArtifact_OutsideScanRootSkipped(t *testing.T) {
 	t.Parallel()
 
