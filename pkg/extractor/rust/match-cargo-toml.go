@@ -11,8 +11,14 @@ import (
 	"github.com/Masterminds/semver/v3"
 )
 
+// CargoTomlPackage represents the [package] section of a Cargo.toml file.
+type CargoTomlPackage struct {
+	Name string `toml:"name"`
+}
+
 // CargoToml represents the structure of a Cargo.toml file
 type CargoToml struct {
+	Package      CargoTomlPackage       `toml:"package"`
 	Dependencies map[string]interface{} `toml:"dependencies"`
 	DevDeps      map[string]interface{} `toml:"dev-dependencies"`
 	BuildDeps    map[string]interface{} `toml:"build-dependencies"`
