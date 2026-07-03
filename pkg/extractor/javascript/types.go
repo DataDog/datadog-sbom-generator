@@ -115,8 +115,10 @@ type PnpmLockDependency struct {
 }
 
 type PnpmPackage struct {
-	Resolution map[string]string `yaml:"resolution"`
-	Version    string            `yaml:"version"`
+	// map[string]any (not map[string]string): some entries use a nested shape,
+	// e.g. pnpm's self-managed node runtime `resolution: {type: variations, variants: [...]}`.
+	Resolution map[string]any `yaml:"resolution"`
+	Version    string         `yaml:"version"`
 }
 
 type (

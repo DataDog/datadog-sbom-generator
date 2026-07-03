@@ -358,7 +358,12 @@ func (e PnpmLockExtractor) Extract(f extractor.DepFile, context extractor.ScanCo
 
 	err = yaml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
 
-	if err != nil && !errors.Is(err, io.EOF) {
+	// A yaml.TypeError is partial: the rest of the lockfile still decoded, so we
+	// warn about the skipped entries instead of silently dropping every package.
+	var typeErr *yaml.TypeError
+	if errors.As(err, &typeErr) {
+		context.Reporter.Warnf("could not fully decode %s, some entries were skipped: %s\n", f.Path(), typeErr.Error())
+	} else if err != nil && !errors.Is(err, io.EOF) {
 		return []extractor.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
