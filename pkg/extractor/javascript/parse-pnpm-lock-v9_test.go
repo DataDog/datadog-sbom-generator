@@ -24,6 +24,29 @@ func TestParsePnpmLock_v9_NoPackages(t *testing.T) {
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
 }
 
+// A pnpm self-managed node runtime entry has a nested `resolution` shape that
+// used to abort the whole decode; the real packages must still be extracted.
+func TestParsePnpmLock_v9_NodeRuntime(t *testing.T) {
+	t.Parallel()
+
+	packages, err := javascript.ParsePnpmLock("../fixtures/pnpm/node-runtime.v9.yaml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "acorn",
+			Version:        "8.11.3",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^8.11.3"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+	})
+}
+
 func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 	t.Parallel()
 
