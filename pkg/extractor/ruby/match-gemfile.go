@@ -216,25 +216,10 @@ func findPathInPairs(node *extractor.Node) (string, error) {
 }
 
 // findGemsWithPath returns the path: values from gem() calls in the given node.
-// It searches both top-level gem calls and gem calls inside group blocks.
+// The tree-sitter query in collectPathsFromGemCalls matches at any depth, so a
+// single call covers both top-level and group-nested gem() calls.
 func findGemsWithPath(node *extractor.Node) ([]string, error) {
-	var paths []string
-
-	// Find top-level gem calls and extract path: pairs from each
-	rootGems, err := collectPathsFromGemCalls(node)
-	if err != nil {
-		return nil, err
-	}
-	paths = append(paths, rootGems...)
-
-	// Find grouped gem calls and extract path: pairs from each
-	groupedGems, err := collectPathsFromGroupedGemCalls(node)
-	if err != nil {
-		return nil, err
-	}
-	paths = append(paths, groupedGems...)
-
-	return paths, nil
+	return collectPathsFromGemCalls(node)
 }
 
 // collectPathsFromGemCalls finds top-level gem() calls and returns any path: values.
@@ -266,45 +251,6 @@ func collectPathsFromGemCalls(node *extractor.Node) ([]string, error) {
 		if pathVal != "" {
 			paths = append(paths, pathVal)
 		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return paths, nil
-}
-
-// collectPathsFromGroupedGemCalls finds gem() calls inside group blocks and returns any path: values.
-func collectPathsFromGroupedGemCalls(node *extractor.Node) ([]string, error) {
-	groupQueryString := `(
-		(call
-			method: (identifier) @method_name
-			(#match? @method_name "group")
-			arguments: (argument_list
-				.
-				[
-					(simple_symbol)
-					(string)
-					(comment)
-					","
-				]*
-				.
-			) @group_keys
-			block: (_) @block
-		)
-	)`
-
-	var paths []string
-	err := node.Query(groupQueryString, func(match *extractor.MatchResult) error {
-		blockNode := match.FindFirstByName("block")
-
-		blockPaths, err := collectPathsFromGemCalls(blockNode)
-		if err != nil {
-			return err
-		}
-		paths = append(paths, blockPaths...)
 
 		return nil
 	})
