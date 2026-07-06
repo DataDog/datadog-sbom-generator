@@ -162,35 +162,37 @@ func (e ComposerLockExtractor) Extract(f extractor.DepFile, context extractor.Sc
 	return packages, nil
 }
 
-// GetArtifact implements extractor.ArtifactExtractor.
-// It reads the co-located composer.json to extract the project name.
-func (e ComposerLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
-	artifact := &models.ScannedArtifact{
-		ArtifactDetail: models.ArtifactDetail{
-			Filename:  f.Path(),
-			Ecosystem: models.EcosystemPackagist,
-		},
-	}
-
-	lockfileDir := filepath.Dir(f.Path())
-	composerJSONPath := filepath.Join(lockfileDir, composerFilename)
-
+// readComposerProjectName reads the project name from a composer.json file.
+// Returns an empty string if the file is missing, unreadable, or malformed.
+func readComposerProjectName(composerJSONPath string) string {
 	data, err := os.ReadFile(composerJSONPath)
 	if err != nil {
-		// composer.json missing or unreadable — return artifact with empty name
-		return artifact, nil
+		return ""
 	}
 
 	var parsed struct {
 		Name string `json:"name"`
 	}
 	if err := json.Unmarshal(data, &parsed); err != nil {
-		return artifact, nil
+		return ""
 	}
 
-	artifact.Name = parsed.Name
+	return parsed.Name
+}
 
-	return artifact, nil
+// GetArtifact implements extractor.ArtifactExtractor.
+// It reads the co-located composer.json to extract the project name.
+func (e ComposerLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	lockfileDir := filepath.Dir(f.Path())
+	composerJSONPath := filepath.Join(lockfileDir, composerFilename)
+
+	return &models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Name:      readComposerProjectName(composerJSONPath),
+			Filename:  f.Path(),
+			Ecosystem: models.EcosystemPackagist,
+		},
+	}, nil
 }
 
 var _ extractor.ArtifactExtractor = ComposerLockExtractor{}
