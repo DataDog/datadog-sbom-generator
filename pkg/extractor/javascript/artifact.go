@@ -71,11 +71,32 @@ func getArtifactFromAdjacentPackageJSON(f extractor.DepFile) (*models.ScannedArt
 		matches := globWorkspacePackageJsons(pkg.Workspaces, pkgFile.Path())
 		baseDir := filepath.Dir(pkgFile.Path())
 		for _, match := range matches {
+			childPath := filepath.Join(baseDir, match)
 			artifact.ProjectDeps = append(artifact.ProjectDeps, models.ArtifactDetail{
-				Filename: filepath.Join(baseDir, match),
+				Name:     readPackageJSONName(childPath),
+				Filename: childPath,
 			})
 		}
 	}
 
 	return artifact, nil
+}
+
+// readPackageJSONName reads the `name` field from a package.json file.
+// Returns empty string if the file cannot be read or has no name.
+func readPackageJSONName(pkgJSONPath string) string {
+	f, err := extractor.OpenLocalDepFile(pkgJSONPath)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	var pkg struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(f).Decode(&pkg); err != nil {
+		return ""
+	}
+
+	return pkg.Name
 }
