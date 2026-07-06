@@ -101,6 +101,6 @@ func TestYarnLockExtractor_GetArtifact_MissingPackageJSON(t *testing.T) {
 	defer f.Close()
 
 	artifact, err := javascript.YarnLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, artifact)
 }

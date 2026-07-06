@@ -814,8 +814,8 @@ func TestSimpleProcessor_PackageJSON_ProcessorRegistered(t *testing.T) {
 
 	sbom := makeSBOMWithDeps(
 		[]cyclonedx.Component{
-			packageJSONFileComponent("package.json", "pkg:npm/%40test/root@1.0.0"),
-			packageJSONFileComponent("packages/core/package.json", "pkg:npm/%40test/core@1.0.0"),
+			packageJSONFileComponent("package.json", "pkg:npm/%40test%2Froot@1.0.0"),
+			packageJSONFileComponent("packages/core/package.json", "pkg:npm/%40test%2Fcore@1.0.0"),
 		},
 		[]cyclonedx.Dependency{
 			{Ref: "package.json", Dependencies: &[]string{"packages/core/package.json"}},
@@ -833,15 +833,17 @@ func TestSimpleProcessor_PackageJSON_ProcessorRegistered(t *testing.T) {
 	if len(root.Dependencies) != 1 || root.Dependencies[0].BuildFile != packageJSONFile("packages/core/package.json") {
 		t.Errorf("root: expected Dependencies=[packages/core/package.json], got %v", root.Dependencies)
 	}
-	if root.ID != "@test:root" {
-		t.Errorf("root: expected ID=%q, got %q", "@test:root", root.ID)
+	// The purl library encodes the full scoped name as the purl name (no
+	// namespace split for npm), so parseArtifactID returns the name as-is.
+	if root.ID != "@test/root" {
+		t.Errorf("root: expected ID=%q, got %q", "@test/root", root.ID)
 	}
 
 	core := result[packageJSONFile("packages/core/package.json")]
 	if len(core.Dependencies) != 0 {
 		t.Errorf("core: expected no Dependencies, got %v", core.Dependencies)
 	}
-	if core.ID != "@test:core" {
-		t.Errorf("core: expected ID=%q, got %q", "@test:core", core.ID)
+	if core.ID != "@test/core" {
+		t.Errorf("core: expected ID=%q, got %q", "@test/core", core.ID)
 	}
 }

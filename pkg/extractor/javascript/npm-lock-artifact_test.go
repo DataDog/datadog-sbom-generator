@@ -111,6 +111,6 @@ func TestNpmLockExtractor_GetArtifact_MissingPackageJSON(t *testing.T) {
 	defer f.Close()
 
 	artifact, err := javascript.NpmLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, artifact)
 }
