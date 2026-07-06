@@ -24,8 +24,8 @@ func TestComposerLockExtractor_GetArtifact_NameFromComposerJSON(t *testing.T) {
 	err := os.WriteFile(lockfilePath, []byte(`{"packages": []}`), 0600)
 	require.NoError(t, err)
 
-	composerJSONPath := filepath.Join(dir, "composer.json")
-	err = os.WriteFile(composerJSONPath, []byte(`{"name": "vendor/project"}`), 0600)
+	manifestPath := filepath.Join(dir, "composer.json")
+	err = os.WriteFile(manifestPath, []byte(`{"name": "vendor/project"}`), 0600)
 	require.NoError(t, err)
 
 	f, err := extractor.OpenLocalDepFile(lockfilePath)
@@ -37,7 +37,7 @@ func TestComposerLockExtractor_GetArtifact_NameFromComposerJSON(t *testing.T) {
 	require.NotNil(t, artifact)
 
 	assert.Equal(t, "vendor/project", artifact.Name)
-	assert.Equal(t, lockfilePath, artifact.Filename)
+	assert.Equal(t, manifestPath, artifact.Filename)
 	assert.Equal(t, models.EcosystemPackagist, artifact.Ecosystem)
 	assert.Empty(t, artifact.ProjectDeps)
 }
@@ -59,11 +59,7 @@ func TestComposerLockExtractor_GetArtifact_MissingComposerJSON(t *testing.T) {
 
 	artifact, err := php.ComposerExtractor.GetArtifact(f, extractor.ScanContext{})
 	require.NoError(t, err)
-	require.NotNil(t, artifact)
-
-	assert.Empty(t, artifact.Name)
-	assert.Equal(t, lockfilePath, artifact.Filename)
-	assert.Equal(t, models.EcosystemPackagist, artifact.Ecosystem)
+	require.Nil(t, artifact)
 }
 
 func TestComposerLockExtractor_GetArtifact_NoNameField(t *testing.T) {
@@ -75,8 +71,8 @@ func TestComposerLockExtractor_GetArtifact_NoNameField(t *testing.T) {
 	err := os.WriteFile(lockfilePath, []byte(`{"packages": []}`), 0600)
 	require.NoError(t, err)
 
-	composerJSONPath := filepath.Join(dir, "composer.json")
-	err = os.WriteFile(composerJSONPath, []byte(`{"require": {"php": "^8.1"}}`), 0600)
+	manifestPath := filepath.Join(dir, "composer.json")
+	err = os.WriteFile(manifestPath, []byte(`{"require": {"php": "^8.1"}}`), 0600)
 	require.NoError(t, err)
 
 	f, err := extractor.OpenLocalDepFile(lockfilePath)
@@ -88,6 +84,6 @@ func TestComposerLockExtractor_GetArtifact_NoNameField(t *testing.T) {
 	require.NotNil(t, artifact)
 
 	assert.Empty(t, artifact.Name)
-	assert.Equal(t, lockfilePath, artifact.Filename)
+	assert.Equal(t, manifestPath, artifact.Filename)
 	assert.Equal(t, models.EcosystemPackagist, artifact.Ecosystem)
 }

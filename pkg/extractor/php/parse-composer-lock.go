@@ -182,14 +182,22 @@ func readComposerProjectName(composerJSONPath string) string {
 
 // GetArtifact implements extractor.ArtifactExtractor.
 // It reads the co-located composer.json to extract the project name.
+// The artifact is keyed by composer.json (not composer.lock) so that the
+// build file tree system correctly groups Composer components by the manifest.
 func (e ComposerLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
 	lockfileDir := filepath.Dir(f.Path())
 	composerJSONPath := filepath.Join(lockfileDir, composerFilename)
 
+	// Only emit an artifact when composer.json is present so that Filename
+	// points at the manifest rather than the lock file.
+	if _, err := os.Stat(composerJSONPath); err != nil {
+		return nil, nil //nolint:nilerr
+	}
+
 	return &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
 			Name:      readComposerProjectName(composerJSONPath),
-			Filename:  f.Path(),
+			Filename:  composerJSONPath,
 			Ecosystem: models.EcosystemPackagist,
 		},
 	}, nil
