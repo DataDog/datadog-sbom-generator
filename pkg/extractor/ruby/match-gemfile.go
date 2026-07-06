@@ -216,14 +216,9 @@ func findPathInPairs(node *extractor.Node) (string, error) {
 }
 
 // findGemsWithPath returns the path: values from gem() calls in the given node.
-// The tree-sitter query in collectPathsFromGemCalls matches at any depth, so a
-// single call covers both top-level and group-nested gem() calls.
+// The tree-sitter query matches at any depth, so a single call covers both
+// top-level and group-nested gem() calls.
 func findGemsWithPath(node *extractor.Node) ([]string, error) {
-	return collectPathsFromGemCalls(node)
-}
-
-// collectPathsFromGemCalls finds top-level gem() calls and returns any path: values.
-func collectPathsFromGemCalls(node *extractor.Node) ([]string, error) {
 	gemQueryString := `(
 		(call
 			method: (identifier) @method_name
