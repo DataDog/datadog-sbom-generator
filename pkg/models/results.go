@@ -16,7 +16,8 @@ type ArtifactDetail struct {
 type ScannedArtifact struct {
 	ArtifactDetail
 	DependsOn   *ArtifactDetail
-	ProjectDeps []ArtifactDetail // direct project-level build file dependencies (e.g. Gradle subproject refs)
+	ProjectDeps []ArtifactDetail   // direct project-level build file dependencies (e.g. Gradle subproject refs)
+	Satellites  []*ScannedArtifact // workspace member artifacts (e.g. Cargo workspace crates)
 }
 
 type SourceInfo struct {
