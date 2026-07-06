@@ -3,11 +3,7 @@ package codefile
 import (
 	"context"
 	"fmt"
-	"os"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
-
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
@@ -74,26 +70,8 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 	if err != nil {
 		return err
 	}
-	// Callback function that checks if there is an error
-	readCallback := func(offset int, position treesitter.Point) []byte {
-		if ctx.Err() != nil {
-			return []byte{}
-		}
-		if offset >= len(fileContent) {
-			return []byte{}
-		}
 
-		return fileContent[offset:]
-	}
-
-	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
-		// ProgressCallback returns true to cancel parsing
-		// We use ctx.Err() != nil to cancel the parse if the context is canceled
-		// See: https://github.com/tree-sitter/go-tree-sitter/blob/adc13ffd8b2c0b01b878fda9f7c422ce0df5fad3/parser.go#L319
-		ProgressCallback: func(_ treesitter.ParseState) bool {
-			return ctx.Err() != nil
-		},
-	})
+	tree := parseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
@@ -126,59 +104,16 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 					Note: This logic is specific to class type and will need to be updated in the future when we build out further symbols.
 				*/
 				if matchedText == s.Name || matchedText == fmt.Sprintf("%s.%s", s.Value, s.Name) {
-					startPosition := match.Captures[index].Node.StartPosition()
-					endPosition := match.Captures[index].Node.EndPosition()
-
-					if _, ok := detectionResults[advisoryToCheck.Purl]; !ok {
-						detectionResults[advisoryToCheck.Purl] = make(map[string]models.ReachableSymbolLocations)
-					}
-
-					if _, ok := detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID]; !ok {
-						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = make(models.ReachableSymbolLocations, 0)
-					}
-
-					packageLocation := models.PackageLocation{
-						Filename: fileposition.ToRelativePath(dir, path),
-					}
-					packageLocation.LineStart, err = converter.SafeUIntToInt(startPosition.Row + 1)
-					if err != nil {
-						return err
-					}
-					packageLocation.LineEnd, err = converter.SafeUIntToInt(endPosition.Row + 1)
-					if err != nil {
-						return err
-					}
-					packageLocation.ColumnStart, err = converter.SafeUIntToInt(startPosition.Column + 1)
-					if err != nil {
-						return err
-					}
-					packageLocation.ColumnEnd, err = converter.SafeUIntToInt(endPosition.Column + 1)
+					packageLocation, err := buildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
 					if err != nil {
 						return err
 					}
 
-					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = append(
-						detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID],
-						models.ReachableSymbolLocation{
-							Symbol:          matchedText,
-							PackageLocation: packageLocation,
-						})
+					recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
 				}
 			}
 		}
 	}
 
 	return nil
-}
-
-// readFileContent is a thin wrapper over os.ReadFile that reads the content of a file
-// and returns it as a byte slice.
-// TODO(daniel.strong): find a better place for this function
-func readFileContent(filePath string) ([]byte, error) {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }

@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/converter"
-	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
@@ -151,22 +149,7 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 		return err
 	}
 
-	readCallback := func(offset int, position treesitter.Point) []byte {
-		if ctx.Err() != nil {
-			return []byte{}
-		}
-		if offset >= len(fileContent) {
-			return []byte{}
-		}
-
-		return fileContent[offset:]
-	}
-
-	tree := r.tsParser.ParseWithOptions(readCallback, nil, &treesitter.ParseOptions{
-		ProgressCallback: func(_ treesitter.ParseState) bool {
-			return ctx.Err() != nil
-		},
-	})
+	tree := parseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	if len(advisoriesToCheck) == 0 {
@@ -212,42 +195,12 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 					continue
 				}
 
-				startPosition := selectorNode.StartPosition()
-				endPosition := selectorNode.EndPosition()
-
-				if _, ok := detectionResults[advisoryToCheck.Purl]; !ok {
-					detectionResults[advisoryToCheck.Purl] = make(map[string]models.ReachableSymbolLocations)
-				}
-				if _, ok := detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID]; !ok {
-					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = make(models.ReachableSymbolLocations, 0)
-				}
-
-				packageLocation := models.PackageLocation{
-					Filename: fileposition.ToRelativePath(dir, path),
-				}
-				packageLocation.LineStart, err = converter.SafeUIntToInt(startPosition.Row + 1)
-				if err != nil {
-					return err
-				}
-				packageLocation.LineEnd, err = converter.SafeUIntToInt(endPosition.Row + 1)
-				if err != nil {
-					return err
-				}
-				packageLocation.ColumnStart, err = converter.SafeUIntToInt(startPosition.Column + 1)
-				if err != nil {
-					return err
-				}
-				packageLocation.ColumnEnd, err = converter.SafeUIntToInt(endPosition.Column + 1)
+				packageLocation, err := buildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
 				if err != nil {
 					return err
 				}
 
-				detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID] = append(
-					detectionResults[advisoryToCheck.Purl][advisoryToCheck.AdvisoryID],
-					models.ReachableSymbolLocation{
-						Symbol:          selectorNode.Utf8Text(fileContent),
-						PackageLocation: packageLocation,
-					})
+				recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
 			}
 		}
 	}
