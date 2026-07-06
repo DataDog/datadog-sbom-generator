@@ -102,4 +102,5 @@ func init() {
 	RegisterBuildFileProcessor(FileTypeGoMod, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeComposerJSON, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeGemfile, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypePackageJSON, &SimpleProcessor{})
 }

@@ -780,3 +780,68 @@ func TestSimpleProcessor_GradleKts_SingleBuildFile(t *testing.T) {
 		t.Errorf("expected no Dependencies, got %v", rel.Dependencies)
 	}
 }
+
+// --- package.json tests ---
+
+// packageJSONFileComponent creates a file-type CycloneDX component representing
+// a package.json, as produced by addFileDependencies when the extractor returns
+// a ScannedArtifact with a non-empty Name. npmPurl is the purl string stored in
+// the "datadog:maven-package" property (e.g. "pkg:npm/%40scope/name@1.0.0").
+func packageJSONFileComponent(packageJSONPath, npmPurl string) cyclonedx.Component {
+	props := []cyclonedx.Property{
+		{Name: mavenPackageProperty, Value: npmPurl},
+	}
+
+	return cyclonedx.Component{
+		Type:       cyclonedx.ComponentTypeFile,
+		BOMRef:     packageJSONPath,
+		Name:       packageJSONPath,
+		Properties: &props,
+	}
+}
+
+// packageJSONFile is a shorthand for a package.json BuildFile.
+func packageJSONFile(path string) BuildFile {
+	return BuildFile{FileType: FileTypePackageJSON, FilePath: path}
+}
+
+// TestSimpleProcessor_PackageJSON_ProcessorRegistered verifies that
+// SimpleProcessor (not noopProcessor) is registered for package.json.
+// We distinguish them by providing a dependency edge: SimpleProcessor resolves
+// it via BFS, while noopProcessor would ignore it.
+func TestSimpleProcessor_PackageJSON_ProcessorRegistered(t *testing.T) {
+	t.Parallel()
+
+	sbom := makeSBOMWithDeps(
+		[]cyclonedx.Component{
+			packageJSONFileComponent("package.json", "pkg:npm/%40test/root@1.0.0"),
+			packageJSONFileComponent("packages/core/package.json", "pkg:npm/%40test/core@1.0.0"),
+		},
+		[]cyclonedx.Dependency{
+			{Ref: "package.json", Dependencies: &[]string{"packages/core/package.json"}},
+		},
+	)
+
+	result := GetBuildFileTrees(sbom, FileTypePackageJSON)
+
+	if len(result) != 2 {
+		t.Fatalf("expected 2 entries, got %d: %v", len(result), result)
+	}
+
+	root := result[packageJSONFile("package.json")]
+	// SimpleProcessor resolves the dependency edge; noopProcessor would return empty.
+	if len(root.Dependencies) != 1 || root.Dependencies[0].BuildFile != packageJSONFile("packages/core/package.json") {
+		t.Errorf("root: expected Dependencies=[packages/core/package.json], got %v", root.Dependencies)
+	}
+	if root.ID != "@test:root" {
+		t.Errorf("root: expected ID=%q, got %q", "@test:root", root.ID)
+	}
+
+	core := result[packageJSONFile("packages/core/package.json")]
+	if len(core.Dependencies) != 0 {
+		t.Errorf("core: expected no Dependencies, got %v", core.Dependencies)
+	}
+	if core.ID != "@test:core" {
+		t.Errorf("core: expected ID=%q, got %q", "@test:core", core.ID)
+	}
+}
