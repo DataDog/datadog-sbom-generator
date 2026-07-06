@@ -116,6 +116,10 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 				return nil
 			}
 
+			if len(advisoriesToCheckPerLanguage[languageKey]) == 0 {
+				return nil
+			}
+
 			pool := detectorPools[languageKey]
 
 			eg.Go(func() error {

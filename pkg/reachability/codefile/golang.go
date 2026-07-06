@@ -31,6 +31,7 @@ const tsQueryForGoCall = `
 `
 
 var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v[0-9]+$`)
+var dottedMajorVersionSuffixPattern = cachedregexp.MustCompile(`\.v[0-9]+$`)
 
 type ReachabilityGo struct {
 	tsParser    *treesitter.Parser
@@ -130,14 +131,18 @@ func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent
 }
 
 // defaultIdentifierForModulePath derives the package identifier Go code would use for an
-// unaliased import, using the last path segment and stripping a trailing major-version suffix
-// (e.g. "github.com/foo/bar/v2" -> "bar").
+// unaliased import, using the last path segment and stripping a trailing major-version suffix.
+// Two conventions are handled: the path-segment style (e.g. "github.com/foo/bar/v2" -> "bar")
+// and the dotted gopkg.in style (e.g. "gopkg.in/yaml.v3" -> "yaml").
 func defaultIdentifierForModulePath(modulePath string) string {
 	segments := strings.Split(modulePath, "/")
 	identifier := segments[len(segments)-1]
 
-	if len(segments) > 1 && majorVersionSuffixPattern.MatchString(identifier) {
+	switch {
+	case len(segments) > 1 && majorVersionSuffixPattern.MatchString(identifier):
 		identifier = segments[len(segments)-2]
+	case dottedMajorVersionSuffixPattern.MatchString(identifier):
+		identifier = identifier[:strings.LastIndex(identifier, ".")]
 	}
 
 	return identifier

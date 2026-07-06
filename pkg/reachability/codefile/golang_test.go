@@ -121,6 +121,8 @@ func Test_defaultIdentifierForModulePath(t *testing.T) {
 		{modulePath: "github.com/foo/bar/v10", expected: "bar"},
 		{modulePath: "rsc.io/quote", expected: "quote"},
 		{modulePath: "singlesegment", expected: "singlesegment"},
+		{modulePath: "gopkg.in/yaml.v3", expected: "yaml"},
+		{modulePath: "gopkg.in/check.v1", expected: "check"},
 	}
 
 	for _, tt := range tests {
