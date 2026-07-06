@@ -185,6 +185,136 @@ func findGroupsInPairs(node *extractor.Node) ([]string, error) {
 	return groups, nil
 }
 
+// findPathInPairs searches within a gem call node for a `path:` keyword argument
+// and returns its string value. Returns empty string if no path: pair is found.
+func findPathInPairs(node *extractor.Node) (string, error) {
+	pairQuery := `(
+		(pair
+			key: [(hash_key_symbol) (simple_symbol)] @pair_key
+			(#match? @pair_key "path")
+			value: (string) @pair_value
+		)
+	)`
+
+	var pathValue string
+	err := node.Query(pairQuery, func(match *extractor.MatchResult) error {
+		pairValueNode := match.FindFirstByName("pair_value")
+		val, err := node.Ctx.ExtractTextValue(pairValueNode.TSNode)
+		if err != nil {
+			return err
+		}
+
+		pathValue = val
+
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return pathValue, nil
+}
+
+// findGemsWithPath returns the path: values from gem() calls in the given node.
+// It searches both top-level gem calls and gem calls inside group blocks.
+func findGemsWithPath(node *extractor.Node) ([]string, error) {
+	var paths []string
+
+	// Find top-level gem calls and extract path: pairs from each
+	rootGems, err := collectPathsFromGemCalls(node)
+	if err != nil {
+		return nil, err
+	}
+	paths = append(paths, rootGems...)
+
+	// Find grouped gem calls and extract path: pairs from each
+	groupedGems, err := collectPathsFromGroupedGemCalls(node)
+	if err != nil {
+		return nil, err
+	}
+	paths = append(paths, groupedGems...)
+
+	return paths, nil
+}
+
+// collectPathsFromGemCalls finds top-level gem() calls and returns any path: values.
+func collectPathsFromGemCalls(node *extractor.Node) ([]string, error) {
+	gemQueryString := `(
+		(call
+			method: (identifier) @method_name
+			(#match? @method_name "gem")
+			arguments: (argument_list
+				.
+				(comment)*
+				.
+				(string) @gem_name
+				.
+				(_)*
+				.
+			)
+		) @gem_call
+	)`
+
+	var paths []string
+	err := node.Query(gemQueryString, func(match *extractor.MatchResult) error {
+		callNode := match.FindFirstByName("gem_call")
+
+		pathVal, err := findPathInPairs(callNode)
+		if err != nil {
+			return err
+		}
+		if pathVal != "" {
+			paths = append(paths, pathVal)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return paths, nil
+}
+
+// collectPathsFromGroupedGemCalls finds gem() calls inside group blocks and returns any path: values.
+func collectPathsFromGroupedGemCalls(node *extractor.Node) ([]string, error) {
+	groupQueryString := `(
+		(call
+			method: (identifier) @method_name
+			(#match? @method_name "group")
+			arguments: (argument_list
+				.
+				[
+					(simple_symbol)
+					(string)
+					(comment)
+					","
+				]*
+				.
+			) @group_keys
+			block: (_) @block
+		)
+	)`
+
+	var paths []string
+	err := node.Query(groupQueryString, func(match *extractor.MatchResult) error {
+		blockNode := match.FindFirstByName("block")
+
+		blockPaths, err := collectPathsFromGemCalls(blockNode)
+		if err != nil {
+			return err
+		}
+		paths = append(paths, blockPaths...)
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return paths, nil
+}
+
 func indexPackages(packages []extractor.PackageDetails) map[string]*extractor.PackageDetails {
 	result := make(map[string]*extractor.PackageDetails)
 	for index, pkg := range packages {
