@@ -1,7 +1,9 @@
 {
   "name": "@test/root",
   "version": "1.0.0",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "wrappy": "^1.0.0"
   }

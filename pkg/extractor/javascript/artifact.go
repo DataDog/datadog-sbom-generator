@@ -8,11 +8,37 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
+// workspaceGlobs handles both array-form and object-form package.json workspaces:
+//   - Array form:  "workspaces": ["packages/*"]
+//   - Object form: "workspaces": {"packages": ["packages/*"], "nohoist": [...]}
+type workspaceGlobs []string
+
+func (w *workspaceGlobs) UnmarshalJSON(data []byte) error {
+	// Try array form first (most common).
+	var globs []string
+	if err := json.Unmarshal(data, &globs); err == nil {
+		*w = globs
+
+		return nil
+	}
+
+	// Fall back to object form: extract the "packages" key.
+	var obj struct {
+		Packages []string `json:"packages"`
+	}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	*w = obj.Packages
+
+	return nil
+}
+
 // packageJSONIdentity is the minimal subset of package.json needed by
 // GetArtifact: the project name and workspace glob patterns.
 type packageJSONIdentity struct {
-	Name       string   `json:"name"`
-	Workspaces []string `json:"workspaces"`
+	Name       string         `json:"name"`
+	Workspaces workspaceGlobs `json:"workspaces"`
 }
 
 // getArtifactFromAdjacentPackageJSON is the shared implementation for all JS
