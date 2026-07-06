@@ -167,11 +167,7 @@ func TestGemfileLockExtractor_GetArtifact_NoGemfile(t *testing.T) {
 
 	artifact, err := ruby.GemfileLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
 	require.NoError(t, err)
-	require.NotNil(t, artifact)
-
-	expectedGemfilePath := filepath.Join(dir, "Gemfile")
-	assert.Equal(t, expectedGemfilePath, artifact.Filename)
-	assert.Empty(t, artifact.ProjectDeps, "no adjacent Gemfile means no ProjectDeps")
+	assert.Nil(t, artifact, "no adjacent Gemfile means no artifact should be emitted")
 }
 
 func TestGemfileLockExtractor_GetArtifact_PathInGroup(t *testing.T) {
@@ -207,4 +203,54 @@ end
 
 	require.Len(t, artifact.ProjectDeps, 1, "path: inside group block should be captured")
 	assert.Equal(t, filepath.Join(devToolsDir, "Gemfile"), artifact.ProjectDeps[0].Filename)
+}
+
+func TestGemfileLockExtractor_GetArtifact_GemspecName(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	lockfilePath := filepath.Join(dir, "Gemfile.lock")
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("GEM\n  specs:\n"), 0600))
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source \"https://rubygems.org\"\n"), 0600))
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "my_service.gemspec"), []byte(`Gem::Specification.new do |spec|
+  spec.name    = "my_service"
+  spec.version = "1.0.0"
+end
+`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := ruby.GemfileLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+
+	assert.Equal(t, "my_service", artifact.Name, "gem name should be extracted from adjacent .gemspec")
+}
+
+func TestGemfileLockExtractor_GetArtifact_NoGemspecName(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	lockfilePath := filepath.Join(dir, "Gemfile.lock")
+	require.NoError(t, os.WriteFile(lockfilePath, []byte("GEM\n  specs:\n"), 0600))
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source \"https://rubygems.org\"\n"), 0600))
+
+	// No .gemspec present
+
+	f, err := extractor.OpenLocalDepFile(lockfilePath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	artifact, err := ruby.GemfileLockExtractor{}.GetArtifact(f, extractor.ScanContext{})
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+
+	assert.Empty(t, artifact.Name, "Name should be empty when no .gemspec is present")
 }

@@ -151,6 +151,39 @@ func (matcher GemspecFileMatcher) enrichPackagesWithLocation(r reporter.Reporter
 	}
 }
 
+// extractGemspecName parses a .gemspec file and returns the value of the `name`
+// attribute assignment (e.g. `spec.name = "my_gem"`). Returns empty string if
+// the attribute is absent or cannot be parsed.
+func extractGemspecName(node *extractor.Node) (string, error) {
+	nameQuery := `(
+		(assignment
+			left: (call
+				receiver: (_)
+				method: (identifier) @attr
+				(#eq? @attr "name")
+			)
+			right: (string) @gem_name
+		)
+	)`
+
+	var gemName string
+	err := node.Query(nameQuery, func(match *extractor.MatchResult) error {
+		gemNameNode := match.FindFirstByName("gem_name")
+		name, err := node.Ctx.ExtractTextValue(gemNameNode.TSNode)
+		if err != nil {
+			return err
+		}
+		gemName = name
+
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return gemName, nil
+}
+
 func setPositionInMetadata(metadata gemspecMetadata, callNode *extractor.Node, dependencyNameNode *extractor.Node, requirementNodes []*extractor.Node) (gemspecMetadata, error) {
 	setPos := func(dstLine *models.Position, dstColumn *models.Position, start tree_sitter.Point, end tree_sitter.Point) error {
 		var err error

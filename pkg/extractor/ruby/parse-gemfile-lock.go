@@ -220,19 +220,20 @@ func (e GemfileLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Sca
 	gemfileDir := filepath.Dir(f.Path())
 	gemfilePath := filepath.Join(gemfileDir, gemfileFilename)
 
+	gemfile, err := extractor.OpenLocalDepFile(gemfilePath)
+	if err != nil {
+		// No adjacent Gemfile — no build file tree to emit
+		return nil, nil
+	}
+	defer gemfile.Close()
+
 	artifact := &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
 			Filename:  gemfilePath,
 			Ecosystem: models.EcosystemRubyGems,
+			Name:      findAdjacentGemspecName(gemfileDir),
 		},
 	}
-
-	gemfile, err := extractor.OpenLocalDepFile(gemfilePath)
-	if err != nil {
-		// No adjacent Gemfile — return bare artifact
-		return artifact, nil
-	}
-	defer gemfile.Close()
 
 	treeResult, err := extractor.ParseFile(gemfile, extractor.Ruby)
 	if err != nil {
@@ -282,6 +283,44 @@ func (e GemfileLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Sca
 	}
 
 	return artifact, nil
+}
+
+// findAdjacentGemspecName scans dir for a *.gemspec file and extracts the gem's
+// own name from its `spec.name = "..."` assignment. Returns empty string if no
+// gemspec is found or the name cannot be extracted.
+func findAdjacentGemspecName(dir string) string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), gemspecFileSuffix) {
+			continue
+		}
+
+		gemspecPath := filepath.Join(dir, entry.Name())
+		f, err := extractor.OpenLocalDepFile(gemspecPath)
+		if err != nil {
+			return ""
+		}
+
+		treeResult, err := extractor.ParseFile(f, extractor.Ruby)
+		_ = f.Close()
+		if err != nil {
+			return ""
+		}
+
+		name, err := extractGemspecName(treeResult.Node)
+		treeResult.Close()
+		if err != nil || name == "" {
+			return ""
+		}
+
+		return name
+	}
+
+	return ""
 }
 
 var GemfileExtractor = GemfileLockExtractor{
