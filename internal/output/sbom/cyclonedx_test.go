@@ -102,10 +102,12 @@ func TestBuildCycloneDXBom_RubyArtifact_PackageNameProperty(t *testing.T) {
 				if prop.Value == "" {
 					t.Error("datadog:maven-package property is empty")
 				}
+
 				return
 			}
 		}
 		t.Errorf("datadog:maven-package property not found on Gemfile component; properties: %v", *comp.Properties)
+
 		return
 	}
 
