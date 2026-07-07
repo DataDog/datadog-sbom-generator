@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -210,6 +211,120 @@ func (e GemfileLockExtractor) Extract(f extractor.DepFile, context extractor.Sca
 	}
 
 	return parser.dependencies, nil
+}
+
+// Compile-time check: GemfileLockExtractor implements ArtifactExtractor.
+var _ extractor.ArtifactExtractor = GemfileLockExtractor{}
+
+func (e GemfileLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
+	gemfileDir := filepath.Dir(f.Path())
+	gemfilePath := filepath.Join(gemfileDir, gemfileFilename)
+
+	gemfile, err := extractor.OpenLocalDepFile(gemfilePath)
+	if err != nil {
+		// No adjacent Gemfile — no build file tree to emit
+		return nil, nil
+	}
+	defer gemfile.Close()
+
+	artifact := &models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Filename:    gemfilePath,
+			Ecosystem:   models.EcosystemRubyGems,
+			PackageName: findAdjacentGemspecName(gemfileDir),
+		},
+	}
+
+	treeResult, err := extractor.ParseFile(gemfile, extractor.Ruby)
+	if err != nil {
+		return artifact, nil
+	}
+	defer treeResult.Close()
+
+	pathValues, err := findGemsWithPath(treeResult.Node)
+	if err != nil {
+		return artifact, nil
+	}
+
+	seen := make(map[string]struct{})
+
+	for _, pathVal := range pathValues {
+		var targetDir string
+		if filepath.IsAbs(pathVal) {
+			targetDir = pathVal
+		} else {
+			targetDir = filepath.Join(gemfileDir, pathVal)
+		}
+		targetGemfile := filepath.Clean(filepath.Join(targetDir, gemfileFilename))
+
+		if _, err := os.Stat(targetGemfile); err != nil {
+			continue
+		}
+
+		// Skip targets outside the scan root
+		if ctx.RootDir != "" {
+			absRoot, err := filepath.Abs(ctx.RootDir)
+			if err == nil {
+				rel, err := filepath.Rel(absRoot, targetGemfile)
+				if err != nil || strings.HasPrefix(rel, "..") {
+					continue
+				}
+			}
+		}
+
+		if targetGemfile == gemfilePath {
+			continue
+		}
+
+		if _, ok := seen[targetGemfile]; ok {
+			continue
+		}
+		seen[targetGemfile] = struct{}{}
+
+		artifact.ProjectDeps = append(artifact.ProjectDeps, models.ArtifactDetail{
+			Filename: targetGemfile,
+		})
+	}
+
+	return artifact, nil
+}
+
+// findAdjacentGemspecName scans dir for a *.gemspec file and extracts the gem's
+// own name from its `spec.name = "..."` assignment. Returns empty string if no
+// gemspec is found or the name cannot be extracted.
+func findAdjacentGemspecName(dir string) string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), gemspecFileSuffix) {
+			continue
+		}
+
+		gemspecPath := filepath.Join(dir, entry.Name())
+		f, err := extractor.OpenLocalDepFile(gemspecPath)
+		if err != nil {
+			return ""
+		}
+
+		treeResult, err := extractor.ParseFile(f, extractor.Ruby)
+		_ = f.Close()
+		if err != nil {
+			return ""
+		}
+
+		name, err := extractGemspecName(treeResult.Node)
+		treeResult.Close()
+		if err != nil || name == "" {
+			return ""
+		}
+
+		return name
+	}
+
+	return ""
 }
 
 var GemfileExtractor = GemfileLockExtractor{
