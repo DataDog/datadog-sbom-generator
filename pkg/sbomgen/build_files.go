@@ -2,6 +2,7 @@ package sbomgen
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -271,4 +272,137 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	}
 
 	return ctx
+}
+
+// AddNpmWorkspaceEdges enriches bom.Dependencies with inter-workspace dependency
+// edges for npm/yarn/pnpm/bun monorepos. It must be called after the BOM is built
+// but before serialization, while the scan root directory is still known.
+//
+// For each package.json file component in the BOM, this function reads the file
+// from disk (joining rootDir with the relative bom-ref path), checks its
+// dependencies against the workspace name→path index built from all file
+// components' datadog:maven-package properties, and adds any missing edges to
+// bom.Dependencies.
+//
+// This has no effect on normal package scanning or SBOM output — it only
+// enriches the dependency graph used by GetBuildFileTrees.
+func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
+	if bom.Components == nil {
+		return
+	}
+
+	// Build index: npm package name → relative file path, from all file components.
+	nameToPath := make(map[string]string)
+	for _, comp := range *bom.Components {
+		if comp.Type != cyclonedx.ComponentTypeFile || comp.Properties == nil {
+			continue
+		}
+		for _, prop := range *comp.Properties {
+			if prop.Name == mavenPackageProperty && prop.Value != "" {
+				purl, err := packageurl.FromString(prop.Value)
+				if err != nil {
+					continue
+				}
+				name := purl.Name
+				if purl.Namespace != "" {
+					name = "@" + purl.Namespace + "/" + purl.Name
+				}
+				nameToPath[name] = comp.BOMRef
+			}
+		}
+	}
+
+	if len(nameToPath) == 0 {
+		return
+	}
+
+	// Build existing dependency sets to avoid adding duplicate edges.
+	existing := make(map[string]map[string]struct{})
+	if bom.Dependencies != nil {
+		for _, dep := range *bom.Dependencies {
+			if dep.Dependencies == nil {
+				continue
+			}
+			set := make(map[string]struct{}, len(*dep.Dependencies))
+			for _, d := range *dep.Dependencies {
+				set[d] = struct{}{}
+			}
+			existing[dep.Ref] = set
+		}
+	}
+
+	// For each package.json file component, read it from disk and add edges
+	// to any sibling workspace packages found in its dependencies.
+	var newDeps []cyclonedx.Dependency
+	for _, comp := range *bom.Components {
+		if comp.Type != cyclonedx.ComponentTypeFile {
+			continue
+		}
+		if filepath.Base(comp.BOMRef) != "package.json" {
+			continue
+		}
+
+		absPath := filepath.Join(rootDir, comp.BOMRef)
+		data, err := os.ReadFile(absPath)
+		if err != nil {
+			continue
+		}
+
+		var pkg struct {
+			Dependencies    map[string]string `json:"dependencies"`
+			DevDependencies map[string]string `json:"devDependencies"`
+		}
+		if err := json.Unmarshal(data, &pkg); err != nil {
+			continue
+		}
+
+		existingSet := existing[comp.BOMRef]
+		var edges []string
+		for depName := range pkg.Dependencies {
+			if targetPath, ok := nameToPath[depName]; ok && targetPath != comp.BOMRef {
+				if _, already := existingSet[targetPath]; !already {
+					edges = append(edges, targetPath)
+				}
+			}
+		}
+		for depName := range pkg.DevDependencies {
+			if targetPath, ok := nameToPath[depName]; ok && targetPath != comp.BOMRef {
+				if _, already := existingSet[targetPath]; !already {
+					edges = append(edges, targetPath)
+				}
+			}
+		}
+
+		if len(edges) == 0 {
+			continue
+		}
+
+		if existingDep, ok := existing[comp.BOMRef]; ok {
+			// Merge into existing dependency entry.
+			for _, dep := range *bom.Dependencies {
+				if dep.Ref == comp.BOMRef {
+					updated := append(*dep.Dependencies, edges...)
+					dep.Dependencies = &updated
+					break
+				}
+			}
+			for _, e := range edges {
+				existingDep[e] = struct{}{}
+			}
+		} else {
+			newDeps = append(newDeps, cyclonedx.Dependency{
+				Ref:          comp.BOMRef,
+				Dependencies: &edges,
+			})
+		}
+	}
+
+	if len(newDeps) > 0 {
+		if bom.Dependencies == nil {
+			bom.Dependencies = &newDeps
+		} else {
+			updated := append(*bom.Dependencies, newDeps...)
+			bom.Dependencies = &updated
+		}
+	}
 }
