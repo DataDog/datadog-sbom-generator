@@ -332,11 +332,25 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 			// can traverse the edge. A subproject with no lockfile of its own won't
 			// appear in artifacts, so we create a stub component here.
 			if _, exists := components[dep.Filename]; !exists {
-				components[dep.Filename] = cyclonedx.Component{
+				stub := cyclonedx.Component{
 					Name:   dep.Filename,
 					BOMRef: dep.Filename,
 					Type:   fileComponentType,
 				}
+				if dep.Name != "" {
+					depPURL, err := purl.From(models.PackageInfo{
+						Name:      dep.Name,
+						Version:   dep.Version,
+						Ecosystem: string(dep.Ecosystem),
+					})
+					if err == nil {
+						stub.Properties = &[]cyclonedx.Property{{
+							Name:  mavenPackageProperty,
+							Value: depPURL.String(),
+						}}
+					}
+				}
+				components[dep.Filename] = stub
 			}
 			if dependency, ok := dependsOn[artifact.Filename]; ok {
 				dependencies := append(*dependency.Dependencies, dep.Filename)

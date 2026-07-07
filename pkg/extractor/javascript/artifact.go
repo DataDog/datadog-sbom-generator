@@ -73,8 +73,9 @@ func getArtifactFromAdjacentPackageJSON(f extractor.DepFile) (*models.ScannedArt
 		for _, match := range matches {
 			childPath := filepath.Join(baseDir, match)
 			artifact.ProjectDeps = append(artifact.ProjectDeps, models.ArtifactDetail{
-				Name:     readPackageJSONName(childPath),
-				Filename: childPath,
+				Name:      readPackageJSONName(childPath),
+				Filename:  childPath,
+				Ecosystem: models.EcosystemNPM,
 			})
 		}
 	}

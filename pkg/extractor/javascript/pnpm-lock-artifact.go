@@ -69,8 +69,9 @@ func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, _ extractor.ScanCont
 
 		seen[targetPkgJSON] = struct{}{}
 		artifact.ProjectDeps = append(artifact.ProjectDeps, models.ArtifactDetail{
-			Name:     readPackageJSONName(targetPkgJSON),
-			Filename: targetPkgJSON,
+			Name:      readPackageJSONName(targetPkgJSON),
+			Filename:  targetPkgJSON,
+			Ecosystem: models.EcosystemNPM,
 		})
 	}
 
