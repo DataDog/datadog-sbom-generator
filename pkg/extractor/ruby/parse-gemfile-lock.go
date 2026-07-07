@@ -272,6 +272,10 @@ func (e GemfileLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Sca
 			}
 		}
 
+		if targetGemfile == gemfilePath {
+			continue
+		}
+
 		if _, ok := seen[targetGemfile]; ok {
 			continue
 		}
