@@ -223,6 +223,126 @@ func TestNuGetCsprojExtractor_IsManifestParser(t *testing.T) {
 }
 
 // ============================================================================
+// GetArtifact PackageName Tests (PackageId / AssemblyName extraction)
+// ============================================================================
+
+func TestNuGetCsprojExtractor_GetArtifact_PackageNameFromPackageId(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	appDir := filepath.Join(root, "src", "App")
+	require.NoError(t, os.MkdirAll(appDir, 0700))
+
+	// PackageId should win over AssemblyName when both are present.
+	appCsproj := filepath.Join(appDir, "App.csproj")
+	require.NoError(t, os.WriteFile(appCsproj, []byte(`<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>My.NuGet.Package</PackageId>
+    <AssemblyName>MyService</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+</Project>`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(appCsproj)
+	require.NoError(t, err)
+	defer f.Close()
+
+	ext := NuGetCsprojExtractor{}
+	artifact, err := ext.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "My.NuGet.Package", artifact.PackageName, "PackageId takes priority over AssemblyName")
+	assert.Empty(t, artifact.Name, "Name must not be set — only PackageName")
+}
+
+func TestNuGetCsprojExtractor_GetArtifact_PackageNameFromAssemblyName(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	appDir := filepath.Join(root, "src", "App")
+	require.NoError(t, os.MkdirAll(appDir, 0700))
+
+	appCsproj := filepath.Join(appDir, "App.csproj")
+	require.NoError(t, os.WriteFile(appCsproj, []byte(`<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MyService</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+</Project>`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(appCsproj)
+	require.NoError(t, err)
+	defer f.Close()
+
+	ext := NuGetCsprojExtractor{}
+	artifact, err := ext.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "MyService", artifact.PackageName)
+	assert.Empty(t, artifact.Name, "Name must not be set — only PackageName")
+}
+
+func TestNuGetCsprojExtractor_GetArtifact_PackageNameFallsToCsprojStem(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	appDir := filepath.Join(root, "src", "App")
+	require.NoError(t, os.MkdirAll(appDir, 0700))
+
+	appCsproj := filepath.Join(appDir, "App.csproj")
+	require.NoError(t, os.WriteFile(appCsproj, []byte(`<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+</Project>`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(appCsproj)
+	require.NoError(t, err)
+	defer f.Close()
+
+	ext := NuGetCsprojExtractor{}
+	artifact, err := ext.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "App", artifact.PackageName)
+	assert.Empty(t, artifact.Name, "Name must not be set — only PackageName")
+}
+
+func TestNuGetLockExtractor_GetArtifact_PackageNameFromAssemblyName(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	appDir := filepath.Join(root, "src", "App")
+	require.NoError(t, os.MkdirAll(appDir, 0700))
+
+	// Create a csproj with AssemblyName
+	require.NoError(t, os.WriteFile(filepath.Join(appDir, "App.csproj"), []byte(`<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MyService</AssemblyName>
+  </PropertyGroup>
+</Project>`), 0600))
+
+	// Create a packages.lock.json (minimal valid content)
+	lockPath := filepath.Join(appDir, "packages.lock.json")
+	require.NoError(t, os.WriteFile(lockPath, []byte(`{"version": 1, "dependencies": {}}`), 0600))
+
+	f, err := extractor.OpenLocalDepFile(lockPath)
+	require.NoError(t, err)
+	defer f.Close()
+
+	ext := NuGetLockExtractor{}
+	artifact, err := ext.GetArtifact(f, extractor.ScanContext{RootDir: root})
+
+	require.NoError(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, "MyService", artifact.PackageName)
+	assert.Empty(t, artifact.Name, "Name must not be set — only PackageName")
+}
+
+// ============================================================================
 // Integration Test: Transitive Closure
 // ============================================================================
 
