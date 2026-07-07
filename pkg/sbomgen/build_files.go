@@ -383,6 +383,7 @@ func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
 				if dep.Ref == comp.BOMRef {
 					updated := append(*dep.Dependencies, edges...)
 					dep.Dependencies = &updated
+
 					break
 				}
 			}
