@@ -229,9 +229,9 @@ func (e GemfileLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Sca
 
 	artifact := &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
-			Filename:  gemfilePath,
-			Ecosystem: models.EcosystemRubyGems,
-			Name:      findAdjacentGemspecName(gemfileDir),
+			Filename:    gemfilePath,
+			Ecosystem:   models.EcosystemRubyGems,
+			PackageName: findAdjacentGemspecName(gemfileDir),
 		},
 	}
 

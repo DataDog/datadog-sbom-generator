@@ -7,10 +7,19 @@ type VulnerabilityResults struct {
 }
 
 type ArtifactDetail struct {
-	Name      string
-	Version   string
-	Filename  string
-	Ecosystem Ecosystem
+	// Name is the artifact identity used by findArtifact for cross-project
+	// workspace matching (e.g. Gradle submodule "group:artifact"). Leave empty
+	// when the build file does not participate in cross-project package matching.
+	Name string
+	// PackageName is the name of the package this build file produces. It is
+	// used to populate the datadog:maven-package SBOM property and
+	// ctx.ArtifactIDs for BuildFileRelations.ID, without triggering findArtifact
+	// cross-project matching. Prefer this over Name for ecosystems (e.g. Ruby)
+	// where the self-package appears in the project's own lockfile.
+	PackageName string
+	Version     string
+	Filename    string
+	Ecosystem   Ecosystem
 }
 
 type ScannedArtifact struct {

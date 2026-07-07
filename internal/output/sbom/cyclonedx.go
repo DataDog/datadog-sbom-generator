@@ -280,9 +280,15 @@ func addFileDependencies(artifacts []models.ScannedArtifact) (map[string]cyclone
 		component.Type = fileComponentType
 
 		var properties []cyclonedx.Property
-		if artifact.Name != "" {
+		// PackageName takes precedence over Name for the mavenPackageProperty purl;
+		// Name is reserved for findArtifact cross-project matching.
+		pkgName := artifact.PackageName
+		if pkgName == "" {
+			pkgName = artifact.Name
+		}
+		if pkgName != "" {
 			artifactPURL, err := purl.From(models.PackageInfo{
-				Name:      artifact.Name,
+				Name:      pkgName,
 				Version:   artifact.Version,
 				Ecosystem: string(artifact.Ecosystem),
 			})

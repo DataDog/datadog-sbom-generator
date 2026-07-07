@@ -229,7 +229,8 @@ end
 	require.NoError(t, err)
 	require.NotNil(t, artifact)
 
-	assert.Equal(t, "my_service", artifact.Name, "gem name should be extracted from adjacent .gemspec")
+	assert.Equal(t, "my_service", artifact.PackageName, "gem name should be extracted from adjacent .gemspec")
+	assert.Empty(t, artifact.Name, "Name must stay empty to avoid findArtifact matching the self-package")
 }
 
 func TestGemfileLockExtractor_GetArtifact_NoGemspecName(t *testing.T) {
@@ -252,5 +253,6 @@ func TestGemfileLockExtractor_GetArtifact_NoGemspecName(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, artifact)
 
-	assert.Empty(t, artifact.Name, "Name should be empty when no .gemspec is present")
+	assert.Empty(t, artifact.PackageName, "PackageName should be empty when no .gemspec is present")
+	assert.Empty(t, artifact.Name, "Name should always be empty for Ruby artifacts")
 }
