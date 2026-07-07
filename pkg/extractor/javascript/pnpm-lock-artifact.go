@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -19,7 +20,7 @@ var _ extractor.ArtifactExtractor = PnpmLockExtractor{}
 // Workspace package.json paths are sourced from the pnpm-lock.yaml importers
 // map, so pnpm-workspace.yaml-only workspaces are also covered.
 // Returns nil, nil when no adjacent package.json exists.
-func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, _ extractor.ScanContext) (*models.ScannedArtifact, error) {
+func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanContext) (*models.ScannedArtifact, error) {
 	pkgFile, err := f.Open("package.json")
 	if err != nil {
 		return nil, nil
@@ -61,6 +62,14 @@ func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, _ extractor.ScanCont
 		targetPkgJSON := filepath.Clean(filepath.Join(lockfileDir, workspacePath, "package.json"))
 		if _, err := os.Stat(targetPkgJSON); err != nil {
 			continue
+		}
+
+		// Skip targets that escape the scan root (e.g. "../shared/package.json").
+		if ctx.RootDir != "" {
+			rel, err := filepath.Rel(ctx.RootDir, targetPkgJSON)
+			if err != nil || strings.HasPrefix(rel, "..") {
+				continue
+			}
 		}
 
 		if _, ok := seen[targetPkgJSON]; ok {

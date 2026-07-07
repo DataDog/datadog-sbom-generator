@@ -276,18 +276,18 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 
 // AddNpmWorkspaceEdges enriches bom.Dependencies with inter-workspace dependency
 // edges for npm/yarn/pnpm/bun monorepos. It must be called after the BOM is built
-// but before serialization, while the scan root directory is still known.
+// but before serialization, while the scan root directories are still known.
 //
 // For each package.json file component in the BOM, this function reads the file
-// from disk (joining rootDir with the relative bom-ref path), checks its
-// dependencies against the workspace name→path index built from all file
-// components' datadog:maven-package properties, and adds any missing edges to
-// bom.Dependencies.
+// from disk by trying each rootDir in order until one succeeds (multi-root scans
+// have BOMRefs relative to different roots). It checks dependencies against the
+// workspace name→path index built from all npm file components' datadog:maven-package
+// properties, and adds any missing edges to bom.Dependencies.
 //
 // This has no effect on normal package scanning or SBOM output — it only
 // enriches the dependency graph used by GetBuildFileTrees.
-func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
-	if bom.Components == nil {
+func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
+	if bom.Components == nil || len(rootDirs) == 0 {
 		return
 	}
 
@@ -300,7 +300,7 @@ func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
 		for _, prop := range *comp.Properties {
 			if prop.Name == mavenPackageProperty && prop.Value != "" {
 				purl, err := packageurl.FromString(prop.Value)
-				if err != nil {
+				if err != nil || purl.Type != "npm" {
 					continue
 				}
 				name := purl.Name
@@ -342,9 +342,15 @@ func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
 			continue
 		}
 
-		absPath := filepath.Join(rootDir, comp.BOMRef)
-		data, err := os.ReadFile(absPath)
-		if err != nil {
+		var data []byte
+		for _, root := range rootDirs {
+			var readErr error
+			data, readErr = os.ReadFile(filepath.Join(root, comp.BOMRef))
+			if readErr == nil {
+				break
+			}
+		}
+		if data == nil {
 			continue
 		}
 
@@ -378,11 +384,13 @@ func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDir string) {
 		}
 
 		if existingDep, ok := existing[comp.BOMRef]; ok {
-			// Merge into existing dependency entry.
-			for _, dep := range *bom.Dependencies {
-				if dep.Ref == comp.BOMRef {
-					updated := append(*dep.Dependencies, edges...)
-					dep.Dependencies = &updated
+			// Merge into existing dependency entry using an index loop so the
+			// slice element is mutated in place (range-over-value gives a copy).
+			deps := *bom.Dependencies
+			for i := range deps {
+				if deps[i].Ref == comp.BOMRef {
+					updated := append(*deps[i].Dependencies, edges...)
+					deps[i].Dependencies = &updated
 
 					break
 				}
