@@ -66,9 +66,12 @@ func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanCo
 
 		// Skip targets that escape the scan root (e.g. "../shared/package.json").
 		if ctx.RootDir != "" {
-			rel, err := filepath.Rel(ctx.RootDir, targetPkgJSON)
-			if err != nil || strings.HasPrefix(rel, "..") {
-				continue
+			absRoot, err := filepath.Abs(ctx.RootDir)
+			if err == nil {
+				rel, relErr := filepath.Rel(absRoot, targetPkgJSON)
+				if relErr != nil || strings.HasPrefix(rel, "..") {
+					continue
+				}
 			}
 		}
 
