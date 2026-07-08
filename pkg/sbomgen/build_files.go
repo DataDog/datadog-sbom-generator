@@ -2,6 +2,7 @@ package sbomgen
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -271,4 +272,146 @@ func buildProcessorContext(bom *cyclonedx.BOM) ProcessorContext {
 	}
 
 	return ctx
+}
+
+// AddNpmWorkspaceEdges enriches bom.Dependencies with inter-workspace dependency
+// edges for npm/yarn/pnpm/bun monorepos. It must be called after the BOM is built
+// but before serialization, while the scan root directories are still known.
+//
+// For each package.json file component in the BOM, this function reads the file
+// from disk by trying each rootDir in order until one succeeds (multi-root scans
+// have BOMRefs relative to different roots). It checks dependencies against the
+// workspace name→path index built from all npm file components' datadog:maven-package
+// properties, and adds any missing edges to bom.Dependencies.
+//
+// This has no effect on normal package scanning or SBOM output — it only
+// enriches the dependency graph used by GetBuildFileTrees.
+func AddNpmWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
+	if bom.Components == nil || len(rootDirs) == 0 {
+		return
+	}
+
+	// Build index: npm package name → relative file path, from all file components.
+	nameToPath := make(map[string]string)
+	for _, comp := range *bom.Components {
+		if comp.Type != cyclonedx.ComponentTypeFile || comp.Properties == nil {
+			continue
+		}
+		for _, prop := range *comp.Properties {
+			if prop.Name == mavenPackageProperty && prop.Value != "" {
+				purl, err := packageurl.FromString(prop.Value)
+				if err != nil || purl.Type != "npm" {
+					continue
+				}
+				name := purl.Name
+				if purl.Namespace != "" {
+					name = "@" + purl.Namespace + "/" + purl.Name
+				}
+				nameToPath[name] = comp.BOMRef
+			}
+		}
+	}
+
+	if len(nameToPath) == 0 {
+		return
+	}
+
+	// Build existing dependency sets to avoid adding duplicate edges.
+	existing := make(map[string]map[string]struct{})
+	if bom.Dependencies != nil {
+		for _, dep := range *bom.Dependencies {
+			if dep.Dependencies == nil {
+				continue
+			}
+			set := make(map[string]struct{}, len(*dep.Dependencies))
+			for _, d := range *dep.Dependencies {
+				set[d] = struct{}{}
+			}
+			existing[dep.Ref] = set
+		}
+	}
+
+	// For each package.json file component, read it from disk and add edges
+	// to any sibling workspace packages found in its dependencies.
+	var newDeps []cyclonedx.Dependency
+	for _, comp := range *bom.Components {
+		if comp.Type != cyclonedx.ComponentTypeFile {
+			continue
+		}
+		if filepath.Base(comp.BOMRef) != "package.json" {
+			continue
+		}
+
+		var data []byte
+		for _, root := range rootDirs {
+			var readErr error
+			data, readErr = os.ReadFile(filepath.Join(root, comp.BOMRef))
+			if readErr == nil {
+				break
+			}
+		}
+		if data == nil {
+			continue
+		}
+
+		var pkg struct {
+			Dependencies    map[string]string `json:"dependencies"`
+			DevDependencies map[string]string `json:"devDependencies"`
+		}
+		if err := json.Unmarshal(data, &pkg); err != nil {
+			continue
+		}
+
+		existingSet := existing[comp.BOMRef]
+		var edges []string
+		for depName := range pkg.Dependencies {
+			if targetPath, ok := nameToPath[depName]; ok && targetPath != comp.BOMRef {
+				if _, already := existingSet[targetPath]; !already {
+					edges = append(edges, targetPath)
+				}
+			}
+		}
+		for depName := range pkg.DevDependencies {
+			if targetPath, ok := nameToPath[depName]; ok && targetPath != comp.BOMRef {
+				if _, already := existingSet[targetPath]; !already {
+					edges = append(edges, targetPath)
+				}
+			}
+		}
+
+		if len(edges) == 0 {
+			continue
+		}
+
+		if existingDep, ok := existing[comp.BOMRef]; ok {
+			// Merge into existing dependency entry using an index loop so the
+			// slice element is mutated in place (range-over-value gives a copy).
+			deps := *bom.Dependencies
+			for i := range deps {
+				if deps[i].Ref == comp.BOMRef {
+					updated := append(*deps[i].Dependencies, edges...)
+					deps[i].Dependencies = &updated
+
+					break
+				}
+			}
+			for _, e := range edges {
+				existingDep[e] = struct{}{}
+			}
+		} else {
+			newDeps = append(newDeps, cyclonedx.Dependency{
+				Ref:          comp.BOMRef,
+				Dependencies: &edges,
+			})
+		}
+	}
+
+	if len(newDeps) > 0 {
+		if bom.Dependencies == nil {
+			bom.Dependencies = &newDeps
+		} else {
+			updated := append(*bom.Dependencies, newDeps...)
+			bom.Dependencies = &updated
+		}
+	}
 }

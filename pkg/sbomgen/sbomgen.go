@@ -90,6 +90,10 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 		return nil, bomErr
 	}
 
+	if opts.ExtractArtifactIds {
+		AddNpmWorkspaceEdges(bom, dirs...)
+	}
+
 	var buf bytes.Buffer
 	encoder := cyclonedx.NewBOMEncoder(&buf, cyclonedx.BOMFileFormatJSON)
 	encoder.SetPretty(true)

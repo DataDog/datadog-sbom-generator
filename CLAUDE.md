@@ -14,6 +14,8 @@ UPDATE_SNAPS=true ./scripts/run_tests.sh # Update snapshots
 
 Pre-commit hooks run build, lint, and test on every commit (`pre-commit install` to set up).
 
+**Before every `git push`**: always run `./scripts/run_lints.sh` and fix any errors before pushing. Use `./scripts/run_lints.sh --fix` to auto-fix what's fixable.
+
 ## Architecture
 
 ```
