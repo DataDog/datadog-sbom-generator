@@ -34,7 +34,8 @@ go 1.21
 	require.NoError(t, err)
 	require.NotNil(t, artifact)
 
-	assert.Equal(t, "github.com/mycompany/svcA", artifact.Name)
+	assert.Equal(t, "github.com/mycompany/svcA", artifact.PackageName)
+	assert.Empty(t, artifact.Name)
 	assert.Equal(t, goModPath, artifact.Filename)
 	assert.Equal(t, models.EcosystemGo, artifact.Ecosystem)
 	assert.Empty(t, artifact.ProjectDeps)

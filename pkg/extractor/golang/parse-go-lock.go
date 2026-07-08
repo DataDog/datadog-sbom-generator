@@ -228,9 +228,9 @@ func (e GoLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanCont
 
 	artifact := &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
-			Name:      moduleName,
-			Filename:  f.Path(),
-			Ecosystem: models.EcosystemGo,
+			PackageName: moduleName,
+			Filename:    f.Path(),
+			Ecosystem:   models.EcosystemGo,
 		},
 	}
 

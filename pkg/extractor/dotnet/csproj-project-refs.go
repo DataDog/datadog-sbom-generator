@@ -27,16 +27,40 @@ func (e NuGetCsprojExtractor) GetArtifact(f extractor.DepFile, ctx extractor.Sca
 		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, err
 	}
 
+	var csProj NugetCsProj
+	if xmlErr := xml.Unmarshal(content, &csProj); xmlErr != nil {
+		return &models.ScannedArtifact{ArtifactDetail: models.ArtifactDetail{Filename: f.Path()}}, xmlErr
+	}
+
 	artifact := &models.ScannedArtifact{
 		ArtifactDetail: models.ArtifactDetail{
-			Filename:  f.Path(),
-			Ecosystem: models.EcosystemNuGet,
+			PackageName: extractCsprojPackageName(csProj, f.Path()),
+			Filename:    f.Path(),
+			Ecosystem:   models.EcosystemNuGet,
 		},
 	}
 
 	artifact.ProjectDeps = extractCsprojInternalDeps(content, f.Path())
 
 	return artifact, nil
+}
+
+// extractCsprojPackageName returns the project's package identity from a parsed
+// csproj. It checks <PackageId> first (the canonical NuGet package identity),
+// then falls back to <AssemblyName>, then to the csproj filename stem
+// (e.g. "App" for "App.csproj").
+func extractCsprojPackageName(csProj NugetCsProj, csprojPath string) string {
+	for _, name := range []string{"PackageId", "AssemblyName"} {
+		for _, pg := range csProj.PropertyGroups {
+			for _, prop := range pg.Properties {
+				if prop.XMLName.Local == name && prop.Value != "" {
+					return prop.Value
+				}
+			}
+		}
+	}
+
+	return strings.TrimSuffix(filepath.Base(csprojPath), ".csproj")
 }
 
 // extractCsprojInternalDeps parses csproj XML content and returns ArtifactDetail
@@ -113,10 +137,16 @@ func (e NuGetLockExtractor) GetArtifact(f extractor.DepFile, _ extractor.ScanCon
 			continue
 		}
 
+		var csProj NugetCsProj
+		if xmlErr := xml.Unmarshal(content, &csProj); xmlErr != nil {
+			continue
+		}
+
 		return &models.ScannedArtifact{
 			ArtifactDetail: models.ArtifactDetail{
-				Filename:  csprojPath,
-				Ecosystem: models.EcosystemNuGet,
+				PackageName: extractCsprojPackageName(csProj, csprojPath),
+				Filename:    csprojPath,
+				Ecosystem:   models.EcosystemNuGet,
 			},
 			ProjectDeps: extractCsprojInternalDeps(content, csprojPath),
 		}, nil
