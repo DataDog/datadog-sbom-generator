@@ -145,6 +145,7 @@ func Test_defaultIdentifierForModulePath(t *testing.T) {
 		{modulePath: "gopkg.in/check.v1", expected: "check"},
 		{modulePath: "github.com/redis/go-redis/v9", expected: "redis"},
 		{modulePath: "github.com/mattn/go-sqlite3", expected: "sqlite3"},
+		{modulePath: "github.com/CycloneDX/cyclonedx-go", expected: "cyclonedx"},
 	}
 
 	for _, tt := range tests {
