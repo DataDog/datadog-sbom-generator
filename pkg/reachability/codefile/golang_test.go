@@ -93,6 +93,26 @@ func main() {}
 `,
 			expected: map[string][]string{},
 		},
+		{
+			name: "blank import is not resolved to a default alias",
+			src: `package main
+
+import _ "github.com/foo/bar"
+
+func main() {}
+`,
+			expected: map[string][]string{},
+		},
+		{
+			name: "dot import is not resolved to a default alias",
+			src: `package main
+
+import . "github.com/foo/bar"
+
+func main() {}
+`,
+			expected: map[string][]string{},
+		},
 	}
 
 	for _, tt := range tests {

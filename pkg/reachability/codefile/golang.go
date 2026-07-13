@@ -20,6 +20,8 @@ const symbolTypeFunction = "function"
 const tsQueryForGoImports = `
 (import_spec
 	name: (package_identifier)? @alias
+	name: (dot)? @blankOrDotImport
+	name: (blank_identifier)? @blankOrDotImport
 	path: (interpreted_string_literal (interpreted_string_literal_content) @path))
 `
 
@@ -38,11 +40,12 @@ type ReachabilityGo struct {
 	importQuery *treesitter.Query
 	callQuery   *treesitter.Query
 
-	aliasCaptureIdx    uint
-	pathCaptureIdx     uint
-	pkgCaptureIdx      uint
-	fnCaptureIdx       uint
-	selectorCaptureIdx uint
+	aliasCaptureIdx      uint
+	blankOrDotCaptureIdx uint
+	pathCaptureIdx       uint
+	pkgCaptureIdx        uint
+	fnCaptureIdx         uint
+	selectorCaptureIdx   uint
 
 	reporter reporter.Reporter
 }
@@ -68,21 +71,23 @@ func NewGoReachableDetector(r reporter.Reporter) (*ReachabilityGo, error) {
 	}
 
 	aliasCaptureIdx, _ := importQuery.CaptureIndexForName("alias")
+	blankOrDotCaptureIdx, _ := importQuery.CaptureIndexForName("blankOrDotImport")
 	pathCaptureIdx, _ := importQuery.CaptureIndexForName("path")
 	pkgCaptureIdx, _ := callQuery.CaptureIndexForName("pkg")
 	fnCaptureIdx, _ := callQuery.CaptureIndexForName("fn")
 	selectorCaptureIdx, _ := callQuery.CaptureIndexForName("selector")
 
 	return &ReachabilityGo{
-		tsParser:           tsParser,
-		importQuery:        importQuery,
-		callQuery:          callQuery,
-		aliasCaptureIdx:    aliasCaptureIdx,
-		pathCaptureIdx:     pathCaptureIdx,
-		pkgCaptureIdx:      pkgCaptureIdx,
-		fnCaptureIdx:       fnCaptureIdx,
-		selectorCaptureIdx: selectorCaptureIdx,
-		reporter:           reporter.Effective(r),
+		tsParser:             tsParser,
+		importQuery:          importQuery,
+		callQuery:            callQuery,
+		aliasCaptureIdx:      aliasCaptureIdx,
+		blankOrDotCaptureIdx: blankOrDotCaptureIdx,
+		pathCaptureIdx:       pathCaptureIdx,
+		pkgCaptureIdx:        pkgCaptureIdx,
+		fnCaptureIdx:         fnCaptureIdx,
+		selectorCaptureIdx:   selectorCaptureIdx,
+		reporter:             reporter.Effective(r),
 	}, nil
 }
 
@@ -98,25 +103,29 @@ func (r *ReachabilityGo) Close() {
 // import path -> local identifiers used to reference that module in this file. Unaliased
 // imports are assigned a heuristic identifier: the last path segment, with a trailing
 // major-version suffix (e.g. "/v2") stripped, per Go module convention. Dot imports and blank
-// imports are not callable via a package selector (e.g. "pkg.Func"), so they never produce a
-// call-site match regardless of how they're keyed here.
+// imports are skipped entirely: they don't bind a package selector (e.g. "pkg.Func"), so
+// defaulting them to an identifier would risk matching an unrelated import that happens to
+// resolve to the same default alias.
 func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) map[string][]string {
 	moduleToAliases := make(map[string][]string)
 
 	matches := queryCursor.Matches(r.importQuery, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		var alias, modulePath string
+		var isBlankOrDotImport bool
 
 		for _, capture := range match.Captures {
 			switch capture.Index {
 			case uint32(r.aliasCaptureIdx): //nolint:gosec
 				alias = capture.Node.Utf8Text(fileContent)
+			case uint32(r.blankOrDotCaptureIdx): //nolint:gosec
+				isBlankOrDotImport = true
 			case uint32(r.pathCaptureIdx): //nolint:gosec
 				modulePath = capture.Node.Utf8Text(fileContent)
 			}
 		}
 
-		if modulePath == "" {
+		if modulePath == "" || isBlankOrDotImport {
 			continue
 		}
 
