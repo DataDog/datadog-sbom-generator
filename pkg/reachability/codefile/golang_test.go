@@ -143,6 +143,8 @@ func Test_defaultIdentifierForModulePath(t *testing.T) {
 		{modulePath: "singlesegment", expected: "singlesegment"},
 		{modulePath: "gopkg.in/yaml.v3", expected: "yaml"},
 		{modulePath: "gopkg.in/check.v1", expected: "check"},
+		{modulePath: "github.com/redis/go-redis/v9", expected: "redis"},
+		{modulePath: "github.com/mattn/go-sqlite3", expected: "sqlite3"},
 	}
 
 	for _, tt := range tests {

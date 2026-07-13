@@ -141,8 +141,11 @@ func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent
 
 // defaultIdentifierForModulePath derives the package identifier Go code would use for an
 // unaliased import, using the last path segment and stripping a trailing major-version suffix.
-// Two conventions are handled: the path-segment style (e.g. "github.com/foo/bar/v2" -> "bar")
-// and the dotted gopkg.in style (e.g. "gopkg.in/yaml.v3" -> "yaml").
+// Two version conventions are handled: the path-segment style (e.g. "github.com/foo/bar/v2" ->
+// "bar") and the dotted gopkg.in style (e.g. "gopkg.in/yaml.v3" -> "yaml"). A leading "go-"
+// repository-naming convention is also stripped (e.g. "github.com/redis/go-redis/v9" ->
+// "redis"), since Go identifiers can't contain hyphens, so a hyphenated segment is never the
+// real package name.
 func defaultIdentifierForModulePath(modulePath string) string {
 	segments := strings.Split(modulePath, "/")
 	identifier := segments[len(segments)-1]
@@ -152,6 +155,10 @@ func defaultIdentifierForModulePath(modulePath string) string {
 		identifier = segments[len(segments)-2]
 	case dottedMajorVersionSuffixPattern.MatchString(identifier):
 		identifier = identifier[:strings.LastIndex(identifier, ".")]
+	}
+
+	if rest, ok := strings.CutPrefix(identifier, "go-"); ok && rest != "" {
+		identifier = rest
 	}
 
 	return identifier
