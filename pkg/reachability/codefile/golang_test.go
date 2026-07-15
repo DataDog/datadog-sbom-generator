@@ -199,6 +199,30 @@ func Test_Detect_Go_FunctionSymbolFound(t *testing.T) {
 				},
 			},
 		},
+		"go- prefixed module import": {
+			path: "testdata/CVE-2025-5678/go-prefix-import/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/go-bar", Name: "Parse"},
+					},
+				},
+			},
+		},
+		"-go suffixed module import": {
+			path: "testdata/CVE-2025-5678/go-suffix-import/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar-go", Name: "Parse"},
+					},
+				},
+			},
+		},
 	}
 
 	for name, tc := range fixtures {
@@ -254,6 +278,40 @@ func Test_Detect_Go_NoMatchWhenFunctionNameDiffers(t *testing.T) {
 	err = detector.Detect(context.Background(), ".", "testdata/CVE-2025-5678/aliased-import/main.go", detectionResults, advisoriesToCheck)
 	require.NoError(t, err)
 	assert.Empty(t, detectionResults)
+}
+
+func Test_Detect_Go_BlankAndDotImportsNotReachable(t *testing.T) {
+	t.Parallel()
+
+	paths := map[string]string{
+		"blank import": "testdata/CVE-2025-5678/blank-import/main.go",
+		"dot import":   "testdata/CVE-2025-5678/dot-import/main.go",
+	}
+
+	for name, path := range paths {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+			require.NoError(t, err)
+			defer detector.Close()
+
+			advisoriesToCheck := []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar", Name: "Parse"},
+					},
+				},
+			}
+
+			detectionResults := models.DetectionResults{}
+			err = detector.Detect(context.Background(), ".", path, detectionResults, advisoriesToCheck)
+			require.NoError(t, err)
+			assert.Empty(t, detectionResults)
+		})
+	}
 }
 
 func Test_Detect_Go_UnknownSymbolType(t *testing.T) {
