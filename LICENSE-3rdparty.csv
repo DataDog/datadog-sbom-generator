@@ -4,6 +4,7 @@ core,github.com/BurntSushi/toml,MIT,Copyright (c) 2013 TOML authors
 core,github.com/BurntSushi/toml/internal,MIT,Copyright (c) 2013 TOML authors
 core,github.com/CycloneDX/cyclonedx-go,Apache-2.0,Copyright & License | Copyright (c) OWASP Foundation | Copyright (c) OWASP Foundation. All Rights Reserved | Copyright OWASP Foundation
 core,github.com/DataDog/jsonapi,Apache-2.0,"Copyright [2022-Present] Datadog, Inc"
+core,github.com/Masterminds/semver/v3,MIT,"Copyright (C) 2014-2019, Matt Butcher and Matt Farina"
 core,github.com/Microsoft/go-winio,MIT,Copyright (c) 2015 Microsoft
 core,github.com/Microsoft/go-winio/internal/fs,MIT,Copyright (c) 2015 Microsoft
 core,github.com/Microsoft/go-winio/internal/socket,MIT,Copyright (c) 2015 Microsoft
@@ -137,7 +138,6 @@ core,github.com/kevinburke/ssh_config,MIT,"Copyright (c) 2013 - 2017 Thomas Pell
 core,github.com/kr/pretty,MIT,Copyright 2012 Keith Rarick
 core,github.com/kr/text,MIT,Copyright 2012 Keith Rarick
 core,github.com/maruel/natural,Apache-2.0,Copyright 2018 Marc-Antoine Ruel
-core,github.com/Masterminds/semver/v3,MIT,"Copyright (C) 2014-2019, Matt Butcher and Matt Farina"
 core,github.com/mattn/go-pointer,MIT,Copyright (c) 2019 Yasuhiro Matsumoto
 core,github.com/mattn/go-runewidth,MIT,Copyright (c) 2016 Yasuhiro Matsumoto
 core,github.com/package-url/packageurl-go,MIT,Copyright (c) the purl authors
@@ -155,6 +155,7 @@ core,github.com/tidwall/match,MIT,Copyright (c) 2016 Josh Baker
 core,github.com/tidwall/pretty,MIT,Copyright (c) 2017 Josh Baker
 core,github.com/tidwall/sjson,MIT,Copyright (c) 2016 Josh Baker
 core,github.com/tree-sitter/go-tree-sitter,MIT,Copyright (c) 2024 Amaan Qureshi <amaanq12@gmail.com>
+core,github.com/tree-sitter/tree-sitter-go/bindings/go,MIT,Copyright (c) 2014 Max Brunsfeld
 core,github.com/tree-sitter/tree-sitter-java/bindings/go,MIT,Copyright (c) 2017 Ayman Nadeem
 core,github.com/tree-sitter/tree-sitter-ruby/bindings/go,MIT,Copyright (c) 2016 Rob Rix
 core,github.com/urfave/cli/v2,MIT,Copyright (c) 2022 urfave/cli maintainers
