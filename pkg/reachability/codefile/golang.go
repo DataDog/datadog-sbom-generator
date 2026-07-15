@@ -32,7 +32,7 @@ const tsQueryForGoCall = `
 		field: (field_identifier) @fn) @selector)
 `
 
-var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v[0-9]+$`)
+var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v([2-9]|[1-9][0-9]+)$`)
 var dottedMajorVersionSuffixPattern = cachedregexp.MustCompile(`\.v[0-9]+$`)
 
 type ReachabilityGo struct {
@@ -142,10 +142,13 @@ func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent
 // defaultIdentifierForModulePath derives the package identifier Go code would use for an
 // unaliased import, using the last path segment and stripping a trailing major-version suffix.
 // Two version conventions are handled: the path-segment style (e.g. "github.com/foo/bar/v2" ->
-// "bar") and the dotted gopkg.in style (e.g. "gopkg.in/yaml.v3" -> "yaml"). Leading "go-" and
-// trailing "-go" repository-naming conventions are also stripped (e.g. "github.com/redis/go-redis/v9"
-// -> "redis", "github.com/CycloneDX/cyclonedx-go" -> "cyclonedx"), since Go identifiers can't
-// contain hyphens, so a hyphenated segment is never the real package name.
+// "bar") and the dotted gopkg.in style (e.g. "gopkg.in/yaml.v3" -> "yaml"). The path-segment style
+// only strips "v2" and above: Go's semantic-import-versioning convention never produces a "v0" or
+// "v1" module-major-version suffix, so a trailing "v0"/"v1" segment (e.g. "k8s.io/api/core/v1") is
+// always a real package name, not a version marker. Leading "go-" and trailing "-go"
+// repository-naming conventions are also stripped (e.g. "github.com/redis/go-redis/v9" -> "redis",
+// "github.com/CycloneDX/cyclonedx-go" -> "cyclonedx"), since Go identifiers can't contain hyphens,
+// so a hyphenated segment is never the real package name.
 func defaultIdentifierForModulePath(modulePath string) string {
 	segments := strings.Split(modulePath, "/")
 	identifier := segments[len(segments)-1]

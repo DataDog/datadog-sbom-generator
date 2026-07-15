@@ -139,6 +139,8 @@ func Test_defaultIdentifierForModulePath(t *testing.T) {
 		{modulePath: "github.com/foo/bar", expected: "bar"},
 		{modulePath: "github.com/foo/bar/v2", expected: "bar"},
 		{modulePath: "github.com/foo/bar/v10", expected: "bar"},
+		{modulePath: "k8s.io/api/core/v1", expected: "v1"},
+		{modulePath: "github.com/foo/bar/v0", expected: "v0"},
 		{modulePath: "rsc.io/quote", expected: "quote"},
 		{modulePath: "singlesegment", expected: "singlesegment"},
 		{modulePath: "gopkg.in/yaml.v3", expected: "yaml"},
