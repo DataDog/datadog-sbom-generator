@@ -17,17 +17,26 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// languageKeyGo and languageKeyJava are the language keys used to route vulnerable symbols to
+// the correct reachability detector. They're shared across extensionToLanguageKey,
+// languageKeyToDetectorFactory, and purlTypeToLanguageKey (utils.go) so a typo in one map can't
+// silently drift from the others.
+const (
+	languageKeyGo   = "go"
+	languageKeyJava = "java"
+)
+
 // extensionToLanguageKey maps a file extension to the language key used both to look up
 // advisories to check and to select a detector pool.
 var extensionToLanguageKey = map[string]string{
-	".java": "java",
-	".go":   "go",
+	".java": languageKeyJava,
+	".go":   languageKeyGo,
 }
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
-	"java": func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
-	"go":   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
+	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
+	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
 }
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.

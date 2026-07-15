@@ -11,8 +11,8 @@ import (
 // purlTypeToLanguageKey maps a PURL type to the language key used to route vulnerable symbols
 // to the correct reachability detector.
 var purlTypeToLanguageKey = map[string]string{
-	packageurl.TypeMaven:  "java",
-	packageurl.TypeGolang: "go",
+	packageurl.TypeMaven:  languageKeyJava,
+	packageurl.TypeGolang: languageKeyGo,
 }
 
 // getAdvisoriesToCheckPerLanguage returns a map of language to advisories with symbols to check.
