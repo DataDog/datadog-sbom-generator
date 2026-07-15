@@ -1,7 +1,7 @@
 ## What problem are you trying to solve?
 
 - TODO
-- [JIRA-TICKET]()
+- [JIRA-TICKET](<>)
 
 ## What is your solution?
 
