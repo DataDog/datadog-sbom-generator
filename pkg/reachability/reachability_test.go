@@ -57,6 +57,41 @@ public class ExampleApp {
   }
 }`
 
+const vulnerableGoSymbolsResponse = `{
+	"data": {
+		"id": "833c8b78-f95d-11ef-a104-9ec2f3c6472d",
+		"type": "resolve-vulnerable-symbols-response",
+		"attributes": {
+			"results": [
+				{
+					"purl": "pkg:golang/github.com/foo/bar@1.2.3",
+					"vulnerable_symbols": [
+						{
+							"advisory_id": "CVE-2025-5678",
+							"symbols": [
+								{
+									"type": "function",
+									"value": "github.com/foo/bar",
+									"name": "Parse"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}`
+
+const vulnerableGoFile = `package main
+
+import bar "github.com/foo/bar"
+
+func main() {
+	bar.Parse("x")
+}
+`
+
 func Test_PerformReachabilityAnalysis(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
@@ -64,7 +99,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -127,7 +162,7 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -175,7 +210,7 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 
 	// Create a mock server to simulate the API response
 	// The server will return a successful response with the vulnerable symbols
-	mockServer := createMockServer(http.StatusOK, vulnerableSymbolsResponse)
+	mockServer := createMockServer(vulnerableSymbolsResponse)
 	defer mockServer.Close()
 
 	// Create a temporary directory with a mock Java file
@@ -217,9 +252,66 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func createMockServer(statusCode int, data string) *httptest.Server {
+func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableGoSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	err := os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	mockGoFile := filepath.Join(tempDir, "subdir", "main.go")
+	err = os.WriteFile(mockGoFile, []byte(vulnerableGoFile), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:golang/github.com/foo/bar@1.2.3": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-2025-5678"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{
+						AdvisoryID: "CVE-2025-5678",
+						ReachableSymbolLocations: []models.ReachableSymbolLocation{
+							{
+								Symbol: "bar.Parse",
+								PackageLocation: models.PackageLocation{
+									Filename:    "subdir/main.go",
+									LineStart:   6,
+									LineEnd:     6,
+									ColumnStart: 2,
+									ColumnEnd:   11,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func createMockServer(data string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(statusCode)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(data))
 	}))
 }
