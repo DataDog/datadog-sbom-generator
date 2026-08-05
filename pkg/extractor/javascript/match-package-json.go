@@ -65,8 +65,13 @@ func (depMap *packageJSONDependencyMap) UnmarshalJSON(data []byte) error {
 		}
 
 		if (depMap.RootType == typeDevDependencies || depMap.RootType == typeOptionalDependencies) && pkg.LocationRole == models.LocationRoleManifest {
-			// If it is a dev or optional dependency definition and we already found a manifest location,
-			// we skip it to prioritize non-dev dependencies
+			// If it is a dev or optional dependency definition and this package was already
+			// matched to a manifest location (e.g. the root package.json "dependencies" section,
+			// or an earlier workspace package.json), skip the overwrite to prioritize the
+			// non-dev/non-optional manifest location.
+			// We check LocationRole rather than BlockLocation.Filename so that cross-workspace
+			// matches are also guarded: a root prod-dep match sets LocationRole=manifest, and
+			// a subsequent workspace dev-dep section for the same package must not overwrite it.
 			pkgIndexes = []int{}
 		}
 		depMap.UpdatePackageDetails(pkg, packageJSONContent, pkgIndexes, depGroup)
