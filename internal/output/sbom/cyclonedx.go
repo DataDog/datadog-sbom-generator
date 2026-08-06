@@ -100,6 +100,9 @@ func addLocations(component *cyclonedx.Component, details models.PackageVulns) {
 		seenLocations[jsonLocation] = struct{}{}
 	}
 	if len(occurrences) > 0 {
+		slices.SortFunc(occurrences, func(a, b cyclonedx.EvidenceOccurrence) int {
+			return strings.Compare(a.Location, b.Location)
+		})
 		component.Evidence = &cyclonedx.Evidence{Occurrences: &occurrences}
 	}
 }
