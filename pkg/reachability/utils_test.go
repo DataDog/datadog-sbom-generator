@@ -5,6 +5,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +20,7 @@ func Test_getAdvisoriesToCheckPerLanguage_NoAdvisoriesToCheck(t *testing.T) {
 
 	expected := models.AdvisoriesToCheckPerLanguage{}
 
-	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resolveVulnerableSymbolsResponse)
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
 
 	assert.Equal(t, expected, advisoriesToCheckPerLanguage)
 }
@@ -121,7 +122,88 @@ func Test_getAdvisoriesToCheckPerLanguage_HasAdvisoriesToCheck(t *testing.T) {
 		},
 	}
 
-	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resolveVulnerableSymbolsResponse)
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
+
+	assert.Equal(t, expected, advisoriesToCheckPerLanguage)
+}
+
+func Test_getAdvisoriesToCheckPerLanguage_GoPurlRoutesToGoLanguage(t *testing.T) {
+	t.Parallel()
+
+	resolveVulnerableSymbolsResponse := http.ResolveVulnerableSymbolsResponse{
+		ID: "testing-123",
+		Results: []http.SymbolsForPurl{
+			{
+				Purl: "pkg:golang/github.com/foo/bar@1.2.3",
+				VulnerableSymbols: []http.SymbolDetails{
+					{
+						AdvisoryID: "CVE-2025-5678",
+						Symbols: []http.Symbol{
+							{
+								Type:  "function",
+								Value: "github.com/foo/bar",
+								Name:  "Parse",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	expected := models.AdvisoriesToCheckPerLanguage{
+		"go": {
+			{
+				Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+				AdvisoryID: "CVE-2025-5678",
+				Symbols: []models.Symbols{
+					{
+						Type:  "function",
+						Value: "github.com/foo/bar",
+						Name:  "Parse",
+					},
+				},
+			},
+		},
+	}
+
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
+
+	assert.Equal(t, expected, advisoriesToCheckPerLanguage)
+}
+
+func Test_getAdvisoriesToCheckPerLanguage_UnsupportedOrMalformedPurlsAreSkipped(t *testing.T) {
+	t.Parallel()
+
+	resolveVulnerableSymbolsResponse := http.ResolveVulnerableSymbolsResponse{
+		ID: "testing-123",
+		Results: []http.SymbolsForPurl{
+			{
+				Purl: "pkg:npm/lodash@4.17.21",
+				VulnerableSymbols: []http.SymbolDetails{
+					{
+						AdvisoryID: "CVE-2025-1111",
+						Symbols: []http.Symbol{
+							{Type: "function", Value: "lodash", Name: "merge"},
+						},
+					},
+				},
+			},
+			{
+				Purl: "not-a-purl",
+				VulnerableSymbols: []http.SymbolDetails{
+					{
+						AdvisoryID: "CVE-2025-2222",
+						Symbols:    []http.Symbol{{Type: "function", Value: "x", Name: "y"}},
+					},
+				},
+			},
+		},
+	}
+
+	expected := models.AdvisoriesToCheckPerLanguage{}
+
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
 
 	assert.Equal(t, expected, advisoriesToCheckPerLanguage)
 }

@@ -17,6 +17,28 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// languageKeyGo and languageKeyJava are the language keys used to route vulnerable symbols to
+// the correct reachability detector. They're shared across extensionToLanguageKey,
+// languageKeyToDetectorFactory, and purlTypeToLanguageKey (utils.go) so a typo in one map can't
+// silently drift from the others.
+const (
+	languageKeyGo   = "go"
+	languageKeyJava = "java"
+)
+
+// extensionToLanguageKey maps a file extension to the language key used both to look up
+// advisories to check and to select a detector pool.
+var extensionToLanguageKey = map[string]string{
+	".java": languageKeyJava,
+	".go":   languageKeyGo,
+}
+
+// languageKeyToDetectorFactory constructs a new Detector for a given language key.
+var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
+	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
+	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
+}
+
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
 func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
 	r.Infof("[reachability] Fetching symbols...")
@@ -28,32 +50,38 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 		return models.ReachabilityAnalysis{}
 	}
 
-	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(resp)
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(r, resp)
 
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
 
 	workerCount := runtime.NumCPU()
-	detectorPool := make(chan *codefile.ReachabilityJava, workerCount)
 
-	eg, ctx := errgroup.WithContext(context.Background())
-	eg.SetLimit(workerCount)
-
-	for range workerCount {
-		detector, err := codefile.NewJavaReachableDetector(r)
-		if err != nil {
-			r.Errorf("[reachability] Failed to create Java reachability detector: %v", err)
-			return models.ReachabilityAnalysis{}
+	detectorPools := make(map[string]chan codefile.Detector, len(languageKeyToDetectorFactory))
+	for languageKey, factory := range languageKeyToDetectorFactory {
+		pool := make(chan codefile.Detector, workerCount)
+		for range workerCount {
+			detector, err := factory(r)
+			if err != nil {
+				r.Errorf("[reachability] Failed to create %s reachability detector: %v", languageKey, err)
+				return models.ReachabilityAnalysis{}
+			}
+			pool <- detector
 		}
-		detectorPool <- detector
+		detectorPools[languageKey] = pool
 	}
 
 	defer func() {
-		close(detectorPool)
-		for detector := range detectorPool {
-			detector.Close()
+		for _, pool := range detectorPools {
+			close(pool)
+			for detector := range pool {
+				detector.Close()
+			}
 		}
 	}()
+
+	eg, ctx := errgroup.WithContext(context.Background())
+	eg.SetLimit(workerCount)
 
 	for _, dir := range directoryPaths {
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
@@ -92,39 +120,45 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 				return nil
 			}
 
-			switch filepath.Ext(d.Name()) {
-			case ".java":
-				eg.Go(func() error {
-					// Get a detector from the pool
-					detector := <-detectorPool
-					// Return detector to pool after it's finished
-					defer func() {
-						detectorPool <- detector
-					}()
-
-					localResults := make(models.DetectionResults)
-					err := detector.Detect(ctx, dir, path, localResults, advisoriesToCheckPerLanguage["java"])
-					if err != nil {
-						return err
-					}
-
-					// Merge local results back to main detectionResults with mutex protection
-					detectionMutex.Lock()
-					for purl, advisoryMap := range localResults {
-						if _, exists := detectionResults[purl]; !exists {
-							detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
-						}
-						for advisoryID, locations := range advisoryMap {
-							detectionResults[purl][advisoryID] = append(detectionResults[purl][advisoryID], locations...)
-						}
-					}
-					detectionMutex.Unlock()
-
-					return nil
-				})
-			default:
+			languageKey, supported := extensionToLanguageKey[filepath.Ext(d.Name())]
+			if !supported {
 				return nil
 			}
+
+			if len(advisoriesToCheckPerLanguage[languageKey]) == 0 {
+				return nil
+			}
+
+			pool := detectorPools[languageKey]
+
+			eg.Go(func() error {
+				// Get a detector from the pool
+				detector := <-pool
+				// Return detector to pool after it's finished
+				defer func() {
+					pool <- detector
+				}()
+
+				localResults := make(models.DetectionResults)
+				err := detector.Detect(ctx, dir, path, localResults, advisoriesToCheckPerLanguage[languageKey])
+				if err != nil {
+					return err
+				}
+
+				// Merge local results back to main detectionResults with mutex protection
+				detectionMutex.Lock()
+				for purl, advisoryMap := range localResults {
+					if _, exists := detectionResults[purl]; !exists {
+						detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
+					}
+					for advisoryID, locations := range advisoryMap {
+						detectionResults[purl][advisoryID] = append(detectionResults[purl][advisoryID], locations...)
+					}
+				}
+				detectionMutex.Unlock()
+
+				return nil
+			})
 
 			return err
 		})

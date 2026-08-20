@@ -3,14 +3,36 @@ package reachability
 import (
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+
+	"github.com/package-url/packageurl-go"
 )
 
+// purlTypeToLanguageKey maps a PURL type to the language key used to route vulnerable symbols
+// to the correct reachability detector.
+var purlTypeToLanguageKey = map[string]string{
+	packageurl.TypeMaven:  languageKeyJava,
+	packageurl.TypeGolang: languageKeyGo,
+}
+
 // getAdvisoriesToCheckPerLanguage returns a map of language to advisories with symbols to check.
-func getAdvisoriesToCheckPerLanguage(resp http.ResolveVulnerableSymbolsResponse) models.AdvisoriesToCheckPerLanguage {
+// PURLs that fail to parse, or whose type has no known reachability detector, are skipped with
+// a warning rather than aborting the whole reachability pass.
+func getAdvisoriesToCheckPerLanguage(r reporter.Reporter, resp http.ResolveVulnerableSymbolsResponse) models.AdvisoriesToCheckPerLanguage {
 	output := models.AdvisoriesToCheckPerLanguage{}
 
 	for _, result := range resp.Results {
-		language := "java"
+		parsedPurl, err := packageurl.FromString(result.Purl)
+		if err != nil {
+			r.Warnf("[reachability] Skipping %s: failed to parse PURL: %v", result.Purl, err)
+			continue
+		}
+
+		language, languageSupported := purlTypeToLanguageKey[parsedPurl.Type]
+		if !languageSupported {
+			r.Warnf("[reachability] Skipping %s: no reachability support for PURL type %s", result.Purl, parsedPurl.Type)
+			continue
+		}
 
 		// Initialize a slice for the language if it doesn't exist
 		if _, languageExists := output[language]; !languageExists {
