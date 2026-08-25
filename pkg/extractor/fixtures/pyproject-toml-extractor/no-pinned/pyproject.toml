@@ -2,7 +2,7 @@
 name = "my-app"
 version = "1.0.0"
 dependencies = [
-    "requests>=2.28",
-    "flask~=2.3",
+    "requests>=2.34.2",
+    "flask~=2.3.3",
     "numpy",
 ]
