@@ -11,5 +11,10 @@
   },
   "devDependencies": {
     "group-dependencies": "0.0.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup-plugin-terser@7.0.2>rollup": "^2.80.0"
+    }
   }
 }
