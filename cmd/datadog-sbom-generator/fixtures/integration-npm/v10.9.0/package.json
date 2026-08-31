@@ -9,5 +9,134 @@
     },
     "devDependencies": {
         "debug": "2.5.2"
+    },
+    "overrides": {
+        "@typescript-eslint/eslint-plugin": {
+            "@typescript-eslint/parser": {
+                "eslint": {
+                    "js-yaml": "^4.3.2",
+                    "@eslint/eslintrc": {
+                        "js-yaml": "^4.3.2"
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "flatted": "^3.4.4"
+                        }
+                    }
+                },
+                "@typescript-eslint/typescript-estree": {
+                    "globby": {
+                        "fast-glob": {
+                            "micromatch": {
+                                "picomatch": "^2.3.2"
+                            }
+                        }
+                    }
+                }
+            },
+            "@typescript-eslint/type-utils": {
+                "@typescript-eslint/utils": {
+                    "@eslint-community/eslint-utils": {
+                        "eslint": {
+                            "js-yaml": "^4.3.2",
+                            "@eslint/eslintrc": {
+                                "js-yaml": "^4.3.2"
+                            },
+                            "file-entry-cache": {
+                                "flat-cache": {
+                                    "flatted": "^3.4.4"
+                                }
+                            }
+                        }
+                    },
+                    "eslint": {
+                        "js-yaml": "^4.3.2",
+                        "@eslint/eslintrc": {
+                            "js-yaml": "^4.3.2"
+                        },
+                        "file-entry-cache": {
+                            "flat-cache": {
+                                "flatted": "^3.4.4"
+                            }
+                        }
+                    },
+                    "@typescript-eslint/typescript-estree": {
+                        "globby": {
+                            "fast-glob": {
+                                "micromatch": {
+                                    "picomatch": "^2.3.2"
+                                }
+                            }
+                        }
+                    }
+                },
+                "eslint": {
+                    "js-yaml": "^4.3.2",
+                    "@eslint/eslintrc": {
+                        "js-yaml": "^4.3.2"
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "flatted": "^3.4.4"
+                        }
+                    }
+                },
+                "@typescript-eslint/typescript-estree": {
+                    "globby": {
+                        "fast-glob": {
+                            "micromatch": {
+                                "picomatch": "^2.3.2"
+                            }
+                        }
+                    }
+                }
+            },
+            "@typescript-eslint/utils": {
+                "@eslint-community/eslint-utils": {
+                    "eslint": {
+                        "js-yaml": "^4.3.2",
+                        "@eslint/eslintrc": {
+                            "js-yaml": "^4.3.2"
+                        },
+                        "file-entry-cache": {
+                            "flat-cache": {
+                                "flatted": "^3.4.4"
+                            }
+                        }
+                    }
+                },
+                "eslint": {
+                    "js-yaml": "^4.3.2",
+                    "@eslint/eslintrc": {
+                        "js-yaml": "^4.3.2"
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "flatted": "^3.4.4"
+                        }
+                    }
+                },
+                "@typescript-eslint/typescript-estree": {
+                    "globby": {
+                        "fast-glob": {
+                            "micromatch": {
+                                "picomatch": "^2.3.2"
+                            }
+                        }
+                    }
+                }
+            },
+            "eslint": {
+                "js-yaml": "^4.3.2",
+                "@eslint/eslintrc": {
+                    "js-yaml": "^4.3.2"
+                },
+                "file-entry-cache": {
+                    "flat-cache": {
+                        "flatted": "^3.4.4"
+                    }
+                }
+            }
+        }
     }
 }
