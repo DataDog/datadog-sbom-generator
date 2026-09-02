@@ -30,20 +30,20 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 
 #### Flags
 
-| Flag                       | Aliases | Default         | Description                                                       |
-| -------------------------- | ------- | --------------- | ----------------------------------------------------------------- |
-| `--format`                 | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                 |
-| `--output`                 | `-o`    | stdout          | Save output to specified file path                                |
-| `--verbosity`              | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`         |
-| `--not-recursive`          |         | `false`         | Do not scan subdirectories                                        |
-| `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                         |
-| `--reachability`           |         | `false`         | Enable reachability analysis                                      |
-| `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below) |
-| `--exclude`                |         | (none)          | Exclude paths using glob patterns (relative to scanned directory) |
+| Flag                       | Aliases | Default         | Description                                                        |
+| -------------------------- | ------- | --------------- | ------------------------------------------------------------------ |
+| `--format`                 | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                  |
+| `--output`                 | `-o`    | stdout          | Save output to specified file path                                 |
+| `--verbosity`              | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`          |
+| `--not-recursive`          |         | `false`         | Do not scan subdirectories                                         |
+| `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                          |
+| `--reachability`           |         | `false`         | Enable reachability analysis                                       |
+| `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below)  |
+| `--exclude`                |         | (none)          | Exclude paths using glob patterns (relative to scanned directory)  |
 | `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned |
-| `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`         |
-| `--pretty`                 |         | `false`         | Format JSON output with indentation                               |
-| `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails         |
+| `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`          |
+| `--pretty`                 |         | `false`         | Format JSON output with indentation                                |
+| `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails          |
 
 #### Examples
 
