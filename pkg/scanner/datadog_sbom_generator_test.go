@@ -309,6 +309,37 @@ func Test_sanitizeScannedPackages_VersionRangesAreAllowed(t *testing.T) {
 	assert.Equal(t, "pkg:pypi/requests", sanitizedPackages[0].PURL)
 }
 
+func Test_DoScan_ExcludeEcosystemAndExcludePackageFlags(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600))
+
+	baseActions := ScannerActions{
+		DirectoryPaths: []string{tempDir},
+		Recursive:      true,
+	}
+
+	// No exclusions: the lodash package from package-lock.json is found.
+	results, err := DoScan(baseActions, &reporter.VoidReporter{})
+	require.NoError(t, err)
+	require.Len(t, results.Results, 1)
+	require.Len(t, results.Results[0].Packages, 1)
+	assert.Equal(t, "lodash", results.Results[0].Packages[0].Package.Name)
+
+	// --exclude-ecosystem drops every npm package, leaving nothing to scan.
+	ecosystemExcludedActions := baseActions
+	ecosystemExcludedActions.ExcludeEcosystems = []string{"npm"}
+	_, err = DoScan(ecosystemExcludedActions, &reporter.VoidReporter{})
+	require.ErrorIs(t, err, NoPackagesFoundErr)
+
+	// --exclude-package drops the single lodash package, leaving nothing to scan.
+	packageExcludedActions := baseActions
+	packageExcludedActions.ExcludePackages = []string{"npm:lodash"}
+	_, err = DoScan(packageExcludedActions, &reporter.VoidReporter{})
+	require.ErrorIs(t, err, NoPackagesFoundErr)
+}
+
 func Test_filterIgnoredPackages_NoConfigReturnsAllPackages(t *testing.T) {
 	t.Parallel()
 

@@ -29,7 +29,10 @@ Examples:
 	datadog-sbom-generator scan --verbosity verbose .
 
 	# Exclude specific paths from being scanned
-	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .`,
+	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .
+
+	# Exclude specific ecosystems and packages from being scanned
+	datadog-sbom-generator scan --exclude-ecosystem "npm,Go" --exclude-package "npm:lodash" .`,
 		Description: "scans various package managers for dependencies and produce an SBOM",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -85,6 +88,14 @@ Examples:
 				Name:  "exclude",
 				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
 			},
+			&cli.StringSliceFlag{
+				Name:  "exclude-ecosystem",
+				Usage: "exclude packages from an ecosystem (e.g. npm, Go, PyPI) from being scanned; unioned with sca.ignore-ecosystems from the unified config",
+			},
+			&cli.StringSliceFlag{
+				Name:  "exclude-package",
+				Usage: "exclude a package at any version from being scanned, in \"<ecosystem>:<name>\" form (e.g. npm:lodash); unioned with sca.ignore-packages from the unified config",
+			},
 			&cli.BoolFlag{
 				Name:  "pretty",
 				Usage: "format output with indentation and newlines for readability",
@@ -135,6 +146,8 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		Reachability:        context.Bool("reachability"),
 		DirectoryPaths:      context.Args().Slice(),
 		ExcludePaths:        context.StringSlice("exclude"),
+		ExcludeEcosystems:   context.StringSlice("exclude-ecosystem"),
+		ExcludePackages:     context.StringSlice("exclude-package"),
 		EnableParsers:       context.StringSlice("enable-parsers"),
 		ManifestParsers:     context.Bool("manifest-parsers"),
 		ExitOnConfigFailure: context.Bool("exit-on-config-failure"),
