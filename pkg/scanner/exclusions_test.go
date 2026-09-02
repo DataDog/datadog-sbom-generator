@@ -7,6 +7,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/javascript"
+	extractorpython "github.com/DataDog/datadog-sbom-generator/pkg/extractor/python"
 	extractorsystem "github.com/DataDog/datadog-sbom-generator/pkg/extractor/system"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -169,6 +170,12 @@ func TestEcosystemForExtractor(t *testing.T) {
 			name:      "apk extractor resolves to Alpine despite an Unknown package manager",
 			extractor: extractorsystem.ApkExtractor,
 			expected:  models.EcosystemAlpine,
+			expectOK:  true,
+		},
+		{
+			name:      "pyproject.toml extractor resolves to PyPI despite an Unknown package manager",
+			extractor: extractorpython.PyProjectExtractor,
+			expected:  models.EcosystemPyPI,
 			expectOK:  true,
 		},
 		{

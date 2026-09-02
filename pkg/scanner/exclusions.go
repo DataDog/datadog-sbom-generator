@@ -4,6 +4,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+	extractorpython "github.com/DataDog/datadog-sbom-generator/pkg/extractor/python"
 	extractorsystem "github.com/DataDog/datadog-sbom-generator/pkg/extractor/system"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -72,6 +73,8 @@ func ecosystemForExtractor(ext extractor.Extractor) (models.Ecosystem, bool) {
 		return models.EcosystemDebian, true
 	case extractorsystem.ApkInstalledExtractor:
 		return models.EcosystemAlpine, true
+	case extractorpython.PyProjectTOMLExtractor:
+		return models.EcosystemPyPI, true
 	case extractor.CSVExtractor, extractor.OSVScannerResultsExtractor:
 		return "", false
 	}
