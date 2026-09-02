@@ -10,6 +10,10 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
+// packageExclusionSeparator separates the ecosystem from the package name in a
+// sca.ignore-packages entry, e.g. "npm:lodash".
+const packageExclusionSeparator = ":"
+
 type exclusionMatch struct {
 	pattern string
 	source  exclusionSource
@@ -104,4 +108,23 @@ func matchEcosystemExclusion(ext extractor.Extractor, configExcludeEcosystems []
 	}
 
 	return false, ""
+}
+
+// matchPackageExclusion checks a scanned package's "<ecosystem>:<name>" identity against the
+// unified configuration's ignore-packages set. Matching ignores the package version, so an
+// entry excludes the package at any version.
+func matchPackageExclusion(pkg extractor.PackageDetails, configExcludePackages []string) bool {
+	if len(configExcludePackages) == 0 {
+		return false
+	}
+
+	key := string(pkg.Ecosystem) + packageExclusionSeparator + pkg.Name
+
+	for _, excluded := range configExcludePackages {
+		if excluded == key {
+			return true
+		}
+	}
+
+	return false
 }

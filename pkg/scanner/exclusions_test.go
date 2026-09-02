@@ -259,3 +259,48 @@ func TestMatchEcosystemExclusion(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchPackageExclusion(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                  string
+		pkg                   extractor.PackageDetails
+		configExcludePackages []string
+		expectedMatched       bool
+	}{
+		{
+			name:                  "no configured packages never match",
+			pkg:                   extractor.PackageDetails{Ecosystem: models.EcosystemNPM, Name: "lodash", Version: "4.17.21"},
+			configExcludePackages: nil,
+			expectedMatched:       false,
+		},
+		{
+			name:                  "matches configured ecosystem:name regardless of version",
+			pkg:                   extractor.PackageDetails{Ecosystem: models.EcosystemNPM, Name: "lodash", Version: "4.17.21"},
+			configExcludePackages: []string{"npm:lodash"},
+			expectedMatched:       true,
+		},
+		{
+			name:                  "does not match unrelated package",
+			pkg:                   extractor.PackageDetails{Ecosystem: models.EcosystemNPM, Name: "lodash", Version: "4.17.21"},
+			configExcludePackages: []string{"npm:express"},
+			expectedMatched:       false,
+		},
+		{
+			name:                  "does not match same name in a different ecosystem",
+			pkg:                   extractor.PackageDetails{Ecosystem: models.EcosystemGo, Name: "lodash", Version: "1.0.0"},
+			configExcludePackages: []string{"npm:lodash"},
+			expectedMatched:       false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			matched := matchPackageExclusion(tt.pkg, tt.configExcludePackages)
+			assert.Equal(t, tt.expectedMatched, matched)
+		})
+	}
+}

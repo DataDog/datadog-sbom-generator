@@ -30,7 +30,7 @@ func TestFetchExclusionsUsesLocalConfigWithoutAuth(t *testing.T) {
 	_, err := git.PlainInit(dir, false)
 	require.NoError(t, err)
 
-	localConfig := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - vendor/**\n  ignore-ecosystems:\n    - npm\n"
+	localConfig := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - vendor/**\n  ignore-ecosystems:\n    - npm\n  ignore-packages:\n    - Go:golang.org/x/text\n"
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(localConfig), testFilePerms))
 
 	ctrl := gomock.NewController(t)
@@ -42,6 +42,7 @@ func TestFetchExclusionsUsesLocalConfigWithoutAuth(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []string{"vendor/**"}, exclusions.Paths)
 	assert.Equal(t, []string{"npm"}, exclusions.Ecosystems)
+	assert.Equal(t, []string{"Go:golang.org/x/text"}, exclusions.Packages)
 	assert.Equal(t, dir, repoRoot)
 }
 
