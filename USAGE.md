@@ -40,6 +40,8 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 | `--reachability`           |         | `false`         | Enable reachability analysis                                      |
 | `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below) |
 | `--exclude`                |         | (none)          | Exclude paths using glob patterns (relative to scanned directory) |
+| `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned |
+| `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`         |
 | `--pretty`                 |         | `false`         | Format JSON output with indentation                               |
 | `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails         |
 
@@ -68,6 +70,12 @@ datadog-sbom-generator scan --output sbom.json --pretty .
 # Exclude paths (relative to scanned directory)
 datadog-sbom-generator scan --exclude "node_modules/**,test/**" .
 
+# Exclude ecosystems from being scanned
+datadog-sbom-generator scan --exclude-ecosystem "npm,Go" .
+
+# Exclude specific packages, at any version, from being scanned
+datadog-sbom-generator scan --exclude-package "npm:lodash,Go:golang.org/x/text" .
+
 # Only scan specific parsers by language
 datadog-sbom-generator scan --enable-parsers javascript,python .
 
@@ -80,7 +88,7 @@ datadog-sbom-generator scan --enable-parsers "package-lock.json,yarn.lock" .
 
 **Unified configuration:**
 
-The scanner automatically reads `code-security.datadog.yaml` (or `.yml`) from the repository root and applies any `sca.ignore-paths` exclusions. When Datadog authentication is available (`DD_API_KEY` + `DD_APP_KEY`), the local config is sent to the Datadog API and merged with org- and repo-level settings before exclusions are applied.
+The scanner automatically reads `code-security.datadog.yaml` (or `.yml`) from the repository root and applies any `sca.ignore-paths`, `sca.ignore-ecosystems`, and `sca.ignore-packages` exclusions. `--exclude-ecosystem` and `--exclude-package` are unioned with the config-sourced values, the same way `--exclude` is unioned with `sca.ignore-paths`. When Datadog authentication is available (`DD_API_KEY` + `DD_APP_KEY`), the local config is sent to the Datadog API and merged with org- and repo-level settings before exclusions are applied.
 
 ```bash
 # Fail hard if the merged config API is unavailable (useful in strict CI pipelines)
@@ -148,4 +156,4 @@ Displays a table with columns: Language, Package Manager, Lockfile Parsers
   - **Language**: `javascript`, `java`, `python`, etc.
 - Use `parsers list` to see all available parser names
 - Glob patterns in `--exclude` are relative to the scanned directory
-- Multiple `--enable-parsers` or `--exclude` values can be specified by repeating the flag or using comma separation
+- Multiple `--enable-parsers`, `--exclude`, `--exclude-ecosystem`, or `--exclude-package` values can be specified by repeating the flag or using comma separation

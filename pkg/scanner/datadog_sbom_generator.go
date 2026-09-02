@@ -39,6 +39,8 @@ import (
 type ScannerActions struct {
 	DirectoryPaths      []string
 	ExcludePaths        []string
+	ExcludeEcosystems   []string
+	ExcludePackages     []string
 	Recursive           bool
 	NoIgnore            bool
 	Reachability        bool
@@ -295,6 +297,9 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
 	}
 
+	excludeEcosystems := append(append([]string{}, exclusions.Ecosystems...), actions.ExcludeEcosystems...)
+	excludePackages := append(append([]string{}, exclusions.Packages...), actions.ExcludePackages...)
+
 	var scannedPackages []extractor.PackageDetails
 	var scannedArtifacts []models.ScannedArtifact
 
@@ -308,7 +313,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			absolutePath = absPath
 		}
 		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
-		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, exclusions.Paths, exclusions.Ecosystems, actions.ExtractArtifactIds)
+		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, exclusions.Paths, excludeEcosystems, actions.ExtractArtifactIds)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
@@ -355,7 +360,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		}
 	}
 
-	scannedPackages = filterIgnoredPackages(r, scannedPackages, exclusions.Packages)
+	scannedPackages = filterIgnoredPackages(r, scannedPackages, excludePackages)
 	if len(scannedPackages) == 0 {
 		return models.VulnerabilityResults{}, NoPackagesFoundErr
 	}
