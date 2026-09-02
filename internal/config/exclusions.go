@@ -13,10 +13,11 @@ import (
 type Exclusions struct {
 	Paths      []string
 	Ecosystems []string
+	Packages   []string
 }
 
-// FetchExclusions returns ignore-path and ignore-ecosystem exclusions from local unified
-// config and, when Datadog authentication is available, from the merged remote config.
+// FetchExclusions returns ignore-path, ignore-ecosystem and ignore-package exclusions from
+// local unified config and, when Datadog authentication is available, from the merged remote config.
 func FetchExclusions(dir string, baseURL string, jwtToken string, exitOnFetchFailure bool, r reporter.Reporter) (Exclusions, string, error) {
 	info, err := findRepositoryInfo(dir)
 	if err != nil {
@@ -94,5 +95,5 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 		}
 	}
 
-	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems}
+	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems, Packages: cfg.SCA.IgnorePackages}
 }
