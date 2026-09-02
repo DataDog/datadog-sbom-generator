@@ -3,6 +3,9 @@ package scanner
 import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+	extractorsystem "github.com/DataDog/datadog-sbom-generator/pkg/extractor/system"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
@@ -57,4 +60,45 @@ func matchConfigExclusion(repoRoot string, path string, configExcludePaths []str
 	}
 
 	return matched, pattern
+}
+
+// ecosystemForExtractor returns the models.Ecosystem an extractor's packages always belong to,
+// and whether that ecosystem is known before parsing the matched file. Extractors whose ecosystem
+// depends on file contents (e.g. CSV, OSV scan results) return ok=false since it cannot be
+// determined upfront, and are therefore never skipped by ignore-ecosystems.
+func ecosystemForExtractor(ext extractor.Extractor) (models.Ecosystem, bool) {
+	switch ext.(type) {
+	case extractorsystem.DpkgStatusExtractor:
+		return models.EcosystemDebian, true
+	case extractorsystem.ApkInstalledExtractor:
+		return models.EcosystemAlpine, true
+	case extractor.CSVExtractor, extractor.OSVScannerResultsExtractor:
+		return "", false
+	}
+
+	eco, ok := models.PackageManagerToEcosystem[ext.PackageManager()]
+
+	return eco, ok
+}
+
+// matchEcosystemExclusion checks a matched extractor's ecosystem against the unified
+// configuration's ignore-ecosystems set. It mirrors matchConfigExclusion but keyed by
+// ecosystem instead of path, letting the scan skip parsing the file entirely on a match.
+func matchEcosystemExclusion(ext extractor.Extractor, configExcludeEcosystems []string) (bool, models.Ecosystem) {
+	if len(configExcludeEcosystems) == 0 {
+		return false, ""
+	}
+
+	eco, ok := ecosystemForExtractor(ext)
+	if !ok {
+		return false, ""
+	}
+
+	for _, excluded := range configExcludeEcosystems {
+		if excluded == string(eco) {
+			return true, eco
+		}
+	}
+
+	return false, ""
 }

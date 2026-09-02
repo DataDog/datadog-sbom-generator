@@ -4,6 +4,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/javascript"
+	extractorsystem "github.com/DataDog/datadog-sbom-generator/pkg/extractor/system"
+	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -129,6 +134,115 @@ func TestMatchConfigExclusion(t *testing.T) {
 			matched, pattern := matchConfigExclusion(tt.repoRoot, tt.path, tt.configExcludePaths, mockReporter)
 			assert.Equal(t, tt.expectedMatched, matched)
 			assert.Equal(t, tt.expectedPattern, pattern)
+		})
+	}
+}
+
+func TestEcosystemForExtractor(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		extractor extractor.Extractor
+		expected  models.Ecosystem
+		expectOK  bool
+	}{
+		{
+			name:      "npm lockfile extractor resolves to npm",
+			extractor: javascript.NpmExtractor,
+			expected:  models.EcosystemNPM,
+			expectOK:  true,
+		},
+		{
+			name:      "go lockfile extractor resolves to Go",
+			extractor: golang.GoLockExtractor{},
+			expected:  models.EcosystemGo,
+			expectOK:  true,
+		},
+		{
+			name:      "dpkg extractor resolves to Debian despite an Unknown package manager",
+			extractor: extractorsystem.DpkgExtractor,
+			expected:  models.EcosystemDebian,
+			expectOK:  true,
+		},
+		{
+			name:      "apk extractor resolves to Alpine despite an Unknown package manager",
+			extractor: extractorsystem.ApkExtractor,
+			expected:  models.EcosystemAlpine,
+			expectOK:  true,
+		},
+		{
+			name:      "csv extractor ecosystem is not statically known",
+			extractor: extractor.CSVExtractor{},
+			expected:  "",
+			expectOK:  false,
+		},
+		{
+			name:      "osv scan results extractor ecosystem is not statically known",
+			extractor: extractor.OSVScannerResultsExtractor{},
+			expected:  "",
+			expectOK:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			eco, ok := ecosystemForExtractor(tt.extractor)
+			assert.Equal(t, tt.expectOK, ok)
+			assert.Equal(t, tt.expected, eco)
+		})
+	}
+}
+
+func TestMatchEcosystemExclusion(t *testing.T) {
+	t.Parallel()
+
+	npmExtractor := javascript.NpmExtractor
+	csvExtractor := extractor.CSVExtractor{}
+
+	tests := []struct {
+		name                    string
+		extractor               extractor.Extractor
+		configExcludeEcosystems []string
+		expectedMatched         bool
+		expectedEcosystem       models.Ecosystem
+	}{
+		{
+			name:                    "no configured ecosystems never match",
+			extractor:               npmExtractor,
+			configExcludeEcosystems: nil,
+			expectedMatched:         false,
+		},
+		{
+			name:                    "matches configured ecosystem",
+			extractor:               npmExtractor,
+			configExcludeEcosystems: []string{"npm"},
+			expectedMatched:         true,
+			expectedEcosystem:       models.EcosystemNPM,
+		},
+		{
+			name:                    "does not match unrelated ecosystem",
+			extractor:               npmExtractor,
+			configExcludeEcosystems: []string{"Go"},
+			expectedMatched:         false,
+		},
+		{
+			name:                    "extractor with unknown ecosystem never matches",
+			extractor:               csvExtractor,
+			configExcludeEcosystems: []string{"npm"},
+			expectedMatched:         false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			matched, eco := matchEcosystemExclusion(tt.extractor, tt.configExcludeEcosystems)
+			assert.Equal(t, tt.expectedMatched, matched)
+			assert.Equal(t, tt.expectedEcosystem, eco)
 		})
 	}
 }

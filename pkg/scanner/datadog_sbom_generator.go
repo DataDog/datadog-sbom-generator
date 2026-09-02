@@ -82,7 +82,7 @@ var ErrAPIFailed = models.ErrAPIFailed
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
 //   - Any lockfiles with scanLockfile
-func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string, extractArtifacts bool) ([]extractor.PackageDetails, []models.ScannedArtifact, error) {
+func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, useGitIgnore bool, enabledParsers map[string]bool, cliExcludePaths []string, configExcludePaths []string, configExcludeEcosystems []string, extractArtifacts bool) ([]extractor.PackageDetails, []models.ScannedArtifact, error) {
 	scanRoot := dir
 	// Normalize the scan root once before exclusion matching.
 	if absPath, err := filepath.Abs(dir); err == nil {
@@ -140,6 +140,11 @@ func scanDir(r reporter.Reporter, dir string, repoRoot string, recursive bool, u
 
 		if !info.IsDir() {
 			if ext, _ := extractor.FindExtractor(path, enabledParsers); ext != nil {
+				if excluded, eco := matchEcosystemExclusion(ext, configExcludeEcosystems); excluded {
+					r.Infof("Skipping %s with config ecosystem exclusion rule: %s\n", path, eco)
+					return nil
+				}
+
 				match, err := matchExclusion(r, scanRoot, repoRoot, path, cliExcludePaths, configExcludePaths)
 				if err != nil {
 					r.Warnf("Failed exclusion of path %s: %v\n", path, err)
@@ -282,7 +287,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r = &reporter.VoidReporter{}
 	}
 
-	configExcludePaths, repoRoot, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
+	exclusions, repoRoot, err := config.FetchExclusions(actions.DirectoryPaths[0], actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, actions.ExitOnConfigFailure, r)
 	if err != nil {
 		if errors.Is(err, models.ErrAPIFailed) {
 			return models.VulnerabilityResults{}, ErrAPIFailed
@@ -303,7 +308,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 			absolutePath = absPath
 		}
 		r.Infof("Scanning directory '%s', resolved absolute path '%s'\n", dir, absolutePath)
-		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, configExcludePaths, actions.ExtractArtifactIds)
+		pkgs, artifacts, err := scanDir(r, dir, repoRoot, actions.Recursive, !actions.NoIgnore, enabledParsers, actions.ExcludePaths, exclusions.Paths, exclusions.Ecosystems, actions.ExtractArtifactIds)
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
@@ -354,7 +359,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	var reachabilityAnalysis models.ReachabilityAnalysis
 	if actions.Reachability {
-		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, configExcludePaths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, exclusions.Paths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
 	} else {
 		r.Infof("[reachability] Reachability analysis is disabled")
 	}
