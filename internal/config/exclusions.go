@@ -88,5 +88,11 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 		return Exclusions{}
 	}
 
+	for _, eco := range cfg.SCA.IgnoreEcosystems {
+		if !models.IsKnownEcosystem(eco) {
+			r.Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", eco)
+		}
+	}
+
 	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems}
 }

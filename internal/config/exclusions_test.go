@@ -174,3 +174,30 @@ func TestFetchExclusionsWarnsAndSkipsMalformedLocalConfig(t *testing.T) {
 	assert.Equal(t, Exclusions{}, exclusions)
 	assert.Equal(t, dir, repoRoot)
 }
+
+func TestFetchExclusionsWarnsOnUnknownIgnoreEcosystem(t *testing.T) {
+	t.Setenv("DD_API_KEY", "")
+	t.Setenv("DD_APP_KEY", "")
+	t.Setenv("DD_JWT_TOKEN", "")
+	t.Setenv("DATADOG_API_KEY", "")
+	t.Setenv("DATADOG_APP_KEY", "")
+	t.Setenv("DATADOG_JWT_TOKEN", "")
+
+	dir := t.TempDir()
+	_, err := git.PlainInit(dir, false)
+	require.NoError(t, err)
+
+	localConfig := "schema-version: v1.6\nsca:\n  ignore-ecosystems:\n    - npm\n    - NPM\n    - not-a-real-ecosystem\n"
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(localConfig), testFilePerms))
+
+	ctrl := gomock.NewController(t)
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof("[config] No Datadog authentication available, using local configuration only\n").Times(1)
+	mockReporter.EXPECT().Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "NPM").Times(1)
+	mockReporter.EXPECT().Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "not-a-real-ecosystem").Times(1)
+
+	exclusions, repoRoot, err := FetchExclusions(dir, "", "", false, mockReporter)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"npm", "NPM", "not-a-real-ecosystem"}, exclusions.Ecosystems)
+	assert.Equal(t, dir, repoRoot)
+}

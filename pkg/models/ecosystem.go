@@ -31,6 +31,23 @@ const (
 	EcosystemSwiftURL      Ecosystem = "SwiftURL"
 )
 
+var knownEcosystems = map[Ecosystem]struct{}{
+	EcosystemGo: {}, EcosystemNPM: {}, EcosystemOSSFuzz: {}, EcosystemPyPI: {},
+	EcosystemRubyGems: {}, EcosystemCratesIO: {}, EcosystemPackagist: {}, EcosystemMaven: {},
+	EcosystemNuGet: {}, EcosystemLinux: {}, EcosystemDebian: {}, EcosystemAlpine: {},
+	EcosystemHex: {}, EcosystemAndroid: {}, EcosystemGitHubActions: {}, EcosystemPub: {},
+	EcosystemConanCenter: {}, EcosystemRockyLinux: {}, EcosystemAlmaLinux: {}, EcosystemBitnami: {},
+	EcosystemPhotonOS: {}, EcosystemCRAN: {}, EcosystemBioconductor: {}, EcosystemSwiftURL: {},
+}
+
+// IsKnownEcosystem reports whether s matches one of the canonical ecosystem names, exactly
+// (ecosystem names are case-sensitive).
+func IsKnownEcosystem(s string) bool {
+	_, ok := knownEcosystems[Ecosystem(s)]
+
+	return ok
+}
+
 // IsDevGroup returns if any string in groups indicates the development dependency group for the specified ecosystem.
 func (sys Ecosystem) IsDevGroup(groups []string) bool {
 	switch sys {
