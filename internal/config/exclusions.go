@@ -3,11 +3,16 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 
 	ddhttp "github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
+
+// packageExclusionSeparator separates the ecosystem from the package name in a
+// sca.ignore-packages entry, e.g. "npm:lodash".
+const packageExclusionSeparator = ":"
 
 // Exclusions holds the SCA scanning exclusions extracted from a unified config file.
 type Exclusions struct {
@@ -92,6 +97,18 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 	for _, eco := range cfg.SCA.IgnoreEcosystems {
 		if !models.IsKnownEcosystem(eco) {
 			r.Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", eco)
+		}
+	}
+
+	for _, pkg := range cfg.SCA.IgnorePackages {
+		eco, _, found := strings.Cut(pkg, packageExclusionSeparator)
+		if !found {
+			r.Warnf("[config] sca.ignore-packages entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", pkg)
+			continue
+		}
+
+		if !models.IsKnownEcosystem(eco) {
+			r.Warnf("[config] sca.ignore-packages entry %q does not match any known ecosystem (check spelling and case) and will never match\n", pkg)
 		}
 	}
 
