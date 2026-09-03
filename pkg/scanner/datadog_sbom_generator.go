@@ -297,6 +297,9 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		r.Warnf("[config] Failed to resolve exclusions: %v\n", err)
 	}
 
+	config.ValidateEcosystemExclusions("cli", "--exclude-ecosystem", actions.ExcludeEcosystems, r)
+	config.ValidatePackageExclusions("cli", "--exclude-package", actions.ExcludePackages, r)
+
 	excludeEcosystems := append(append([]string{}, exclusions.Ecosystems...), actions.ExcludeEcosystems...)
 	excludePackages := append(append([]string{}, exclusions.Packages...), actions.ExcludePackages...)
 
