@@ -241,6 +241,12 @@ func TestMatchEcosystemExclusion(t *testing.T) {
 			configExcludeEcosystems: []string{"npm"},
 			expectedMatched:         false,
 		},
+		{
+			name:                    "case-mismatched ecosystem never matches",
+			extractor:               npmExtractor,
+			configExcludeEcosystems: []string{"NPM"},
+			expectedMatched:         false,
+		},
 	}
 
 	for _, tt := range tests {
