@@ -293,6 +293,12 @@ func TestMatchPackageExclusion(t *testing.T) {
 			configExcludePackages: []string{"npm:lodash"},
 			expectedMatched:       false,
 		},
+		{
+			name:                  "case-mismatched ecosystem prefix never matches",
+			pkg:                   extractor.PackageDetails{Ecosystem: models.EcosystemNPM, Name: "lodash", Version: "4.17.21"},
+			configExcludePackages: []string{"NPM:lodash"},
+			expectedMatched:       false,
+		},
 	}
 
 	for _, tt := range tests {
