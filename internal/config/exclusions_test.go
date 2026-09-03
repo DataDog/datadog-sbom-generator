@@ -30,7 +30,7 @@ func TestFetchExclusionsUsesLocalConfigWithoutAuth(t *testing.T) {
 	_, err := git.PlainInit(dir, false)
 	require.NoError(t, err)
 
-	localConfig := "schema-version: v1.6\nsca:\n  ignore-paths:\n    - vendor/**\n  ignore-ecosystems:\n    - npm\n"
+	localConfig := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - vendor/**\n  ignore-ecosystems:\n    - npm\n"
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(localConfig), testFilePerms))
 
 	ctrl := gomock.NewController(t)
@@ -187,7 +187,7 @@ func TestFetchExclusionsWarnsOnUnknownIgnoreEcosystem(t *testing.T) {
 	_, err := git.PlainInit(dir, false)
 	require.NoError(t, err)
 
-	localConfig := "schema-version: v1.6\nsca:\n  ignore-ecosystems:\n    - npm\n    - NPM\n    - not-a-real-ecosystem\n"
+	localConfig := "schema-version: v1.7\nsca:\n  ignore-ecosystems:\n    - npm\n    - NPM\n    - not-a-real-ecosystem\n"
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(localConfig), testFilePerms))
 
 	ctrl := gomock.NewController(t)

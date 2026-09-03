@@ -64,15 +64,15 @@ func TestReadLocalConfigContentsNotFound(t *testing.T) {
 func TestParseValid(t *testing.T) {
 	t.Parallel()
 
-	contents := "schema-version: v1.6\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n  ignore-ecosystems:\n    - npm\n    - Go\n"
+	contents := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n  ignore-ecosystems:\n    - npm\n    - Go\n"
 
 	cfg, err := parseUnifiedConfig(contents)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if cfg.SchemaVersion != "v1.6" {
-		t.Fatalf("SchemaVersion = %q, want %q", cfg.SchemaVersion, "v1.6")
+	if cfg.SchemaVersion != "v1.7" {
+		t.Fatalf("SchemaVersion = %q, want %q", cfg.SchemaVersion, "v1.7")
 	}
 
 	if len(cfg.SCA.IgnorePaths) != 2 {
