@@ -94,23 +94,36 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 		return Exclusions{}
 	}
 
-	for _, eco := range cfg.SCA.IgnoreEcosystems {
+	ValidateEcosystemExclusions("config", "sca.ignore-ecosystems", cfg.SCA.IgnoreEcosystems, r)
+	ValidatePackageExclusions("config", "sca.ignore-packages", cfg.SCA.IgnorePackages, r)
+
+	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems, Packages: cfg.SCA.IgnorePackages}
+}
+
+// ValidateEcosystemExclusions warns about ignore-ecosystems entries that will never match
+// because they don't correspond to a known ecosystem. source and field name the origin of the
+// entries (e.g. "config", "sca.ignore-ecosystems") for the warning message.
+func ValidateEcosystemExclusions(source string, field string, ecosystems []string, r reporter.Reporter) {
+	for _, eco := range ecosystems {
 		if !models.IsKnownEcosystem(eco) {
-			r.Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", eco)
+			r.Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, eco)
 		}
 	}
+}
 
-	for _, pkg := range cfg.SCA.IgnorePackages {
+// ValidatePackageExclusions warns about ignore-packages entries that will never match because
+// they're malformed or don't correspond to a known ecosystem. source and field name the origin of
+// the entries (e.g. "config", "sca.ignore-packages") for the warning message.
+func ValidatePackageExclusions(source string, field string, packages []string, r reporter.Reporter) {
+	for _, pkg := range packages {
 		eco, _, found := strings.Cut(pkg, packageExclusionSeparator)
 		if !found {
-			r.Warnf("[config] sca.ignore-packages entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", pkg)
+			r.Warnf("[%s] %s entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", source, field, pkg)
 			continue
 		}
 
 		if !models.IsKnownEcosystem(eco) {
-			r.Warnf("[config] sca.ignore-packages entry %q does not match any known ecosystem (check spelling and case) and will never match\n", pkg)
+			r.Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, pkg)
 		}
 	}
-
-	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems, Packages: cfg.SCA.IgnorePackages}
 }
