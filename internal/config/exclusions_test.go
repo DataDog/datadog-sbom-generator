@@ -215,7 +215,7 @@ func TestFetchExclusionsWarnsOnMalformedOrUnknownIgnorePackage(t *testing.T) {
 	_, err := git.PlainInit(dir, false)
 	require.NoError(t, err)
 
-	localConfig := "schema-version: v1.6\nsca:\n  ignore-packages:\n    - npm:lodash\n    - lodash\n    - NPM:lodash\n"
+	localConfig := "schema-version: v1.7\nsca:\n  ignore-packages:\n    - npm:lodash\n    - lodash\n    - NPM:lodash\n"
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "code-security.datadog.yaml"), []byte(localConfig), testFilePerms))
 
 	ctrl := gomock.NewController(t)
