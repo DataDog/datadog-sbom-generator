@@ -194,8 +194,8 @@ func TestFetchExclusionsWarnsOnUnknownIgnoreEcosystem(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockReporter := reporter.NewMockReporter(ctrl)
 	mockReporter.EXPECT().Infof("[config] No Datadog authentication available, using local configuration only\n").Times(1)
-	mockReporter.EXPECT().Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "NPM").Times(1)
-	mockReporter.EXPECT().Warnf("[config] sca.ignore-ecosystems entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "not-a-real-ecosystem").Times(1)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "config", "sca.ignore-ecosystems", "NPM").Times(1)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "config", "sca.ignore-ecosystems", "not-a-real-ecosystem").Times(1)
 
 	exclusions, repoRoot, err := FetchExclusions(dir, "", "", false, mockReporter)
 	require.NoError(t, err)
@@ -221,11 +221,32 @@ func TestFetchExclusionsWarnsOnMalformedOrUnknownIgnorePackage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockReporter := reporter.NewMockReporter(ctrl)
 	mockReporter.EXPECT().Infof("[config] No Datadog authentication available, using local configuration only\n").Times(1)
-	mockReporter.EXPECT().Warnf("[config] sca.ignore-packages entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", "lodash").Times(1)
-	mockReporter.EXPECT().Warnf("[config] sca.ignore-packages entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "NPM:lodash").Times(1)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", "config", "sca.ignore-packages", "lodash").Times(1)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "config", "sca.ignore-packages", "NPM:lodash").Times(1)
 
 	exclusions, repoRoot, err := FetchExclusions(dir, "", "", false, mockReporter)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"npm:lodash", "lodash", "NPM:lodash"}, exclusions.Packages)
 	assert.Equal(t, dir, repoRoot)
+}
+
+func TestValidateEcosystemExclusionsWarnsOnUnknownEcosystem(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "cli", "--exclude-ecosystem", "NPM").Times(1)
+
+	ValidateEcosystemExclusions("cli", "--exclude-ecosystem", []string{"npm", "NPM"}, mockReporter)
+}
+
+func TestValidatePackageExclusionsWarnsOnMalformedOrUnknownPackage(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", "cli", "--exclude-package", "lodash").Times(1)
+	mockReporter.EXPECT().Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", "cli", "--exclude-package", "NPM:lodash").Times(1)
+
+	ValidatePackageExclusions("cli", "--exclude-package", []string{"npm:lodash", "lodash", "NPM:lodash"}, mockReporter)
 }
