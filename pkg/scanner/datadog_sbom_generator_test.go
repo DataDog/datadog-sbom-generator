@@ -308,3 +308,32 @@ func Test_sanitizeScannedPackages_VersionRangesAreAllowed(t *testing.T) {
 	assert.Equal(t, ">=2.0,<3.0", sanitizedPackages[0].VersionRange)
 	assert.Equal(t, "pkg:pypi/requests", sanitizedPackages[0].PURL)
 }
+
+func Test_filterIgnoredPackages_NoConfigReturnsAllPackages(t *testing.T) {
+	t.Parallel()
+
+	scannedPackages := []extractor.PackageDetails{
+		{Name: "lodash", Ecosystem: models.EcosystemNPM},
+	}
+
+	filtered := filterIgnoredPackages(&reporter.VoidReporter{}, scannedPackages, nil)
+
+	assert.Equal(t, scannedPackages, filtered)
+}
+
+func Test_filterIgnoredPackages_DropsMatchingPackagesRegardlessOfVersion(t *testing.T) {
+	t.Parallel()
+
+	scannedPackages := []extractor.PackageDetails{
+		{Name: "lodash", Version: "4.17.21", Ecosystem: models.EcosystemNPM},
+		{Name: "lodash", Version: "3.0.0", Ecosystem: models.EcosystemNPM},
+		{Name: "express", Version: "4.18.0", Ecosystem: models.EcosystemNPM},
+		{Name: "lodash", Version: "1.0.0", Ecosystem: models.EcosystemGo},
+	}
+
+	filtered := filterIgnoredPackages(&reporter.VoidReporter{}, scannedPackages, []string{"npm:lodash"})
+
+	require.Len(t, filtered, 2)
+	assert.Equal(t, "express", filtered[0].Name)
+	assert.Equal(t, models.EcosystemGo, filtered[1].Ecosystem)
+}
