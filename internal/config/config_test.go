@@ -64,15 +64,15 @@ func TestReadLocalConfigContentsNotFound(t *testing.T) {
 func TestParseValid(t *testing.T) {
 	t.Parallel()
 
-	contents := "schema-version: v1.1\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n"
+	contents := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n  ignore-ecosystems:\n    - npm\n    - Go\n"
 
 	cfg, err := parseUnifiedConfig(contents)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if cfg.SchemaVersion != "v1.1" {
-		t.Fatalf("SchemaVersion = %q, want %q", cfg.SchemaVersion, "v1.1")
+	if cfg.SchemaVersion != "v1.7" {
+		t.Fatalf("SchemaVersion = %q, want %q", cfg.SchemaVersion, "v1.7")
 	}
 
 	if len(cfg.SCA.IgnorePaths) != 2 {
@@ -85,6 +85,14 @@ func TestParseValid(t *testing.T) {
 
 	if cfg.SCA.IgnorePaths[1] != "**/*test.go" {
 		t.Fatalf("IgnorePaths[1] = %q, want %q", cfg.SCA.IgnorePaths[1], "**/*test.go")
+	}
+
+	if len(cfg.SCA.IgnoreEcosystems) != 2 {
+		t.Fatalf("IgnoreEcosystems length = %d, want 2", len(cfg.SCA.IgnoreEcosystems))
+	}
+
+	if cfg.SCA.IgnoreEcosystems[0] != "npm" || cfg.SCA.IgnoreEcosystems[1] != "Go" {
+		t.Fatalf("IgnoreEcosystems = %v, want [npm Go]", cfg.SCA.IgnoreEcosystems)
 	}
 }
 
@@ -100,6 +108,10 @@ func TestParseNoSCASection(t *testing.T) {
 
 	if len(cfg.SCA.IgnorePaths) != 0 {
 		t.Fatalf("IgnorePaths length = %d, want 0", len(cfg.SCA.IgnorePaths))
+	}
+
+	if len(cfg.SCA.IgnoreEcosystems) != 0 {
+		t.Fatalf("IgnoreEcosystems length = %d, want 0", len(cfg.SCA.IgnoreEcosystems))
 	}
 }
 
