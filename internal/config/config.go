@@ -20,7 +20,8 @@ type unifiedConfig struct {
 }
 
 type SCAConfig struct {
-	IgnorePaths []string `yaml:"ignore-paths"`
+	IgnorePaths      []string `yaml:"ignore-paths"`
+	IgnoreEcosystems []string `yaml:"ignore-ecosystems"`
 }
 
 // readLocalConfigContents reads the contents of code-security.datadog.yaml or

@@ -62,7 +62,7 @@ func Test_scanDir(t *testing.T) {
 	var excludedGlobs []string
 	var configExcludedGlobs []string
 	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
-	packages, artifacts, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
+	packages, artifacts, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, nil, false)
 
 	// Validate results
 	require.NoError(t, err)
@@ -71,7 +71,7 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir
 	excludedGlobs = []string{filepath.Join("subdir", "*")}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, nil, false)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 2) // Only package-lock.json and yarn.lock should be scanned (subdir/package-lock.json is excluded)
@@ -79,11 +79,41 @@ func Test_scanDir(t *testing.T) {
 
 	// Exclude all files in the subdir and yarn.lock (precisely one file)
 	excludedGlobs = []string{filepath.Join("subdir", "*"), "yarn.lock"}
-	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, false)
+	packages, artifacts, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, excludedGlobs, configExcludedGlobs, nil, false)
 
 	require.NoError(t, err)
 	assert.Len(t, packages, 1) // Only package-lock.json should be scanned (yarn.lock and subdir/package-lock.json is excluded)
 	assert.Empty(t, artifacts)
+}
+
+func Test_scanDir_EcosystemExclusion(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+
+	_ = os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600)
+	_ = os.WriteFile(filepath.Join(tempDir, "yarn.lock"), []byte(yarnLock), 0600)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockReporter := reporter.NewMockReporter(ctrl)
+	mockReporter.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Verbosef(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Warnf(gomock.Any(), gomock.Any()).AnyTimes()
+	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
+
+	// Excluding an unrelated ecosystem leaves npm files alone.
+	packages, _, err := scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, nil, nil, []string{"Go"}, false)
+	require.NoError(t, err)
+	assert.Len(t, packages, 2)
+
+	// Excluding "npm" skips both package-lock.json and yarn.lock before parsing.
+	packages, _, err = scanDir(mockReporter, tempDir, tempDir, true, false, enabledParsers, nil, nil, []string{"npm"}, false)
+	require.NoError(t, err)
+	assert.Empty(t, packages)
 }
 
 func Test_scanDir_ConfigExclusionsUseRepositoryRoot(t *testing.T) {
@@ -107,7 +137,7 @@ func Test_scanDir_ConfigExclusionsUseRepositoryRoot(t *testing.T) {
 	mockReporter.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
 
 	enabledParsers := initializeEnabledParsers([]string{}, mockReporter)
-	packages, artifacts, err := scanDir(mockReporter, scanDirPath, repoRoot, true, false, enabledParsers, nil, []string{"subdir/*"}, false)
+	packages, artifacts, err := scanDir(mockReporter, scanDirPath, repoRoot, true, false, enabledParsers, nil, []string{"subdir/*"}, nil, false)
 
 	require.NoError(t, err)
 	assert.Empty(t, packages)
@@ -146,6 +176,7 @@ func Test_scanDir_ConfigExclusionsSupportPrefixAndDoublestarMatching(t *testing.
 		enabledParsers,
 		nil,
 		[]string{"subdir/dist", "subdir/**/*.lock"},
+		nil,
 		false,
 	)
 
