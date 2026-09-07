@@ -106,7 +106,7 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 func ValidateEcosystemExclusions(source string, field string, ecosystems []string, r reporter.Reporter) {
 	for _, eco := range ecosystems {
 		if !models.IsKnownEcosystem(eco) {
-			r.Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, eco)
+			r.AlwaysWarnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, eco)
 		}
 	}
 }
@@ -116,14 +116,19 @@ func ValidateEcosystemExclusions(source string, field string, ecosystems []strin
 // the entries (e.g. "config", "sca.ignore-packages") for the warning message.
 func ValidatePackageExclusions(source string, field string, packages []string, r reporter.Reporter) {
 	for _, pkg := range packages {
-		eco, _, found := strings.Cut(pkg, packageExclusionSeparator)
+		eco, name, found := strings.Cut(pkg, packageExclusionSeparator)
 		if !found {
-			r.Warnf("[%s] %s entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", source, field, pkg)
+			r.AlwaysWarnf("[%s] %s entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", source, field, pkg)
+			continue
+		}
+
+		if name == "" {
+			r.AlwaysWarnf("[%s] %s entry %q is missing a package name after the separator and will never match\n", source, field, pkg)
 			continue
 		}
 
 		if !models.IsKnownEcosystem(eco) {
-			r.Warnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, pkg)
+			r.AlwaysWarnf("[%s] %s entry %q does not match any known ecosystem (check spelling and case) and will never match\n", source, field, pkg)
 		}
 	}
 }

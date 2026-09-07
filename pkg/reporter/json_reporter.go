@@ -49,6 +49,10 @@ func (r *JSONReporter) Warnf(format string, a ...any) {
 	}
 }
 
+func (r *JSONReporter) AlwaysWarnf(format string, a ...any) {
+	fmt.Fprintf(r.stderr, format, a...)
+}
+
 func (r *JSONReporter) Infof(format string, a ...any) {
 	if InfoLevel <= r.level {
 		fmt.Fprintf(r.stderr, format, a...)
