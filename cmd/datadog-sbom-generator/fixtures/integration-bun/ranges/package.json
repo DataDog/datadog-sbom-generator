@@ -1,7 +1,7 @@
 {
   "name": "bun-ranges",
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.18.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

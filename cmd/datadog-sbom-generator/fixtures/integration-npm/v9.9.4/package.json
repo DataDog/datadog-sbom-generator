@@ -9,5 +9,245 @@
     },
     "devDependencies": {
         "debug": "2.5.2"
+    },
+    "overrides": {
+        "@typescript-eslint/eslint-plugin": {
+            "@typescript-eslint/parser": {
+                "eslint": {
+                    "@eslint/eslintrc": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        },
+                        "js-yaml": "^4.3.2"
+                    },
+                    "@humanwhocodes/config-array": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        }
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "rimraf": {
+                                "glob": {
+                                    "minimatch": {
+                                        "brace-expansion": "^1.1.18",
+                                        ".": "^3.1.5"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "minimatch": {
+                        "brace-expansion": "^1.1.18",
+                        ".": "^3.1.5"
+                    },
+                    "js-yaml": "^4.3.2"
+                }
+            },
+            "@typescript-eslint/type-utils": {
+                "@typescript-eslint/utils": {
+                    "@eslint-community/eslint-utils": {
+                        "eslint": {
+                            "@eslint/eslintrc": {
+                                "minimatch": {
+                                    "brace-expansion": "^1.1.18",
+                                    ".": "^3.1.5"
+                                },
+                                "js-yaml": "^4.3.2"
+                            },
+                            "@humanwhocodes/config-array": {
+                                "minimatch": {
+                                    "brace-expansion": "^1.1.18",
+                                    ".": "^3.1.5"
+                                }
+                            },
+                            "file-entry-cache": {
+                                "flat-cache": {
+                                    "rimraf": {
+                                        "glob": {
+                                            "minimatch": {
+                                                "brace-expansion": "^1.1.18",
+                                                ".": "^3.1.5"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "minimatch": {
+                                "brace-expansion": "^1.1.18",
+                                ".": "^3.1.5"
+                            },
+                            "js-yaml": "^4.3.2"
+                        }
+                    },
+                    "eslint": {
+                        "@eslint/eslintrc": {
+                            "minimatch": {
+                                "brace-expansion": "^1.1.18",
+                                ".": "^3.1.5"
+                            },
+                            "js-yaml": "^4.3.2"
+                        },
+                        "@humanwhocodes/config-array": {
+                            "minimatch": {
+                                "brace-expansion": "^1.1.18",
+                                ".": "^3.1.5"
+                            }
+                        },
+                        "file-entry-cache": {
+                            "flat-cache": {
+                                "rimraf": {
+                                    "glob": {
+                                        "minimatch": {
+                                            "brace-expansion": "^1.1.18",
+                                            ".": "^3.1.5"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        },
+                        "js-yaml": "^4.3.2"
+                    }
+                },
+                "eslint": {
+                    "@eslint/eslintrc": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        },
+                        "js-yaml": "^4.3.2"
+                    },
+                    "@humanwhocodes/config-array": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        }
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "rimraf": {
+                                "glob": {
+                                    "minimatch": {
+                                        "brace-expansion": "^1.1.18",
+                                        ".": "^3.1.5"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "minimatch": {
+                        "brace-expansion": "^1.1.18",
+                        ".": "^3.1.5"
+                    },
+                    "js-yaml": "^4.3.2"
+                }
+            },
+            "@typescript-eslint/utils": {
+                "@eslint-community/eslint-utils": {
+                    "eslint": {
+                        "@eslint/eslintrc": {
+                            "minimatch": {
+                                "brace-expansion": "^1.1.18",
+                                ".": "^3.1.5"
+                            },
+                            "js-yaml": "^4.3.2"
+                        },
+                        "@humanwhocodes/config-array": {
+                            "minimatch": {
+                                "brace-expansion": "^1.1.18",
+                                ".": "^3.1.5"
+                            }
+                        },
+                        "file-entry-cache": {
+                            "flat-cache": {
+                                "rimraf": {
+                                    "glob": {
+                                        "minimatch": {
+                                            "brace-expansion": "^1.1.18",
+                                            ".": "^3.1.5"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        },
+                        "js-yaml": "^4.3.2"
+                    }
+                },
+                "eslint": {
+                    "@eslint/eslintrc": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        },
+                        "js-yaml": "^4.3.2"
+                    },
+                    "@humanwhocodes/config-array": {
+                        "minimatch": {
+                            "brace-expansion": "^1.1.18",
+                            ".": "^3.1.5"
+                        }
+                    },
+                    "file-entry-cache": {
+                        "flat-cache": {
+                            "rimraf": {
+                                "glob": {
+                                    "minimatch": {
+                                        "brace-expansion": "^1.1.18",
+                                        ".": "^3.1.5"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "minimatch": {
+                        "brace-expansion": "^1.1.18",
+                        ".": "^3.1.5"
+                    },
+                    "js-yaml": "^4.3.2"
+                }
+            },
+            "eslint": {
+                "@eslint/eslintrc": {
+                    "minimatch": {
+                        "brace-expansion": "^1.1.18",
+                        ".": "^3.1.5"
+                    },
+                    "js-yaml": "^4.3.2"
+                },
+                "@humanwhocodes/config-array": {
+                    "minimatch": {
+                        "brace-expansion": "^1.1.18",
+                        ".": "^3.1.5"
+                    }
+                },
+                "file-entry-cache": {
+                    "flat-cache": {
+                        "rimraf": {
+                            "glob": {
+                                "minimatch": {
+                                    "brace-expansion": "^1.1.18",
+                                    ".": "^3.1.5"
+                                }
+                            }
+                        }
+                    }
+                },
+                "minimatch": {
+                    "brace-expansion": "^1.1.18",
+                    ".": "^3.1.5"
+                },
+                "js-yaml": "^4.3.2"
+            }
+        }
     }
 }
