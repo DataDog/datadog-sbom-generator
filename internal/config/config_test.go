@@ -64,7 +64,7 @@ func TestReadLocalConfigContentsNotFound(t *testing.T) {
 func TestParseValid(t *testing.T) {
 	t.Parallel()
 
-	contents := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n  ignore-ecosystems:\n    - npm\n    - Go\n"
+	contents := "schema-version: v1.7\nsca:\n  ignore-paths:\n    - src/domains/bar/*\n    - \"**/*test.go\"\n  ignore-ecosystems:\n    - npm\n    - Go\n  ignore-packages:\n    - npm:lodash\n    - Go:golang.org/x/text\n"
 
 	cfg, err := parseUnifiedConfig(contents)
 	if err != nil {
@@ -94,6 +94,14 @@ func TestParseValid(t *testing.T) {
 	if cfg.SCA.IgnoreEcosystems[0] != "npm" || cfg.SCA.IgnoreEcosystems[1] != "Go" {
 		t.Fatalf("IgnoreEcosystems = %v, want [npm Go]", cfg.SCA.IgnoreEcosystems)
 	}
+
+	if len(cfg.SCA.IgnorePackages) != 2 {
+		t.Fatalf("IgnorePackages length = %d, want 2", len(cfg.SCA.IgnorePackages))
+	}
+
+	if cfg.SCA.IgnorePackages[0] != "npm:lodash" || cfg.SCA.IgnorePackages[1] != "Go:golang.org/x/text" {
+		t.Fatalf("IgnorePackages = %v, want [npm:lodash Go:golang.org/x/text]", cfg.SCA.IgnorePackages)
+	}
 }
 
 func TestParseNoSCASection(t *testing.T) {
@@ -112,6 +120,10 @@ func TestParseNoSCASection(t *testing.T) {
 
 	if len(cfg.SCA.IgnoreEcosystems) != 0 {
 		t.Fatalf("IgnoreEcosystems length = %d, want 0", len(cfg.SCA.IgnoreEcosystems))
+	}
+
+	if len(cfg.SCA.IgnorePackages) != 0 {
+		t.Fatalf("IgnorePackages length = %d, want 0", len(cfg.SCA.IgnorePackages))
 	}
 }
 

@@ -3,20 +3,26 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 
 	ddhttp "github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
+// packageExclusionSeparator separates the ecosystem from the package name in a
+// sca.ignore-packages entry, e.g. "npm:lodash".
+const packageExclusionSeparator = ":"
+
 // Exclusions holds the SCA scanning exclusions extracted from a unified config file.
 type Exclusions struct {
 	Paths      []string
 	Ecosystems []string
+	Packages   []string
 }
 
-// FetchExclusions returns ignore-path and ignore-ecosystem exclusions from local unified
-// config and, when Datadog authentication is available, from the merged remote config.
+// FetchExclusions returns ignore-path, ignore-ecosystem and ignore-package exclusions from
+// local unified config and, when Datadog authentication is available, from the merged remote config.
 func FetchExclusions(dir string, baseURL string, jwtToken string, exitOnFetchFailure bool, r reporter.Reporter) (Exclusions, string, error) {
 	info, err := findRepositoryInfo(dir)
 	if err != nil {
@@ -94,5 +100,17 @@ func extractExclusions(contents *string, r reporter.Reporter) Exclusions {
 		}
 	}
 
-	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems}
+	for _, pkg := range cfg.SCA.IgnorePackages {
+		eco, _, found := strings.Cut(pkg, packageExclusionSeparator)
+		if !found {
+			r.Warnf("[config] sca.ignore-packages entry %q is missing the \"<ecosystem>:<name>\" separator and will never match\n", pkg)
+			continue
+		}
+
+		if !models.IsKnownEcosystem(eco) {
+			r.Warnf("[config] sca.ignore-packages entry %q does not match any known ecosystem (check spelling and case) and will never match\n", pkg)
+		}
+	}
+
+	return Exclusions{Paths: cfg.SCA.IgnorePaths, Ecosystems: cfg.SCA.IgnoreEcosystems, Packages: cfg.SCA.IgnorePackages}
 }

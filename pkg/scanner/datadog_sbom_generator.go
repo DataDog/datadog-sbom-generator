@@ -355,6 +355,11 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		}
 	}
 
+	scannedPackages = filterIgnoredPackages(r, scannedPackages, exclusions.Packages)
+	if len(scannedPackages) == 0 {
+		return models.VulnerabilityResults{}, NoPackagesFoundErr
+	}
+
 	purlsForDirectPackages := getDirectPackagePurls(scannedPackages)
 
 	var reachabilityAnalysis models.ReachabilityAnalysis
@@ -400,6 +405,26 @@ func sanitizeScannedPackages(scannedPackages []extractor.PackageDetails) ([]extr
 	}
 
 	return finalPackages, droppedReasons
+}
+
+// filterIgnoredPackages drops scanned packages matching a sca.ignore-packages entry
+// ("<ecosystem>:<name>") before they reach the generated SBOM.
+func filterIgnoredPackages(r reporter.Reporter, scannedPackages []extractor.PackageDetails, configExcludePackages []string) []extractor.PackageDetails {
+	if len(configExcludePackages) == 0 {
+		return scannedPackages
+	}
+
+	finalPackages := make([]extractor.PackageDetails, 0, len(scannedPackages))
+	for _, pkg := range scannedPackages {
+		if matchPackageExclusion(pkg, configExcludePackages) {
+			r.Infof("Skipping %s:%s with config package exclusion rule\n", pkg.Ecosystem, pkg.Name)
+			continue
+		}
+
+		finalPackages = append(finalPackages, pkg)
+	}
+
+	return finalPackages
 }
 
 // getDirectPackagePurls returns a list of PURLs for packages that are directly imported.
