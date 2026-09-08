@@ -35,6 +35,23 @@ func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
 	return m.recorder
 }
 
+// AlwaysWarnf mocks base method.
+func (m *MockReporter) AlwaysWarnf(format string, a ...any) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{format}
+	for _, a_2 := range a {
+		varargs = append(varargs, a_2)
+	}
+	m.ctrl.Call(m, "AlwaysWarnf", varargs...)
+}
+
+// AlwaysWarnf indicates an expected call of AlwaysWarnf.
+func (mr *MockReporterMockRecorder) AlwaysWarnf(format interface{}, a ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{format}, a...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AlwaysWarnf", reflect.TypeOf((*MockReporter)(nil).AlwaysWarnf), varargs...)
+}
+
 // Errorf mocks base method.
 func (m *MockReporter) Errorf(format string, a ...any) {
 	m.ctrl.T.Helper()

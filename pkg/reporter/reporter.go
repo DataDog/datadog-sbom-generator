@@ -34,3 +34,23 @@ type Reporter interface {
 	// actual reporter
 	PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error
 }
+
+// AlwaysWarner is implemented by Reporter implementations that can print a warning
+// regardless of verbosity level, without marking the run as having errored. It is kept
+// separate from Reporter so that adding it doesn't break existing Reporter implementations.
+type AlwaysWarner interface {
+	AlwaysWarnf(format string, a ...any)
+}
+
+// AlwaysWarnf prints a warning that a user must see even at the default (error) verbosity,
+// such as a misconfigured flag that silently does nothing, without marking the run as having
+// errored. It uses r's AlwaysWarnf if r implements AlwaysWarner, otherwise it falls back to
+// r.Warnf, which may be suppressed depending on verbosity.
+func AlwaysWarnf(r Reporter, format string, a ...any) {
+	if aw, ok := r.(AlwaysWarner); ok {
+		aw.AlwaysWarnf(format, a...)
+		return
+	}
+
+	r.Warnf(format, a...)
+}

@@ -266,6 +266,21 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan locks-many with --exclude-ecosystem",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude-ecosystem", "npm", "./fixtures/locks-many"},
+			exit: 0,
+		},
+		{
+			name: "Scan locks-many with --exclude-package",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude-package", "Packagist:sentry/sdk", "./fixtures/locks-many"},
+			exit: 0,
+		},
+		{
+			name: "Scan locks-many with --exclude-ecosystem and --exclude-package combined",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude-ecosystem", "npm", "--exclude-package", "Packagist:sentry/sdk", "./fixtures/locks-many"},
+			exit: 0,
+		},
+		{
 			name: "Scan npm with workspace support",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "./fixtures/integration-npm/with-workspace"},
 			exit: 0,
