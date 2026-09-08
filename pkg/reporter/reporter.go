@@ -26,10 +26,6 @@ type Reporter interface {
 	HasErrored() bool
 	// Warnf prints text indicating potential issues or something that should be brought to the attention of users.
 	Warnf(format string, a ...any)
-	// AlwaysWarnf prints a warning regardless of verbosity level, without marking the run as
-	// having errored. Use it for issues a user must see even at the default (error) verbosity,
-	// such as a misconfigured flag that silently does nothing.
-	AlwaysWarnf(format string, a ...any)
 	// Infof prints text providing general information about what datadog-sbom-generator is doing during its runtime.
 	Infof(format string, a ...any)
 	// Verbosef prints text providing additional information about the inner workings of datadog-sbom-generator to the user.
@@ -37,4 +33,24 @@ type Reporter interface {
 	// PrintResult prints the models.VulnerabilityResults per the logic of the
 	// actual reporter
 	PrintResult(context *cli.Context, vulnResult *models.VulnerabilityResults) error
+}
+
+// AlwaysWarner is implemented by Reporter implementations that can print a warning
+// regardless of verbosity level, without marking the run as having errored. It is kept
+// separate from Reporter so that adding it doesn't break existing Reporter implementations.
+type AlwaysWarner interface {
+	AlwaysWarnf(format string, a ...any)
+}
+
+// AlwaysWarnf prints a warning that a user must see even at the default (error) verbosity,
+// such as a misconfigured flag that silently does nothing, without marking the run as having
+// errored. It uses r's AlwaysWarnf if r implements AlwaysWarner, otherwise it falls back to
+// r.Warnf, which may be suppressed depending on verbosity.
+func AlwaysWarnf(r Reporter, format string, a ...any) {
+	if aw, ok := r.(AlwaysWarner); ok {
+		aw.AlwaysWarnf(format, a...)
+		return
+	}
+
+	r.Warnf(format, a...)
 }
