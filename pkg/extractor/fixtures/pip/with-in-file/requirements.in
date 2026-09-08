@@ -1,4 +1,4 @@
 # Direct dependencies
-requests==2.32.3
+requests==2.34.2
 typing_extensions>=4.0
-Flask==3.0.3
+Flask==3.1.3
