@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/tidwall/jsonc"
@@ -105,10 +107,19 @@ func (e BunLockExtractor) Extract(f extractor.DepFile, context extractor.ScanCon
 		return nil, fmt.Errorf("could not read bun.lock: %w", err)
 	}
 
+	// Normalize CRLF to LF and JSONC-sanitize once, then reuse the same buffer for
+	// both unmarshalling and position scanning so byte/line offsets stay internally
+	// consistent. jsonc.ToJSONInPlace is length- and line-preserving (it blanks
+	// comments and trailing commas to spaces).
+	normalized := bytes.ReplaceAll(content, []byte("\r\n"), []byte("\n"))
+	sanitized := jsonc.ToJSONInPlace(normalized)
+
 	var parsed BunLockfile
-	if err := json.Unmarshal(jsonc.ToJSONInPlace(content), &parsed); err != nil {
+	if err := json.Unmarshal(sanitized, &parsed); err != nil {
 		return nil, fmt.Errorf("could not parse bun.lock: %w", err)
 	}
+
+	positions := fileposition.InBunLockPackages(sanitized)
 
 	packages := make([]extractor.PackageDetails, 0, len(parsed.Packages))
 	for packageKey, tuple := range parsed.Packages {
@@ -120,6 +131,9 @@ func (e BunLockExtractor) Extract(f extractor.DepFile, context extractor.ScanCon
 			continue
 		}
 
+		blockLocation := positions[packageKey]
+		blockLocation.Filename = f.Path()
+
 		packages = append(packages, extractor.PackageDetails{
 			Name:           name,
 			Version:        version,
@@ -127,6 +141,8 @@ func (e BunLockExtractor) Extract(f extractor.DepFile, context extractor.ScanCon
 			TargetVersions: collectBunTargetVersions(parsed.Workspaces, packageKey, name),
 			Ecosystem:      models.EcosystemNPM,
 			PackageManager: bunPackageManager,
+			BlockLocation:  blockLocation,
+			LocationRole:   models.LocationRoleLockfile,
 		})
 	}
 
