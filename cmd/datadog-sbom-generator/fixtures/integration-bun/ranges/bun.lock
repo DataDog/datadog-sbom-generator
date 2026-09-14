@@ -1,23 +1,20 @@
 {
-  "lockfileVersion": 0,
+  "lockfileVersion": 1,
+  "configVersion": 1,
   "workspaces": {
     "": {
       "name": "bun-ranges",
       "dependencies": {
-        "lodash": "^4.17.21",
-        "workspace-a": "workspace:packages/a"
+        "lodash": "^4.18.1",
       },
       "devDependencies": {
-        "typescript": "^5.0.0"
-      }
+        "typescript": "^5.0.0",
+      },
     },
-    "packages/a": {
-      "name": "workspace-a"
-    }
   },
   "packages": {
-    "lodash": ["lodash@4.17.21", "", {}, "sha512-aaa"],
-    "typescript": ["typescript@5.3.3", "", {}, "sha512-bbb"],
-    "workspace-a": ["workspace-a@workspace:packages/a", "", {}, ""]
+    "lodash": ["lodash@4.18.1", "", {}, "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q=="],
+
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
   }
 }
