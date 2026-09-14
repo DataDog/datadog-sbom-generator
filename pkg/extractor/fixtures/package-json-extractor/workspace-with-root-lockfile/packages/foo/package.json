@@ -1,6 +1,6 @@
 {
   "name": "foo",
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.18.1"
   }
 }
