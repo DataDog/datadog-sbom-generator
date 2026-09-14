@@ -30,6 +30,9 @@ func (r *VoidReporter) HasErrored() bool {
 func (r *VoidReporter) Warnf(msg string, a ...any) {
 }
 
+func (r *VoidReporter) AlwaysWarnf(msg string, a ...any) {
+}
+
 func (r *VoidReporter) Infof(msg string, a ...any) {
 }
 

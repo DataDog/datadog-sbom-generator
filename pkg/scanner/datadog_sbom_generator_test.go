@@ -8,6 +8,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
+	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -34,6 +35,26 @@ lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-v2kDEf3Q8XQ...
+`
+
+const packageJSONLockTwoPackages = `
+{
+  "name": "example",
+  "version": "1.0.0",
+  "lockfileVersion": 2,
+  "dependencies": {
+    "lodash": {
+      "version": "4.17.21",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+      "integrity": "sha512-v2kDEf3Q8XQ..."
+    },
+    "express": {
+      "version": "4.18.0",
+      "resolved": "https://registry.npmjs.org/express/-/express-4.18.0.tgz",
+      "integrity": "sha512-v2kDEf3Q8XQ..."
+    }
+  }
+}
 `
 
 func Test_scanDir(t *testing.T) {
@@ -307,6 +328,93 @@ func Test_sanitizeScannedPackages_VersionRangesAreAllowed(t *testing.T) {
 	assert.Empty(t, sanitizedPackages[0].Version)
 	assert.Equal(t, ">=2.0,<3.0", sanitizedPackages[0].VersionRange)
 	assert.Equal(t, "pkg:pypi/requests", sanitizedPackages[0].PURL)
+}
+
+func Test_DoScan_ExcludeEcosystemAndExcludePackageFlags(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLock), 0600))
+
+	baseActions := ScannerActions{
+		DirectoryPaths: []string{tempDir},
+		Recursive:      true,
+	}
+
+	// No exclusions: the lodash package from package-lock.json is found.
+	results, err := DoScan(baseActions, &reporter.VoidReporter{})
+	require.NoError(t, err)
+	require.Len(t, results.Results, 1)
+	require.Len(t, results.Results[0].Packages, 1)
+	assert.Equal(t, "lodash", results.Results[0].Packages[0].Package.Name)
+
+	// --exclude-ecosystem drops every npm package, leaving nothing to scan.
+	ecosystemExcludedActions := baseActions
+	ecosystemExcludedActions.ExcludeEcosystems = []string{"npm"}
+	_, err = DoScan(ecosystemExcludedActions, &reporter.VoidReporter{})
+	require.ErrorIs(t, err, NoPackagesFoundErr)
+
+	// --exclude-package drops the single lodash package, leaving nothing to scan.
+	packageExcludedActions := baseActions
+	packageExcludedActions.ExcludePackages = []string{"npm:lodash"}
+	_, err = DoScan(packageExcludedActions, &reporter.VoidReporter{})
+	require.ErrorIs(t, err, NoPackagesFoundErr)
+}
+
+// Test_DoScan_UnionsConfigFileAndCLIFlagExclusions proves that sca.ignore-packages entries
+// from a repo's code-security.datadog.yaml and --exclude-package CLI flags are unioned, not
+// mutually exclusive: each source excludes its own package independently of the other.
+func Test_DoScan_UnionsConfigFileAndCLIFlagExclusions(t *testing.T) {
+	t.Setenv("DD_API_KEY", "")
+	t.Setenv("DD_APP_KEY", "")
+	t.Setenv("DD_JWT_TOKEN", "")
+	t.Setenv("DATADOG_API_KEY", "")
+	t.Setenv("DATADOG_APP_KEY", "")
+	t.Setenv("DATADOG_JWT_TOKEN", "")
+
+	tempDir := t.TempDir()
+	_, err := git.PlainInit(tempDir, false)
+	require.NoError(t, err)
+
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "package-lock.json"), []byte(packageJSONLockTwoPackages), 0600))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(tempDir, "code-security.datadog.yaml"),
+		[]byte("schema-version: v1.7\nsca:\n  ignore-packages:\n    - npm:lodash\n"),
+		0600,
+	))
+
+	baseActions := ScannerActions{
+		DirectoryPaths: []string{tempDir},
+		Recursive:      true,
+	}
+
+	// Config file alone excludes lodash, leaving express.
+	results, err := DoScan(baseActions, &reporter.VoidReporter{})
+	require.NoError(t, err)
+	require.Len(t, results.Results, 1)
+	require.Len(t, results.Results[0].Packages, 1)
+	assert.Equal(t, "express", results.Results[0].Packages[0].Package.Name)
+
+	// --exclude-package alone excludes express, leaving lodash.
+	cliOnlyActions := baseActions
+	cliOnlyActions.ExcludePackages = []string{"npm:express"}
+	require.NoError(t, os.Remove(filepath.Join(tempDir, "code-security.datadog.yaml")))
+	results, err = DoScan(cliOnlyActions, &reporter.VoidReporter{})
+	require.NoError(t, err)
+	require.Len(t, results.Results, 1)
+	require.Len(t, results.Results[0].Packages, 1)
+	assert.Equal(t, "lodash", results.Results[0].Packages[0].Package.Name)
+
+	// Both sources together exclude both packages, leaving nothing to scan.
+	require.NoError(t, os.WriteFile(
+		filepath.Join(tempDir, "code-security.datadog.yaml"),
+		[]byte("schema-version: v1.7\nsca:\n  ignore-packages:\n    - npm:lodash\n"),
+		0600,
+	))
+	unionActions := baseActions
+	unionActions.ExcludePackages = []string{"npm:express"}
+	_, err = DoScan(unionActions, &reporter.VoidReporter{})
+	require.ErrorIs(t, err, NoPackagesFoundErr)
 }
 
 func Test_filterIgnoredPackages_NoConfigReturnsAllPackages(t *testing.T) {
