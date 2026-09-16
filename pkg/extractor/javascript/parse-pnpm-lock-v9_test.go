@@ -71,6 +71,40 @@ func TestParsePnpmLock_v9_MultiDocumentStream(t *testing.T) {
 	})
 }
 
+// pnpm's config-dependencies feature resolves packages into the env document's
+// configDependencies map, scoped per-importer just like dependencies/devDependencies.
+// These are real installed packages and must surface in the SBOM (see
+// https://pnpm.io/lockfile#scanning-for-vulnerabilities).
+func TestParsePnpmLock_v9_ConfigDependencies(t *testing.T) {
+	t.Parallel()
+
+	packages, err := javascript.ParsePnpmLock("../fixtures/pnpm/config-dependencies.v9.yaml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "is-odd",
+			Version:        "3.0.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"3.0.1"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+		{
+			Name:           "my-config-tool",
+			Version:        "1.2.0",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"1.2.0"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"config"},
+		},
+	})
+}
+
 func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 	t.Parallel()
 
