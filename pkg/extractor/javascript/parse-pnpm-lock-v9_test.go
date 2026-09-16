@@ -47,6 +47,30 @@ func TestParsePnpmLock_v9_NodeRuntime(t *testing.T) {
 	})
 }
 
+// pnpm@12 writes pnpm-lock.yaml as a multi-document YAML stream: the first
+// document holds packageManagerDependencies metadata, the second holds the
+// real importers/packages/snapshots. Both documents must be decoded.
+func TestParsePnpmLock_v9_MultiDocumentStream(t *testing.T) {
+	t.Parallel()
+
+	packages, err := javascript.ParsePnpmLock("../fixtures/pnpm/multi-document.v9.yaml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "is-odd",
+			Version:        "3.0.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"3.0.1"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+	})
+}
+
 func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 	t.Parallel()
 
