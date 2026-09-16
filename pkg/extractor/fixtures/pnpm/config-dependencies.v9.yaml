@@ -1,0 +1,38 @@
+lockfileVersion: '9.0'
+
+importers:
+  .:
+    configDependencies:
+      my-config-tool:
+        specifier: 1.2.0
+        version: 1.2.0
+
+---
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      is-odd:
+        specifier: 3.0.1
+        version: 3.0.1
+
+packages:
+
+  my-config-tool@1.2.0:
+    resolution: {integrity: sha512-fakeIntegrityValueForConfigDependencyTestPurposesOnly1234567890abcdefghijklmno==}
+
+  is-odd@3.0.1:
+    resolution: {integrity: sha512-Ml6Y5FpFsUCT2sSJyPjc95yLYWD/l7pRA5MDJf0fCJXLVpMArfsUpFsUq3IUKUcTUJKXo/CB3RUX5D3sMzYr4Q==}
+    engines: {node: '>=0.12.0'}
+
+snapshots:
+
+  my-config-tool@1.2.0: {}
+
+  is-odd@3.0.1: {}

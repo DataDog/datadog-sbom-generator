@@ -224,6 +224,7 @@ func parsePnpmLock(sourceFile PnpmLockfile, positions map[string]models.FilePosi
 		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.Dependencies, "prod", workspacePath, positions, filePath)
 		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.OptionalDependencies, "optional", workspacePath, positions, filePath)
 		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.DevDependencies, "dev", workspacePath, positions, filePath)
+		directDependencies = extractDirectDependencies(sourceFile, directDependencies, importer.ConfigDependencies, "config", workspacePath, positions, filePath)
 	}
 
 	packages := make(map[string]extractor.PackageDetails)
@@ -383,6 +384,31 @@ func decodePnpmLockStream(r io.Reader, onTypeError func(err error)) (*PnpmLockfi
 	return merged, nil
 }
 
+// mergePnpmImporters unions two PnpmImporters for the same workspace path.
+// The env document and project document both key their importer under the
+// same workspace path (e.g. "."), each populating different dependency
+// groups, so fields must be merged rather than one document's importer
+// wholesale replacing the other's.
+func mergePnpmImporters(dst, src PnpmImporters) PnpmImporters {
+	dst.Dependencies = mergePnpmDependencies(dst.Dependencies, src.Dependencies)
+	dst.OptionalDependencies = mergePnpmDependencies(dst.OptionalDependencies, src.OptionalDependencies)
+	dst.DevDependencies = mergePnpmDependencies(dst.DevDependencies, src.DevDependencies)
+	dst.ConfigDependencies = mergePnpmDependencies(dst.ConfigDependencies, src.ConfigDependencies)
+
+	return dst
+}
+
+func mergePnpmDependencies(dst, src PnpmDependencies) PnpmDependencies {
+	for name, dep := range src {
+		if dst == nil {
+			dst = make(PnpmDependencies)
+		}
+		dst[name] = dep
+	}
+
+	return dst
+}
+
 // mergePnpmLockfile folds src's fields into dst, keeping whichever document
 // in the stream actually populated each field.
 func mergePnpmLockfile(dst, src *PnpmLockfile) {
@@ -394,7 +420,7 @@ func mergePnpmLockfile(dst, src *PnpmLockfile) {
 		if dst.Importers == nil {
 			dst.Importers = make(map[string]PnpmImporters)
 		}
-		dst.Importers[workspacePath] = importer
+		dst.Importers[workspacePath] = mergePnpmImporters(dst.Importers[workspacePath], importer)
 	}
 
 	for key, pkg := range src.Packages {
