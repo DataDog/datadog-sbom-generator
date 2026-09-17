@@ -1,0 +1,31 @@
+lockfileVersion: '9.0'
+
+importers:
+  .:
+    packageManagerDependencies:
+      - some-internal-tool@1.0.0
+
+---
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      is-odd:
+        specifier: 3.0.1
+        version: 3.0.1
+
+packages:
+
+  is-odd@3.0.1:
+    resolution: {integrity: sha512-Ml6Y5FpFsUCT2sSJyPjc95yLYWD/l7pRA5MDJf0fCJXLVpMArfsUpFsUq3IUKUcTUJKXo/CB3RUX5D3sMzYr4Q==}
+    engines: {node: '>=0.12.0'}
+
+snapshots:
+
+  is-odd@3.0.1: {}

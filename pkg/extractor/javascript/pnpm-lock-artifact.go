@@ -10,7 +10,6 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
-	"gopkg.in/yaml.v3"
 )
 
 // Compile-time check: PnpmLockExtractor must implement ArtifactExtractor.
@@ -46,8 +45,8 @@ func (e PnpmLockExtractor) GetArtifact(f extractor.DepFile, ctx extractor.ScanCo
 		return artifact, nil
 	}
 
-	var lockfile PnpmLockfile
-	if err := yaml.NewDecoder(bytes.NewReader(content)).Decode(&lockfile); err != nil {
+	lockfile, err := decodePnpmLockStream(bytes.NewReader(content), nil)
+	if err != nil {
 		return artifact, nil
 	}
 

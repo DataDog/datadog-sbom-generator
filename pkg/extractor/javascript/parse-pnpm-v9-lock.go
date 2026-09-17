@@ -348,28 +348,81 @@ func extractPnpmV9PackagePositions(lines []string) map[string]models.FilePositio
 	return positions
 }
 
-func (e PnpmLockExtractor) Extract(f extractor.DepFile, context extractor.ScanContext) ([]extractor.PackageDetails, error) {
-	var parsedLockfile *PnpmLockfile
+// decodePnpmLockStream decodes every YAML document in the stream and merges
+// them into a single PnpmLockfile. pnpm@12 writes pnpm-lock.yaml as a
+// multi-document stream: a first document holding packageManagerDependencies
+// metadata, followed by a second document holding the real
+// importers/packages/snapshots. yaml.Decoder.Decode only consumes one
+// document per call, so the stream must be drained in a loop.
+func decodePnpmLockStream(r io.Reader, onTypeError func(err error)) (*PnpmLockfile, error) {
+	merged := &PnpmLockfile{}
+	dec := yaml.NewDecoder(r)
 
+	for {
+		var doc PnpmLockfile
+
+		err := dec.Decode(&doc)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		// A yaml.TypeError is partial: the rest of the document still decoded, so we
+		// warn about the skipped entries instead of silently dropping every package.
+		var typeErr *yaml.TypeError
+		if errors.As(err, &typeErr) {
+			if onTypeError != nil {
+				onTypeError(typeErr)
+			}
+		} else if err != nil {
+			return merged, err
+		}
+
+		mergePnpmLockfile(merged, &doc)
+	}
+
+	return merged, nil
+}
+
+// mergePnpmLockfile folds src's fields into dst, keeping whichever document
+// in the stream actually populated each field.
+func mergePnpmLockfile(dst, src *PnpmLockfile) {
+	if src.Version != "" {
+		dst.Version = src.Version
+	}
+
+	for workspacePath, importer := range src.Importers {
+		if dst.Importers == nil {
+			dst.Importers = make(map[string]PnpmImporters)
+		}
+		dst.Importers[workspacePath] = importer
+	}
+
+	for key, pkg := range src.Packages {
+		if dst.Packages == nil {
+			dst.Packages = make(PnpmLockPackages)
+		}
+		dst.Packages[key] = pkg
+	}
+
+	for key, snapshot := range src.Snapshots {
+		if dst.Snapshots == nil {
+			dst.Snapshots = make(map[string]PnpmSnapshot)
+		}
+		dst.Snapshots[key] = snapshot
+	}
+}
+
+func (e PnpmLockExtractor) Extract(f extractor.DepFile, context extractor.ScanContext) ([]extractor.PackageDetails, error) {
 	content, err := io.ReadAll(f)
 	if err != nil {
 		return []extractor.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
 	}
 
-	err = yaml.NewDecoder(bytes.NewReader(content)).Decode(&parsedLockfile)
-
-	// A yaml.TypeError is partial: the rest of the lockfile still decoded, so we
-	// warn about the skipped entries instead of silently dropping every package.
-	var typeErr *yaml.TypeError
-	if errors.As(err, &typeErr) {
+	parsedLockfile, err := decodePnpmLockStream(bytes.NewReader(content), func(typeErr error) {
 		context.Reporter.Warnf("could not fully decode %s, some entries were skipped: %s\n", f.Path(), typeErr.Error())
-	} else if err != nil && !errors.Is(err, io.EOF) {
+	})
+	if err != nil {
 		return []extractor.PackageDetails{}, fmt.Errorf("could not extract from %s: %w", f.Path(), err)
-	}
-
-	// this will happen if the file is empty
-	if parsedLockfile == nil {
-		parsedLockfile = &PnpmLockfile{}
 	}
 
 	// Check if we need to use the legacy extractor instead
