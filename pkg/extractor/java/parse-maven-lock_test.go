@@ -936,6 +936,49 @@ func TestMavenLock_WithParent(t *testing.T) {
 	})
 }
 
+func TestMavenLock_WithParentManagedDependencyOverride(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-parent-managed-override.xml"))
+	packages, err := java.ParseMavenLock(childPath)
+	require.NoError(t, err)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "com.google.code.findbugs:jsr305",
+			Version:        "3.0.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			// Resolved from the child's dependencyManagement override (4.1.100.Final), not
+			// the parent's inherited pin (4.1.42.Final).
+			Name:           "io.netty:netty-all",
+			Version:        "4.1.100.Final",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:                "io.netty:netty-all",
+			Version:             "4.1.100.Final",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+		{
+			Name:                "com.google.code.findbugs:jsr305",
+			Version:             "3.0.2",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+	})
+}
+
 func TestMavenLock_WithParentDirOnly(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()

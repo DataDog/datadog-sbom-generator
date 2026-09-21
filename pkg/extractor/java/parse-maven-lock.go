@@ -529,7 +529,15 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	// If a dependency is declared and have not specified its version, then use the one declared in the managed dependencies
+	// If a dependency is declared and have not specified its version, then use the one declared in the managed
+	// dependencies. Managed dependencies are merged parent-first (see mergeLockfiles), so snapshot which
+	// dependencies actually need one up front and keep applying matches through the loop, letting the closest
+	// (last) managed entry win instead of stopping at the first ancestor that sets a version.
+	needsManagedVersion := map[string]bool{}
+	for name, pkgDetails := range details {
+		needsManagedVersion[name] = pkgDetails.IsVersionEmpty()
+	}
+
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
 		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile, context)
 		resolvedArtifactID, _ := lockPackage.ResolveArtifactID(*parsedLockfile, context)
@@ -539,7 +547,7 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 			continue
 		}
 
-		if pkgDetails.IsVersionEmpty() {
+		if needsManagedVersion[finalName] {
 			resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
 
 			// A position is null after resolving the Value in case the Value is directly defined in the block
@@ -558,16 +566,18 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	var constraints []extractor.PackageDetails
+	// Managed dependencies are merged parent-first (see mergeLockfiles), so a map keyed by
+	// name keeps only the closest override when a child POM re-pins an inherited constraint.
+	constraints := map[string]extractor.PackageDetails{}
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
 		pkg, ok := versionConstraintPackage(lockPackage, *parsedLockfile, context)
 		if !ok {
 			continue
 		}
-		constraints = append(constraints, pkg)
+		constraints[pkg.Name] = pkg
 	}
 
-	return append(slices.Collect(maps.Values(details)), constraints...), nil
+	return append(slices.Collect(maps.Values(details)), slices.Collect(maps.Values(constraints))...), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f extractor.DepFile, context extractor.ScanContext) (*models.ScannedArtifact, error) {
