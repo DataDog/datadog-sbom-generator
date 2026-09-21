@@ -558,7 +558,16 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	return slices.Collect(maps.Values(details)), nil
+	var constraints []extractor.PackageDetails
+	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
+		pkg, ok := versionConstraintPackage(lockPackage, *parsedLockfile, context)
+		if !ok {
+			continue
+		}
+		constraints = append(constraints, pkg)
+	}
+
+	return append(slices.Collect(maps.Values(details)), constraints...), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f extractor.DepFile, context extractor.ScanContext) (*models.ScannedArtifact, error) {
@@ -602,4 +611,62 @@ func init() {
 
 func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 	return extractor.ExtractFromFile(pathToLockfile, MavenLockExtractor{})
+}
+
+func versionConstraintPackage(lockPackage MavenLockDependency, lockfile MavenLockFile, context extractor.ScanContext) (extractor.PackageDetails, bool) {
+	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") {
+		return extractor.PackageDetails{}, false
+	}
+	if lockPackage.SourceFile == "" || strings.HasPrefix(lockPackage.SourceFile, "https") {
+		return extractor.PackageDetails{}, false
+	}
+
+	resolvedVersion, versionPosition := lockPackage.ResolveVersion(lockfile, context)
+	if resolvedVersion == "" {
+		return extractor.PackageDetails{}, false
+	}
+
+	blockLocation := models.FilePosition{
+		Line:     lockPackage.Line,
+		Column:   lockPackage.Column,
+		Filename: lockPackage.SourceFile,
+	}
+	if !blockLocation.IsStartSet() {
+		return extractor.PackageDetails{}, false
+	}
+
+	resolvedGroupID, groupIDPosition := lockPackage.ResolveGroupID(lockfile, context)
+	resolvedArtifactID, artifactPosition := lockPackage.ResolveArtifactID(lockfile, context)
+
+	if artifactPosition == (models.FilePosition{}) {
+		artifactPosition = lockPackage.ArtifactID.FilePosition
+		artifactPosition.Filename = lockPackage.SourceFile
+	}
+	if versionPosition == (models.FilePosition{}) {
+		versionPosition = lockPackage.Version.FilePosition
+		versionPosition.Filename = lockPackage.SourceFile
+	}
+	if groupIDPosition == (models.FilePosition{}) {
+		groupIDPosition = lockPackage.GroupID.FilePosition
+		groupIDPosition.Filename = lockPackage.SourceFile
+	}
+
+	var namespaceLocation *models.FilePosition
+	if !strings.HasPrefix(lockPackage.GroupID.Value, "${project.") &&
+		!strings.HasPrefix(lockPackage.GroupID.Value, "${pom.") {
+		namespaceLocation = &groupIDPosition
+	}
+
+	return extractor.PackageDetails{
+		Name:                resolvedGroupID + ":" + resolvedArtifactID,
+		Version:             resolvedVersion,
+		Ecosystem:           models.EcosystemMaven,
+		BlockLocation:       blockLocation,
+		LocationRole:        models.LocationRoleManifest,
+		NameLocation:        &artifactPosition,
+		NamespaceLocation:   namespaceLocation,
+		VersionLocation:     &versionPosition,
+		PackageManager:      mavenPackageManager,
+		IsVersionConstraint: true,
+	}, true
 }

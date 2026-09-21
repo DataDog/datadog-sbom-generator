@@ -125,6 +125,85 @@ func TestGroupPackageByPURL_ShouldUnifyPackages(t *testing.T) {
 	}
 }
 
+func TestGroupPackageByPURL_ShouldKeepVersionConstraintsSeparate(t *testing.T) {
+	t.Parallel()
+
+	pkg := models.PackageInfo{
+		Name:      "foo.bar:the-first-package",
+		Version:   "1.0.0",
+		Ecosystem: string(models.EcosystemMaven),
+	}
+	input := []models.PackageSource{
+		{
+			Packages: []models.PackageVulns{
+				{
+					Package: pkg,
+					Metadata: map[models.PackageMetadataType]string{
+						models.PackageManagerMetadata: "Maven",
+					},
+				},
+				{
+					Package: pkg,
+					Locations: []models.PackageLocations{
+						{Block: models.PackageLocation{Filename: "parent/pom.xml", LineStart: 18, LineEnd: 22}},
+					},
+					Metadata: map[models.PackageMetadataType]string{
+						models.PackageManagerMetadata:    "Maven",
+						models.VersionConstraintMetadata: "true",
+					},
+				},
+				{
+					Package: pkg,
+					Locations: []models.PackageLocations{
+						{Block: models.PackageLocation{Filename: "pom.xml", LineStart: 10, LineEnd: 14}},
+					},
+					Metadata: map[models.PackageMetadataType]string{
+						models.PackageManagerMetadata:    "Maven",
+						models.VersionConstraintMetadata: "true",
+					},
+				},
+			},
+		},
+	}
+
+	result, errors := purl.Group(input)
+	if len(errors) > 0 {
+		t.Errorf("Unexpected errors: %v", errors)
+	}
+
+	libraryKey := "pkg:maven/foo.bar/the-first-package@1.0.0"
+	constraintKey := libraryKey + "#version-constraint"
+
+	if len(result) != 2 {
+		t.Errorf("Expected 2 packages, got %d", len(result))
+	}
+
+	library, exists := result[libraryKey]
+	if !exists {
+		t.Errorf("Expected package %s to be in the results", libraryKey)
+	}
+	if library.Package.Purl != "" {
+		t.Errorf("Group must not set Package.Purl, got %q", library.Package.Purl)
+	}
+	if _, ok := library.Metadata[models.VersionConstraintMetadata]; ok {
+		t.Errorf("library key must not carry version-constraint metadata")
+	}
+
+	constraint, exists := result[constraintKey]
+	if !exists {
+		t.Errorf("Expected package %s to be in the results", constraintKey)
+	}
+	if constraint.Package.Purl != "" {
+		t.Errorf("Group must not set Package.Purl, got %q", constraint.Package.Purl)
+	}
+	if constraint.Metadata[models.VersionConstraintMetadata] != "true" {
+		t.Errorf("constraint key must keep version-constraint metadata")
+	}
+	if len(constraint.Locations) != 2 {
+		t.Errorf("expected merged constraint locations, got %d", len(constraint.Locations))
+	}
+}
+
 func TestGroupPackageByPURL_ShouldReportDependencyAsDirect(t *testing.T) {
 	t.Parallel()
 	input := []models.PackageSource{

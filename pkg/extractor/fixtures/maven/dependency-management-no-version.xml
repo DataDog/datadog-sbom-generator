@@ -1,0 +1,10 @@
+<project>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.unused</groupId>
+        <artifactId>unused-artifact</artifactId>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

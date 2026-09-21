@@ -248,6 +248,14 @@ func TestParseMavenLock_ShouldTrim(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"org.apache.maven:maven-artifact3",
+			"1.0.0",
+			filePos(path, 41, 51, 11, 24),
+			filePos(path, 46, 46, 27, 42),
+			filePos(path, 43, 43, 1, 17),
+			filePos(path, 49, 49, 20, 25),
+		),
 	})
 }
 
@@ -598,6 +606,22 @@ func TestParseMavenLock_WithDependencyManagement(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(path, 20, 24, 7, 20),
+			filePos(path, 22, 22, 21, 30),
+			filePos(path, 21, 21, 18, 26),
+			filePos(path, 23, 23, 18, 30),
+		),
+		mavenVersionConstraint(
+			"com.google.code.findbugs:jsr305",
+			"3.0.2",
+			filePos(path, 25, 29, 7, 20),
+			filePos(path, 27, 27, 21, 27),
+			filePos(path, 26, 26, 18, 42),
+			filePos(path, 28, 28, 18, 23),
+		),
 	})
 }
 
@@ -699,6 +723,14 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"org.mine:ranged-package",
+			"9.4.35.v20201120",
+			filePos(path, 38, 42, 7, 20),
+			filePos(path, 40, 40, 21, 35),
+			filePos(path, 39, 39, 18, 26),
+			filePos(path, 14, 14, 20, 42),
+		),
 	})
 }
 
@@ -885,6 +917,22 @@ func TestMavenLock_WithParent(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(parentPath, 12, 16, 7, 20),
+			filePos(parentPath, 14, 14, 21, 30),
+			filePos(parentPath, 13, 13, 18, 26),
+			filePos(parentPath, 15, 15, 18, 30),
+		),
+		mavenVersionConstraint(
+			"com.google.code.findbugs:jsr305",
+			"3.0.2",
+			filePos(parentPath, 17, 21, 7, 20),
+			filePos(parentPath, 19, 19, 21, 27),
+			filePos(parentPath, 18, 18, 18, 42),
+			filePos(parentPath, 20, 20, 18, 23),
+		),
 	})
 }
 
@@ -1043,6 +1091,22 @@ func TestMavenLock_WithParentDirOnly(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(parentPath, 11, 15, 7, 20),
+			filePos(parentPath, 13, 13, 21, 30),
+			filePos(parentPath, 12, 12, 18, 26),
+			filePos(parentPath, 14, 14, 18, 30),
+		),
+		mavenVersionConstraint(
+			"com.google.code.findbugs:jsr305",
+			"3.0.2",
+			filePos(parentPath, 16, 20, 7, 20),
+			filePos(parentPath, 18, 18, 21, 27),
+			filePos(parentPath, 17, 17, 18, 42),
+			filePos(parentPath, 19, 19, 18, 23),
+		),
 	})
 }
 
@@ -1201,6 +1265,22 @@ func TestMavenLock_WithParentWithoutRelativePath(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(parentPath, 11, 15, 7, 20),
+			filePos(parentPath, 13, 13, 21, 30),
+			filePos(parentPath, 12, 12, 18, 26),
+			filePos(parentPath, 14, 14, 18, 30),
+		),
+		mavenVersionConstraint(
+			"com.google.code.findbugs:jsr305",
+			"3.0.2",
+			filePos(parentPath, 16, 20, 7, 20),
+			filePos(parentPath, 18, 18, 21, 27),
+			filePos(parentPath, 17, 17, 18, 42),
+			filePos(parentPath, 19, 19, 18, 23),
+		),
 	})
 }
 
@@ -1434,6 +1514,22 @@ func TestMavenLock_WithMultipleParents(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(rootPath, 12, 16, 7, 20),
+			filePos(rootPath, 14, 14, 21, 30),
+			filePos(rootPath, 13, 13, 18, 26),
+			filePos(rootPath, 15, 15, 18, 30),
+		),
+		mavenVersionConstraint(
+			"com.google.code.findbugs:jsr305",
+			"3.0.2",
+			filePos(rootPath, 17, 21, 7, 20),
+			filePos(rootPath, 19, 19, 21, 27),
+			filePos(rootPath, 18, 18, 18, 42),
+			filePos(rootPath, 20, 20, 18, 23),
+		),
 	})
 }
 
@@ -1658,6 +1754,14 @@ func TestParseMavenLock_WithUnusedDependencyManagementDependencies(t *testing.T)
 			DepGroups: nil,
 			IsDirect:  true,
 		},
+		mavenVersionConstraint(
+			"io.unused:unused-artifact",
+			"1.0.0",
+			filePos(path, 8, 12, 7, 20),
+			filePos(path, 10, 10, 21, 36),
+			filePos(path, 9, 9, 18, 27),
+			filePos(path, 11, 11, 18, 23),
+		),
 	})
 }
 
@@ -1705,6 +1809,14 @@ func TestParseMavenLock_WithOverriddenDependencyVersions(t *testing.T) {
 			DepGroups: nil,
 			IsDirect:  true,
 		},
+		mavenVersionConstraint(
+			"junit:junit",
+			"3.0",
+			filePos(path, 5, 9, 7, 20),
+			filePos(path, 7, 7, 21, 26),
+			filePos(path, 6, 6, 18, 23),
+			filePos(path, 8, 8, 18, 21),
+		),
 	})
 }
 
@@ -1885,6 +1997,14 @@ func TestParseMavenLock_ResolveProperties(t *testing.T) {
 			DepGroups: nil,
 			IsDirect:  true,
 		},
+		mavenVersionConstraint(
+			"io.netty:netty-all",
+			"4.1.42.Final",
+			filePos(path, 18, 22, 7, 20),
+			filePos(path, 20, 20, 21, 30),
+			filePos(path, 19, 19, 18, 26),
+			filePos(path, 4, 4, 20, 32),
+		),
 	})
 }
 
@@ -1969,6 +2089,30 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	})
 }
 
+func TestParseMavenLock_SkipsImportedBOM(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-import.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+}
+
+func TestParseMavenLock_SkipsManagedDependencyWithoutVersion(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-no-version.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+}
+
 func TestParseMavenLock_TwoExclusions(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
@@ -2015,4 +2159,27 @@ func TestParseMavenLock_TwoExclusions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func mavenVersionConstraint(name, version string, block, nameLoc, namespaceLoc, versionLoc models.FilePosition) extractor.PackageDetails {
+	return extractor.PackageDetails{
+		Name:                name,
+		Version:             version,
+		PackageManager:      models.Maven,
+		Ecosystem:           models.EcosystemMaven,
+		BlockLocation:       block,
+		LocationRole:        models.LocationRoleManifest,
+		NameLocation:        &nameLoc,
+		NamespaceLocation:   &namespaceLoc,
+		VersionLocation:     &versionLoc,
+		IsVersionConstraint: true,
+	}
+}
+
+func filePos(filename string, lineStart, lineEnd, colStart, colEnd int) models.FilePosition {
+	return models.FilePosition{
+		Line:     models.Position{Start: lineStart, End: lineEnd},
+		Column:   models.Position{Start: colStart, End: colEnd},
+		Filename: filename,
+	}
 }

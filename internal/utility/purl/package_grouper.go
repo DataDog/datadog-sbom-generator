@@ -22,7 +22,13 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				errors = append(errors, err)
 				continue
 			}
-			packageVulns, packageExists := uniquePackages[packageURL.ToString()]
+
+			key := packageURL.ToString()
+			if _, ok := pkg.Metadata[models.VersionConstraintMetadata]; ok {
+				key += "#" + string(models.VersionConstraintMetadata)
+			}
+
+			packageVulns, packageExists := uniquePackages[key]
 			if packageExists {
 				// Entry already exists, we need to merge slices which are not expected to be the exact same
 				packageVulns.DepGroups = append(packageVulns.DepGroups, pkg.DepGroups...)
@@ -34,7 +40,7 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 				}
 				packageVulns.AdvisoriesForReachability = append(packageVulns.AdvisoriesForReachability, pkg.AdvisoriesForReachability...)
 
-				uniquePackages[packageURL.ToString()] = packageVulns
+				uniquePackages[key] = packageVulns
 			} else {
 				// Entry does not exists yet, lets create it
 				newPackageVuln := models.PackageVulns{
@@ -45,7 +51,7 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 					Metadata:                  pkg.Metadata,
 					AdvisoriesForReachability: pkg.AdvisoriesForReachability,
 				}
-				uniquePackages[packageURL.ToString()] = newPackageVuln
+				uniquePackages[key] = newPackageVuln
 			}
 		}
 	}
