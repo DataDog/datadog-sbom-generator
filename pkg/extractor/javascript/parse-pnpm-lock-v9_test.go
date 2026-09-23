@@ -105,6 +105,43 @@ func TestParsePnpmLock_v9_ConfigDependencies(t *testing.T) {
 	})
 }
 
+// TestParsePnpmLock_v9_ConfigDependencies_BlockLocation verifies that a config
+// dependency's location resolves to its "packages:" entry in the second YAML
+// document, not the "configDependencies:" declaration in the first document.
+func TestParsePnpmLock_v9_ConfigDependencies_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/config-dependencies.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	var configTool extractor.PackageDetails
+	found := false
+	for _, p := range packages {
+		if p.Name == "my-config-tool" {
+			configTool = p
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("Expected to find my-config-tool in packages, got %v", packages)
+	}
+
+	// my-config-tool@1.2.0 is at lines 27-28 in config-dependencies.v9.yaml,
+	// in the "packages:" block of the second document - not lines 6-8 where
+	// it's declared under "configDependencies:" in the first document.
+	assert.Equal(t, 27, configTool.BlockLocation.Line.Start)
+	assert.Equal(t, 28, configTool.BlockLocation.Line.End)
+	assert.Equal(t, path, configTool.BlockLocation.Filename)
+}
+
 func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 	t.Parallel()
 
