@@ -228,3 +228,84 @@ func TestParseCargoLock_TwoPackages_BlockLocation(t *testing.T) {
 	assert.True(t, os.IsPathSeparator(path[0]) || filepath.IsAbs(path),
 		"path should be absolute")
 }
+
+// TestParseCargoLock_PathDependencyMultiVersion_MisattributesManifestLocation documents a known
+// limitation: when a Cargo.toml dependency has no version requirement (e.g. a path dependency)
+// and Cargo.lock lists multiple versions of that package name, processDependencySection matches
+// the first same-named block it finds and stops, so the manifest location and IsDirect=true get
+// attached to the wrong version. Every package still keeps its lockfile-sourced BlockLocation
+// from Extract(), so location is never empty, just mis-attributed to "mycrate"@0.1.0 instead of
+// the true direct dependency, "mycrate"@0.2.0.
+func TestParseCargoLock_PathDependencyMultiVersion_MisattributesManifestLocation(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("../fixtures/cargo/path-dependency-multi-version/Cargo.lock")
+	if err != nil {
+		t.Fatalf("could not get absolute path: %v", err)
+	}
+
+	packages, err := rust.ParseCargoLock(path)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	pkgMap := make(map[string]extractor.PackageDetails)
+	for _, pkg := range packages {
+		pkgMap[pkg.Name+"@"+pkg.Version] = pkg
+	}
+
+	// The first "mycrate" block in Cargo.lock incorrectly wins the manifest match.
+	mycrateFirst := pkgMap["mycrate@0.1.0"]
+	assert.True(t, mycrateFirst.IsDirect, "mycrate@0.1.0 is mis-attributed as direct")
+	assert.Equal(t, models.LocationRoleManifest, mycrateFirst.LocationRole)
+
+	// The true path dependency never gets the manifest location.
+	mycrateSecond := pkgMap["mycrate@0.2.0"]
+	assert.False(t, mycrateSecond.IsDirect, "mycrate@0.2.0 is the real direct dependency but is not flagged as such")
+	assert.Equal(t, models.LocationRoleLockfile, mycrateSecond.LocationRole)
+	assert.NotEqual(t, 0, mycrateSecond.BlockLocation.Line.Start,
+		"mycrate@0.2.0 still has a lockfile-sourced location, it is never empty")
+
+	// other-crate, which does have a version requirement, matches correctly.
+	otherCrate := pkgMap["other-crate@1.0.5"]
+	assert.True(t, otherCrate.IsDirect)
+	assert.Equal(t, models.LocationRoleManifest, otherCrate.LocationRole)
+}
+
+// TestParseCargoLock_TargetSpecificDependency_NotEnrichedFromManifest documents a coverage gap:
+// CargoToml only parses [dependencies], [dev-dependencies] and [build-dependencies], so a
+// dependency declared under a platform-specific table like [target.'cfg(windows)'.dependencies]
+// is never matched. It keeps its lockfile-sourced BlockLocation (never empty) but stays
+// IsDirect=false and is never enriched with the manifest location, even though it is a genuine
+// direct dependency.
+func TestParseCargoLock_TargetSpecificDependency_NotEnrichedFromManifest(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("../fixtures/cargo/target-specific-deps/Cargo.lock")
+	if err != nil {
+		t.Fatalf("could not get absolute path: %v", err)
+	}
+
+	packages, err := rust.ParseCargoLock(path)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	pkgMap := make(map[string]extractor.PackageDetails)
+	for _, pkg := range packages {
+		pkgMap[pkg.Name] = pkg
+	}
+
+	// serde is declared under the regular [dependencies] table and matches as expected.
+	serde := pkgMap["serde"]
+	assert.True(t, serde.IsDirect)
+	assert.Equal(t, models.LocationRoleManifest, serde.LocationRole)
+
+	// winapi is only declared under [target.'cfg(windows)'.dependencies], which CargoToml does
+	// not model, so it is never recognized as direct nor enriched from the manifest.
+	winapi := pkgMap["winapi"]
+	assert.False(t, winapi.IsDirect, "winapi is a real direct dependency but target-specific tables are not parsed")
+	assert.Equal(t, models.LocationRoleLockfile, winapi.LocationRole)
+	assert.NotEqual(t, 0, winapi.BlockLocation.Line.Start,
+		"winapi still has a lockfile-sourced location, it is never empty")
+}
