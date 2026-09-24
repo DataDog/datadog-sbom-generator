@@ -3,6 +3,7 @@ package python
 import (
 	"io"
 	"strings"
+	"unicode"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
@@ -90,13 +91,19 @@ func isTable(line string) bool {
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
 }
 
-// tomlLineKey extracts the key of a "key = value" TOML line, skipping comments and lines
-// without an assignment. It is not a full TOML parser: it only isolates the key so package
-// names are matched exactly instead of via substring search.
+// tomlLineKey extracts the package name to match from a manifest line. It handles a
+// "key = value" TOML line (Pipfile/Poetry) as well as a PEP 621 dependency array item such as
+// `"requests==2.28.0",` (pyproject.toml `dependencies = [...]`). It is not a full TOML/PEP 508
+// parser: it only isolates the name so packages are matched exactly instead of via substring
+// search.
 func tomlLineKey(line string) (string, bool) {
 	trimmedLine := strings.TrimSpace(line)
 	if trimmedLine == "" || strings.HasPrefix(trimmedLine, "#") {
 		return "", false
+	}
+
+	if name, ok := pep621ArrayItemName(trimmedLine); ok {
+		return name, true
 	}
 
 	key, _, found := strings.Cut(trimmedLine, "=")
@@ -107,6 +114,44 @@ func tomlLineKey(line string) (string, bool) {
 	key = strings.Trim(strings.TrimSpace(key), `"'`)
 
 	return key, key != ""
+}
+
+// pep621ArrayItemName extracts the package name from a standalone quoted dependency-array item,
+// e.g. `"requests==2.28.0",` or `'flask[async]>=2.0'`. It returns false for anything that isn't
+// a single quoted token on the line, including quoted `"key" = "value"` lines, which still need
+// to go through the key = value path in tomlLineKey.
+func pep621ArrayItemName(trimmedLine string) (string, bool) {
+	line := strings.TrimSuffix(trimmedLine, ",")
+	if len(line) < 2 {
+		return "", false
+	}
+
+	quote := line[0]
+	if quote != '"' && quote != '\'' {
+		return "", false
+	}
+
+	closeIdx := strings.IndexByte(line[1:], quote)
+	if closeIdx == -1 {
+		return "", false
+	}
+	closeIdx++
+
+	if strings.TrimSpace(line[closeIdx+1:]) != "" {
+		return "", false
+	}
+
+	spec := line[1:closeIdx]
+	end := strings.IndexFunc(spec, func(r rune) bool {
+		return !(r == '-' || r == '_' || r == '.' || unicode.IsLetter(r) || unicode.IsDigit(r))
+	})
+	name := spec
+	if end != -1 {
+		name = spec[:end]
+	}
+	name = strings.TrimSpace(name)
+
+	return name, name != ""
 }
 
 // isDevTable checks if the line is a dev dependency table for Poetry, since the implementation is shared as both tools use toml files.

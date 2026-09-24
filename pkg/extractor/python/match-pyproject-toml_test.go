@@ -216,3 +216,88 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArray is a regression test for a bug where
+// switching the matcher from substring search to exact "key = value" matching broke PEP 621
+// dependency-array entries (pyproject.toml `dependencies = [...]`), since array items like
+// `"requests==2.28.0",` have no assignment operator: they were silently skipped, so PEP 621
+// direct dependencies lost their manifest location and IsDirect flag. This covers a pinned
+// version (`==`), a range operator (`>=`), and a bare unversioned entry.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "scipy",
+			PackageManager: models.Poetry,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 24},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "scipy",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 5, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
