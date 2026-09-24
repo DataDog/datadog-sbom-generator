@@ -164,17 +164,29 @@ func (m PackageJSONMatcher) Match(sourceFile extractor.DepFile, packages []extra
 	}
 
 	// Find and match each workspaces package.json file
-	if len(workspacesJSON.Workspaces) > 0 {
+	if len(workspacesJSON.Workspaces) > 0 || len(packageIndicesByLocation) > 0 {
 		matches := globWorkspacePackageJsons(workspacesJSON.Workspaces, sourceFile.Path())
 
 		// Match workspace-specific packages
+		matchedWorkspacePaths := make(map[string]bool, len(packageIndicesByLocation))
 		for workspacePath, indices := range packageIndicesByLocation {
 			for _, match := range matches {
 				matchPath := filepath.Dir(match)
 				if matchPath == workspacePath {
 					m.matchWorkspaceFile(sourceFile, match, packages, indices, context.Reporter)
+					matchedWorkspacePaths[workspacePath] = true
 				}
 			}
+		}
+
+		// pnpm resolves workspace members from pnpm-lock.yaml's importers (covers
+		// pnpm-workspace.yaml too), so a path here may not appear in package.json's
+		// "workspaces" glob results above — open it directly as a fallback.
+		for workspacePath, indices := range packageIndicesByLocation {
+			if matchedWorkspacePaths[workspacePath] {
+				continue
+			}
+			m.matchWorkspaceFile(sourceFile, filepath.Join(workspacePath, "package.json"), packages, indices, context.Reporter)
 		}
 
 		if len(packagesWithoutKnownLocationIndices) > 0 {
