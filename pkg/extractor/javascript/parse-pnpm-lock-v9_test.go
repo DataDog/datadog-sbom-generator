@@ -920,6 +920,42 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 	})
 }
 
+// TestParsePnpmLock_v9_PeerVariantsTieBreak_BlockLocation is a regression test for
+// lookupPnpmPosition's peer-suffix prefix fallback: when the exact "name@version" key is not
+// present in positions (only peer-suffixed variants are, e.g. "tsutils@3.21.0(typescript@4.0.0)"
+// and "tsutils@3.21.0(typescript@5.0.0)"), it must deterministically resolve to the variant
+// declared first in the lockfile rather than returning an empty FilePosition.
+func TestParsePnpmLock_v9_PeerVariantsTieBreak_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/peer-variants-tie-break.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	var tsutils *extractor.PackageDetails
+	for i := range packages {
+		if packages[i].Name == "tsutils" {
+			tsutils = &packages[i]
+		}
+	}
+	if tsutils == nil {
+		t.Fatalf("Expected to find package tsutils in %v", packages)
+	}
+
+	// "tsutils@3.21.0(typescript@4.0.0)" is declared before "tsutils@3.21.0(typescript@5.0.0)"
+	// in the fixture, so it must be the one picked by the earliest-line tie-break.
+	assert.Equal(t, 18, tsutils.BlockLocation.Line.Start)
+	assert.Equal(t, 21, tsutils.BlockLocation.Line.End)
+	assert.Equal(t, path, tsutils.BlockLocation.Filename)
+}
+
 func TestParsePnpmLock_Legacy_OnePackage_BlockLocation(t *testing.T) {
 	t.Parallel()
 
@@ -948,6 +984,35 @@ func TestParsePnpmLock_Legacy_OnePackage_BlockLocation(t *testing.T) {
 	// /acorn/8.7.0 is at lines 11-15 in one-package.yaml
 	assert.Equal(t, 11, pkg.BlockLocation.Line.Start)
 	assert.Equal(t, 15, pkg.BlockLocation.Line.End)
+}
+
+// TestParsePnpmLock_Legacy_Commits_BlockLocation is a regression test covering legacy pnpm
+// git/tarball dependencies (packages: keys like "github.com/my-org/mocks/<sha>" with no
+// version encoded in the path), which are the format most prone to key-normalization
+// mismatches between the decoded lockfile struct and the raw-text position scan.
+func TestParsePnpmLock_Legacy_Commits_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/commits.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if len(packages) != 5 {
+		t.Fatalf("Expected 5 packages, got %d", len(packages))
+	}
+
+	for _, pkg := range packages {
+		assert.Positive(t, pkg.BlockLocation.Line.Start, "BlockLocation.Line.Start should be > 0 for %s", pkg.Name)
+		assert.Positive(t, pkg.BlockLocation.Line.End, "BlockLocation.Line.End should be > 0 for %s", pkg.Name)
+		assert.Equal(t, path, pkg.BlockLocation.Filename, "BlockLocation.Filename should match for %s", pkg.Name)
+	}
 }
 
 func TestParsePnpmLock_Legacy_MultiplePackages_BlockLocation(t *testing.T) {
