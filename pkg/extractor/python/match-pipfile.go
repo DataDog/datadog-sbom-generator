@@ -32,41 +32,51 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		// if this is the start of a new table, check if it's a table that can contain dev dependencies
 		if isTable(line) {
 			inDevDepTable = isDevTable(line)
+			continue
 		}
+
+		manifestKey, ok := tomlLineKey(line)
+		if !ok {
+			continue
+		}
+		lowerManifestKey := strings.ToLower(manifestKey)
 
 		for key, pkg := range packages {
 			// There are some libraries that use upper case names, but their name is resolve as lower case (i.e. Django != django)
-			lowerLine := strings.ToLower(line)
 			lowerName := strings.ToLower(pkg.Name)
-			// We only need to find the package name because there cannot be multiple entries of the same dependency in the source file nor the lock file
-			if strings.Contains(lowerLine, lowerName) {
-				startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
-				endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
+			// Compare against the full TOML key rather than a substring match, otherwise a
+			// package like "requests" would match a line declaring "requests-oauthlib".
+			if lowerManifestKey != lowerName {
+				continue
+			}
 
-				packages[key].LocationRole = models.LocationRoleManifest
-				packages[key].BlockLocation = models.FilePosition{
-					Line:     models.Position{Start: lineNumber, End: lineNumber},
-					Column:   models.Position{Start: startColumn, End: endColumn},
-					Filename: sourceFile.Path(),
-				}
+			lowerLine := strings.ToLower(line)
+			startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
+			endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
 
-				nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerName, lineNumber)
-				if nameLocation != nil {
-					nameLocation.Filename = sourceFile.Path()
-					packages[key].NameLocation = nameLocation
-				}
+			packages[key].LocationRole = models.LocationRoleManifest
+			packages[key].BlockLocation = models.FilePosition{
+				Line:     models.Position{Start: lineNumber, End: lineNumber},
+				Column:   models.Position{Start: startColumn, End: endColumn},
+				Filename: sourceFile.Path(),
+			}
 
-				versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
-				if versionLocation != nil {
-					versionLocation.Filename = sourceFile.Path()
-					packages[key].VersionLocation = versionLocation
-				}
+			nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerName, lineNumber)
+			if nameLocation != nil {
+				nameLocation.Filename = sourceFile.Path()
+				packages[key].NameLocation = nameLocation
+			}
 
-				packages[key].IsDirect = true
+			versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
+			if versionLocation != nil {
+				versionLocation.Filename = sourceFile.Path()
+				packages[key].VersionLocation = versionLocation
+			}
 
-				if inDevDepTable {
-					packages[key].DepGroups = append(packages[key].DepGroups, "dev")
-				}
+			packages[key].IsDirect = true
+
+			if inDevDepTable {
+				packages[key].DepGroups = append(packages[key].DepGroups, "dev")
 			}
 		}
 	}
@@ -78,6 +88,25 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 func isTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
+}
+
+// tomlLineKey extracts the key of a "key = value" TOML line, skipping comments and lines
+// without an assignment. It is not a full TOML parser: it only isolates the key so package
+// names are matched exactly instead of via substring search.
+func tomlLineKey(line string) (string, bool) {
+	trimmedLine := strings.TrimSpace(line)
+	if trimmedLine == "" || strings.HasPrefix(trimmedLine, "#") {
+		return "", false
+	}
+
+	key, _, found := strings.Cut(trimmedLine, "=")
+	if !found {
+		return "", false
+	}
+
+	key = strings.Trim(strings.TrimSpace(key), `"'`)
+
+	return key, key != ""
 }
 
 // isDevTable checks if the line is a dev dependency table for Poetry, since the implementation is shared as both tools use toml files.

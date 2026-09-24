@@ -187,3 +187,71 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+// TestPipfileMatcher_Match_DoesNotMatchSubstringOfAnotherPackageName is a regression test for a
+// bug where a package name that is a substring of another declared package name (e.g.
+// "requests" inside "requests-oauthlib") had its correct lockfile location overwritten with the
+// manifest location of the unrelated package, and was incorrectly marked as a direct dependency.
+func TestPipfileMatcher_Match_DoesNotMatchSubstringOfAnotherPackageName(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/substring-collision/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	transitiveLockLocation := models.FilePosition{
+		Line:     models.Position{Start: 42, End: 42},
+		Column:   models.Position{Start: 1, End: 10},
+		Filename: "../fixtures/pipfile/substring-collision/Pipfile.lock",
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests-oauthlib",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "requests",
+			PackageManager: models.Requirements,
+			LocationRole:   models.LocationRoleLockfile,
+			BlockLocation:  transitiveLockLocation,
+		},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests-oauthlib",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 28},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 22, End: 27},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			// "requests" must keep its original lockfile location untouched: it is not
+			// declared in the Pipfile, so it must not match the "requests-oauthlib" line.
+			Name:           "requests",
+			PackageManager: models.Requirements,
+			LocationRole:   models.LocationRoleLockfile,
+			BlockLocation:  transitiveLockLocation,
+		},
+	})
+}
