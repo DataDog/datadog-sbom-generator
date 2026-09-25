@@ -216,3 +216,386 @@ func TestPyprojectTomlMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArray is a regression test for a bug where
+// switching the matcher from substring search to exact "key = value" matching broke PEP 621
+// dependency-array entries (pyproject.toml `dependencies = [...]`), since array items like
+// `"requests==2.28.0",` have no assignment operator: they were silently skipped, so PEP 621
+// direct dependencies lost their manifest location and IsDirect flag. This covers a pinned
+// version (`==`), a range operator (`>=`), and a bare unversioned entry.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "scipy",
+			PackageManager: models.Poetry,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 24},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "scipy",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 5, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInline is a regression test for a bug where
+// a PEP 621 dependency array declared inline on a single line, e.g.
+// `dependencies = ["requests>=2.32", "flask==2.0"]`, was never matched: pep621ArrayItemName
+// required the entire physical line to be a single quoted token, so this line fell through to the
+// "key = value" path and extracted "dependencies" as the key instead of the package names,
+// leaving every package on the line without a manifest location and IsDirect=false.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInline(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-inline-array/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 18, End: 26},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 36, End: 41},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineWithComma is a regression test for a
+// bug where the inline PEP 621 array parser split its contents on every comma, which breaks a PEP
+// 508 requirement whose version constraint itself contains a comma, e.g. `"urllib3>=1.26,<3"`. The
+// naive split produced two malformed fragments (`"urllib3>=1.26` and `<3"`), neither of which parsed
+// as a valid quoted item, so the package silently failed to match at all.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineWithComma(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-inline-array-with-comma/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "urllib3", PackageManager: models.Poetry},
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "urllib3",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 18, End: 25},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 38, End: 46},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayWithComment is a regression test for a bug
+// where a trailing TOML comment on a multiline PEP 621 array item, e.g.
+// `"requests>=2",  # needed by API`, made pep621ArrayItemName reject the line: it required nothing
+// to follow the closing quote besides an optional comma, so the trailing comment left the
+// dependency unmatched (no manifest location, IsDirect=false).
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayWithComment(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-with-comment/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 36},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineSharedPrefix is a regression test for a
+// bug where the NameLocation of a package declared in an inline PEP 621 array was computed by
+// searching the package name as a substring of the whole line. For
+// `dependencies = ["requests-oauthlib", "requests"]`, searching for "requests" found the occurrence
+// inside "requests-oauthlib" instead of the package's own entry, pointing callers at the wrong
+// token.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineSharedPrefix(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-inline-array-shared-prefix/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests-oauthlib", PackageManager: models.Poetry},
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests-oauthlib",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 49},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 18, End: 35},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 49},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 39, End: 47},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote is a regression test for a bug
+// where a PEP 621 requirement using a TOML double-quoted string with an escaped inner quote, e.g.
+// `"requests; python_version < \"3.12\""`, made pep621ArrayItemName find the escaped quote as the
+// string terminator (via a plain strings.IndexByte search that does not understand TOML escapes),
+// leaving trailing content that caused the whole item to be rejected as unrecognized.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-escaped-quote/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 43},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}

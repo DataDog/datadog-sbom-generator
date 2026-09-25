@@ -1,0 +1,2 @@
+[tool.poetry.dependencies]
+requests = { version = "^2", extras = ["socks"] }
