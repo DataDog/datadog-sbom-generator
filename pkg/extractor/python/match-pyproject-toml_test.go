@@ -301,3 +301,68 @@ func TestPyprojectTomlMatcher_Match_PEP621DependencyArray(t *testing.T) {
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInline is a regression test for a bug where
+// a PEP 621 dependency array declared inline on a single line, e.g.
+// `dependencies = ["requests>=2.32", "flask==2.0"]`, was never matched: pep621ArrayItemName
+// required the entire physical line to be a single quoted token, so this line fell through to the
+// "key = value" path and extracted "dependencies" as the key instead of the package names,
+// leaving every package on the line without a manifest location and IsDirect=false.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInline(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-inline-array/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+		},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 18, End: 26},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 36, End: 41},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}

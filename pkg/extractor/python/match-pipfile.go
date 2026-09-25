@@ -36,18 +36,17 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 			continue
 		}
 
-		manifestKey, ok := tomlLineKey(line)
+		manifestKeys, ok := tomlLineKeys(line)
 		if !ok {
 			continue
 		}
-		lowerManifestKey := strings.ToLower(manifestKey)
 
 		for key, pkg := range packages {
 			// There are some libraries that use upper case names, but their name is resolve as lower case (i.e. Django != django)
 			lowerName := strings.ToLower(pkg.Name)
-			// Compare against the full TOML key rather than a substring match, otherwise a
+			// Compare against the full TOML key(s) rather than a substring match, otherwise a
 			// package like "requests" would match a line declaring "requests-oauthlib".
-			if lowerManifestKey != lowerName {
+			if !containsLower(manifestKeys, lowerName) {
 				continue
 			}
 
@@ -91,29 +90,73 @@ func isTable(line string) bool {
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
 }
 
-// tomlLineKey extracts the package name to match from a manifest line. It handles a
-// "key = value" TOML line (Pipfile/Poetry) as well as a PEP 621 dependency array item such as
-// `"requests==2.28.0",` (pyproject.toml `dependencies = [...]`). It is not a full TOML/PEP 508
-// parser: it only isolates the name so packages are matched exactly instead of via substring
-// search.
-func tomlLineKey(line string) (string, bool) {
+// tomlLineKeys extracts the package name(s) to match from a manifest line. It handles a
+// "key = value" TOML line (Pipfile/Poetry), a PEP 621 dependency array item on its own line such
+// as `"requests==2.28.0",`, and a PEP 621 inline dependency array such as
+// `dependencies = ["requests==2.28.0", "flask>=2.0"]` (pyproject.toml `dependencies = [...]`).
+// It is not a full TOML/PEP 508 parser: it only isolates the name(s) so packages are matched
+// exactly instead of via substring search.
+func tomlLineKeys(line string) ([]string, bool) {
 	trimmedLine := strings.TrimSpace(line)
 	if trimmedLine == "" || strings.HasPrefix(trimmedLine, "#") {
-		return "", false
+		return nil, false
+	}
+
+	if names, ok := pep621InlineArrayNames(trimmedLine); ok {
+		return names, true
 	}
 
 	if name, ok := pep621ArrayItemName(trimmedLine); ok {
-		return name, true
+		return []string{name}, true
 	}
 
 	key, _, found := strings.Cut(trimmedLine, "=")
 	if !found {
-		return "", false
+		return nil, false
 	}
 
 	key = strings.Trim(strings.TrimSpace(key), `"'`)
+	if key == "" {
+		return nil, false
+	}
 
-	return key, key != ""
+	return []string{key}, true
+}
+
+// containsLower reports whether lowerName is present in names, comparing case-insensitively.
+func containsLower(names []string, lowerName string) bool {
+	for _, name := range names {
+		if strings.ToLower(name) == lowerName {
+			return true
+		}
+	}
+
+	return false
+}
+
+// pep621InlineArrayNames extracts package names from a PEP 621 dependency array declared inline
+// on a single line, e.g. `dependencies = ["requests==2.28.0", "flask>=2.0"]`. It returns false if
+// the line isn't an assignment to a bracketed list closed on the same line, which excludes both
+// plain "key = value" lines and the opening line of a multiline array (`dependencies = [`).
+func pep621InlineArrayNames(trimmedLine string) ([]string, bool) {
+	openIdx := strings.Index(trimmedLine, "[")
+	closeIdx := strings.LastIndex(trimmedLine, "]")
+	if openIdx == -1 || closeIdx == -1 || closeIdx < openIdx {
+		return nil, false
+	}
+
+	if !strings.Contains(trimmedLine[:openIdx], "=") {
+		return nil, false
+	}
+
+	var names []string
+	for _, item := range strings.Split(trimmedLine[openIdx+1:closeIdx], ",") {
+		if name, ok := pep621ArrayItemName(strings.TrimSpace(item)); ok {
+			names = append(names, name)
+		}
+	}
+
+	return names, len(names) > 0
 }
 
 // pep621ArrayItemName extracts the package name from a standalone quoted dependency-array item,
