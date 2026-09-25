@@ -160,10 +160,15 @@ func tomlLineKeys(line string) ([]manifestKey, bool) {
 func stripTrailingComment(line string) string {
 	var quote byte
 
-	for i := range len(line) {
+	for i := 0; i < len(line); i++ {
 		c := line[i]
 
 		if quote != 0 {
+			if quote == '"' && c == '\\' {
+				i++
+				continue
+			}
+
 			if c == quote {
 				quote = 0
 			}
@@ -214,17 +219,25 @@ func pep621InlineArrayKeys(trimmedLine string) ([]manifestKey, bool) {
 // splitTopLevelArrayItems splits the inside of a TOML array on commas, ignoring commas that appear
 // inside quoted strings. This preserves PEP 508 requirement specifiers that contain a comma as part
 // of a version constraint, e.g. `"urllib3>=1.26,<3"`, which a naive strings.Split(s, ",") would cut
-// in half.
+// in half. Escaped quotes inside a double-quoted string (e.g. `"requests; python_version <
+// \"3.12\""`) are skipped rather than treated as the string terminator.
 func splitTopLevelArrayItems(inner string) []string {
 	var items []string
 	var current strings.Builder
 	var quote byte
 
-	for i := range len(inner) {
+	for i := 0; i < len(inner); i++ {
 		c := inner[i]
 
 		if quote != 0 {
 			current.WriteByte(c)
+			if quote == '"' && c == '\\' && i+1 < len(inner) {
+				i++
+				current.WriteByte(inner[i])
+
+				continue
+			}
+
 			if c == quote {
 				quote = 0
 			}
@@ -266,7 +279,7 @@ func pep621ArrayItemName(trimmedLine string) (string, bool) {
 		return "", false
 	}
 
-	closeIdx := strings.IndexByte(line[1:], quote)
+	closeIdx := findClosingQuote(line[1:], quote)
 	if closeIdx == -1 {
 		return "", false
 	}
@@ -287,6 +300,24 @@ func pep621ArrayItemName(trimmedLine string) (string, bool) {
 	name = strings.TrimSpace(name)
 
 	return name, name != ""
+}
+
+// findClosingQuote returns the index of the first unescaped occurrence of quote in s. Only
+// double-quoted TOML strings support backslash escapes, so a backslash inside a single-quoted
+// (literal) string is treated as a literal character rather than an escape.
+func findClosingQuote(s string, quote byte) int {
+	for i := 0; i < len(s); i++ {
+		if quote == '"' && s[i] == '\\' {
+			i++
+			continue
+		}
+
+		if s[i] == quote {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func isDevTable(line string) bool {

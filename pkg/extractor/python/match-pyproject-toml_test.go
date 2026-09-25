@@ -541,3 +541,61 @@ func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineSharedPrefix(t *t
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote is a regression test for a bug
+// where a PEP 621 requirement using a TOML double-quoted string with an escaped inner quote, e.g.
+// `"requests; python_version < \"3.12\""`, made pep621ArrayItemName find the escaped quote as the
+// string terminator (via a plain strings.IndexByte search that does not understand TOML escapes),
+// leaving trailing content that caused the whole item to be rejected as unrecognized.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-escaped-quote/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 43},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 14},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "flask",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 13},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 11},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
