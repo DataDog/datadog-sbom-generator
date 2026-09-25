@@ -255,3 +255,58 @@ func TestPipfileMatcher_Match_DoesNotMatchSubstringOfAnotherPackageName(t *testi
 		},
 	})
 }
+
+// TestPipfileMatcher_Match_PoetryInlineTableWithNestedArray is a regression test for a bug where
+// pep621InlineArrayNames matched any "key = ... [ ... ]" line regardless of what came between the
+// "=" and the "[", so a Poetry inline-table dependency such as
+// `requests = { version = "^2", extras = ["socks"] }` was misparsed as a PEP 621 dependency array,
+// extracting "socks" (from the nested "extras" array) instead of "requests". This left "requests"
+// unmatched and, if "socks" happened to be an existing package, could scribble a manifest location
+// onto it that it does not have.
+func TestPipfileMatcher_Match_PoetryInlineTableWithNestedArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/poetry-inline-table-with-array/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "socks", PackageManager: models.Poetry},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 50},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 25, End: 46},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			// "socks" is nested inside the "extras" array of the inline table, not a
+			// top-level dependency declaration, so it must not be matched at all.
+			Name:           "socks",
+			PackageManager: models.Poetry,
+		},
+	})
+}

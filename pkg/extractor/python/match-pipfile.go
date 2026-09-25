@@ -135,28 +135,70 @@ func containsLower(names []string, lowerName string) bool {
 }
 
 // pep621InlineArrayNames extracts package names from a PEP 621 dependency array declared inline
-// on a single line, e.g. `dependencies = ["requests==2.28.0", "flask>=2.0"]`. It returns false if
-// the line isn't an assignment to a bracketed list closed on the same line, which excludes both
-// plain "key = value" lines and the opening line of a multiline array (`dependencies = [`).
+// on a single line, e.g. `dependencies = ["requests==2.28.0", "flask>=2.0"]`. It requires the value
+// assigned to the key to be a bracketed list closed on the same line (nothing else on the line
+// besides an optional trailing comma), which excludes plain "key = value" lines, the opening line
+// of a multiline array (`dependencies = [`), and inline tables containing a nested array such as
+// `requests = { version = "^2", extras = ["socks"] }` (there the value starts with "{", not "[").
 func pep621InlineArrayNames(trimmedLine string) ([]string, bool) {
-	openIdx := strings.Index(trimmedLine, "[")
-	closeIdx := strings.LastIndex(trimmedLine, "]")
-	if openIdx == -1 || closeIdx == -1 || closeIdx < openIdx {
+	key, value, found := strings.Cut(trimmedLine, "=")
+	if !found || strings.TrimSpace(key) == "" {
 		return nil, false
 	}
 
-	if !strings.Contains(trimmedLine[:openIdx], "=") {
+	value = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(value), ","))
+	if !strings.HasPrefix(value, "[") || !strings.HasSuffix(value, "]") {
 		return nil, false
 	}
 
 	var names []string
-	for _, item := range strings.Split(trimmedLine[openIdx+1:closeIdx], ",") {
+	for _, item := range splitTopLevelArrayItems(value[1 : len(value)-1]) {
 		if name, ok := pep621ArrayItemName(strings.TrimSpace(item)); ok {
 			names = append(names, name)
 		}
 	}
 
 	return names, len(names) > 0
+}
+
+// splitTopLevelArrayItems splits the inside of a TOML array on commas, ignoring commas that appear
+// inside quoted strings. This preserves PEP 508 requirement specifiers that contain a comma as part
+// of a version constraint, e.g. `"urllib3>=1.26,<3"`, which a naive strings.Split(s, ",") would cut
+// in half.
+func splitTopLevelArrayItems(inner string) []string {
+	var items []string
+	var current strings.Builder
+	var quote byte
+
+	for i := range len(inner) {
+		c := inner[i]
+
+		if quote != 0 {
+			current.WriteByte(c)
+			if c == quote {
+				quote = 0
+			}
+
+			continue
+		}
+
+		switch c {
+		case '"', '\'':
+			quote = c
+			current.WriteByte(c)
+		case ',':
+			items = append(items, current.String())
+			current.Reset()
+		default:
+			current.WriteByte(c)
+		}
+	}
+
+	if strings.TrimSpace(current.String()) != "" {
+		items = append(items, current.String())
+	}
+
+	return items
 }
 
 // pep621ArrayItemName extracts the package name from a standalone quoted dependency-array item,

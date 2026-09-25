@@ -366,3 +366,61 @@ func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInline(t *testing.T) {
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineWithComma is a regression test for a
+// bug where the inline PEP 621 array parser split its contents on every comma, which breaks a PEP
+// 508 requirement whose version constraint itself contains a comma, e.g. `"urllib3>=1.26,<3"`. The
+// naive split produced two malformed fragments (`"urllib3>=1.26` and `<3"`), neither of which parsed
+// as a valid quoted item, so the package silently failed to match at all.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineWithComma(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-inline-array-with-comma/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "urllib3", PackageManager: models.Poetry},
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "urllib3",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 18, End: 25},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 1, End: 48},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 4, End: 4},
+				Column:   models.Position{Start: 38, End: 46},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+	})
+}
