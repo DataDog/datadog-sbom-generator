@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-  implementation(group = "org.springframework.security", name = "spring-security-crypto", version = "5.7.3")
+  implementation(group = "org.springframework.security", name = "spring-security-crypto", version = "5.8.0")
 }
 
 dependencyLocking {
