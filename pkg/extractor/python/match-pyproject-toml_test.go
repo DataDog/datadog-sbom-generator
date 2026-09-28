@@ -547,6 +547,86 @@ func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayInlineSharedPrefix(t *t
 // `"requests; python_version < \"3.12\""`, made pep621ArrayItemName find the escaped quote as the
 // string terminator (via a plain strings.IndexByte search that does not understand TOML escapes),
 // leaving trailing content that caused the whole item to be rejected as unrecognized.
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayPartialMultiline is a regression test for a
+// bug where a PEP 621 dependency array that placed an item on the same physical line as the
+// opening or closing bracket, e.g. `dependencies = ["requests>=2",` followed by `"flask"]`, was
+// never matched: the opening line fell back to the key "dependencies" and the closing line was
+// rejected as an unrecognized standalone item, since neither is a single fully-quoted token nor a
+// same-line inline array.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayPartialMultiline(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-partial-multiline/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.True(t, pkg.IsDirect, "expected %s to be recognized as a direct dependency", pkg.Name)
+		assert.Equal(t, models.LocationRoleManifest, pkg.LocationRole, "expected %s to have a manifest location", pkg.Name)
+	}
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayLeadingWhitespace is a regression test for
+// a bug where a PEP 508 requirement with leading whitespace inside the quotes, e.g.
+// `" requests >=2"`, made pep621ArrayItemName scan the name from the untrimmed spec: IndexFunc
+// stopped at the leading space immediately, producing an empty name and rejecting the entry.
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayLeadingWhitespace(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-leading-whitespace/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.True(t, pkg.IsDirect, "expected %s to be recognized as a direct dependency", pkg.Name)
+		assert.Equal(t, models.LocationRoleManifest, pkg.LocationRole, "expected %s to have a manifest location", pkg.Name)
+	}
+}
+
+// TestPyprojectTomlMatcher_Match_PEP621DependencyArrayNameNormalization is a regression test for
+// a bug where the manifest key comparison used a plain case-insensitive match instead of PEP 503
+// name normalization, so a manifest entry spelled "my_package" never matched a lockfile package
+// recorded under its canonical name "my-package".
+func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayNameNormalization(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/pep621-array-name-normalization/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "my-package", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected my-package to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+}
+
 func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote(t *testing.T) {
 	t.Parallel()
 

@@ -22,25 +22,45 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 
 	lines := fileposition.BytesToLines(content)
 	var inDevDepTable bool
+	var inArray bool
 
 	for index, line := range lines {
 		lineNumber := index + 1
 
 		if isTable(line) {
 			inDevDepTable = isDevTable(line)
+			inArray = false
+
 			continue
 		}
 
-		manifestKeys, ok := tomlLineKeys(line)
-		if !ok {
+		var manifestKeys []manifestKey
+
+		switch {
+		case inArray:
+			itemContent, closed := closeMultilineArrayLine(line)
+			manifestKeys = manifestKeysFromArrayItems(itemContent)
+			inArray = !closed
+		default:
+			if rest, opened := multilineArrayOpener(line); opened {
+				manifestKeys = manifestKeysFromArrayItems(rest)
+				inArray = true
+			} else if keys, ok := tomlLineKeys(line); ok {
+				manifestKeys = keys
+			}
+		}
+
+		if len(manifestKeys) == 0 {
 			continue
 		}
 
 		for key, pkg := range packages {
-			lowerName := strings.ToLower(pkg.Name)
-			// Compare against the full TOML key(s) rather than a substring match, otherwise a
-			// package like "requests" would match a line declaring "requests-oauthlib".
-			manifestKey, ok := findManifestKey(manifestKeys, lowerName)
+			// Compare normalized names (PEP 503) rather than a raw substring match, so that
+			// spelling variants like "my_package" or "my.package" in the manifest still match
+			// the lockfile's canonical "my-package", and so a package like "requests" doesn't
+			// match a line declaring "requests-oauthlib".
+			normalizedName := normalizedRequirementName(pkg.Name)
+			manifestKey, ok := findManifestKey(manifestKeys, normalizedName)
 			if !ok {
 				continue
 			}
@@ -66,7 +86,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 				searchLine, columnOffset = anchor, anchorOffset
 			}
 
-			nameLocation := fileposition.ExtractStringPositionInBlock([]string{searchLine}, lowerName, lineNumber)
+			nameLocation := fileposition.ExtractStringPositionInBlock([]string{searchLine}, strings.ToLower(manifestKey.name), lineNumber)
 			if nameLocation != nil {
 				nameLocation.Column.Start += columnOffset
 				nameLocation.Column.End += columnOffset
@@ -107,10 +127,11 @@ type manifestKey struct {
 	raw  string
 }
 
-// findManifestKey looks up lowerName among keys, comparing case-insensitively.
-func findManifestKey(keys []manifestKey, lowerName string) (manifestKey, bool) {
+// findManifestKey looks up normalizedName among keys, comparing PEP 503 normalized names so that
+// spelling variants such as "my_package" and "my.package" match the canonical "my-package".
+func findManifestKey(keys []manifestKey, normalizedName string) (manifestKey, bool) {
 	for _, k := range keys {
-		if strings.ToLower(k.name) == lowerName {
+		if normalizedRequirementName(k.name) == normalizedName {
 			return k, true
 		}
 	}
@@ -205,15 +226,94 @@ func pep621InlineArrayKeys(trimmedLine string) ([]manifestKey, bool) {
 		return nil, false
 	}
 
+	keys := manifestKeysFromArrayItems(value[1 : len(value)-1])
+
+	return keys, len(keys) > 0
+}
+
+// manifestKeysFromArrayItems splits the raw content of a PEP 621 array (brackets already
+// stripped) into individual manifestKeys, skipping any fragment that isn't a recognizable quoted
+// item, e.g. a partial token left over from a comma that fell outside this line.
+func manifestKeysFromArrayItems(content string) []manifestKey {
 	var keys []manifestKey
-	for _, item := range splitTopLevelArrayItems(value[1 : len(value)-1]) {
+	for _, item := range splitTopLevelArrayItems(content) {
 		item = strings.TrimSpace(item)
 		if name, ok := pep621ArrayItemName(item); ok {
 			keys = append(keys, manifestKey{name: name, raw: item})
 		}
 	}
 
-	return keys, len(keys) > 0
+	return keys
+}
+
+// multilineArrayOpener detects the opening line of a PEP 621 dependency array whose closing "]"
+// is on a later line, e.g. `dependencies = ["requests",`. It returns the array content that
+// appears after the "[" on this same line, which may itself contain one or more complete items
+// (e.g. `["requests",`) or be empty (e.g. `dependencies = [`).
+func multilineArrayOpener(line string) (string, bool) {
+	line = stripTrailingComment(line)
+	trimmedLine := strings.TrimSpace(line)
+
+	key, value, found := strings.Cut(trimmedLine, "=")
+	if !found || strings.TrimSpace(key) == "" {
+		return "", false
+	}
+
+	value = strings.TrimSpace(value)
+	if !strings.HasPrefix(value, "[") {
+		return "", false
+	}
+
+	rest := value[1:]
+	if findMultilineArrayClose(rest) != -1 {
+		// Closes on the same line; handled by pep621InlineArrayKeys instead.
+		return "", false
+	}
+
+	return rest, true
+}
+
+// closeMultilineArrayLine processes a line encountered while inside a multiline PEP 621 array.
+// It returns the item content up to the closing "]" if present on this line (so an item sharing
+// the closing line, e.g. `"flask"]`, is still recognized) together with whether the array closed.
+func closeMultilineArrayLine(line string) (string, bool) {
+	line = stripTrailingComment(line)
+	if idx := findMultilineArrayClose(line); idx != -1 {
+		return line[:idx], true
+	}
+
+	return line, false
+}
+
+// findMultilineArrayClose returns the index of the first unquoted "]" in line, or -1.
+func findMultilineArrayClose(line string) int {
+	var quote byte
+
+	for i := 0; i < len(line); i++ {
+		c := line[i]
+
+		if quote != 0 {
+			if quote == '"' && c == '\\' {
+				i++
+				continue
+			}
+
+			if c == quote {
+				quote = 0
+			}
+
+			continue
+		}
+
+		switch c {
+		case '"', '\'':
+			quote = c
+		case ']':
+			return i
+		}
+	}
+
+	return -1
 }
 
 // splitTopLevelArrayItems splits the inside of a TOML array on commas, ignoring commas that appear
@@ -289,7 +389,7 @@ func pep621ArrayItemName(trimmedLine string) (string, bool) {
 		return "", false
 	}
 
-	spec := line[1:closeIdx]
+	spec := strings.TrimSpace(line[1:closeIdx])
 	end := strings.IndexFunc(spec, func(r rune) bool {
 		return !(r == '-' || r == '_' || r == '.' || unicode.IsLetter(r) || unicode.IsDigit(r))
 	})
