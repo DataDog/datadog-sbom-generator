@@ -220,9 +220,9 @@ func TestParseCargoLock_TwoPackages_BlockLocation(t *testing.T) {
 	assert.Equal(t, 5, pkgMap["addr2line"].BlockLocation.Line.Start)
 	assert.Equal(t, 12, pkgMap["addr2line"].BlockLocation.Line.End)
 
-	// syn starts at line 14 ("[[package]]"), ends at line 24 (last package includes trailing content)
+	// syn starts at line 14 ("[[package]]"), ends before EOF at line 23 (the file's last line)
 	assert.Equal(t, 14, pkgMap["syn"].BlockLocation.Line.Start)
-	assert.Equal(t, 24, pkgMap["syn"].BlockLocation.Line.End)
+	assert.Equal(t, 23, pkgMap["syn"].BlockLocation.Line.End)
 
 	// Verify path is absolute
 	assert.True(t, os.IsPathSeparator(path[0]) || filepath.IsAbs(path),
