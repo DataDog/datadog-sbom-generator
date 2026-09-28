@@ -179,7 +179,9 @@ func Test_getAdvisoriesToCheckPerLanguage_UnsupportedOrMalformedPurlsAreSkipped(
 		ID: "testing-123",
 		Results: []http.SymbolsForPurl{
 			{
-				Purl: "pkg:npm/lodash@4.17.21",
+				// pypi has no reachability detector registered, so it should be skipped like any
+				// other unsupported PURL type.
+				Purl: "pkg:pypi/lodash@4.17.21",
 				VulnerableSymbols: []http.SymbolDetails{
 					{
 						AdvisoryID: "CVE-2025-1111",
@@ -202,6 +204,51 @@ func Test_getAdvisoriesToCheckPerLanguage_UnsupportedOrMalformedPurlsAreSkipped(
 	}
 
 	expected := models.AdvisoriesToCheckPerLanguage{}
+
+	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
+
+	assert.Equal(t, expected, advisoriesToCheckPerLanguage)
+}
+
+func Test_getAdvisoriesToCheckPerLanguage_NpmPurlRoutesToJavaScriptLanguage(t *testing.T) {
+	t.Parallel()
+
+	resolveVulnerableSymbolsResponse := http.ResolveVulnerableSymbolsResponse{
+		ID: "testing-123",
+		Results: []http.SymbolsForPurl{
+			{
+				Purl: "pkg:npm/lodash@4.17.21",
+				VulnerableSymbols: []http.SymbolDetails{
+					{
+						AdvisoryID: "CVE-2025-1111",
+						Symbols: []http.Symbol{
+							{
+								Type:  "function",
+								Value: "lodash",
+								Name:  "merge",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	expected := models.AdvisoriesToCheckPerLanguage{
+		"javascript": {
+			{
+				Purl:       "pkg:npm/lodash@4.17.21",
+				AdvisoryID: "CVE-2025-1111",
+				Symbols: []models.Symbols{
+					{
+						Type:  "function",
+						Value: "lodash",
+						Name:  "merge",
+					},
+				},
+			},
+		},
+	}
 
 	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(&reporter.VoidReporter{}, resolveVulnerableSymbolsResponse)
 

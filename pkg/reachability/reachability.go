@@ -22,21 +22,35 @@ import (
 // languageKeyToDetectorFactory, and purlTypeToLanguageKey (utils.go) so a typo in one map can't
 // silently drift from the others.
 const (
-	languageKeyGo   = "go"
-	languageKeyJava = "java"
+	languageKeyGo         = "go"
+	languageKeyJava       = "java"
+	languageKeyJavaScript = "javascript"
 )
 
 // extensionToLanguageKey maps a file extension to the language key used both to look up
-// advisories to check and to select a detector pool.
+// advisories to check and to select a detector pool. All JavaScript/TypeScript/JSX/TSX
+// extensions share one language key; the detector itself picks the right tree-sitter grammar
+// (JS, TS, or TSX) internally based on the file extension.
 var extensionToLanguageKey = map[string]string{
 	".java": languageKeyJava,
 	".go":   languageKeyGo,
+	".js":   languageKeyJavaScript,
+	".jsx":  languageKeyJavaScript,
+	".mjs":  languageKeyJavaScript,
+	".cjs":  languageKeyJavaScript,
+	".ts":   languageKeyJavaScript,
+	".mts":  languageKeyJavaScript,
+	".cts":  languageKeyJavaScript,
+	".tsx":  languageKeyJavaScript,
 }
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
 	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
 	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
+	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
+		return codefile.NewJavaScriptReachableDetector(r)
+	},
 }
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.

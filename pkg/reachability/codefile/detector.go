@@ -16,4 +16,5 @@ type Detector interface {
 var (
 	_ Detector = (*ReachabilityJava)(nil)
 	_ Detector = (*ReachabilityGo)(nil)
+	_ Detector = (*ReachabilityJavaScript)(nil)
 )

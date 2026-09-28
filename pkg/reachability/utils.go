@@ -13,6 +13,7 @@ import (
 var purlTypeToLanguageKey = map[string]string{
 	packageurl.TypeMaven:  languageKeyJava,
 	packageurl.TypeGolang: languageKeyGo,
+	packageurl.TypeNPM:    languageKeyJavaScript,
 }
 
 // getAdvisoriesToCheckPerLanguage returns a map of language to advisories with symbols to check.
