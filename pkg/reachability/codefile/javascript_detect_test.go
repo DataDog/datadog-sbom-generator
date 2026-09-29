@@ -207,9 +207,11 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 }
 
 // Test_Detect_JavaScript_NoMatch covers cases that must NOT produce a match: an unrelated
-// package with the same symbol name, a computed require (no binding produced at all), a
-// function name mismatch, and a class name mismatch - the last two are regression fixtures for
-// the candidatesForBinding/matchesCandidate tautology bug caught during development.
+// package with the same symbol name, a computed require (no binding produced at all), function
+// and class name mismatches (regression fixtures for the candidatesForBinding/matchesCandidate
+// tautology bug), a default-callable module invoked directly with an unrelated advisory symbol
+// (regression fixture for the Default-binding false positive found in review), and an
+// unsupported symbol type.
 //
 //nolint:paralleltest
 func Test_Detect_JavaScript_NoMatch(t *testing.T) {
@@ -254,6 +256,21 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 					Purl:       "pkg:npm/vulnerable-lib@1.0.0",
 					AdvisoryID: "CVE-2025-9012",
 					Symbols:    []models.Symbols{{Type: symbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
+				},
+			},
+		},
+		// Regression test for a real false positive found in review: many modules are both
+		// callable and property-bearing, so `const _ = require('lodash'); _([1,2,3])`
+		// (idiomatic lodash chaining, which never touches `merge`) must NOT match a
+		// function-type advisory for `merge`. Before the fix, Default bindings skipped the
+		// name check entirely and this matched every function-type lodash advisory.
+		"default-callable module called directly, unrelated advisory symbol": {
+			path: "testdata/CVE-2025-9012/default-callable-unrelated-symbol-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},

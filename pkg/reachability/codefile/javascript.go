@@ -377,20 +377,20 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 // candidatesForBinding picks which cached usage-query result to check for one resolved binding,
 // and the name candidates must match: for Named bindings, the advisory symbol's Name (checked
 // against binding.exportName in matchesCandidate); for Default bindings, empty (matchesCandidate
-// skips the name check entirely); for Namespace bindings, the advisory symbol's Name itself
-// (checked against the accessed property).
+// compares it against the binding's local name); for Namespace bindings, the advisory symbol's
+// Name itself (checked against the accessed property).
 func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
 	switch {
 	case binding.kind == bindingNamed && s.Type == symbolTypeFunction:
 		return cache.DirectCalls(), s.Name
 	case binding.kind == bindingDefault && s.Type == symbolTypeFunction:
-		return cache.DirectCalls(), ""
+		return cache.DirectCalls(), s.Name
 	case binding.kind == bindingNamespace && s.Type == symbolTypeFunction:
 		return cache.MemberCalls(), s.Name
 	case binding.kind == bindingNamed && s.Type == symbolTypeClass:
 		return cache.DirectNews(), s.Name
 	case binding.kind == bindingDefault && s.Type == symbolTypeClass:
-		return cache.DirectNews(), ""
+		return cache.DirectNews(), s.Name
 	case binding.kind == bindingNamespace && s.Type == symbolTypeClass:
 		return cache.MemberNews(), s.Name
 	default:
@@ -399,16 +399,22 @@ func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, bi
 }
 
 // matchesCandidate reports whether one candidate call/new site matches the given binding and
-// expected name (matchName; see candidatesForBinding).
+// expected name (matchName - the advisory symbol's Name; see candidatesForBinding).
 //
-// Direct (Named/Default) candidates must have identifierText equal to binding.localName; Named
+// Direct (Named/Default) candidates must have identifierText equal to binding.localName. Named
 // bindings additionally require matchName == binding.exportName (what the binding actually
-// exports, not its local alias). Default bindings skip the name check entirely - a package has
-// exactly one default export, so a direct call/new through its localName already unambiguously
-// refers to it. Known accepted risk: if a package ever has two distinct function-type advisories
-// in the same file (one about its default export, one about an unrelated named export) with a
-// Default binding present, both would match - the same class of imprecision already accepted
-// elsewhere (e.g. Java's wildcard-import gap).
+// exports, not its local alias). Default bindings require matchName == binding.localName: a
+// default import/require binds the whole module under a name the developer chose freely, so the
+// only signal available that an advisory is actually about the default export is its Name lining
+// up with that local name (e.g. `import minimist from 'minimist'` against an advisory naming
+// "minimist").
+//
+// Accepting a Default binding without that name check would be actively wrong: many modules are
+// simultaneously callable and property-bearing, so `const _ = require('lodash'); _([1,2,3])`
+// (idiomatic lodash chaining, which never touches `merge`) would falsely match every
+// function-type lodash advisory. The trade-off is a false negative when a default import is
+// aliased away from the advisory's name (`import parseArgs from 'minimist'`), which is the right
+// direction to err for an analysis whose purpose is reducing vulnerability noise.
 //
 // Member (Namespace) candidates require both objectText == binding.localName and
 // identifierText (the accessed property) == matchName.
@@ -425,5 +431,5 @@ func matchesCandidate(candidate callSite, binding resolvedBinding, matchName str
 		return matchName == binding.exportName
 	}
 
-	return true // bindingDefault: localName match alone is sufficient
+	return matchName == binding.localName // bindingDefault
 }
