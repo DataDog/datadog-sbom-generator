@@ -108,6 +108,10 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 	detectorPools := make(map[string]chan codefile.Detector, len(languageKeyToDetectorFactory))
 	for languageKey, factory := range languageKeyToDetectorFactory {
+		if len(advisoriesToCheckPerLanguage[languageKey]) == 0 {
+			continue
+		}
+
 		pool := make(chan codefile.Detector, workerCount)
 		for range workerCount {
 			detector, err := factory(r)
