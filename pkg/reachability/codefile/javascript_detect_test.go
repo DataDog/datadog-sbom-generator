@@ -127,8 +127,11 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 }
 
 // Test_Detect_JavaScript_ClassSymbolFound covers every binding shape that resolves to a
-// symbolTypeClass match: ESM named import, ESM namespace import, and CJS require, each
-// instantiated via `new`.
+// symbolTypeClass match: ESM named import, ESM namespace import, ESM default import (the
+// Default binding kind - previously only verified with an ad hoc throwaway script, now a
+// committed regression test), CJS require, and a .jsx file combining a direct instantiation
+// with real JSX syntax in the same file (the JS-grammar analog of Test_Detect_TypeScriptAndTSX's
+// .tsx case, proving JSX support isn't unique to the TSX grammar). Each instantiated via `new`.
 //
 //nolint:paralleltest
 func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
@@ -162,6 +165,16 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 			path:           "testdata/CVE-2025-9012/class-require/app.js",
 			expectedSymbol: "pkg.Client",
 			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 25,
+		},
+		"default import, direct instantiation (Default binding)": {
+			path:           "testdata/CVE-2025-9012/class-default-import/app.js",
+			expectedSymbol: "Client",
+			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 21,
+		},
+		"jsx file, direct instantiation alongside JSX syntax": {
+			path:           "testdata/CVE-2025-9012/jsx-file/app.jsx",
+			expectedSymbol: "Client",
+			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 21,
 		},
 	}
 
