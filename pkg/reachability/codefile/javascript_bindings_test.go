@@ -268,6 +268,40 @@ const lodash2 = require('lodash');`,
 			},
 		},
 		{
+			// require(id) only ever resolves its first argument - a second string must not
+			// shadow it. Before the leading-only anchor, this either matched both strings or
+			// neither; now it correctly binds just "otherName", the one Node actually loads.
+			name: "require call with a second string argument binds only the first argument",
+			src:  `const lib = require('otherName', 'lodash');`,
+			expected: packageBindings{
+				"otherName": {
+					{localName: "lib", kind: bindingNamespace},
+					{localName: "lib", kind: bindingDefault},
+				},
+			},
+		},
+		{
+			// The false-positive case this whole fix targets: a variable first argument (the
+			// real, unresolvable target) with a decoy string second - must produce no binding
+			// at all, since the string genuinely isn't the first argument.
+			name:     "require call with a variable first argument and a decoy string second argument produces no binding",
+			src:      `const lib = require(otherName, "lodash");`,
+			expected: packageBindings{
+				// intentionally empty: the string isn't the first argument, so it must not be
+				// treated as a module specifier.
+			},
+		},
+		{
+			// A real, legitimately-resolvable require with a harmless extra argument after it
+			// must still be caught - missing this would be a worse outcome for a vulnerability
+			// scanner than the rare false positive the old two-sided anchor was avoiding.
+			name: "destructured require with an extra argument still binds the first argument",
+			src:  `const { merge } = require('lodash', extra);`,
+			expected: packageBindings{
+				"lodash": {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
 			name:     "not a require call produces no binding",
 			src:      `const x = someOtherFunction('pkg');`,
 			expected: packageBindings{

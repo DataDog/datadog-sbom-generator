@@ -35,18 +35,24 @@ const tsQueryForESMImports = `
 `
 
 // CJS require query: matches `const pkg = require('pkg')` and destructured
-// `const { a, b: c } = require('pkg')` (also let/var). The `#eq?` predicate restricts matches to
-// calls literally named "require" (go-tree-sitter auto-applies text predicates like #eq?, so no
-// manual filtering is needed in Go). Only a plain string-literal path is matched; a computed
-// (`require(variableName)`) or template-string argument produces no match at all, keeping both
-// out of scope - mirroring Go's dot-import exclusion. Destructured names use the same
-// nested-pattern trick as the ESM query, so multiple properties produce separate matches.
+// `const { a, b: c } = require('pkg')` (also let/var); `#eq?` restricts matches to calls
+// literally named "require".
+//
+// CJS has no namespace syntax like ESM's `import * as ns`, so the plain-identifier form only
+// captures @default; resolveCJSBindings turns it into both a Namespace and a Default binding,
+// since we can't tell which one it is until we see how it's actually called.
+//
+// The leading `.` anchor matches only the first argument, mirroring require(id):
+// require('lodash', x) binds "lodash", require(x, 'lodash') binds nothing, and
+// require('a', 'b') binds only "a" - extra string arguments are never alternate paths. A
+// computed or template-string first argument produces no match, out of scope like Go's
+// dot-import exclusion.
 const tsQueryForCJSRequire = `
 (variable_declarator
   name: (identifier) @default
   value: (call_expression
     function: (identifier) @_require
-    arguments: (arguments (string (string_fragment) @path)))
+    arguments: (arguments . (string (string_fragment) @path)))
   (#eq? @_require "require"))
 
 (variable_declarator
@@ -57,7 +63,7 @@ const tsQueryForCJSRequire = `
        value: (identifier) @namedAlias)])
   value: (call_expression
     function: (identifier) @_require
-    arguments: (arguments (string (string_fragment) @path)))
+    arguments: (arguments . (string (string_fragment) @path)))
   (#eq? @_require "require"))
 `
 
