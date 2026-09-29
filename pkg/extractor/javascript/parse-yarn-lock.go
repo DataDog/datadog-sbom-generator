@@ -185,6 +185,7 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 			continue
 		}
 		workspacePath = candidate
+
 		break
 	}
 
