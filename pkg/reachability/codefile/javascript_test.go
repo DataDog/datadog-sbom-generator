@@ -1,10 +1,8 @@
 package codefile
 
 import (
-	"context"
 	"testing"
 
-	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/stretchr/testify/assert"
@@ -114,17 +112,5 @@ func Test_NewJavaScriptReachableDetector_QueriesCompileAndCaptureIndicesResolve(
 	}
 }
 
-func Test_Detect_JavaScript_NoAdvisories(t *testing.T) {
-	t.Parallel()
-
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
-	require.NoError(t, err)
-	defer detector.Close()
-
-	detectionResults := models.DetectionResults{}
-
-	err = detector.Detect(context.Background(), "", "testdata/does-not-need-to-exist-yet.js", detectionResults, []models.AdvisoryToCheck{})
-
-	require.NoError(t, err)
-	assert.Empty(t, detectionResults)
-}
+// Test_Detect_JavaScript_NoAdvisories (the fixture-based version, covering the same
+// early-return behavior with a real testdata path) lives in javascript_detect_test.go.
