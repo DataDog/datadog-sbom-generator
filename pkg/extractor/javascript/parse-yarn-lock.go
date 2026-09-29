@@ -174,13 +174,18 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 		targetVersions = append(targetVersions, right)
 	}
 
-	// Extract workspace path if present
+	// workspace: keys can carry a range (workspace:^1.2.3) or a path; only the path locates the manifest.
 	workspacePath := ""
 	for _, version := range targetVersions {
-		if strings.HasPrefix(version, yarnWorkspaceVersionMarker) {
-			workspacePath = strings.TrimPrefix(version, yarnWorkspaceVersionMarker)
-			break
+		if !strings.HasPrefix(version, yarnWorkspaceVersionMarker) {
+			continue
 		}
+		candidate := strings.TrimPrefix(version, yarnWorkspaceVersionMarker)
+		if strings.IndexAny(candidate, "*^~0123456789") == 0 {
+			continue
+		}
+		workspacePath = candidate
+		break
 	}
 
 	return name, targetVersions, workspacePath
