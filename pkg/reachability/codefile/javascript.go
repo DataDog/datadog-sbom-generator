@@ -47,8 +47,12 @@ const tsQueryForESMImports = `
 `
 
 // CJS require query: matches `const pkg = require('pkg')` and `const { a, b: c } = require('pkg')`
-// (also with let/var). Only a plain string-literal argument is matched (`arguments: (arguments
-// (string ...))`); a computed argument (`require(variableName)`) or any template-string argument
+// (also with let/var). The `#eq?` predicate on @_require restricts matches to calls whose
+// function is literally named "require" - without it, any `const x = someOtherFn('str')` call
+// would be treated as a require (go-tree-sitter auto-applies text predicates like #eq? during
+// QueryCursor.Matches/Captures, so this alone is sufficient; no manual filtering needed in Go).
+// Only a plain string-literal argument is matched (`arguments: (arguments (string ...))`); a
+// computed argument (`require(variableName)`) or any template-string argument
 // (`require(\`pkg\`)`, with or without interpolation) simply doesn't match this query shape at
 // all, so no binding is produced for either - both are out of scope, mirroring Go's dot-import
 // exclusion. As with the ESM query, destructured names are captured via a nested pattern so
@@ -58,7 +62,8 @@ const tsQueryForCJSRequire = `
   name: (identifier) @default
   value: (call_expression
     function: (identifier) @_require
-    arguments: (arguments (string (string_fragment) @path))))
+    arguments: (arguments (string (string_fragment) @path)))
+  (#eq? @_require "require"))
 
 (variable_declarator
   name: (object_pattern
@@ -68,7 +73,8 @@ const tsQueryForCJSRequire = `
        value: (identifier) @namedAlias)])
   value: (call_expression
     function: (identifier) @_require
-    arguments: (arguments (string (string_fragment) @path))))
+    arguments: (arguments (string (string_fragment) @path)))
+  (#eq? @_require "require"))
 `
 
 // Usage queries: one direct-call/new shape and one member-call/new shape per symbol type

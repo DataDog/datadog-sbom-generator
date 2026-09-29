@@ -171,3 +171,163 @@ func Test_resolveESMBindings_TypeScript(t *testing.T) {
 		})
 	}
 }
+
+//nolint:paralleltest
+func Test_resolveCJSBindings(t *testing.T) {
+	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	require.NoError(t, err)
+	defer detector.Close()
+
+	tests := []struct {
+		name     string
+		src      string
+		expected packageBindings
+	}{
+		{
+			name: "plain identifier require produces both Namespace and Default bindings",
+			src:  `const _ = require('lodash');`,
+			expected: packageBindings{
+				"lodash": {
+					{localName: "_", kind: bindingNamespace},
+					{localName: "_", kind: bindingDefault},
+				},
+			},
+		},
+		{
+			name: "destructured require, single property",
+			src:  `const { merge } = require('lodash');`,
+			expected: packageBindings{
+				"lodash": {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
+			name: "destructured require, aliased property",
+			src:  `const { merge: m } = require('lodash');`,
+			expected: packageBindings{
+				"lodash": {{localName: "m", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
+			name: "destructured require, multiple properties, one aliased",
+			src:  `const { merge, pick: p } = require('lodash');`,
+			expected: packageBindings{
+				"lodash": {
+					{localName: "merge", kind: bindingNamed, exportName: "merge"},
+					{localName: "p", kind: bindingNamed, exportName: "pick"},
+				},
+			},
+		},
+		{
+			name: "let and var work the same as const",
+			src: `let a = require('pkg-a');
+var b = require('pkg-b');`,
+			expected: packageBindings{
+				"pkg-a": {
+					{localName: "a", kind: bindingNamespace},
+					{localName: "a", kind: bindingDefault},
+				},
+				"pkg-b": {
+					{localName: "b", kind: bindingNamespace},
+					{localName: "b", kind: bindingDefault},
+				},
+			},
+		},
+		{
+			name: "same package required twice under different local names",
+			src: `const _ = require('lodash');
+const lodash2 = require('lodash');`,
+			expected: packageBindings{
+				"lodash": {
+					{localName: "_", kind: bindingNamespace},
+					{localName: "_", kind: bindingDefault},
+					{localName: "lodash2", kind: bindingNamespace},
+					{localName: "lodash2", kind: bindingDefault},
+				},
+			},
+		},
+		{
+			name:     "computed require produces no binding",
+			src:      `const bad = require(dynamicName);`,
+			expected: packageBindings{
+				// intentionally empty: require(variable) doesn't match cjsRequireQuery at all.
+			},
+		},
+		{
+			name:     "template-string require, no interpolation, produces no binding",
+			src:      "const bad = require(`lodash`);",
+			expected: packageBindings{
+				// intentionally empty: any template_string argument is out of scope,
+				// regardless of whether it contains an interpolation.
+			},
+		},
+		{
+			name:     "template-string require with interpolation produces no binding",
+			src:      "const bad = require(`./drivers/${name}`);",
+			expected: packageBindings{
+				// intentionally empty: same as above.
+			},
+		},
+		{
+			name:     "not a require call produces no binding",
+			src:      `const x = someOtherFunction('pkg');`,
+			expected: packageBindings{
+				// intentionally empty: function name must be exactly "require".
+			},
+		},
+		{
+			name:     "no requires",
+			src:      `function f() { return 1; }`,
+			expected: packageBindings{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tree := detector.jsGrammar.parser.Parse([]byte(tt.src), nil)
+			defer tree.Close()
+
+			queryCursor := treesitter.NewQueryCursor()
+			defer queryCursor.Close()
+
+			bindings := make(packageBindings)
+			detector.jsGrammar.resolveCJSBindings(tree, []byte(tt.src), queryCursor, bindings)
+
+			assert.Equal(t, tt.expected, bindings)
+		})
+	}
+}
+
+// Test_resolveCJSBindings_MergesWithExistingESMBindings verifies that CJS bindings are appended
+// alongside any pre-existing ESM bindings for the same package (the real usage pattern in
+// Detect(): resolveESMBindings runs first into a fresh map, then resolveCJSBindings merges into
+// that same map), rather than overwriting them.
+//
+//nolint:paralleltest
+func Test_resolveCJSBindings_MergesWithExistingESMBindings(t *testing.T) {
+	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	require.NoError(t, err)
+	defer detector.Close()
+
+	esmSrc := `import { merge } from 'lodash';`
+	cjsSrc := `const _ = require('lodash');`
+
+	esmTree := detector.jsGrammar.parser.Parse([]byte(esmSrc), nil)
+	defer esmTree.Close()
+	esmCursor := treesitter.NewQueryCursor()
+	defer esmCursor.Close()
+	bindings := detector.jsGrammar.resolveESMBindings(esmTree, []byte(esmSrc), esmCursor)
+
+	cjsTree := detector.jsGrammar.parser.Parse([]byte(cjsSrc), nil)
+	defer cjsTree.Close()
+	cjsCursor := treesitter.NewQueryCursor()
+	defer cjsCursor.Close()
+	detector.jsGrammar.resolveCJSBindings(cjsTree, []byte(cjsSrc), cjsCursor, bindings)
+
+	assert.Equal(t, packageBindings{
+		"lodash": {
+			{localName: "merge", kind: bindingNamed, exportName: "merge"},
+			{localName: "_", kind: bindingNamespace},
+			{localName: "_", kind: bindingDefault},
+		},
+	}, bindings)
+}

@@ -80,3 +80,74 @@ func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte
 
 	return bindings
 }
+
+// resolveCJSBindings walks all `require(...)` calls in the parsed tree and merges the bindings
+// they create into the given packageBindings map (which may already contain ESM bindings from
+// resolveESMBindings for the same file - CJS bindings for a package are appended alongside any
+// existing entries for that same package, not replacing them).
+//
+// Handles, per require call:
+//   - plain identifier:  const x = require('pkg')            -> ambiguous, see below
+//   - destructured:      const { a, b: c } = require('pkg')  -> bindingNamed (one per property)
+//
+// The plain-identifier form is structurally ambiguous in CJS: `x` could be used later as a
+// namespace object with methods (`x.fn()`, e.g. most libraries) or as a directly-callable
+// default export (`x()`, e.g. minimist). Since CJS has no separate syntax for "this is a
+// namespace" vs "this is a default export" the way ESM does (import * as ns vs import def),
+// both possibilities are recorded as separate bindings for the same localName: one
+// bindingNamespace and one bindingDefault. This isn't a workaround for uncertainty - it's
+// correct: many packages are simultaneously callable AND expose properties (e.g. jQuery's
+// `$(...)`), so checking both usage shapes against the actual call sites in the file is the
+// right behavior regardless. No false positives result from having both present, since a match
+// still requires an actual call site of that specific shape (direct or member) referencing this
+// exact localName and the advisory's symbol name - an unused binding kind just never matches
+// anything.
+//
+// Computed require arguments (require(variableName)) and any template-string require argument
+// (require(`pkg`), interpolated or not) produce zero matches from cjsRequireQuery itself, so no
+// binding is ever created for either - both are out of scope, mirroring Go's dot-import
+// exclusion. See the query's own doc comment in javascript.go for how that's enforced by the
+// query shape alone.
+func (g *jsGrammar) resolveCJSBindings(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, bindings packageBindings) {
+	matches := queryCursor.Matches(g.cjsRequireQuery, tree.RootNode(), fileContent)
+	for match := matches.Next(); match != nil; match = matches.Next() {
+		var defaultText, namedText, namedAliasText, pathText string
+
+		for _, capture := range match.Captures {
+			switch capture.Index {
+			case uint32(g.cjsDefaultCaptureIdx): //nolint:gosec
+				defaultText = capture.Node.Utf8Text(fileContent)
+			case uint32(g.cjsNamedCaptureIdx): //nolint:gosec
+				namedText = capture.Node.Utf8Text(fileContent)
+			case uint32(g.cjsNamedAliasCaptureIdx): //nolint:gosec
+				namedAliasText = capture.Node.Utf8Text(fileContent)
+			case uint32(g.cjsPathCaptureIdx): //nolint:gosec
+				pathText = capture.Node.Utf8Text(fileContent)
+			}
+		}
+
+		if pathText == "" {
+			// @path is a required capture in both patterns; this should never happen, but
+			// there's nothing useful to record without a package name.
+			continue
+		}
+
+		if defaultText != "" {
+			bindings[pathText] = append(bindings[pathText],
+				resolvedBinding{localName: defaultText, kind: bindingNamespace},
+				resolvedBinding{localName: defaultText, kind: bindingDefault},
+			)
+		}
+		if namedText != "" {
+			localName := namedText
+			if namedAliasText != "" {
+				localName = namedAliasText
+			}
+			bindings[pathText] = append(bindings[pathText], resolvedBinding{
+				localName:  localName,
+				kind:       bindingNamed,
+				exportName: namedText,
+			})
+		}
+	}
+}
