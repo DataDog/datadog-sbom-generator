@@ -4,6 +4,42 @@ import (
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 )
 
+// bindingKind describes how a package/module was bound to a local identifier in a JS/TS file.
+type bindingKind int
+
+const (
+	// bindingNamed is a binding that refers to one specific exported symbol directly, e.g.
+	// `import { fn } from 'pkg'` or `const { fn } = require('pkg')`. Call sites reference it
+	// as a bare identifier: fn(...).
+	bindingNamed bindingKind = iota
+	// bindingDefault is a binding to a package's default export, e.g. `import fn from 'pkg'`
+	// or `const fn = require('pkg')`. Call sites reference it as a bare identifier: fn(...).
+	bindingDefault
+	// bindingNamespace is a binding to an entire package/module object, e.g.
+	// `import * as ns from 'pkg'` or `const ns = require('pkg')`. Call sites reference
+	// exported symbols via property access: ns.fn(...).
+	bindingNamespace
+)
+
+// resolvedBinding is one local identifier bound to a package/module in a single file, along
+// with enough information to match it against a vulnerable symbol's advisory data.
+type resolvedBinding struct {
+	// localName is the identifier used at call sites in this file (after any "as" alias).
+	localName string
+	// kind determines which usage-query shape (direct call vs. member call) applies to this
+	// binding.
+	kind bindingKind
+	// exportName is the original exported name before any "as" alias was applied. It's only
+	// meaningful for bindingNamed; bindingDefault and bindingNamespace bindings don't have a
+	// separate export name to match against; they're always matched by localName instead.
+	exportName string
+}
+
+// packageBindings maps an npm package name to every binding resolved for it in one file. A
+// package can have multiple bindings in the same file (e.g. required twice under different
+// local names, or imported both as a namespace and destructured).
+type packageBindings map[string][]resolvedBinding
+
 // resolveESMBindings walks all ESM import statements in the parsed tree and returns a map of
 // npm package name -> local bindings created for that package in this file.
 //
