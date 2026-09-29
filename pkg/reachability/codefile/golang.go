@@ -14,9 +14,6 @@ import (
 	tree_sitter_go "github.com/tree-sitter/tree-sitter-go/bindings/go"
 )
 
-// symbolTypeFunction is the only Go symbol type currently understood.
-const symbolTypeFunction = "function"
-
 const tsQueryForGoImports = `
 (import_spec
 	name: (package_identifier)? @alias

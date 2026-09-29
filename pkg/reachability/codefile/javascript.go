@@ -13,12 +13,6 @@ import (
 	tree_sitter_typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
 )
 
-// symbolTypeClass is the JS/TS "class" symbol type; symbolTypeFunction (declared in golang.go,
-// reused here since both detectors share this package) is the other. Unlike Go/Java, both types
-// are matched against every binding kind (Named, Default, Namespace) resolved for a symbol's
-// package - the binding kind, not the symbol type, decides direct vs. member matching.
-const symbolTypeClass = "class"
-
 // ESM import query: matches `import { a, b as c } from 'pkg'`, `import def from 'pkg'`, and
 // `import * as ns from 'pkg'`. Named specifiers are captured via a separate pattern nested one
 // level deeper than the default/namespace pattern, so tree-sitter yields one match per

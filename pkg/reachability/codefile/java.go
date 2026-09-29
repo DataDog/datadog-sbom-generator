@@ -17,7 +17,7 @@ var tsQueryForJavaClass = `
 )`
 
 var symbolTypeToTSQuery = map[string]string{
-	"class": tsQueryForJavaClass,
+	symbolTypeClass: tsQueryForJavaClass,
 }
 
 type ReachabilityJava struct {
