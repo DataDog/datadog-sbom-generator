@@ -3,6 +3,7 @@ package codefile
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -310,9 +311,144 @@ func (r *ReachabilityJavaScript) Close() {
 	r.tsxGrammar.close()
 }
 
-// Detect is a temporary no-op placeholder: it reports no reachable symbols for any file. The
-// grammars, queries, and capture indices are already fully set up (see NewJavaScriptReachableDetector);
-// only the binding-resolution and matching logic that consumes them is still to come.
-func (r *ReachabilityJavaScript) Detect(_ context.Context, _ string, _ string, _ models.DetectionResults, _ []models.AdvisoryToCheck) error {
+// Detect resolves every ESM/CJS binding in the file, then for each advisory symbol checks the
+// resolved bindings for the symbol's package against the matching usage-query shape (direct or
+// member, decided per-binding by its Kind, not by the symbol's type - see the binding-kind
+// dispatch table in the doc comments on javascript_bindings.go and the design writeup in
+// docs/reachability-js-ts-proposal.md).
+func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	if len(advisoriesToCheck) == 0 {
+		return nil
+	}
+
+	grammar := r.extensionToGrammar(filepath.Ext(path))
+	if grammar == nil {
+		// Shouldn't happen: reachability.go only dispatches extensions registered in
+		// extensionToLanguageKey, all of which extensionToGrammar recognizes. Guard anyway
+		// rather than panic on a nil grammar.
+		return nil
+	}
+
+	fileContent, err := readFileContent(path)
+	if err != nil {
+		return err
+	}
+
+	tree := parseFile(ctx, grammar.parser, fileContent)
+	defer tree.Close()
+
+	// One cursor, reused sequentially across the binding queries and (lazily) the usage
+	// queries - matches the existing Java detector's precedent of reusing a single
+	// QueryCursor across different Query objects within one Detect() call.
+	queryCursor := treesitter.NewQueryCursor()
+	defer queryCursor.Close()
+
+	bindings := grammar.resolveESMBindings(tree, fileContent, queryCursor)
+	grammar.resolveCJSBindings(tree, fileContent, queryCursor, bindings)
+
+	cache := newUsageQueryCache(
+		func() []callSite { return grammar.directCalls(tree, fileContent, queryCursor) },
+		func() []callSite { return grammar.memberCalls(tree, fileContent, queryCursor) },
+		func() []callSite { return grammar.directNews(tree, fileContent, queryCursor) },
+		func() []callSite { return grammar.memberNews(tree, fileContent, queryCursor) },
+	)
+
+	for _, advisoryToCheck := range advisoriesToCheck {
+		for _, s := range advisoryToCheck.Symbols {
+			if s.Type != symbolTypeFunction && s.Type != symbolTypeClass {
+				r.reporter.Warnf("No JavaScript/TypeScript detection support for symbol type %s", s.Type)
+				continue
+			}
+
+			packageBindingsForSymbol, ok := bindings[s.Value]
+			if !ok {
+				continue
+			}
+
+			for _, binding := range packageBindingsForSymbol {
+				candidates, matchName := r.candidatesForBinding(cache, binding, s)
+
+				for _, candidate := range candidates {
+					if !matchesCandidate(candidate, binding, matchName) {
+						continue
+					}
+
+					packageLocation, err := buildPackageLocation(dir, path, candidate.node.StartPosition(), candidate.node.EndPosition())
+					if err != nil {
+						return err
+					}
+
+					recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, candidate.node.Utf8Text(fileContent), packageLocation)
+				}
+			}
+		}
+	}
+
 	return nil
+}
+
+// candidatesForBinding picks the usage-query shape to check for one resolved binding, based on
+// the binding's Kind and the symbol's Type, and returns the name that candidate call/new sites
+// must match:
+//   - Named binding:     direct shape; matchName is the advisory symbol's Name. matchesCandidate
+//     compares it against binding.exportName (not the local alias) - the
+//     symbol's Name must equal what this binding actually exports.
+//   - Default binding:   direct shape; matchName is empty - a package has exactly one default
+//     export, so any direct call/new through this binding's localName
+//     already unambiguously refers to it, regardless of what Name string the
+//     advisory data attached (see the doc comment above matchesCandidate for
+//     the accepted risk this implies).
+//   - Namespace binding: member shape; matchName is the advisory symbol's Name itself (the
+//     member/property actually accessed must match it).
+func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
+	switch {
+	case binding.kind == bindingNamed && s.Type == symbolTypeFunction:
+		return cache.DirectCalls(), s.Name
+	case binding.kind == bindingDefault && s.Type == symbolTypeFunction:
+		return cache.DirectCalls(), ""
+	case binding.kind == bindingNamespace && s.Type == symbolTypeFunction:
+		return cache.MemberCalls(), s.Name
+	case binding.kind == bindingNamed && s.Type == symbolTypeClass:
+		return cache.DirectNews(), s.Name
+	case binding.kind == bindingDefault && s.Type == symbolTypeClass:
+		return cache.DirectNews(), ""
+	case binding.kind == bindingNamespace && s.Type == symbolTypeClass:
+		return cache.MemberNews(), s.Name
+	default:
+		return nil, ""
+	}
+}
+
+// matchesCandidate reports whether one candidate call/new site actually matches the given
+// binding and expected name (matchName - the advisory symbol's Name, or empty for Default
+// bindings; see candidatesForBinding).
+//
+// For direct (Named/Default) candidates, matching requires candidate.identifierText to equal
+// binding.localName; for Named bindings, matchName (the advisory symbol's Name) must also equal
+// binding.exportName (what this binding actually exports, not its local alias). For Default
+// bindings the caller passes an empty matchName, so no Name comparison happens at all here: any
+// direct call/new through that localName matches. This is a known, accepted risk documented in
+// candidatesForBinding - if a package ever has two distinct function-type advisory symbols (one
+// truly about its default export, one about an unrelated named export) in the same file that
+// also has a Default binding, both would match a direct call through that binding. This mirrors
+// the level of precision already accepted in Go/Java's existing detectors (e.g. Java's
+// wildcard-import gap) and is left as-is pending real backend data confirming whether
+// Default-export advisories ever coexist with same-package named-export advisories in practice.
+//
+// For member (Namespace) candidates, matching requires both candidate.objectText to equal
+// binding.localName AND candidate.identifierText (the accessed property) to equal matchName.
+func matchesCandidate(candidate callSite, binding resolvedBinding, matchName string) bool {
+	if binding.kind == bindingNamespace {
+		return candidate.objectText == binding.localName && candidate.identifierText == matchName
+	}
+
+	if candidate.identifierText != binding.localName {
+		return false
+	}
+
+	if binding.kind == bindingNamed {
+		return matchName == binding.exportName
+	}
+
+	return true // bindingDefault: localName match alone is sufficient
 }
