@@ -94,7 +94,7 @@ func newUsageQueryCache(
 }
 
 // DirectCalls returns every direct call site (fn(...)) in the file, e.g. for Named/Default
-// bindings. The underlying query runs at most once per cache instance.
+// bindings.
 func (c *usageQueryCache) DirectCalls() []callSite {
 	if c.directCalls == nil {
 		result := c.computeDirectCalls()
@@ -104,7 +104,7 @@ func (c *usageQueryCache) DirectCalls() []callSite {
 }
 
 // MemberCalls returns every member call site (ns.fn(...)) in the file, e.g. for Namespace
-// bindings. The underlying query runs at most once per cache instance.
+// bindings.
 func (c *usageQueryCache) MemberCalls() []callSite {
 	if c.memberCalls == nil {
 		result := c.computeMemberCalls()
@@ -114,7 +114,7 @@ func (c *usageQueryCache) MemberCalls() []callSite {
 }
 
 // DirectNews returns every direct `new` expression (new X(...)) in the file, e.g. for
-// Named/Default bindings. The underlying query runs at most once per cache instance.
+// Named/Default bindings.
 func (c *usageQueryCache) DirectNews() []callSite {
 	if c.directNews == nil {
 		result := c.computeDirectNews()
@@ -124,7 +124,7 @@ func (c *usageQueryCache) DirectNews() []callSite {
 }
 
 // MemberNews returns every member `new` expression (new ns.X(...)) in the file, e.g. for
-// Namespace bindings. The underlying query runs at most once per cache instance.
+// Namespace bindings.
 func (c *usageQueryCache) MemberNews() []callSite {
 	if c.memberNews == nil {
 		result := c.computeMemberNews()

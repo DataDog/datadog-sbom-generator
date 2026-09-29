@@ -15,13 +15,10 @@ import (
 //   - combined default+named:      import def, { fn } from 'pkg'      -> both bindings recorded
 //
 // Known accepted gap: `import type { X } from 'pkg'` and `import { type X } from 'pkg'`
-// (TypeScript/TSX only - JS grammar can't parse this at all) are NOT filtered out. The
-// "type" keyword is an anonymous token that doesn't change the import_statement/import_clause/
-// import_specifier node shape this query matches against, so a type-only import still produces
-// a binding in the table even though it has no runtime effect. This is only a false-positive
-// risk if the same file also has an unrelated runtime symbol that happens to share the same
-// name - the same category of accepted risk as Java's wildcard-import gap and Go's dot-import
-// exclusion (see docs/reachability-analysis-investigation.md).
+// (TypeScript/TSX only) are NOT filtered out - the "type" keyword doesn't change the AST shape
+// this query matches against, so a type-only import still produces a binding despite having no
+// runtime effect. Only a false-positive risk if the file also has an unrelated runtime symbol
+// with the same name - the same category of risk as Java's wildcard-import gap.
 func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) packageBindings {
 	bindings := make(packageBindings)
 
@@ -91,23 +88,17 @@ func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte
 //   - destructured:      const { a, b: c } = require('pkg')  -> bindingNamed (one per property)
 //
 // The plain-identifier form is structurally ambiguous in CJS: `x` could be used later as a
-// namespace object with methods (`x.fn()`, e.g. most libraries) or as a directly-callable
-// default export (`x()`, e.g. minimist). Since CJS has no separate syntax for "this is a
-// namespace" vs "this is a default export" the way ESM does (import * as ns vs import def),
-// both possibilities are recorded as separate bindings for the same localName: one
-// bindingNamespace and one bindingDefault. This isn't a workaround for uncertainty - it's
-// correct: many packages are simultaneously callable AND expose properties (e.g. jQuery's
-// `$(...)`), so checking both usage shapes against the actual call sites in the file is the
-// right behavior regardless. No false positives result from having both present, since a match
-// still requires an actual call site of that specific shape (direct or member) referencing this
-// exact localName and the advisory's symbol name - an unused binding kind just never matches
-// anything.
+// namespace object with methods (`x.fn()`) or as a directly-callable default export (`x()`,
+// e.g. minimist) - CJS has no separate syntax for the two the way ESM does (import * as ns vs
+// import def). Both possibilities are recorded as separate bindings for the same localName
+// (bindingNamespace and bindingDefault); this is correct, not a workaround, since some packages
+// are genuinely both callable and property-bearing. No false-positive risk from recording both:
+// a match still requires an actual call site of that specific shape, so an unused binding kind
+// just never matches anything.
 //
-// Computed require arguments (require(variableName)) and any template-string require argument
-// (require(`pkg`), interpolated or not) produce zero matches from cjsRequireQuery itself, so no
-// binding is ever created for either - both are out of scope, mirroring Go's dot-import
-// exclusion. See the query's own doc comment in javascript.go for how that's enforced by the
-// query shape alone.
+// Computed (require(variableName)) and template-string require arguments produce zero matches
+// from cjsRequireQuery itself, so no binding is ever created for either - both are out of scope,
+// mirroring Go's dot-import exclusion.
 func (g *jsGrammar) resolveCJSBindings(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, bindings packageBindings) {
 	matches := queryCursor.Matches(g.cjsRequireQuery, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {

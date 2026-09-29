@@ -13,24 +13,17 @@ import (
 	tree_sitter_typescript "github.com/tree-sitter/tree-sitter-typescript/bindings/go"
 )
 
-// symbolTypeClass is the JS/TS "class" symbol type. symbolTypeFunction (the other symbol type
-// this detector understands) is already declared in golang.go and reused as-is here, since both
-// detectors share the same package and the same meaning for that constant.
-//
-// Unlike Go/Java, both symbol types are matched against every binding kind (Named, Default, or
-// Namespace) resolved for the advisory's package in a given file; which usage-query shape
-// (direct call/new vs. member call/new) applies is decided per-binding, not by the symbol
-// type itself.
+// symbolTypeClass is the JS/TS "class" symbol type; symbolTypeFunction (declared in golang.go,
+// reused here since both detectors share this package) is the other. Unlike Go/Java, both types
+// are matched against every binding kind (Named, Default, Namespace) resolved for a symbol's
+// package - the binding kind, not the symbol type, decides direct vs. member matching.
 const symbolTypeClass = "class"
 
 // ESM import query: matches `import { a, b as c } from 'pkg'`, `import def from 'pkg'`, and
-// `import * as ns from 'pkg'`. Named import specifiers are captured via a separate pattern
-// nested one level deeper than the default/namespace pattern; this lets tree-sitter yield one
-// match per specifier (correctly pairing each @named with its own @namedAlias) instead of one
-// match per import statement with ambiguous multi-capture grouping. Both patterns still always
-// capture the module path via @path. Verified against the real tree-sitter-javascript and
-// tree-sitter-typescript grammars: the same query text compiles and matches identically against
-// all three (JS, TypeScript, TSX).
+// `import * as ns from 'pkg'`. Named specifiers are captured via a separate pattern nested one
+// level deeper than the default/namespace pattern, so tree-sitter yields one match per
+// specifier (correctly pairing each @named with its own @namedAlias) instead of one ambiguous
+// multi-capture match per statement. Compiles identically against JS, TypeScript, and TSX.
 const tsQueryForESMImports = `
 (import_statement
   (import_clause
@@ -47,17 +40,13 @@ const tsQueryForESMImports = `
   source: (string (string_fragment) @path))
 `
 
-// CJS require query: matches `const pkg = require('pkg')` and `const { a, b: c } = require('pkg')`
-// (also with let/var). The `#eq?` predicate on @_require restricts matches to calls whose
-// function is literally named "require" - without it, any `const x = someOtherFn('str')` call
-// would be treated as a require (go-tree-sitter auto-applies text predicates like #eq? during
-// QueryCursor.Matches/Captures, so this alone is sufficient; no manual filtering needed in Go).
-// Only a plain string-literal argument is matched (`arguments: (arguments (string ...))`); a
-// computed argument (`require(variableName)`) or any template-string argument
-// (`require(\`pkg\`)`, with or without interpolation) simply doesn't match this query shape at
-// all, so no binding is produced for either - both are out of scope, mirroring Go's dot-import
-// exclusion. As with the ESM query, destructured names are captured via a nested pattern so
-// multiple properties in one object pattern produce separate, correctly-paired matches.
+// CJS require query: matches `const pkg = require('pkg')` and destructured
+// `const { a, b: c } = require('pkg')` (also let/var). The `#eq?` predicate restricts matches to
+// calls literally named "require" (go-tree-sitter auto-applies text predicates like #eq?, so no
+// manual filtering is needed in Go). Only a plain string-literal path is matched; a computed
+// (`require(variableName)`) or template-string argument produces no match at all, keeping both
+// out of scope - mirroring Go's dot-import exclusion. Destructured names use the same
+// nested-pattern trick as the ESM query, so multiple properties produce separate matches.
 const tsQueryForCJSRequire = `
 (variable_declarator
   name: (identifier) @default
@@ -312,10 +301,8 @@ func (r *ReachabilityJavaScript) Close() {
 }
 
 // Detect resolves every ESM/CJS binding in the file, then for each advisory symbol checks the
-// resolved bindings for the symbol's package against the matching usage-query shape (direct or
-// member, decided per-binding by its Kind, not by the symbol's type - see the binding-kind
-// dispatch table in the doc comments on javascript_bindings.go and the design writeup in
-// docs/reachability-js-ts-proposal.md).
+// resolved bindings for the symbol's package against the matching usage-query shape - decided
+// per-binding by its Kind, not by the symbol's type (see candidatesForBinding).
 func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
 	if len(advisoriesToCheck) == 0 {
 		return nil
@@ -387,19 +374,11 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 	return nil
 }
 
-// candidatesForBinding picks the usage-query shape to check for one resolved binding, based on
-// the binding's Kind and the symbol's Type, and returns the name that candidate call/new sites
-// must match:
-//   - Named binding:     direct shape; matchName is the advisory symbol's Name. matchesCandidate
-//     compares it against binding.exportName (not the local alias) - the
-//     symbol's Name must equal what this binding actually exports.
-//   - Default binding:   direct shape; matchName is empty - a package has exactly one default
-//     export, so any direct call/new through this binding's localName
-//     already unambiguously refers to it, regardless of what Name string the
-//     advisory data attached (see the doc comment above matchesCandidate for
-//     the accepted risk this implies).
-//   - Namespace binding: member shape; matchName is the advisory symbol's Name itself (the
-//     member/property actually accessed must match it).
+// candidatesForBinding picks which cached usage-query result to check for one resolved binding,
+// and the name candidates must match: for Named bindings, the advisory symbol's Name (checked
+// against binding.exportName in matchesCandidate); for Default bindings, empty (matchesCandidate
+// skips the name check entirely); for Namespace bindings, the advisory symbol's Name itself
+// (checked against the accessed property).
 func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
 	switch {
 	case binding.kind == bindingNamed && s.Type == symbolTypeFunction:
@@ -419,24 +398,20 @@ func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, bi
 	}
 }
 
-// matchesCandidate reports whether one candidate call/new site actually matches the given
-// binding and expected name (matchName - the advisory symbol's Name, or empty for Default
-// bindings; see candidatesForBinding).
+// matchesCandidate reports whether one candidate call/new site matches the given binding and
+// expected name (matchName; see candidatesForBinding).
 //
-// For direct (Named/Default) candidates, matching requires candidate.identifierText to equal
-// binding.localName; for Named bindings, matchName (the advisory symbol's Name) must also equal
-// binding.exportName (what this binding actually exports, not its local alias). For Default
-// bindings the caller passes an empty matchName, so no Name comparison happens at all here: any
-// direct call/new through that localName matches. This is a known, accepted risk documented in
-// candidatesForBinding - if a package ever has two distinct function-type advisory symbols (one
-// truly about its default export, one about an unrelated named export) in the same file that
-// also has a Default binding, both would match a direct call through that binding. This mirrors
-// the level of precision already accepted in Go/Java's existing detectors (e.g. Java's
-// wildcard-import gap) and is left as-is pending real backend data confirming whether
-// Default-export advisories ever coexist with same-package named-export advisories in practice.
+// Direct (Named/Default) candidates must have identifierText equal to binding.localName; Named
+// bindings additionally require matchName == binding.exportName (what the binding actually
+// exports, not its local alias). Default bindings skip the name check entirely - a package has
+// exactly one default export, so a direct call/new through its localName already unambiguously
+// refers to it. Known accepted risk: if a package ever has two distinct function-type advisories
+// in the same file (one about its default export, one about an unrelated named export) with a
+// Default binding present, both would match - the same class of imprecision already accepted
+// elsewhere (e.g. Java's wildcard-import gap).
 //
-// For member (Namespace) candidates, matching requires both candidate.objectText to equal
-// binding.localName AND candidate.identifierText (the accessed property) to equal matchName.
+// Member (Namespace) candidates require both objectText == binding.localName and
+// identifierText (the accessed property) == matchName.
 func matchesCandidate(candidate callSite, binding resolvedBinding, matchName string) bool {
 	if binding.kind == bindingNamespace {
 		return candidate.objectText == binding.localName && candidate.identifierText == matchName
