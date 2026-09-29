@@ -193,6 +193,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -257,6 +258,7 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -306,6 +308,7 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 		configExcludePaths,
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -349,6 +352,7 @@ func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	expected := models.ReachabilityAnalysis{
@@ -406,6 +410,7 @@ func Test_PerformReachabilityAnalysis_JavaScript(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	expected := models.ReachabilityAnalysis{
@@ -467,6 +472,7 @@ func Test_PerformReachabilityAnalysis_TypeScript(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	expected := models.ReachabilityAnalysis{
@@ -528,6 +534,7 @@ func Test_PerformReachabilityAnalysis_TSX(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	expected := models.ReachabilityAnalysis{
