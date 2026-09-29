@@ -27,7 +27,11 @@ func Test_ReachabilityJavaScript_extensionToGrammar(t *testing.T) {
 
 	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
-	defer detector.Close()
+	// t.Cleanup, not defer: this function's subtests call t.Parallel(), which pauses them
+	// and returns control to this function immediately - a plain defer would close the
+	// detector before the paused subtests actually run. t.Cleanup only runs after every
+	// subtest (including parallel ones) has completed.
+	t.Cleanup(detector.Close)
 
 	tests := []struct {
 		ext      string
@@ -64,7 +68,8 @@ func Test_NewJavaScriptReachableDetector_QueriesCompileAndCaptureIndicesResolve(
 
 	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
-	defer detector.Close()
+	// t.Cleanup, not defer - see the comment in Test_ReachabilityJavaScript_extensionToGrammar.
+	t.Cleanup(detector.Close)
 
 	grammars := map[string]*jsGrammar{
 		"js":  detector.jsGrammar,

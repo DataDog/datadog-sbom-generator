@@ -281,6 +281,7 @@ func NewJavaScriptReachableDetector(r reporter.Reporter) (*ReachabilityJavaScrip
 	if err != nil {
 		jsGrammar.close()
 		tsGrammar.close()
+
 		return nil, fmt.Errorf("failed to set up TSX grammar: %w", err)
 	}
 

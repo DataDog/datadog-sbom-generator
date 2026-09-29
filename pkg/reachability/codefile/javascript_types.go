@@ -100,6 +100,7 @@ func (c *usageQueryCache) DirectCalls() []callSite {
 		result := c.computeDirectCalls()
 		c.directCalls = &result
 	}
+
 	return *c.directCalls
 }
 
@@ -110,6 +111,7 @@ func (c *usageQueryCache) MemberCalls() []callSite {
 		result := c.computeMemberCalls()
 		c.memberCalls = &result
 	}
+
 	return *c.memberCalls
 }
 
@@ -120,6 +122,7 @@ func (c *usageQueryCache) DirectNews() []callSite {
 		result := c.computeDirectNews()
 		c.directNews = &result
 	}
+
 	return *c.directNews
 }
 
@@ -130,5 +133,6 @@ func (c *usageQueryCache) MemberNews() []callSite {
 		result := c.computeMemberNews()
 		c.memberNews = &result
 	}
+
 	return *c.memberNews
 }

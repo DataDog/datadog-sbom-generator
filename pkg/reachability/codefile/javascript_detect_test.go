@@ -29,9 +29,9 @@ func Test_Detect_JavaScript_NoAdvisories(t *testing.T) {
 // default/namespace, CJS namespace/default-callable/destructured) that resolves to a
 // symbolTypeFunction match, asserting the exact matched Symbol text and 1-based line/column
 // range for each - mirroring Test_Detect_Go_FunctionSymbolFound's convention.
-//
-//nolint:paralleltest
 func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
+	t.Parallel()
+
 	advisoriesToCheck := []models.AdvisoryToCheck{
 		{
 			Purl:       "pkg:npm/lodash@4.17.19",
@@ -132,9 +132,9 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 // committed regression test), CJS require, and a .jsx file combining a direct instantiation
 // with real JSX syntax in the same file (the JS-grammar analog of Test_Detect_TypeScriptAndTSX's
 // .tsx case, proving JSX support isn't unique to the TSX grammar). Each instantiated via `new`.
-//
-//nolint:paralleltest
 func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
+	t.Parallel()
+
 	advisoriesToCheck := []models.AdvisoryToCheck{
 		{
 			Purl:       "pkg:npm/vulnerable-lib@1.0.0",
@@ -212,9 +212,9 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 // tautology bug), a default-callable module invoked directly with an unrelated advisory symbol
 // (regression fixture for the Default-binding false positive found in review), and an
 // unsupported symbol type.
-//
-//nolint:paralleltest
 func Test_Detect_JavaScript_NoMatch(t *testing.T) {
+	t.Parallel()
+
 	fixtures := map[string]struct {
 		path              string
 		advisoriesToCheck []models.AdvisoryToCheck
@@ -356,9 +356,9 @@ func Test_Detect_JavaScript_SameSymbolReachableMultipleWays(t *testing.T) {
 
 // Test_Detect_TypeScriptAndTSX confirms grammar dispatch works correctly for .ts and .tsx
 // files, including a .tsx file that mixes class instantiation with JSX syntax in the same file.
-//
-//nolint:paralleltest
 func Test_Detect_TypeScriptAndTSX(t *testing.T) {
+	t.Parallel()
+
 	fixtures := map[string]struct {
 		path              string
 		advisoriesToCheck []models.AdvisoryToCheck
