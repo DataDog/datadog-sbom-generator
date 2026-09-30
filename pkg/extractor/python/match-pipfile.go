@@ -191,14 +191,17 @@ var poetryGroupNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.po
 
 // isDependencyTable reports whether line is a table whose own "key = value" or "key = [...]"
 // entries declare dependencies, as opposed to an unrelated table such as [tool.poetry.scripts] or
-// [build-system] whose entries must not be mistaken for dependency declarations.
+// [build-system] whose entries must not be mistaken for dependency declarations. [dependency-groups]
+// (PEP 735, used by uv) has the same shape as [project.optional-dependencies]: each key is a group
+// name (e.g. "dev") mapping to an array of PEP 508 strings.
 func isDependencyTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
 
 	switch trimmedLine {
 	case "[packages]", "[dev-packages]",
 		"[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]",
-		"[project]", "[project.optional-dependencies]":
+		"[project]", "[project.optional-dependencies]",
+		"[dependency-groups]":
 		return true
 	}
 

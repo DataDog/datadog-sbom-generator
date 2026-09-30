@@ -731,3 +731,32 @@ func TestPyprojectTomlMatcher_Match_ScriptsTableNotMatched(t *testing.T) {
 	assert.False(t, packages[1].IsDirect, "expected flask to NOT be recognized as a direct dependency from the scripts table")
 	assert.NotEqual(t, models.LocationRoleManifest, packages[1].LocationRole)
 }
+
+// TestPyprojectTomlMatcher_Match_DependencyGroups is a regression test ensuring that packages
+// declared under [dependency-groups] (PEP 735, used by uv) still get manifest-level enrichment.
+// isDependencyTable previously only allowed a fixed set of tables, omitting [dependency-groups],
+// so a uv project's dev-only dependencies fell back to their raw uv.lock location with no
+// manifest occurrence and IsDirect left unset.
+func TestPyprojectTomlMatcher_Match_DependencyGroups(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/dependency-groups/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Uv},
+		{Name: "pytest", PackageManager: models.Uv},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected requests to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+
+	assert.True(t, packages[1].IsDirect, "expected pytest under [dependency-groups] to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[1].LocationRole, "expected pytest to get its manifest location from [dependency-groups]")
+}
