@@ -22538,7 +22538,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":35,/"line_end/":42,/"column_start/":3,/"column_end/":23,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":9,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":10,/"column_end/":15,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -22562,7 +22562,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":44,/"line_end/":45,/"column_start/":3,/"column_end/":125,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":9,/"column_end/":29,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":10,/"column_end/":16,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":20,/"column_end/":28,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -28508,7 +28508,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":35,/"line_end/":42,/"column_start/":3,/"column_end/":23,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":9,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":10,/"column_end/":15,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -28532,7 +28532,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":44,/"line_end/":45,/"column_start/":3,/"column_end/":125,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":9,/"column_end/":29,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":10,/"column_end/":16,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":20,/"column_end/":28,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -34478,7 +34478,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":35,/"line_end/":42,/"column_start/":3,/"column_end/":23,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":9,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":10,/"column_end/":15,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":9,/"line_end/":9,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -34502,7 +34502,7 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       "evidence": {
         "occurrences": [
           {
-            "location": "{/"block/":{/"file_name/":/"pnpm-9/pnpm-lock.yaml/",/"line_start/":44,/"line_end/":45,/"column_start/":3,/"column_end/":125,/"role/":/"lockfile/"}}"
+            "location": "{/"block/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":9,/"column_end/":29,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":10,/"column_end/":16,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pnpm-9/modules/module_1/package.json/",/"line_start/":6,/"line_end/":6,/"column_start/":20,/"column_end/":28,/"role/":/"manifest/"}}"
           }
         ]
       }

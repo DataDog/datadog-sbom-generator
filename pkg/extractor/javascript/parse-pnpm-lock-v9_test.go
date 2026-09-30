@@ -1015,6 +1015,62 @@ func TestParsePnpmLock_v9_WorkspacesComplex(t *testing.T) {
 	})
 }
 
+// Real-world pnpm-only monorepos configure workspaces via pnpm-workspace.yaml
+// and don't declare package.json's "workspaces" field, since pnpm ignores it.
+func TestParsePnpmLock_v9_WorkspacePnpmOnly(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-pnpm-only/pnpm-lock.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/package-json/workspace-pnpm-only/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	fooPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-pnpm-only/packages/foo/package.json"))
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "picocolors",
+			Version:        "1.1.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"^1.1.1"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 27},
+				Filename: fooPath,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 16},
+				Filename: fooPath,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 20, End: 26},
+				Filename: fooPath,
+			},
+			IsDirect:  true,
+			DepGroups: []string{"prod", "prod"},
+		},
+	})
+}
+
 // TestParsePnpmLock_v9_PeerVariantsTieBreak_BlockLocation is a regression test for
 // lookupPnpmPosition's peer-suffix prefix fallback: when the exact "name@version" key is not
 // present in positions (only peer-suffixed variants are, e.g. "tsutils@3.21.0(typescript@4.0.0)"
