@@ -107,6 +107,27 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 			expectedSymbol: "_.merge",
 			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 8,
 		},
+		// Bracket notation resolves identically to dot notation; only the recorded symbol text
+		// differs.
+		"namespace import, bracket-notation member call": {
+			path:           "testdata/CVE-2025-9012/namespace-import-bracket-call/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: `_["merge"]`,
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 11,
+		},
+		// An optional_chain node between the object and the index must not prevent a match.
+		"namespace import, optional-chained bracket member call": {
+			path:           "testdata/CVE-2025-9012/namespace-import-optional-bracket-call/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: `_?.["merge"]`,
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 13,
+		},
+		"inline require member call, bracket notation": {
+			path:           "testdata/CVE-2025-9012/require-inline-member-call-bracket/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: `require("lodash")["merge"]`,
+			lineStart:      1, lineEnd: 1, columnStart: 1, columnEnd: 27,
+		},
 		"cjs namespace require, member call": {
 			path:           "testdata/CVE-2025-9012/require-namespace/app.js",
 			purl:           "pkg:npm/lodash@4.17.19",
@@ -199,6 +220,11 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 			path:           "testdata/CVE-2025-9012/class-namespace-import/app.js",
 			expectedSymbol: "pkg.Client",
 			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 25,
+		},
+		"namespace import, bracket-notation member instantiation": {
+			path:           "testdata/CVE-2025-9012/class-namespace-import-bracket-new/app.js",
+			expectedSymbol: `pkg["Client"]`,
+			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 28,
 		},
 		"cjs require, member instantiation": {
 			path:           "testdata/CVE-2025-9012/class-require/app.js",
@@ -342,6 +368,28 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 		// The binding resolves, but to a different export than the advisory names.
 		"require property access, unrelated export name": {
 			path: "testdata/CVE-2025-9012/require-property-name-mismatch-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+				},
+			},
+		},
+		// A computed index names nothing knowable from the source.
+		"computed bracket index produces no match": {
+			path: "testdata/CVE-2025-9012/namespace-import-computed-bracket-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+				},
+			},
+		},
+		// Template-literal indexes are out of scope, with or without interpolation.
+		"template-literal bracket index produces no match": {
+			path: "testdata/CVE-2025-9012/namespace-import-template-bracket-notresolved/app.js",
 			advisoriesToCheck: []models.AdvisoryToCheck{
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",

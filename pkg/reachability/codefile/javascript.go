@@ -96,10 +96,11 @@ const tsQueryForCJSRequire = `
   (#eq? @_require "require"))
 `
 
-// Inline require member-call query: matches `require('pkg').fn(...)` - a call on a property of a
-// require() result with no intervening variable, e.g. the common Node idiom
-// require('fs').readFileSync(...). No binding exists to resolve here, so Detect matches these
-// straight against the advisory: @path is the package and @fn is the symbol.
+// Inline require member-call query: matches `require('pkg').fn(...)` and
+// `require('pkg')['fn'](...)` - a call on a property of a require() result with no intervening
+// variable, e.g. the common Node idiom require('fs').readFileSync(...). No binding exists to
+// resolve here, so Detect matches these straight against the advisory: @path is the package and
+// @fn is the symbol.
 //
 // There's no `new` counterpart because JS doesn't spell one the obvious way:
 // `new require('pkg').C()` parses as `(new require('pkg')).C()`, which constructs the module
@@ -113,11 +114,27 @@ const tsQueryForInlineRequireCall = `
       arguments: (arguments . (string (string_fragment) @path)))
     property: (property_identifier) @fn) @selector
   (#eq? @_require "require"))
+
+(call_expression
+  function: (subscript_expression
+    object: (call_expression
+      function: (identifier) @_require
+      arguments: (arguments . (string (string_fragment) @path)))
+    index: (string (string_fragment) @fn)) @selector
+  (#eq? @_require "require"))
 `
 
 // Usage queries: one direct-call/new shape and one member-call/new shape per symbol type
 // (function vs. class). Which one applies to a given advisory symbol is decided per-binding at
 // match time (Named/Default -> direct, Namespace -> member), not by the symbol type.
+//
+// Each member shape has a dot-notation and a bracket-notation pattern: ns.fn(...) and
+// ns['fn'](...) are the same statically-resolvable access, so both reuse the same captures and
+// nothing downstream needs to know which one matched.
+//
+// The index is anchored to a literal string. Computed and template-literal indexes produce no
+// match, since the accessed name isn't knowable from the source. Optional chaining still matches:
+// tree-sitter matches children non-exhaustively, so the extra optional_chain node is ignored.
 const (
 	tsQueryForDirectCall = `(call_expression function: (identifier) @fn)`
 	tsQueryForMemberCall = `
@@ -125,6 +142,11 @@ const (
   function: (member_expression
     object: (identifier) @pkg
     property: (property_identifier) @fn) @selector)
+
+(call_expression
+  function: (subscript_expression
+    object: (identifier) @pkg
+    index: (string (string_fragment) @fn)) @selector)
 `
 	tsQueryForDirectNew = `(new_expression constructor: (identifier) @class)`
 	tsQueryForMemberNew = `
@@ -132,6 +154,11 @@ const (
   constructor: (member_expression
     object: (identifier) @pkg
     property: (property_identifier) @class) @selector)
+
+(new_expression
+  constructor: (subscript_expression
+    object: (identifier) @pkg
+    index: (string (string_fragment) @class)) @selector)
 `
 )
 
