@@ -310,3 +310,38 @@ func TestPipfileMatcher_Match_PoetryInlineTableWithNestedArray(t *testing.T) {
 		},
 	})
 }
+
+// TestPipfileMatcher_Match_PoetryMultilineConstraintArray is a regression test for a bug where the
+// PEP 621 multiline-array tracker treated any "key = [" line as the start of a PEP 621 dependency
+// array, discarding the assignment key. A Poetry multiple-constraint dependency such as
+// `requests = [{version = "^2", ...}, {version = "^3", ...}]` spread across multiple lines has no
+// quoted PEP 508 string items, so it never produced a manifest key and "requests" stayed
+// unmatched (IsDirect=false) even though it is declared in the manifest.
+func TestPipfileMatcher_Match_PoetryMultilineConstraintArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/poetry-multiline-constraint-array/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if !packages[0].IsDirect {
+		t.Errorf("expected requests to be IsDirect, got %+v", packages[0])
+	}
+
+	if packages[0].LocationRole != models.LocationRoleManifest {
+		t.Errorf("expected requests to have LocationRoleManifest, got %v", packages[0].LocationRole)
+	}
+
+	if packages[0].BlockLocation.Line.Start != 2 {
+		t.Errorf("expected requests manifest location on line 2 (the assignment line), got %+v", packages[0].BlockLocation)
+	}
+}

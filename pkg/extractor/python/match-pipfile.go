@@ -23,6 +23,9 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 	lines := fileposition.BytesToLines(content)
 	var inDevDepTable bool
 	var inArray bool
+	var arrayHasStringItem bool
+	var arrayFallback *manifestKey
+	var arrayFallbackLine int
 
 	for index, line := range lines {
 		lineNumber := index + 1
@@ -30,6 +33,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		if isTable(line) {
 			inDevDepTable = isDevTable(line)
 			inArray = false
+			arrayFallback = nil
 
 			continue
 		}
@@ -39,76 +43,107 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		switch {
 		case inArray:
 			itemContent, closed := closeMultilineArrayLine(line)
-			manifestKeys = manifestKeysFromArrayItems(itemContent)
+			if keys := manifestKeysFromArrayItems(itemContent); len(keys) > 0 {
+				manifestKeys = keys
+				arrayHasStringItem = true
+			}
+
 			inArray = !closed
+
+			// The array closed without ever containing a quoted PEP 508 string item, so it
+			// isn't a PEP 621 dependency array after all (e.g. a Poetry multiple-constraint
+			// dependency such as `foo = [{version = "1.0", python = ">=3.8"}]`). Fall back to
+			// matching the assignment key itself, the same way a plain "foo = ..." line would.
+			if closed && !arrayHasStringItem && arrayFallback != nil {
+				matchManifestKeys(packages, []manifestKey{*arrayFallback}, sourceFile, arrayFallbackLine, lines[arrayFallbackLine-1], inDevDepTable)
+				arrayFallback = nil
+			}
 		default:
 			if rest, opened := multilineArrayOpener(line); opened {
-				manifestKeys = manifestKeysFromArrayItems(rest)
+				arrayHasStringItem = false
+				arrayFallback = nil
+
+				if keys := manifestKeysFromArrayItems(rest); len(keys) > 0 {
+					manifestKeys = keys
+					arrayHasStringItem = true
+				}
+
+				if fallback, ok := arrayOpenerFallbackKey(line); ok {
+					arrayFallback = &fallback
+					arrayFallbackLine = lineNumber
+				}
+
 				inArray = true
 			} else if keys, ok := tomlLineKeys(line); ok {
 				manifestKeys = keys
 			}
 		}
 
-		if len(manifestKeys) == 0 {
-			continue
-		}
-
-		for key, pkg := range packages {
-			// Compare normalized names (PEP 503) rather than a raw substring match, so that
-			// spelling variants like "my_package" or "my.package" in the manifest still match
-			// the lockfile's canonical "my-package", and so a package like "requests" doesn't
-			// match a line declaring "requests-oauthlib".
-			normalizedName := normalizedRequirementName(pkg.Name)
-			manifestKey, ok := findManifestKey(manifestKeys, normalizedName)
-			if !ok {
-				continue
-			}
-
-			lowerLine := strings.ToLower(line)
-			startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
-			endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
-
-			packages[key].LocationRole = models.LocationRoleManifest
-			packages[key].BlockLocation = models.FilePosition{
-				Line:     models.Position{Start: lineNumber, End: lineNumber},
-				Column:   models.Position{Start: startColumn, End: endColumn},
-				Filename: sourceFile.Path(),
-			}
-
-			// Search within the matched key's own anchor text rather than the whole line, so
-			// that a package like "requests" resolves to its own entry instead of the
-			// occurrence inside a sibling entry such as "requests-oauthlib" declared in the
-			// same inline array.
-			anchor := strings.ToLower(manifestKey.raw)
-			searchLine, columnOffset := lowerLine, 0
-			if anchorOffset := strings.Index(lowerLine, anchor); anchorOffset != -1 {
-				searchLine, columnOffset = anchor, anchorOffset
-			}
-
-			nameLocation := fileposition.ExtractStringPositionInBlock([]string{searchLine}, strings.ToLower(manifestKey.name), lineNumber)
-			if nameLocation != nil {
-				nameLocation.Column.Start += columnOffset
-				nameLocation.Column.End += columnOffset
-				nameLocation.Filename = sourceFile.Path()
-				packages[key].NameLocation = nameLocation
-			}
-
-			versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
-			if versionLocation != nil {
-				versionLocation.Filename = sourceFile.Path()
-				packages[key].VersionLocation = versionLocation
-			}
-
-			packages[key].IsDirect = true
-
-			if inDevDepTable {
-				packages[key].DepGroups = append(packages[key].DepGroups, "dev")
-			}
-		}
+		matchManifestKeys(packages, manifestKeys, sourceFile, lineNumber, line, inDevDepTable)
 	}
 
 	return nil
+}
+
+// matchManifestKeys looks up each package in manifestKeys and, for any match, records its
+// manifest location and direct/dev status from line (the manifest line the keys were found on).
+func matchManifestKeys(packages []extractor.PackageDetails, manifestKeys []manifestKey, sourceFile extractor.DepFile, lineNumber int, line string, inDevDepTable bool) {
+	if len(manifestKeys) == 0 {
+		return
+	}
+
+	for key, pkg := range packages {
+		// Compare normalized names (PEP 503) rather than a raw substring match, so that
+		// spelling variants like "my_package" or "my.package" in the manifest still match
+		// the lockfile's canonical "my-package", and so a package like "requests" doesn't
+		// match a line declaring "requests-oauthlib".
+		normalizedName := normalizedRequirementName(pkg.Name)
+		manifestKey, ok := findManifestKey(manifestKeys, normalizedName)
+		if !ok {
+			continue
+		}
+
+		lowerLine := strings.ToLower(line)
+		startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
+		endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
+
+		packages[key].LocationRole = models.LocationRoleManifest
+		packages[key].BlockLocation = models.FilePosition{
+			Line:     models.Position{Start: lineNumber, End: lineNumber},
+			Column:   models.Position{Start: startColumn, End: endColumn},
+			Filename: sourceFile.Path(),
+		}
+
+		// Search within the matched key's own anchor text rather than the whole line, so
+		// that a package like "requests" resolves to its own entry instead of the
+		// occurrence inside a sibling entry such as "requests-oauthlib" declared in the
+		// same inline array.
+		anchor := strings.ToLower(manifestKey.raw)
+		searchLine, columnOffset := lowerLine, 0
+		if anchorOffset := strings.Index(lowerLine, anchor); anchorOffset != -1 {
+			searchLine, columnOffset = anchor, anchorOffset
+		}
+
+		nameLocation := fileposition.ExtractStringPositionInBlock([]string{searchLine}, strings.ToLower(manifestKey.name), lineNumber)
+		if nameLocation != nil {
+			nameLocation.Column.Start += columnOffset
+			nameLocation.Column.End += columnOffset
+			nameLocation.Filename = sourceFile.Path()
+			packages[key].NameLocation = nameLocation
+		}
+
+		versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
+		if versionLocation != nil {
+			versionLocation.Filename = sourceFile.Path()
+			packages[key].VersionLocation = versionLocation
+		}
+
+		packages[key].IsDirect = true
+
+		if inDevDepTable {
+			packages[key].DepGroups = append(packages[key].DepGroups, "dev")
+		}
+	}
 }
 
 func isTable(line string) bool {
@@ -271,6 +306,25 @@ func multilineArrayOpener(line string) (string, bool) {
 	}
 
 	return rest, true
+}
+
+// arrayOpenerFallbackKey extracts the assignment key from a multiline array's opening line (e.g.
+// `foo = [`), for use as a manifestKey if the array turns out not to contain any PEP 508 string
+// items, mirroring the plain "key = value" fallback in tomlLineKeys.
+func arrayOpenerFallbackKey(line string) (manifestKey, bool) {
+	trimmedLine := strings.TrimSpace(stripTrailingComment(line))
+
+	key, _, found := strings.Cut(trimmedLine, "=")
+	if !found {
+		return manifestKey{}, false
+	}
+
+	key = strings.Trim(strings.TrimSpace(key), `"'`)
+	if key == "" {
+		return manifestKey{}, false
+	}
+
+	return manifestKey{name: key, raw: trimmedLine}, true
 }
 
 // closeMultilineArrayLine processes a line encountered while inside a multiline PEP 621 array.
