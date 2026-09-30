@@ -137,8 +137,19 @@ func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte
 // existing entries for that same package, not replacing them).
 //
 // Handles, per require call:
-//   - plain identifier:  const x = require('pkg')            -> ambiguous, see below
-//   - destructured:      const { a, b: c } = require('pkg')  -> bindingNamed (one per property)
+//   - plain identifier:  const x = require('pkg')              -> ambiguous, see below
+//   - destructured:      const { a, b: c } = require('pkg')    -> bindingNamed (one per property)
+//   - property selected: const a = require('pkg').a            -> bindingNamed
+//   - subscript form:    const a = require('pkg')['a']         -> bindingNamed
+//
+// The two property-selected forms bind one export under the declarator's name, exactly like
+// destructuring, so they need no handling of their own here: the query captures the property as
+// @named and the declarator as @namedAlias, and the existing named-binding branch below turns
+// that into bindingNamed{localName: declarator, exportName: property}.
+//
+// Selecting a property off an already-bound local (const _ = require('pkg'); const a = _.a) is
+// NOT resolved - that needs value tracking across statements, which the Go and Java detectors
+// don't do either, so JS/TS deliberately matches them rather than growing a third model.
 //
 // The plain-identifier form is structurally ambiguous in CJS: `x` could be used later as a
 // namespace object with methods (`x.fn()`) or as a directly-callable default export (`x()`,

@@ -230,6 +230,47 @@ func Test_resolveCJSBindings(t *testing.T) {
 			},
 		},
 		{
+			name: "property selected off require result, same local name",
+			src:  `const merge = require('lodash').merge;`,
+			expected: packageBindings{
+				"lodash": {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
+			name: "property selected off require result, aliased local name",
+			src:  `const m = require('lodash').merge;`,
+			expected: packageBindings{
+				"lodash": {{localName: "m", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
+			name: "property selected off require result via string subscript",
+			src:  `const merge = require('lodash')['merge'];`,
+			expected: packageBindings{
+				"lodash": {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
+			},
+		},
+		{
+			// A computed subscript hides which export was selected, so it must bind nothing -
+			// same reasoning as require(variable).
+			name:     "computed subscript on require result produces no binding",
+			src:      `const merge = require('lodash')[key];`,
+			expected: packageBindings{},
+		},
+		{
+			// Selecting a property off an already-bound local needs value tracking across
+			// statements, which is deliberately out of scope; only the require itself binds.
+			name: "property selected off an already-bound local is not resolved",
+			src: `const _ = require('lodash');
+const merge = _.merge;`,
+			expected: packageBindings{
+				"lodash": {
+					{localName: "_", kind: bindingNamespace},
+					{localName: "_", kind: bindingDefault},
+				},
+			},
+		},
+		{
 			name: "let and var work the same as const",
 			src: `let a = require('pkg-a');
 var b = require('pkg-b');`,

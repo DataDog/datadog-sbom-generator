@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test_usageQueryCache_ComputesLazilyAndOnlyOnce verifies that each of the four usage-query
+// Test_usageQueryCache_ComputesLazilyAndOnlyOnce verifies that each of the five usage-query
 // shapes is computed at most once per cache instance, no matter how many times its getter is
 // called - the core "check if it's there, compute only if not" behavior the cache exists for.
 func Test_usageQueryCache_ComputesLazilyAndOnlyOnce(t *testing.T) {
@@ -16,6 +16,7 @@ func Test_usageQueryCache_ComputesLazilyAndOnlyOnce(t *testing.T) {
 	memberCallsCalls := 0
 	directNewsCalls := 0
 	memberNewsCalls := 0
+	inlineRequireCallsCalls := 0
 
 	cache := newUsageQueryCache(
 		func() []callSite {
@@ -34,6 +35,10 @@ func Test_usageQueryCache_ComputesLazilyAndOnlyOnce(t *testing.T) {
 			memberNewsCalls++
 			return []callSite{{objectText: "ns", identifierText: "MemberNew"}}
 		},
+		func() []callSite {
+			inlineRequireCallsCalls++
+			return []callSite{{objectText: "lodash", identifierText: "inlineRequireCall"}}
+		},
 	)
 
 	// None of the compute functions should have run yet - laziness means nothing is computed
@@ -42,6 +47,7 @@ func Test_usageQueryCache_ComputesLazilyAndOnlyOnce(t *testing.T) {
 	assert.Equal(t, 0, memberCallsCalls)
 	assert.Equal(t, 0, directNewsCalls)
 	assert.Equal(t, 0, memberNewsCalls)
+	assert.Equal(t, 0, inlineRequireCallsCalls)
 
 	// Call each getter twice; the underlying compute function should only run on the first
 	// call for each shape.
@@ -57,11 +63,15 @@ func Test_usageQueryCache_ComputesLazilyAndOnlyOnce(t *testing.T) {
 	for range 2 {
 		assert.Equal(t, []callSite{{objectText: "ns", identifierText: "MemberNew"}}, cache.MemberNews())
 	}
+	for range 2 {
+		assert.Equal(t, []callSite{{objectText: "lodash", identifierText: "inlineRequireCall"}}, cache.InlineRequireCalls())
+	}
 
 	assert.Equal(t, 1, directCallsCalls, "DirectCalls() should only compute once")
 	assert.Equal(t, 1, memberCallsCalls, "MemberCalls() should only compute once")
 	assert.Equal(t, 1, directNewsCalls, "DirectNews() should only compute once")
 	assert.Equal(t, 1, memberNewsCalls, "MemberNews() should only compute once")
+	assert.Equal(t, 1, inlineRequireCallsCalls, "InlineRequireCalls() should only compute once")
 }
 
 // Test_usageQueryCache_EmptyResultIsStillCached verifies that a compute function returning an
@@ -77,6 +87,7 @@ func Test_usageQueryCache_EmptyResultIsStillCached(t *testing.T) {
 			calls++
 			return []callSite{}
 		},
+		func() []callSite { return nil },
 		func() []callSite { return nil },
 		func() []callSite { return nil },
 		func() []callSite { return nil },
@@ -104,10 +115,11 @@ func Test_usageQueryCache_IndependentShapes(t *testing.T) {
 		func() []callSite { memberCallsCalls++; return []callSite{{identifierText: "merge", objectText: "_"}} },
 		func() []callSite { otherCalls++; return nil },
 		func() []callSite { otherCalls++; return nil },
+		func() []callSite { otherCalls++; return nil },
 	)
 
 	cache.MemberCalls()
 
 	assert.Equal(t, 1, memberCallsCalls)
-	assert.Equal(t, 0, otherCalls, "requesting MemberCalls should not compute DirectCalls, DirectNews, or MemberNews")
+	assert.Equal(t, 0, otherCalls, "requesting MemberCalls should not compute DirectCalls, DirectNews, MemberNews, or InlineRequireCalls")
 }

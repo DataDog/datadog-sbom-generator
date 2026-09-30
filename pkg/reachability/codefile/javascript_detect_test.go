@@ -66,6 +66,35 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 			expectedSymbol: "m",
 			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 2,
 		},
+		// A property selected directly off a require() result binds that one export under the
+		// declarator's name, so it's a Named binding reached by a direct call - the same shape
+		// as `const { merge } = require("lodash")`, just written as a property access.
+		"require property access, direct call": {
+			path:           "testdata/CVE-2025-9012/require-property-dot/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: "merge",
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 6,
+		},
+		"require property access aliased, direct call": {
+			path:           "testdata/CVE-2025-9012/require-property-aliased/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: "m",
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 2,
+		},
+		"require property access via string subscript, direct call": {
+			path:           "testdata/CVE-2025-9012/require-property-bracket/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: "merge",
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 6,
+		},
+		// No local binding at all: the package and the symbol both come straight from the call
+		// site, e.g. the common Node idiom require("fs").readFileSync(...).
+		"inline require member call, no binding": {
+			path:           "testdata/CVE-2025-9012/require-inline-member-call/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: `require("lodash").merge`,
+			lineStart:      1, lineEnd: 1, columnStart: 1, columnEnd: 24,
+		},
 		"default import, direct call": {
 			path:           "testdata/CVE-2025-9012/default-import/app.js",
 			purl:           "pkg:npm/minimist@1.2.0",
@@ -193,6 +222,13 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 			expectedSymbol: "pkg.Client",
 			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 25,
 		},
+		// Class counterpart of require-property-dot: selecting the constructor off the
+		// require() result makes it a Named binding, instantiated directly.
+		"require property access, direct instantiation": {
+			path:           "testdata/CVE-2025-9012/class-require-property/app.js",
+			expectedSymbol: "Client",
+			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 21,
+		},
 	}
 
 	for name, tc := range fixtures {
@@ -283,6 +319,29 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 		// name check entirely and this matched every function-type lodash advisory.
 		"default-callable module called directly, unrelated advisory symbol": {
 			path: "testdata/CVE-2025-9012/default-callable-unrelated-symbol-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+				},
+			},
+		},
+		// A computed subscript on a require() result is as unresolvable as require(variable):
+		// the selected export name isn't in the source, so no binding may be created.
+		"computed subscript on require produces no binding": {
+			path: "testdata/CVE-2025-9012/require-property-computed-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+				},
+			},
+		},
+		// The binding resolves, but to a different export than the advisory names.
+		"require property access, unrelated export name": {
+			path: "testdata/CVE-2025-9012/require-property-name-mismatch-notresolved/app.js",
 			advisoriesToCheck: []models.AdvisoryToCheck{
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",

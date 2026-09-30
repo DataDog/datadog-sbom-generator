@@ -34,13 +34,24 @@ const tsQueryForESMImports = `
   source: (string (string_fragment) @path))
 `
 
-// CJS require query: matches `const pkg = require('pkg')` and destructured
-// `const { a, b: c } = require('pkg')` (also let/var); `#eq?` restricts matches to calls
-// literally named "require".
+// CJS require query: matches `const pkg = require('pkg')`, destructured
+// `const { a, b: c } = require('pkg')`, and a single export selected straight off the require
+// result - `const merge = require('pkg').merge` or `const merge = require('pkg')['merge']`
+// (also let/var); `#eq?` restricts matches to calls literally named "require".
 //
 // CJS has no namespace syntax like ESM's `import * as ns`, so the plain-identifier form only
 // captures @default; resolveCJSBindings turns it into both a Namespace and a Default binding,
 // since we can't tell which one it is until we see how it's actually called.
+//
+// The property-selected form binds exactly one export under the declarator's name, which is the
+// same thing destructuring does, so it's recorded as a Named binding: @named is the exported
+// name (the property) and @namedAlias is the local name (the declarator), which is how
+// resolveCJSBindings already distinguishes `{ a: b }` from `{ a }` - no extra Go logic needed.
+// The dot and subscript spellings are separate patterns rather than one alternation because each
+// has to respell the whole require-call object anyway, so alternating would cost readability
+// without saving anything. A computed subscript (`require('pkg')[name]`) is excluded by anchoring
+// the index to a literal string: the selected export isn't knowable from the source, the same
+// reason require(variable) is excluded.
 //
 // The leading `.` anchor matches only the first argument, mirroring require(id):
 // require('lodash', x) binds "lodash", require(x, 'lodash') binds nothing, and
@@ -64,6 +75,43 @@ const tsQueryForCJSRequire = `
   value: (call_expression
     function: (identifier) @_require
     arguments: (arguments . (string (string_fragment) @path)))
+  (#eq? @_require "require"))
+
+(variable_declarator
+  name: (identifier) @namedAlias
+  value: (member_expression
+    object: (call_expression
+      function: (identifier) @_require
+      arguments: (arguments . (string (string_fragment) @path)))
+    property: (property_identifier) @named)
+  (#eq? @_require "require"))
+
+(variable_declarator
+  name: (identifier) @namedAlias
+  value: (subscript_expression
+    object: (call_expression
+      function: (identifier) @_require
+      arguments: (arguments . (string (string_fragment) @path)))
+    index: (string (string_fragment) @named))
+  (#eq? @_require "require"))
+`
+
+// Inline require member-call query: matches `require('pkg').fn(...)` - a call on a property of a
+// require() result with no intervening variable, e.g. the common Node idiom
+// require('fs').readFileSync(...). No binding exists to resolve here, so Detect matches these
+// straight against the advisory: @path is the package and @fn is the symbol.
+//
+// There's no `new` counterpart because JS doesn't spell one the obvious way:
+// `new require('pkg').C()` parses as `(new require('pkg')).C()`, which constructs the module
+// itself rather than C. Only `new (require('pkg').C)()` would, and that form is rare enough not
+// to carry its own query.
+const tsQueryForInlineRequireCall = `
+(call_expression
+  function: (member_expression
+    object: (call_expression
+      function: (identifier) @_require
+      arguments: (arguments . (string (string_fragment) @path)))
+    property: (property_identifier) @fn) @selector
   (#eq? @_require "require"))
 `
 
@@ -155,12 +203,13 @@ func newCompiledQuery(language *treesitter.Language, label string, queryText str
 type jsGrammar struct {
 	parser *treesitter.Parser
 
-	esmImportQuery  *compiledQuery
-	cjsRequireQuery *compiledQuery
-	directCallQuery *compiledQuery
-	memberCallQuery *compiledQuery
-	directNewQuery  *compiledQuery
-	memberNewQuery  *compiledQuery
+	esmImportQuery         *compiledQuery
+	cjsRequireQuery        *compiledQuery
+	directCallQuery        *compiledQuery
+	memberCallQuery        *compiledQuery
+	directNewQuery         *compiledQuery
+	memberNewQuery         *compiledQuery
+	inlineRequireCallQuery *compiledQuery
 }
 
 // close releases this grammar's parser and every compiled query it holds. Safe to call on a
@@ -174,6 +223,7 @@ func (g *jsGrammar) close() {
 		g.esmImportQuery, g.cjsRequireQuery,
 		g.directCallQuery, g.memberCallQuery,
 		g.directNewQuery, g.memberNewQuery,
+		g.inlineRequireCallQuery,
 	} {
 		if q != nil {
 			q.close()
@@ -206,6 +256,7 @@ func newJSGrammar(language *treesitter.Language) (*jsGrammar, error) {
 		{&g.memberCallQuery, "member calls", tsQueryForMemberCall, []string{capturePkg, captureFn, captureSelector}},
 		{&g.directNewQuery, "direct news", tsQueryForDirectNew, []string{captureClass}},
 		{&g.memberNewQuery, "member news", tsQueryForMemberNew, []string{capturePkg, captureClass, captureSelector}},
+		{&g.inlineRequireCallQuery, "inline require calls", tsQueryForInlineRequireCall, []string{capturePath, captureFn, captureSelector}},
 	} {
 		query, err := newCompiledQuery(language, spec.label, spec.text, spec.captureNames...)
 		if err != nil {
@@ -327,6 +378,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 		func() []callSite { return grammar.memberCalls(tree, fileContent, queryCursor) },
 		func() []callSite { return grammar.directNews(tree, fileContent, queryCursor) },
 		func() []callSite { return grammar.memberNews(tree, fileContent, queryCursor) },
+		func() []callSite { return grammar.inlineRequireCalls(tree, fileContent, queryCursor) },
 	)
 
 	for _, advisoryToCheck := range advisoriesToCheck {
@@ -334,6 +386,23 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 			if s.Type != symbolTypeFunction && s.Type != symbolTypeClass {
 				r.reporter.Warnf("No JavaScript/TypeScript detection support for symbol type %s", s.Type)
 				continue
+			}
+
+			// Inline require calls (require('pkg').fn(...)) bind nothing, so they're matched on
+			// the call site's own package path instead of a resolved binding, and before the
+			// bindings lookup below - which would otherwise skip the file entirely when the
+			// package is never bound to a local name. Function symbols only; see
+			// tsQueryForInlineRequireCall for why there's no `new` equivalent.
+			if s.Type == symbolTypeFunction {
+				for _, candidate := range cache.InlineRequireCalls() {
+					if candidate.objectText != s.Value || candidate.identifierText != s.Name {
+						continue
+					}
+
+					if err := recordCandidate(detectionResults, advisoryToCheck, dir, path, fileContent, candidate.node); err != nil {
+						return err
+					}
+				}
 			}
 
 			packageBindingsForSymbol, ok := bindings[s.Value]
@@ -349,16 +418,26 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 						continue
 					}
 
-					packageLocation, err := buildPackageLocation(dir, path, candidate.node.StartPosition(), candidate.node.EndPosition())
-					if err != nil {
+					if err := recordCandidate(detectionResults, advisoryToCheck, dir, path, fileContent, candidate.node); err != nil {
 						return err
 					}
-
-					recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, candidate.node.Utf8Text(fileContent), packageLocation)
 				}
 			}
 		}
 	}
+
+	return nil
+}
+
+// recordCandidate records one matched call/new site as a reachable symbol for the advisory,
+// resolving the node's position into a package location first.
+func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck models.AdvisoryToCheck, dir string, path string, fileContent []byte, node treesitter.Node) error {
+	packageLocation, err := buildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
+	if err != nil {
+		return err
+	}
+
+	recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
 
 	return nil
 }

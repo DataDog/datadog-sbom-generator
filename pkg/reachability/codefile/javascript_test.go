@@ -94,6 +94,7 @@ func Test_NewJavaScriptReachableDetector_QueriesCompileAndCaptureIndicesResolve(
 				{"memberCall", g.memberCallQuery, []string{capturePkg, captureFn, captureSelector}},
 				{"directNew", g.directNewQuery, []string{captureClass}},
 				{"memberNew", g.memberNewQuery, []string{capturePkg, captureClass, captureSelector}},
+				{"inlineRequireCall", g.inlineRequireCallQuery, []string{capturePath, captureFn, captureSelector}},
 			} {
 				require.NotNil(t, tc.query, tc.queryName)
 
