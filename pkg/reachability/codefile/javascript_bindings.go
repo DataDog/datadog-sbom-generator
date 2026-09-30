@@ -44,11 +44,20 @@ type packageBindings map[string][]resolvedBinding
 // npm package name -> local bindings created for that package in this file.
 //
 // Handles, per import statement:
-//   - default import:              import def from 'pkg'              -> bindingDefault
+//   - default import:              import def from 'pkg'              -> bindingDefault + bindingNamespace
 //   - namespace import:            import * as ns from 'pkg'          -> bindingNamespace
 //   - named import (incl. alias):  import { fn, fn2 as f2 } from 'pkg' -> bindingNamed (one per specifier)
 //   - combined default+namespace:  import def, * as ns from 'pkg'     -> both bindings recorded
 //   - combined default+named:      import def, { fn } from 'pkg'      -> both bindings recorded
+//
+// A default import records both kinds for the same local name, for the same reason
+// resolveCJSBindings does it for `const x = require('pkg')`: the binding is ambiguous. Most of
+// npm is CommonJS, and under esModuleInterop `import x from 'cjs-pkg'` resolves to the whole
+// module.exports - so `x` may be called directly (x(...), e.g. minimist) or used as a namespace
+// (x.fn(...), e.g. lodash), and which one is only knowable from the call sites. Recording both
+// is not a false-positive risk: a Default binding only matches a direct call when the advisory's
+// Name equals the local name, and a Namespace binding only matches a member call when the
+// accessed property equals it, so an inapplicable kind simply never matches anything.
 //
 // Known accepted gap: `import type { X } from 'pkg'` and `import { type X } from 'pkg'`
 // (TypeScript/TSX only) are NOT filtered out - the "type" keyword doesn't change the AST shape
@@ -95,10 +104,10 @@ func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte
 		// `import def, * as ns from 'pkg'`), so these are independent checks, not a
 		// mutually-exclusive switch - both bindings must be recorded when both are present.
 		if defaultText != "" {
-			bindings[pathText] = append(bindings[pathText], resolvedBinding{
-				localName: defaultText,
-				kind:      bindingDefault,
-			})
+			bindings[pathText] = append(bindings[pathText],
+				resolvedBinding{localName: defaultText, kind: bindingDefault},
+				resolvedBinding{localName: defaultText, kind: bindingNamespace},
+			)
 		}
 		if namespaceText != "" {
 			bindings[pathText] = append(bindings[pathText], resolvedBinding{

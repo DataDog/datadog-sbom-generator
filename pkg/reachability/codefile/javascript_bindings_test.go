@@ -22,10 +22,17 @@ func Test_resolveESMBindings(t *testing.T) {
 		expected packageBindings
 	}{
 		{
-			name: "default import",
+			// A default import is ambiguous for the CJS packages that dominate npm: under
+			// esModuleInterop the binding is the whole module.exports, usable either as a
+			// direct call (minimist(args)) or as a namespace (_.merge(...)). Both kinds are
+			// recorded and the call sites disambiguate, same as resolveCJSBindings does.
+			name: "default import records both Default and Namespace",
 			src:  `import minimist from 'minimist';`,
 			expected: packageBindings{
-				"minimist": {{localName: "minimist", kind: bindingDefault}},
+				"minimist": {
+					{localName: "minimist", kind: bindingDefault},
+					{localName: "minimist", kind: bindingNamespace},
+				},
 			},
 		},
 		{
@@ -65,6 +72,7 @@ func Test_resolveESMBindings(t *testing.T) {
 			expected: packageBindings{
 				"pkg": {
 					{localName: "def", kind: bindingDefault},
+					{localName: "def", kind: bindingNamespace},
 					{localName: "ns", kind: bindingNamespace},
 				},
 			},
@@ -75,6 +83,7 @@ func Test_resolveESMBindings(t *testing.T) {
 			expected: packageBindings{
 				"pkg": {
 					{localName: "def", kind: bindingDefault},
+					{localName: "def", kind: bindingNamespace},
 					{localName: "fn", kind: bindingNamed, exportName: "fn"},
 				},
 			},
@@ -95,8 +104,11 @@ import * as lodash2 from 'lodash';`,
 			src: `import minimist from 'minimist';
 import { merge } from 'lodash';`,
 			expected: packageBindings{
-				"minimist": {{localName: "minimist", kind: bindingDefault}},
-				"lodash":   {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
+				"minimist": {
+					{localName: "minimist", kind: bindingDefault},
+					{localName: "minimist", kind: bindingNamespace},
+				},
+				"lodash": {{localName: "merge", kind: bindingNamed, exportName: "merge"}},
 			},
 		},
 		{

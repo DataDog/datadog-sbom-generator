@@ -96,6 +96,16 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 			expectedSymbol: "merge",
 			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 6,
 		},
+		// A CommonJS package imported with ESM default syntax resolves to the whole
+		// module.exports under esModuleInterop, so the binding is usable as a namespace
+		// (_.merge(...)) just like `const _ = require('lodash')` is - the single most common
+		// way TypeScript code consumes lodash.
+		"esm default import, member call (esModuleInterop shape)": {
+			path:           "testdata/CVE-2025-9012/default-import-member-call/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: "_.merge",
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 8,
+		},
 	}
 
 	for name, tc := range fixtures {
@@ -175,6 +185,13 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 			path:           "testdata/CVE-2025-9012/jsx-file/app.jsx",
 			expectedSymbol: "Client",
 			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 21,
+		},
+		// Same esModuleInterop shape as the function case: a default-imported CJS package
+		// used as a namespace, with the class reached via property access.
+		"default import, member instantiation (esModuleInterop shape)": {
+			path:           "testdata/CVE-2025-9012/class-default-import-member-new/app.js",
+			expectedSymbol: "pkg.Client",
+			lineStart:      2, lineEnd: 2, columnStart: 15, columnEnd: 25,
 		},
 	}
 
