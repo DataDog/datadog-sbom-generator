@@ -111,7 +111,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 				}
 
 				inArray = true
-			} else if keys, ok := tomlLineKeys(line); ok {
+			} else if keys, ok := tomlLineKeys(line, inPoetryDependencyTable); ok {
 				manifestKeys = keys
 			}
 		}
@@ -280,7 +280,14 @@ func findManifestKey(keys []manifestKey, normalizedName string) (manifestKey, bo
 // `dependencies = ["requests==2.28.0", "flask>=2.0"]` (pyproject.toml `dependencies = [...]`).
 // It is not a full TOML/PEP 508 parser: it only isolates the name(s) so packages are matched
 // exactly instead of via substring search.
-func tomlLineKeys(line string) ([]manifestKey, bool) {
+//
+// allowArrayFallback mirrors the gating in arrayOpenerFallbackKey's caller: only Poetry
+// dependency tables allow a bare key assigned to an array with no PEP 508 string item (e.g. a
+// multi-constraint dependency) to fall back to the assignment key itself. Elsewhere, an inline
+// array with no string item, such as a PEP 735 `dev = [{include-group = "test"}]` or `dev = []`,
+// is an empty or inclusion-only group, not a dependency, so its key must not be used as a
+// fallback.
+func tomlLineKeys(line string, allowArrayFallback bool) ([]manifestKey, bool) {
 	line = stripTrailingComment(line)
 	trimmedLine := strings.TrimSpace(line)
 	if trimmedLine == "" {
@@ -295,8 +302,12 @@ func tomlLineKeys(line string) ([]manifestKey, bool) {
 		return []manifestKey{{name: name, raw: trimmedLine}}, true
 	}
 
-	key, _, found := strings.Cut(trimmedLine, "=")
+	key, value, found := strings.Cut(trimmedLine, "=")
 	if !found {
+		return nil, false
+	}
+
+	if !allowArrayFallback && strings.HasPrefix(strings.TrimSpace(value), "[") {
 		return nil, false
 	}
 

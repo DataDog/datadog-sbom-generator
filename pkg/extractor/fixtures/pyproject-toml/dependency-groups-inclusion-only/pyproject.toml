@@ -12,3 +12,5 @@ test = [
 dev = [
     {include-group = "test"},
 ]
+empty = []
+inline = [{include-group = "test"}]
