@@ -44,9 +44,13 @@ func openTOMLDependency[P models.IFilePosition](lineNumber int, line string, ope
 func closeTOMLDependency[P models.IFilePosition](lineNumber int, open *bool, lines []string, dep P) {
 	// Closing when new package/other section
 	lineEnd := lineNumber
-	// When last line
+	// When last line, but only if it holds real content: a trailing newline in the
+	// file produces an empty phantom last element, in which case lineNumber already
+	// points one past the real last content line.
 	if lineNumber == len(lines)-1 {
-		lineEnd++
+		if lines[lineNumber] != "" {
+			lineEnd++
+		}
 		// Skip empty lines
 	} else if lines[lineNumber-1] == "" {
 		lineEnd--

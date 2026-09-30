@@ -130,6 +130,10 @@ type PnpmImporters struct {
 	Dependencies         PnpmDependencies `yaml:"dependencies,omitempty"`
 	OptionalDependencies PnpmDependencies `yaml:"optionalDependencies,omitempty"`
 	DevDependencies      PnpmDependencies `yaml:"devDependencies,omitempty"`
+	// ConfigDependencies are packages resolved by pnpm's config-dependencies feature.
+	// They live in the env document of a multi-document lockfile (see
+	// decodePnpmLockStream) and are real installed packages, not just tooling metadata.
+	ConfigDependencies PnpmDependencies `yaml:"configDependencies,omitempty"`
 }
 
 type PnpmSnapshot struct {

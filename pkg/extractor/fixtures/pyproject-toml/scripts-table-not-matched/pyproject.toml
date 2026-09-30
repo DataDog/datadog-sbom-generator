@@ -1,0 +1,5 @@
+[tool.poetry.dependencies]
+requests = "^2"
+
+[tool.poetry.scripts]
+flask = "flask.cli:main"

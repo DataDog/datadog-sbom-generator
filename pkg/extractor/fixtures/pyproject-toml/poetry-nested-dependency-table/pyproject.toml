@@ -1,0 +1,5 @@
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dependencies.requests]
+version = "^2"

@@ -950,7 +950,14 @@ Scanned <rootdir>/fixtures/integration-bun/ranges/bun.lock file and found 3 pack
           "name": "datadog:package-manager",
           "value": "Crates"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Cargo.lock/",/"line_start/":200,/"line_end/":204,/"column_start/":1,/"column_end/":78,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
     }
   ]
 }
@@ -17098,7 +17105,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "datadog:package-manager",
           "value": "Crates"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Cargo.lock/",/"line_start/":5,/"line_end/":12,/"column_start/":1,/"column_end/":2,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:composer/ably/ably-php@1.1.10",
@@ -23136,7 +23150,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "datadog:package-manager",
           "value": "Crates"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Cargo.lock/",/"line_start/":5,/"line_end/":12,/"column_start/":1,/"column_end/":2,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:composer/ably/ably-php@1.1.10",
@@ -29099,7 +29120,14 @@ No package sources found. Use the 'parsers list' command to view supported lockf
           "name": "datadog:package-manager",
           "value": "Crates"
         }
-      ]
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"Cargo.lock/",/"line_start/":5,/"line_end/":12,/"column_start/":1,/"column_end/":2,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
     },
     {
       "bom-ref": "pkg:composer/ably/ably-php@1.1.10",

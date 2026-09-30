@@ -3,7 +3,9 @@ package python
 import (
 	"io"
 	"strings"
+	"unicode"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -20,70 +22,545 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 	}
 
 	lines := fileposition.BytesToLines(content)
-
-	// In poetry, if the table name is [tool.poetry.dev-dependencies] or [tool.poetry.group.dev.dependencies],
-	// then the dependencies under this table are dev dependencies.
-	// Otherwise, they are regular dependencies
 	var inDevDepTable bool
+	var inDependencyTable bool
+	var inArray bool
+	var arrayHasStringItem bool
+	var arrayFallback *manifestKey
+	var arrayFallbackLine int
 
 	for index, line := range lines {
 		lineNumber := index + 1
 
-		// if this is the start of a new table, check if it's a table that can contain dev dependencies
 		if isTable(line) {
+			// A Poetry dependency can be expanded into its own nested table, e.g.
+			// `[tool.poetry.dependencies.requests]` followed by `version = "^2"`, instead of the
+			// inline-table form `requests = { version = "^2" }`. The dependency name only appears
+			// in the header itself, so match it here before moving on.
+			if name, ok := nestedDependencyTableName(line); ok {
+				inDevDepTable = isDevTable(line)
+				inDependencyTable = false
+				inArray = false
+				arrayFallback = nil
+
+				matchManifestKeys(packages, []manifestKey{{name: name, raw: line}}, sourceFile, lineNumber, line, inDevDepTable)
+
+				continue
+			}
+
 			inDevDepTable = isDevTable(line)
+			inDependencyTable = isDependencyTable(line)
+			inArray = false
+			arrayFallback = nil
+
+			continue
 		}
 
-		for key, pkg := range packages {
-			// There are some libraries that use upper case names, but their name is resolve as lower case (i.e. Django != django)
-			lowerLine := strings.ToLower(line)
-			lowerName := strings.ToLower(pkg.Name)
-			// We only need to find the package name because there cannot be multiple entries of the same dependency in the source file nor the lock file
-			if strings.Contains(lowerLine, lowerName) {
-				startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
-				endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
+		// Only tables known to hold dependency declarations are scanned for package names, so an
+		// unrelated table such as [tool.poetry.scripts] or [build-system] can't have one of its
+		// entries (e.g. a script named after its own package, or a build requirement) mistaken for
+		// a manifest declaration of an actually scanned package.
+		if !inDependencyTable {
+			continue
+		}
 
-				packages[key].LocationRole = models.LocationRoleManifest
-				packages[key].BlockLocation = models.FilePosition{
-					Line:     models.Position{Start: lineNumber, End: lineNumber},
-					Column:   models.Position{Start: startColumn, End: endColumn},
-					Filename: sourceFile.Path(),
+		var manifestKeys []manifestKey
+
+		switch {
+		case inArray:
+			itemContent, closed := closeMultilineArrayLine(line)
+			if keys := manifestKeysFromArrayItems(itemContent); len(keys) > 0 {
+				manifestKeys = keys
+				arrayHasStringItem = true
+			}
+
+			inArray = !closed
+
+			// The array closed without ever containing a quoted PEP 508 string item, so it
+			// isn't a PEP 621 dependency array after all (e.g. a Poetry multiple-constraint
+			// dependency such as `foo = [{version = "1.0", python = ">=3.8"}]`). Fall back to
+			// matching the assignment key itself, the same way a plain "foo = ..." line would.
+			if closed && !arrayHasStringItem && arrayFallback != nil {
+				matchManifestKeys(packages, []manifestKey{*arrayFallback}, sourceFile, arrayFallbackLine, lines[arrayFallbackLine-1], inDevDepTable)
+				arrayFallback = nil
+			}
+		default:
+			if rest, opened := multilineArrayOpener(line); opened {
+				arrayHasStringItem = false
+				arrayFallback = nil
+
+				if keys := manifestKeysFromArrayItems(rest); len(keys) > 0 {
+					manifestKeys = keys
+					arrayHasStringItem = true
 				}
 
-				nameLocation := fileposition.ExtractStringPositionInBlock([]string{lowerLine}, lowerName, lineNumber)
-				if nameLocation != nil {
-					nameLocation.Filename = sourceFile.Path()
-					packages[key].NameLocation = nameLocation
+				if fallback, ok := arrayOpenerFallbackKey(line); ok {
+					arrayFallback = &fallback
+					arrayFallbackLine = lineNumber
 				}
 
-				versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
-				if versionLocation != nil {
-					versionLocation.Filename = sourceFile.Path()
-					packages[key].VersionLocation = versionLocation
-				}
-
-				packages[key].IsDirect = true
-
-				if inDevDepTable {
-					packages[key].DepGroups = append(packages[key].DepGroups, "dev")
-				}
+				inArray = true
+			} else if keys, ok := tomlLineKeys(line); ok {
+				manifestKeys = keys
 			}
 		}
+
+		matchManifestKeys(packages, manifestKeys, sourceFile, lineNumber, line, inDevDepTable)
 	}
 
 	return nil
 }
 
-// isTable checks if the line is a table in the Pipfile format.
+// matchManifestKeys looks up each package in manifestKeys and, for any match, records its
+// manifest location and direct/dev status from line (the manifest line the keys were found on).
+func matchManifestKeys(packages []extractor.PackageDetails, manifestKeys []manifestKey, sourceFile extractor.DepFile, lineNumber int, line string, inDevDepTable bool) {
+	if len(manifestKeys) == 0 {
+		return
+	}
+
+	for key, pkg := range packages {
+		// Compare normalized names (PEP 503) rather than a raw substring match, so that
+		// spelling variants like "my_package" or "my.package" in the manifest still match
+		// the lockfile's canonical "my-package", and so a package like "requests" doesn't
+		// match a line declaring "requests-oauthlib".
+		normalizedName := normalizedRequirementName(pkg.Name)
+		manifestKey, ok := findManifestKey(manifestKeys, normalizedName)
+		if !ok {
+			continue
+		}
+
+		lowerLine := strings.ToLower(line)
+		startColumn := fileposition.GetFirstNonEmptyCharacterIndexInLine(lowerLine)
+		endColumn := fileposition.GetLastNonEmptyCharacterIndexInLine(lowerLine)
+
+		packages[key].LocationRole = models.LocationRoleManifest
+		packages[key].BlockLocation = models.FilePosition{
+			Line:     models.Position{Start: lineNumber, End: lineNumber},
+			Column:   models.Position{Start: startColumn, End: endColumn},
+			Filename: sourceFile.Path(),
+		}
+
+		// Search within the matched key's own anchor text rather than the whole line, so
+		// that a package like "requests" resolves to its own entry instead of the
+		// occurrence inside a sibling entry such as "requests-oauthlib" declared in the
+		// same inline array.
+		anchor := strings.ToLower(manifestKey.raw)
+		searchLine, columnOffset := lowerLine, 0
+		if anchorOffset := strings.Index(lowerLine, anchor); anchorOffset != -1 {
+			searchLine, columnOffset = anchor, anchorOffset
+		}
+
+		nameLocation := fileposition.ExtractStringPositionInBlock([]string{searchLine}, strings.ToLower(manifestKey.name), lineNumber)
+		if nameLocation != nil {
+			nameLocation.Column.Start += columnOffset
+			nameLocation.Column.End += columnOffset
+			nameLocation.Filename = sourceFile.Path()
+			packages[key].NameLocation = nameLocation
+		}
+
+		versionLocation := fileposition.ExtractDelimitedRegexpPositionInBlock([]string{lowerLine}, ".*", lineNumber, "=\\s*\"", "\"")
+		if versionLocation != nil {
+			versionLocation.Filename = sourceFile.Path()
+			packages[key].VersionLocation = versionLocation
+		}
+
+		packages[key].IsDirect = true
+
+		if inDevDepTable {
+			packages[key].DepGroups = append(packages[key].DepGroups, "dev")
+		}
+	}
+}
+
 func isTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
 }
 
-// isDevTable checks if the line is a dev dependency table for Poetry, since the implementation is shared as both tools use toml files.
+// poetryGroupTable matches a Poetry dependency-group table, e.g. [tool.poetry.group.test.dependencies].
+var poetryGroupTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.group\.([^.\[\]]+)\.dependencies\]$`)
+
+// poetryNestedDependencyTable matches a Poetry dependency expanded into its own nested table
+// instead of an inline table, e.g. [tool.poetry.dependencies.requests] or
+// [tool.poetry.dev-dependencies.requests].
+var poetryNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.(?:dev-)?dependencies\.([^.\[\]]+)\]$`)
+
+// poetryGroupNestedDependencyTable matches a Poetry dependency expanded into its own nested table
+// within a dependency group, e.g. [tool.poetry.group.test.dependencies.pytest].
+var poetryGroupNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.group\.([^.\[\]]+)\.dependencies\.([^.\[\]]+)\]$`)
+
+// isDependencyTable reports whether line is a table whose own "key = value" or "key = [...]"
+// entries declare dependencies, as opposed to an unrelated table such as [tool.poetry.scripts] or
+// [build-system] whose entries must not be mistaken for dependency declarations.
+func isDependencyTable(line string) bool {
+	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+
+	switch trimmedLine {
+	case "[packages]", "[dev-packages]",
+		"[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]",
+		"[project]", "[project.optional-dependencies]":
+		return true
+	}
+
+	return poetryGroupTable.MatchString(trimmedLine)
+}
+
+// nestedDependencyTableName returns the dependency name declared by a Poetry nested-table
+// dependency header such as [tool.poetry.dependencies.requests] or
+// [tool.poetry.group.test.dependencies.requests].
+func nestedDependencyTableName(line string) (string, bool) {
+	trimmedLine := strings.TrimSpace(line)
+
+	if m := poetryNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[1], true
+	}
+
+	if m := poetryGroupNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[2], true
+	}
+
+	return "", false
+}
+
+// manifestKey is a package name found on a manifest line, together with the exact substring of
+// the line ("raw") that it was extracted from. For a "key = value" line or a standalone PEP 621
+// array item, raw is the whole trimmed line. For an item inside an inline PEP 621 array, raw is
+// just that item's own token (e.g. `"requests"`), so callers can search for the name within raw
+// instead of the full line and avoid matching a sibling entry with a shared prefix, e.g.
+// "requests-oauthlib" on the same line as "requests".
+type manifestKey struct {
+	name string
+	raw  string
+}
+
+// findManifestKey looks up normalizedName among keys, comparing PEP 503 normalized names so that
+// spelling variants such as "my_package" and "my.package" match the canonical "my-package".
+func findManifestKey(keys []manifestKey, normalizedName string) (manifestKey, bool) {
+	for _, k := range keys {
+		if normalizedRequirementName(k.name) == normalizedName {
+			return k, true
+		}
+	}
+
+	return manifestKey{}, false
+}
+
+// tomlLineKeys extracts the package name(s) to match from a manifest line. It handles a
+// "key = value" TOML line (Pipfile/Poetry), a PEP 621 dependency array item on its own line such
+// as `"requests==2.28.0",`, and a PEP 621 inline dependency array such as
+// `dependencies = ["requests==2.28.0", "flask>=2.0"]` (pyproject.toml `dependencies = [...]`).
+// It is not a full TOML/PEP 508 parser: it only isolates the name(s) so packages are matched
+// exactly instead of via substring search.
+func tomlLineKeys(line string) ([]manifestKey, bool) {
+	line = stripTrailingComment(line)
+	trimmedLine := strings.TrimSpace(line)
+	if trimmedLine == "" {
+		return nil, false
+	}
+
+	if keys, ok := pep621InlineArrayKeys(trimmedLine); ok {
+		return keys, true
+	}
+
+	if name, ok := pep621ArrayItemName(trimmedLine); ok {
+		return []manifestKey{{name: name, raw: trimmedLine}}, true
+	}
+
+	key, _, found := strings.Cut(trimmedLine, "=")
+	if !found {
+		return nil, false
+	}
+
+	key = strings.Trim(strings.TrimSpace(key), `"'`)
+	if key == "" {
+		return nil, false
+	}
+
+	return []manifestKey{{name: key, raw: trimmedLine}}, true
+}
+
+// stripTrailingComment removes a trailing TOML comment (a "#" and everything after it) from line,
+// ignoring any "#" that appears inside a quoted string. This lets a commented dependency entry
+// such as `"requests>=2", # needed by API` still be recognized: without stripping the comment
+// first, pep621ArrayItemName would see trailing content after the closing quote and reject the
+// line as an unrecognized token.
+func stripTrailingComment(line string) string {
+	var quote byte
+
+	for i := 0; i < len(line); i++ {
+		c := line[i]
+
+		if quote != 0 {
+			if quote == '"' && c == '\\' {
+				i++
+				continue
+			}
+
+			if c == quote {
+				quote = 0
+			}
+
+			continue
+		}
+
+		switch c {
+		case '"', '\'':
+			quote = c
+		case '#':
+			return line[:i]
+		}
+	}
+
+	return line
+}
+
+// pep621InlineArrayKeys extracts package names from a PEP 621 dependency array declared inline
+// on a single line, e.g. `dependencies = ["requests==2.28.0", "flask>=2.0"]`. It requires the
+// value assigned to the key to be a bracketed list closed on the same line (nothing else on the
+// line besides an optional trailing comma), which excludes plain "key = value" lines, the opening
+// line of a multiline array (`dependencies = [`), and inline tables containing a nested array
+// such as `requests = { version = "^2", extras = ["socks"] }` (there the value starts with "{",
+// not "[").
+func pep621InlineArrayKeys(trimmedLine string) ([]manifestKey, bool) {
+	key, value, found := strings.Cut(trimmedLine, "=")
+	if !found || strings.TrimSpace(key) == "" {
+		return nil, false
+	}
+
+	value = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(value), ","))
+	if !strings.HasPrefix(value, "[") || !strings.HasSuffix(value, "]") {
+		return nil, false
+	}
+
+	keys := manifestKeysFromArrayItems(value[1 : len(value)-1])
+
+	return keys, len(keys) > 0
+}
+
+// manifestKeysFromArrayItems splits the raw content of a PEP 621 array (brackets already
+// stripped) into individual manifestKeys, skipping any fragment that isn't a recognizable quoted
+// item, e.g. a partial token left over from a comma that fell outside this line.
+func manifestKeysFromArrayItems(content string) []manifestKey {
+	var keys []manifestKey
+	for _, item := range splitTopLevelArrayItems(content) {
+		item = strings.TrimSpace(item)
+		if name, ok := pep621ArrayItemName(item); ok {
+			keys = append(keys, manifestKey{name: name, raw: item})
+		}
+	}
+
+	return keys
+}
+
+// multilineArrayOpener detects the opening line of a PEP 621 dependency array whose closing "]"
+// is on a later line, e.g. `dependencies = ["requests",`. It returns the array content that
+// appears after the "[" on this same line, which may itself contain one or more complete items
+// (e.g. `["requests",`) or be empty (e.g. `dependencies = [`).
+func multilineArrayOpener(line string) (string, bool) {
+	line = stripTrailingComment(line)
+	trimmedLine := strings.TrimSpace(line)
+
+	key, value, found := strings.Cut(trimmedLine, "=")
+	if !found || strings.TrimSpace(key) == "" {
+		return "", false
+	}
+
+	value = strings.TrimSpace(value)
+	if !strings.HasPrefix(value, "[") {
+		return "", false
+	}
+
+	rest := value[1:]
+	if findMultilineArrayClose(rest) != -1 {
+		// Closes on the same line; handled by pep621InlineArrayKeys instead.
+		return "", false
+	}
+
+	return rest, true
+}
+
+// arrayOpenerFallbackKey extracts the assignment key from a multiline array's opening line (e.g.
+// `foo = [`), for use as a manifestKey if the array turns out not to contain any PEP 508 string
+// items, mirroring the plain "key = value" fallback in tomlLineKeys.
+func arrayOpenerFallbackKey(line string) (manifestKey, bool) {
+	trimmedLine := strings.TrimSpace(stripTrailingComment(line))
+
+	key, _, found := strings.Cut(trimmedLine, "=")
+	if !found {
+		return manifestKey{}, false
+	}
+
+	key = strings.Trim(strings.TrimSpace(key), `"'`)
+	if key == "" {
+		return manifestKey{}, false
+	}
+
+	return manifestKey{name: key, raw: trimmedLine}, true
+}
+
+// closeMultilineArrayLine processes a line encountered while inside a multiline PEP 621 array.
+// It returns the item content up to the closing "]" if present on this line (so an item sharing
+// the closing line, e.g. `"flask"]`, is still recognized) together with whether the array closed.
+func closeMultilineArrayLine(line string) (string, bool) {
+	line = stripTrailingComment(line)
+	if idx := findMultilineArrayClose(line); idx != -1 {
+		return line[:idx], true
+	}
+
+	return line, false
+}
+
+// findMultilineArrayClose returns the index of the first unquoted "]" in line, or -1.
+func findMultilineArrayClose(line string) int {
+	var quote byte
+
+	for i := 0; i < len(line); i++ {
+		c := line[i]
+
+		if quote != 0 {
+			if quote == '"' && c == '\\' {
+				i++
+				continue
+			}
+
+			if c == quote {
+				quote = 0
+			}
+
+			continue
+		}
+
+		switch c {
+		case '"', '\'':
+			quote = c
+		case ']':
+			return i
+		}
+	}
+
+	return -1
+}
+
+// splitTopLevelArrayItems splits the inside of a TOML array on commas, ignoring commas that appear
+// inside quoted strings. This preserves PEP 508 requirement specifiers that contain a comma as part
+// of a version constraint, e.g. `"urllib3>=1.26,<3"`, which a naive strings.Split(s, ",") would cut
+// in half. Escaped quotes inside a double-quoted string (e.g. `"requests; python_version <
+// \"3.12\""`) are skipped rather than treated as the string terminator.
+func splitTopLevelArrayItems(inner string) []string {
+	var items []string
+	var current strings.Builder
+	var quote byte
+
+	for i := 0; i < len(inner); i++ {
+		c := inner[i]
+
+		if quote != 0 {
+			current.WriteByte(c)
+			if quote == '"' && c == '\\' && i+1 < len(inner) {
+				i++
+				current.WriteByte(inner[i])
+
+				continue
+			}
+
+			if c == quote {
+				quote = 0
+			}
+
+			continue
+		}
+
+		switch c {
+		case '"', '\'':
+			quote = c
+			current.WriteByte(c)
+		case ',':
+			items = append(items, current.String())
+			current.Reset()
+		default:
+			current.WriteByte(c)
+		}
+	}
+
+	if strings.TrimSpace(current.String()) != "" {
+		items = append(items, current.String())
+	}
+
+	return items
+}
+
+// pep621ArrayItemName extracts the package name from a standalone quoted dependency-array item,
+// e.g. `"requests==2.28.0",` or `'flask[async]>=2.0'`. It returns false for anything that isn't
+// a single quoted token on the line, including quoted `"key" = "value"` lines, which still need
+// to go through the key = value path in tomlLineKeys.
+func pep621ArrayItemName(trimmedLine string) (string, bool) {
+	line := strings.TrimSuffix(trimmedLine, ",")
+	if len(line) < 2 {
+		return "", false
+	}
+
+	quote := line[0]
+	if quote != '"' && quote != '\'' {
+		return "", false
+	}
+
+	closeIdx := findClosingQuote(line[1:], quote)
+	if closeIdx == -1 {
+		return "", false
+	}
+	closeIdx++
+
+	if strings.TrimSpace(line[closeIdx+1:]) != "" {
+		return "", false
+	}
+
+	spec := strings.TrimSpace(line[1:closeIdx])
+	end := strings.IndexFunc(spec, func(r rune) bool {
+		return !(r == '-' || r == '_' || r == '.' || unicode.IsLetter(r) || unicode.IsDigit(r))
+	})
+	name := spec
+	if end != -1 {
+		name = spec[:end]
+	}
+	name = strings.TrimSpace(name)
+
+	return name, name != ""
+}
+
+// findClosingQuote returns the index of the first unescaped occurrence of quote in s. Only
+// double-quoted TOML strings support backslash escapes, so a backslash inside a single-quoted
+// (literal) string is treated as a literal character rather than an escape.
+func findClosingQuote(s string, quote byte) int {
+	for i := 0; i < len(s); i++ {
+		if quote == '"' && s[i] == '\\' {
+			i++
+			continue
+		}
+
+		if s[i] == quote {
+			return i
+		}
+	}
+
+	return -1
+}
+
 func isDevTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
-	return trimmedLine == "[tool.poetry.dev-dependencies]" || trimmedLine == "[tool.poetry.group.dev.dependencies]"
+
+	if trimmedLine == "[tool.poetry.dev-dependencies]" || strings.HasPrefix(trimmedLine, "[tool.poetry.dev-dependencies.") {
+		return true
+	}
+
+	if trimmedLine == "[tool.poetry.group.dev.dependencies]" {
+		return true
+	}
+
+	if m := poetryGroupNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[1] == "dev"
+	}
+
+	return false
 }
 
 var _ extractor.Matcher = PipfileMatcher{}
