@@ -103,14 +103,16 @@ func (c *usageQueryCache) MemberNews() []callSite {
 
 // directSites runs a direct-call/new query (one whose only capture is the called/instantiated
 // identifier itself) and returns every match as a callSite, unfiltered against any advisory.
-// Shared by directCalls and directNews, which only differ in which query/capture-index to use.
-func directSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, query *treesitter.Query, identifierCaptureIdx uint) []callSite {
+// Shared by directCalls and directNews, which only differ in which query/capture name to use.
+func directSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, query *compiledQuery, identifierCapture string) []callSite {
 	var results []callSite
 
-	matches := queryCursor.Matches(query, tree.RootNode(), fileContent)
+	identifierIdx := query.capture(identifierCapture)
+
+	matches := queryCursor.Matches(query.query, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		for _, capture := range match.Captures {
-			if capture.Index == uint32(identifierCaptureIdx) { //nolint:gosec
+			if capture.Index == identifierIdx {
 				results = append(results, callSite{
 					identifierText: capture.Node.Utf8Text(fileContent),
 					node:           capture.Node,
@@ -124,22 +126,28 @@ func directSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesit
 
 // memberSites runs a member-call/new query (object + identifier + whole-selector captures) and
 // returns every match as a callSite, unfiltered against any advisory. Shared by memberCalls and
-// memberNews, which only differ in which query/capture-indices to use.
-func memberSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, query *treesitter.Query, objectCaptureIdx, identifierCaptureIdx, selectorCaptureIdx uint) []callSite {
+// memberNews, which only differ in which query/capture names to use.
+func memberSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, query *compiledQuery, objectCapture, identifierCapture, selectorCapture string) []callSite {
 	var results []callSite
 
-	matches := queryCursor.Matches(query, tree.RootNode(), fileContent)
+	var (
+		objectIdx     = query.capture(objectCapture)
+		identifierIdx = query.capture(identifierCapture)
+		selectorIdx   = query.capture(selectorCapture)
+	)
+
+	matches := queryCursor.Matches(query.query, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		var objectText, identifierText string
 		var selectorNode treesitter.Node
 
 		for _, capture := range match.Captures {
 			switch capture.Index {
-			case uint32(objectCaptureIdx): //nolint:gosec
+			case objectIdx:
 				objectText = capture.Node.Utf8Text(fileContent)
-			case uint32(identifierCaptureIdx): //nolint:gosec
+			case identifierIdx:
 				identifierText = capture.Node.Utf8Text(fileContent)
-			case uint32(selectorCaptureIdx): //nolint:gosec
+			case selectorIdx:
 				selectorNode = capture.Node
 			}
 		}
@@ -158,27 +166,25 @@ func memberSites(tree *treesitter.Tree, fileContent []byte, queryCursor *treesit
 // advisory - e.g. for Named/Default function bindings. Each callSite's node is the called
 // identifier itself.
 func (g *jsGrammar) directCalls(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
-	return directSites(tree, fileContent, queryCursor, g.directCallQuery, g.directCallFnCaptureIdx)
+	return directSites(tree, fileContent, queryCursor, g.directCallQuery, captureFn)
 }
 
 // memberCalls returns every member call site (ns.fn(...)) in the tree, unfiltered - e.g. for
 // Namespace function bindings. Each callSite's node is the whole selector expression
 // (ns.fn), not just the property, so recorded matches show the full call-site text.
 func (g *jsGrammar) memberCalls(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
-	return memberSites(tree, fileContent, queryCursor, g.memberCallQuery,
-		g.memberCallPkgCaptureIdx, g.memberCallFnCaptureIdx, g.memberCallSelectorCaptureIdx)
+	return memberSites(tree, fileContent, queryCursor, g.memberCallQuery, capturePkg, captureFn, captureSelector)
 }
 
 // directNews returns every direct `new` expression (new X(...)) in the tree, unfiltered - e.g.
 // for Named/Default class bindings.
 func (g *jsGrammar) directNews(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
-	return directSites(tree, fileContent, queryCursor, g.directNewQuery, g.directNewClassCaptureIdx)
+	return directSites(tree, fileContent, queryCursor, g.directNewQuery, captureClass)
 }
 
 // memberNews returns every member `new` expression (new ns.X(...)) in the tree, unfiltered -
 // e.g. for Namespace class bindings. Each callSite's node is the whole selector expression
 // (ns.X), not just the property.
 func (g *jsGrammar) memberNews(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
-	return memberSites(tree, fileContent, queryCursor, g.memberNewQuery,
-		g.memberNewPkgCaptureIdx, g.memberNewClassCaptureIdx, g.memberNewSelectorCaptureIdx)
+	return memberSites(tree, fileContent, queryCursor, g.memberNewQuery, capturePkg, captureClass, captureSelector)
 }

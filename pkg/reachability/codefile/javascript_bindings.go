@@ -58,21 +58,29 @@ type packageBindings map[string][]resolvedBinding
 func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) packageBindings {
 	bindings := make(packageBindings)
 
-	matches := queryCursor.Matches(g.esmImportQuery, tree.RootNode(), fileContent)
+	var (
+		defaultIdx    = g.esmImportQuery.capture(captureDefault)
+		namespaceIdx  = g.esmImportQuery.capture(captureNamespace)
+		namedIdx      = g.esmImportQuery.capture(captureNamed)
+		namedAliasIdx = g.esmImportQuery.capture(captureNamedAlias)
+		pathIdx       = g.esmImportQuery.capture(capturePath)
+	)
+
+	matches := queryCursor.Matches(g.esmImportQuery.query, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		var defaultText, namespaceText, namedText, namedAliasText, pathText string
 
 		for _, capture := range match.Captures {
 			switch capture.Index {
-			case uint32(g.esmDefaultCaptureIdx): //nolint:gosec
+			case defaultIdx:
 				defaultText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.esmNamespaceCaptureIdx): //nolint:gosec
+			case namespaceIdx:
 				namespaceText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.esmNamedCaptureIdx): //nolint:gosec
+			case namedIdx:
 				namedText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.esmNamedAliasCaptureIdx): //nolint:gosec
+			case namedAliasIdx:
 				namedAliasText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.esmPathCaptureIdx): //nolint:gosec
+			case pathIdx:
 				pathText = capture.Node.Utf8Text(fileContent)
 			}
 		}
@@ -136,19 +144,26 @@ func (g *jsGrammar) resolveESMBindings(tree *treesitter.Tree, fileContent []byte
 // from cjsRequireQuery itself, so no binding is ever created for either - both are out of scope,
 // mirroring Go's dot-import exclusion.
 func (g *jsGrammar) resolveCJSBindings(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor, bindings packageBindings) {
-	matches := queryCursor.Matches(g.cjsRequireQuery, tree.RootNode(), fileContent)
+	var (
+		defaultIdx    = g.cjsRequireQuery.capture(captureDefault)
+		namedIdx      = g.cjsRequireQuery.capture(captureNamed)
+		namedAliasIdx = g.cjsRequireQuery.capture(captureNamedAlias)
+		pathIdx       = g.cjsRequireQuery.capture(capturePath)
+	)
+
+	matches := queryCursor.Matches(g.cjsRequireQuery.query, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		var defaultText, namedText, namedAliasText, pathText string
 
 		for _, capture := range match.Captures {
 			switch capture.Index {
-			case uint32(g.cjsDefaultCaptureIdx): //nolint:gosec
+			case defaultIdx:
 				defaultText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.cjsNamedCaptureIdx): //nolint:gosec
+			case namedIdx:
 				namedText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.cjsNamedAliasCaptureIdx): //nolint:gosec
+			case namedAliasIdx:
 				namedAliasText = capture.Node.Utf8Text(fileContent)
-			case uint32(g.cjsPathCaptureIdx): //nolint:gosec
+			case pathIdx:
 				pathText = capture.Node.Utf8Text(fileContent)
 			}
 		}

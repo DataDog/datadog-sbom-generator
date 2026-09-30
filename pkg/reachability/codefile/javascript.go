@@ -87,149 +87,137 @@ const (
 `
 )
 
-// jsGrammar holds one grammar's parser, its compiled queries, and the resolved capture indices
-// needed to read those queries' results. One instance exists per grammar (JS, TypeScript, TSX);
-// all three compile the exact same query text, since the ESM/CJS/call/new node shapes are
-// identical across all three grammars.
+// Capture names used by the queries above. Both newJSGrammar's spec list and the use sites
+// reference these constants rather than bare string literals, so a mistyped capture name is a
+// compile error instead of a map miss resolving to index 0 (a valid index, which would make the
+// mistake look like "this query matched nothing"). The constant values must match the @names in
+// the query text; newCompiledQuery verifies that at construction.
+const (
+	captureDefault    = "default"
+	captureNamespace  = "namespace"
+	captureNamed      = "named"
+	captureNamedAlias = "namedAlias"
+	capturePath       = "path"
+	captureFn         = "fn"
+	capturePkg        = "pkg"
+	captureClass      = "class"
+	captureSelector   = "selector"
+)
+
+// compiledQuery pairs a compiled tree-sitter query with its capture-name -> index map, both
+// resolved once at construction. Use sites look captures up by name instead of the grammar
+// carrying a separate index field per capture, and the uint32 conversion that
+// treesitter.QueryCapture.Index comparisons need happens here rather than at every use site.
+type compiledQuery struct {
+	query    *treesitter.Query
+	captures map[string]uint32
+}
+
+// capture returns the index tree-sitter assigned to a capture name. Pass one of the capture*
+// constants; those are the names newJSGrammar registers, and newCompiledQuery rejects any that
+// the query text doesn't define.
+func (q *compiledQuery) capture(name string) uint32 {
+	return q.captures[name]
+}
+
+func (q *compiledQuery) close() {
+	q.query.Close()
+}
+
+// newCompiledQuery compiles queryText and resolves every name in captureNames to its index.
+// A name the compiled query doesn't define is a programming error - the query text and the
+// expected capture list have drifted - so it fails here instead of silently resolving to index
+// 0, which is itself a valid index and would make the mismatch look like "found no matches".
+func newCompiledQuery(language *treesitter.Language, label string, queryText string, captureNames ...string) (*compiledQuery, error) {
+	query, err := treesitter.NewQuery(language, queryText)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tree-sitter query for %s: %w", label, err)
+	}
+
+	captures := make(map[string]uint32, len(captureNames))
+	for _, name := range captureNames {
+		idx, ok := query.CaptureIndexForName(name)
+		if !ok {
+			query.Close()
+
+			return nil, fmt.Errorf("tree-sitter query for %s has no capture named %q", label, name)
+		}
+
+		captures[name] = uint32(idx) //nolint:gosec
+	}
+
+	return &compiledQuery{query: query, captures: captures}, nil
+}
+
+// jsGrammar holds one grammar's parser and its compiled queries. One instance exists per
+// grammar (JS, TypeScript, TSX); all three compile the exact same query text, since the
+// ESM/CJS/call/new node shapes are identical across all three grammars.
 type jsGrammar struct {
 	parser *treesitter.Parser
 
-	esmImportQuery  *treesitter.Query
-	cjsRequireQuery *treesitter.Query
-	directCallQuery *treesitter.Query
-	memberCallQuery *treesitter.Query
-	directNewQuery  *treesitter.Query
-	memberNewQuery  *treesitter.Query
-
-	esmDefaultCaptureIdx    uint
-	esmNamespaceCaptureIdx  uint
-	esmNamedCaptureIdx      uint
-	esmNamedAliasCaptureIdx uint
-	esmPathCaptureIdx       uint
-
-	cjsDefaultCaptureIdx    uint
-	cjsNamedCaptureIdx      uint
-	cjsNamedAliasCaptureIdx uint
-	cjsPathCaptureIdx       uint
-
-	directCallFnCaptureIdx uint
-
-	memberCallPkgCaptureIdx      uint
-	memberCallFnCaptureIdx       uint
-	memberCallSelectorCaptureIdx uint
-
-	directNewClassCaptureIdx uint
-
-	memberNewPkgCaptureIdx      uint
-	memberNewClassCaptureIdx    uint
-	memberNewSelectorCaptureIdx uint
+	esmImportQuery  *compiledQuery
+	cjsRequireQuery *compiledQuery
+	directCallQuery *compiledQuery
+	memberCallQuery *compiledQuery
+	directNewQuery  *compiledQuery
+	memberNewQuery  *compiledQuery
 }
 
-// close releases this grammar's parser and all its compiled queries.
+// close releases this grammar's parser and every compiled query it holds. Safe to call on a
+// partially-constructed grammar, so newJSGrammar can use it as its single cleanup path.
 func (g *jsGrammar) close() {
-	g.parser.Close()
-	g.esmImportQuery.Close()
-	g.cjsRequireQuery.Close()
-	g.directCallQuery.Close()
-	g.memberCallQuery.Close()
-	g.directNewQuery.Close()
-	g.memberNewQuery.Close()
+	if g.parser != nil {
+		g.parser.Close()
+	}
+
+	for _, q := range []*compiledQuery{
+		g.esmImportQuery, g.cjsRequireQuery,
+		g.directCallQuery, g.memberCallQuery,
+		g.directNewQuery, g.memberNewQuery,
+	} {
+		if q != nil {
+			q.close()
+		}
+	}
 }
 
-// newJSGrammar compiles a full grammar set (parser + all 6 queries + capture indices) for one
-// tree-sitter Language.
+// newJSGrammar compiles a full grammar set (parser + all 6 queries, each with its capture
+// indices resolved) for one tree-sitter Language. The spec list below is the single source of
+// truth for which captures each query is expected to define.
 func newJSGrammar(language *treesitter.Language) (*jsGrammar, error) {
 	parser := treesitter.NewParser()
 	if err := parser.SetLanguage(language); err != nil {
+		parser.Close()
+
 		return nil, fmt.Errorf("failed to set tree-sitter language on parser: %w", err)
 	}
 
-	esmImportQuery, err := treesitter.NewQuery(language, tsQueryForESMImports)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for ESM imports: %w", err)
+	g := &jsGrammar{parser: parser}
+
+	for _, spec := range []struct {
+		dest         **compiledQuery
+		label        string
+		text         string
+		captureNames []string
+	}{
+		{&g.esmImportQuery, "ESM imports", tsQueryForESMImports, []string{captureDefault, captureNamespace, captureNamed, captureNamedAlias, capturePath}},
+		{&g.cjsRequireQuery, "CJS require", tsQueryForCJSRequire, []string{captureDefault, captureNamed, captureNamedAlias, capturePath}},
+		{&g.directCallQuery, "direct calls", tsQueryForDirectCall, []string{captureFn}},
+		{&g.memberCallQuery, "member calls", tsQueryForMemberCall, []string{capturePkg, captureFn, captureSelector}},
+		{&g.directNewQuery, "direct news", tsQueryForDirectNew, []string{captureClass}},
+		{&g.memberNewQuery, "member news", tsQueryForMemberNew, []string{capturePkg, captureClass, captureSelector}},
+	} {
+		query, err := newCompiledQuery(language, spec.label, spec.text, spec.captureNames...)
+		if err != nil {
+			g.close()
+
+			return nil, err
+		}
+
+		*spec.dest = query
 	}
 
-	cjsRequireQuery, err := treesitter.NewQuery(language, tsQueryForCJSRequire)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for CJS require: %w", err)
-	}
-
-	directCallQuery, err := treesitter.NewQuery(language, tsQueryForDirectCall)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for direct calls: %w", err)
-	}
-
-	memberCallQuery, err := treesitter.NewQuery(language, tsQueryForMemberCall)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for member calls: %w", err)
-	}
-
-	directNewQuery, err := treesitter.NewQuery(language, tsQueryForDirectNew)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for direct news: %w", err)
-	}
-
-	memberNewQuery, err := treesitter.NewQuery(language, tsQueryForMemberNew)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create tree-sitter query for member news: %w", err)
-	}
-
-	esmDefaultCaptureIdx, _ := esmImportQuery.CaptureIndexForName("default")
-	esmNamespaceCaptureIdx, _ := esmImportQuery.CaptureIndexForName("namespace")
-	esmNamedCaptureIdx, _ := esmImportQuery.CaptureIndexForName("named")
-	esmNamedAliasCaptureIdx, _ := esmImportQuery.CaptureIndexForName("namedAlias")
-	esmPathCaptureIdx, _ := esmImportQuery.CaptureIndexForName("path")
-
-	cjsDefaultCaptureIdx, _ := cjsRequireQuery.CaptureIndexForName("default")
-	cjsNamedCaptureIdx, _ := cjsRequireQuery.CaptureIndexForName("named")
-	cjsNamedAliasCaptureIdx, _ := cjsRequireQuery.CaptureIndexForName("namedAlias")
-	cjsPathCaptureIdx, _ := cjsRequireQuery.CaptureIndexForName("path")
-
-	directCallFnCaptureIdx, _ := directCallQuery.CaptureIndexForName("fn")
-
-	memberCallPkgCaptureIdx, _ := memberCallQuery.CaptureIndexForName("pkg")
-	memberCallFnCaptureIdx, _ := memberCallQuery.CaptureIndexForName("fn")
-	memberCallSelectorCaptureIdx, _ := memberCallQuery.CaptureIndexForName("selector")
-
-	directNewClassCaptureIdx, _ := directNewQuery.CaptureIndexForName("class")
-
-	memberNewPkgCaptureIdx, _ := memberNewQuery.CaptureIndexForName("pkg")
-	memberNewClassCaptureIdx, _ := memberNewQuery.CaptureIndexForName("class")
-	memberNewSelectorCaptureIdx, _ := memberNewQuery.CaptureIndexForName("selector")
-
-	return &jsGrammar{
-		parser: parser,
-
-		esmImportQuery:  esmImportQuery,
-		cjsRequireQuery: cjsRequireQuery,
-		directCallQuery: directCallQuery,
-		memberCallQuery: memberCallQuery,
-		directNewQuery:  directNewQuery,
-		memberNewQuery:  memberNewQuery,
-
-		esmDefaultCaptureIdx:    esmDefaultCaptureIdx,
-		esmNamespaceCaptureIdx:  esmNamespaceCaptureIdx,
-		esmNamedCaptureIdx:      esmNamedCaptureIdx,
-		esmNamedAliasCaptureIdx: esmNamedAliasCaptureIdx,
-		esmPathCaptureIdx:       esmPathCaptureIdx,
-
-		cjsDefaultCaptureIdx:    cjsDefaultCaptureIdx,
-		cjsNamedCaptureIdx:      cjsNamedCaptureIdx,
-		cjsNamedAliasCaptureIdx: cjsNamedAliasCaptureIdx,
-		cjsPathCaptureIdx:       cjsPathCaptureIdx,
-
-		directCallFnCaptureIdx: directCallFnCaptureIdx,
-
-		memberCallPkgCaptureIdx:      memberCallPkgCaptureIdx,
-		memberCallFnCaptureIdx:       memberCallFnCaptureIdx,
-		memberCallSelectorCaptureIdx: memberCallSelectorCaptureIdx,
-
-		directNewClassCaptureIdx: directNewClassCaptureIdx,
-
-		memberNewPkgCaptureIdx:      memberNewPkgCaptureIdx,
-		memberNewClassCaptureIdx:    memberNewClassCaptureIdx,
-		memberNewSelectorCaptureIdx: memberNewSelectorCaptureIdx,
-	}, nil
+	return g, nil
 }
 
 // ReachabilityJavaScript detects reachable vulnerable symbols in JavaScript/TypeScript source
