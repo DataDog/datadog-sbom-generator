@@ -47,6 +47,15 @@ var extensionToLanguageKey = map[string]string{
 	".tsx":  languageKeyJavaScript,
 }
 
+// hardcodedExcludedDirNames are directory names never worth walking into during reachability
+// analysis: node_modules (JS/TS dependency tree) and the universal .git. Checked
+// unconditionally, independent of useGitIgnore/--no-ignore - mirroring pkg/scanner's scanDir,
+// which unconditionally skips .git with no toggle. Not user-configurable.
+var hardcodedExcludedDirNames = map[string]struct{}{
+	".git":         {},
+	"node_modules": {},
+}
+
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
 	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
@@ -88,7 +97,8 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 // useGitIgnore and recursive mirror the same flags that pkg/scanner's scanDir uses: when
 // useGitIgnore is true, .gitignore patterns are respected during the directory walk (just
 // as they are during lockfile scanning), and recursive controls whether child .gitignore
-// files are parsed.
+// files are parsed. Independently of both, directories named in hardcodedExcludedDirNames are
+// always pruned from the walk, regardless of useGitIgnore.
 func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string, useGitIgnore bool, recursive bool) models.ReachabilityAnalysis {
 	r.Infof("[reachability] Fetching symbols...")
 	resp, err := http.PostResolveVulnerableSymbols(purls, ddBaseURL, ddJwtToken)
@@ -149,6 +159,14 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+
+			// Hardcoded, unconditional pruning - checked first since it's a zero-I/O name
+			// comparison, before the .gitignore matcher below does any path work.
+			if d.IsDir() {
+				if _, excluded := hardcodedExcludedDirNames[d.Name()]; excluded {
+					return filepath.SkipDir
+				}
 			}
 
 			absPath, err := filepath.Abs(path)

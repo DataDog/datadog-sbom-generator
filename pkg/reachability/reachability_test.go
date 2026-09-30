@@ -325,6 +325,103 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+// Test_PerformReachabilityAnalysis_HardcodedExcludedDir covers hardcodedExcludedDirNames: a
+// vulnerable file placed directly inside one of these directory names must never be reported,
+// regardless of which name it is.
+func Test_PerformReachabilityAnalysis_HardcodedExcludedDir(t *testing.T) {
+	for dirName := range hardcodedExcludedDirNames {
+		t.Run(dirName, func(t *testing.T) {
+			t.Setenv("DD_API_KEY", "test-dd-api-key")
+			t.Setenv("DD_APP_KEY", "test-dd-app-key")
+			ddJwtToken := ""
+
+			mockServer := createMockServer(vulnerableSymbolsResponse)
+			defer mockServer.Close()
+
+			tempDir := t.TempDir()
+			excludedSubdir := filepath.Join(tempDir, dirName)
+			err := os.Mkdir(excludedSubdir, 0755)
+			require.NoError(t, err)
+
+			mockJavaFile := filepath.Join(excludedSubdir, "Main.java")
+			err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+			require.NoError(t, err)
+
+			mockReporter := createMockReporter(t)
+
+			result := PerformReachabilityAnalysis(
+				mockReporter,
+				[]string{},
+				[]string{tempDir},
+				[]string{},
+				"",
+				[]string{},
+				mockServer.URL,
+				ddJwtToken,
+				true, true,
+			)
+
+			expected := models.ReachabilityAnalysis{
+				PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+					"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+						AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+						ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
+					},
+				},
+			}
+
+			assert.Equal(t, expected, result)
+		})
+	}
+}
+
+// Test_PerformReachabilityAnalysis_HardcodedExcludedDirIsUnconditional proves the exclusion
+// applies even with useGitIgnore=false, i.e. it isn't just incidentally passing because every
+// other test happens to pass useGitIgnore=true. --no-ignore only disables .gitignore-file-based
+// exclusion; hardcodedExcludedDirNames pruning is independent of it.
+func Test_PerformReachabilityAnalysis_HardcodedExcludedDirIsUnconditional(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	excludedSubdir := filepath.Join(tempDir, "node_modules")
+	err := os.Mkdir(excludedSubdir, 0755)
+	require.NoError(t, err)
+
+	mockJavaFile := filepath.Join(excludedSubdir, "Main.java")
+	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+		false, false, // useGitIgnore=false: only .gitignore-based exclusion is disabled
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
 func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
