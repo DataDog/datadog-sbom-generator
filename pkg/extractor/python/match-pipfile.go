@@ -24,6 +24,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 	lines := fileposition.BytesToLines(content)
 	var inDevDepTable bool
 	var inDependencyTable bool
+	var inPoetryDependencyTable bool
 	var inArray bool
 	var arrayHasStringItem bool
 	var arrayFallback *manifestKey
@@ -33,13 +34,16 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		lineNumber := index + 1
 
 		if isTable(line) {
+			header := stripTrailingComment(line)
+
 			// A Poetry dependency can be expanded into its own nested table, e.g.
 			// `[tool.poetry.dependencies.requests]` followed by `version = "^2"`, instead of the
 			// inline-table form `requests = { version = "^2" }`. The dependency name only appears
 			// in the header itself, so match it here before moving on.
-			if name, ok := nestedDependencyTableName(line); ok {
-				inDevDepTable = isDevTable(line)
+			if name, ok := nestedDependencyTableName(header); ok {
+				inDevDepTable = isDevTable(header)
 				inDependencyTable = false
+				inPoetryDependencyTable = false
 				inArray = false
 				arrayFallback = nil
 
@@ -48,8 +52,9 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 				continue
 			}
 
-			inDevDepTable = isDevTable(line)
-			inDependencyTable = isDependencyTable(line)
+			inDevDepTable = isDevTable(header)
+			inDependencyTable = isDependencyTable(header)
+			inPoetryDependencyTable = isPoetryDependencyTable(header)
 			inArray = false
 			arrayFallback = nil
 
@@ -94,7 +99,13 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 					arrayHasStringItem = true
 				}
 
-				if fallback, ok := arrayOpenerFallbackKey(line); ok {
+				// Only Poetry dependency tables allow a bare key to be a multi-constraint array
+				// (e.g. `foo = [{version = "1.0"}, {version = "2.0"}]`) instead of a PEP
+				// 621/735 string array. In [project.optional-dependencies] or
+				// [dependency-groups], an array with no string item is an empty or
+				// inclusion-only group (e.g. `dev = [{include-group = "test"}]`), not a
+				// package, so the assignment key must not be used as a fallback there.
+				if fallback, ok := arrayOpenerFallbackKey(line); ok && inPoetryDependencyTable {
 					arrayFallback = &fallback
 					arrayFallbackLine = lineNumber
 				}
@@ -173,7 +184,7 @@ func matchManifestKeys(packages []extractor.PackageDetails, manifestKeys []manif
 }
 
 func isTable(line string) bool {
-	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+	trimmedLine := strings.TrimSpace(strings.ToLower(stripTrailingComment(line)))
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
 }
 
@@ -202,6 +213,21 @@ func isDependencyTable(line string) bool {
 		"[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]",
 		"[project]", "[project.optional-dependencies]",
 		"[dependency-groups]":
+		return true
+	}
+
+	return poetryGroupTable.MatchString(trimmedLine)
+}
+
+// isPoetryDependencyTable reports whether line is a Poetry dependency table, where a bare "key ="
+// entry can be a multi-constraint array such as `foo = [{version = "1.0"}, {version = "2.0"}]`
+// rather than a PEP 621/735 array of PEP 508 strings. Only these tables allow the
+// assignment-key fallback in arrayOpenerFallbackKey.
+func isPoetryDependencyTable(line string) bool {
+	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+
+	switch trimmedLine {
+	case "[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]":
 		return true
 	}
 
