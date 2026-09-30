@@ -679,3 +679,55 @@ func TestPyprojectTomlMatcher_Match_PEP621DependencyArrayEscapedQuote(t *testing
 		},
 	})
 }
+
+// TestPyprojectTomlMatcher_Match_PoetryNestedDependencyTable is a regression test for a bug where a
+// Poetry dependency expanded into its own nested table (e.g. [tool.poetry.dependencies.requests]
+// followed by `version = "^2"`) was never matched, because the dependency name only appears in the
+// table header itself and the line-by-line scanner only looked for "key = value" assignments.
+func TestPyprojectTomlMatcher_Match_PoetryNestedDependencyTable(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/poetry-nested-dependency-table/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected requests to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+	assert.Equal(t, 4, packages[0].BlockLocation.Line.Start, "expected requests manifest location on the [tool.poetry.dependencies.requests] header line")
+}
+
+// TestPyprojectTomlMatcher_Match_ScriptsTableNotMatched is a regression test ensuring that a table
+// unrelated to dependency declarations, such as [tool.poetry.scripts], is never scanned for package
+// names. Without this restriction, a script entry that happens to share its name with a real
+// dependency (e.g. a "flask" console-script entry point) could be mistaken for a manifest
+// declaration of the "flask" package.
+func TestPyprojectTomlMatcher_Match_ScriptsTableNotMatched(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/scripts-table-not-matched/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "flask", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected requests to be recognized as a direct dependency")
+	assert.False(t, packages[1].IsDirect, "expected flask to NOT be recognized as a direct dependency from the scripts table")
+	assert.NotEqual(t, models.LocationRoleManifest, packages[1].LocationRole)
+}

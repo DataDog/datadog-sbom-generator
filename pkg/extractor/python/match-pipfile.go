@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
@@ -22,6 +23,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 
 	lines := fileposition.BytesToLines(content)
 	var inDevDepTable bool
+	var inDependencyTable bool
 	var inArray bool
 	var arrayHasStringItem bool
 	var arrayFallback *manifestKey
@@ -31,10 +33,34 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		lineNumber := index + 1
 
 		if isTable(line) {
+			// A Poetry dependency can be expanded into its own nested table, e.g.
+			// `[tool.poetry.dependencies.requests]` followed by `version = "^2"`, instead of the
+			// inline-table form `requests = { version = "^2" }`. The dependency name only appears
+			// in the header itself, so match it here before moving on.
+			if name, ok := nestedDependencyTableName(line); ok {
+				inDevDepTable = isDevTable(line)
+				inDependencyTable = false
+				inArray = false
+				arrayFallback = nil
+
+				matchManifestKeys(packages, []manifestKey{{name: name, raw: line}}, sourceFile, lineNumber, line, inDevDepTable)
+
+				continue
+			}
+
 			inDevDepTable = isDevTable(line)
+			inDependencyTable = isDependencyTable(line)
 			inArray = false
 			arrayFallback = nil
 
+			continue
+		}
+
+		// Only tables known to hold dependency declarations are scanned for package names, so an
+		// unrelated table such as [tool.poetry.scripts] or [build-system] can't have one of its
+		// entries (e.g. a script named after its own package, or a build requirement) mistaken for
+		// a manifest declaration of an actually scanned package.
+		if !inDependencyTable {
 			continue
 		}
 
@@ -149,6 +175,51 @@ func matchManifestKeys(packages []extractor.PackageDetails, manifestKeys []manif
 func isTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
+}
+
+// poetryGroupTable matches a Poetry dependency-group table, e.g. [tool.poetry.group.test.dependencies].
+var poetryGroupTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.group\.([^.\[\]]+)\.dependencies\]$`)
+
+// poetryNestedDependencyTable matches a Poetry dependency expanded into its own nested table
+// instead of an inline table, e.g. [tool.poetry.dependencies.requests] or
+// [tool.poetry.dev-dependencies.requests].
+var poetryNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.(?:dev-)?dependencies\.([^.\[\]]+)\]$`)
+
+// poetryGroupNestedDependencyTable matches a Poetry dependency expanded into its own nested table
+// within a dependency group, e.g. [tool.poetry.group.test.dependencies.pytest].
+var poetryGroupNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.poetry\.group\.([^.\[\]]+)\.dependencies\.([^.\[\]]+)\]$`)
+
+// isDependencyTable reports whether line is a table whose own "key = value" or "key = [...]"
+// entries declare dependencies, as opposed to an unrelated table such as [tool.poetry.scripts] or
+// [build-system] whose entries must not be mistaken for dependency declarations.
+func isDependencyTable(line string) bool {
+	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+
+	switch trimmedLine {
+	case "[packages]", "[dev-packages]",
+		"[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]",
+		"[project]", "[project.optional-dependencies]":
+		return true
+	}
+
+	return poetryGroupTable.MatchString(trimmedLine)
+}
+
+// nestedDependencyTableName returns the dependency name declared by a Poetry nested-table
+// dependency header such as [tool.poetry.dependencies.requests] or
+// [tool.poetry.group.test.dependencies.requests].
+func nestedDependencyTableName(line string) (string, bool) {
+	trimmedLine := strings.TrimSpace(line)
+
+	if m := poetryNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[1], true
+	}
+
+	if m := poetryGroupNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[2], true
+	}
+
+	return "", false
 }
 
 // manifestKey is a package name found on a manifest line, together with the exact substring of
@@ -476,7 +547,20 @@ func findClosingQuote(s string, quote byte) int {
 
 func isDevTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
-	return trimmedLine == "[tool.poetry.dev-dependencies]" || trimmedLine == "[tool.poetry.group.dev.dependencies]"
+
+	if trimmedLine == "[tool.poetry.dev-dependencies]" || strings.HasPrefix(trimmedLine, "[tool.poetry.dev-dependencies.") {
+		return true
+	}
+
+	if trimmedLine == "[tool.poetry.group.dev.dependencies]" {
+		return true
+	}
+
+	if m := poetryGroupNestedDependencyTable.FindStringSubmatch(trimmedLine); m != nil {
+		return m[1] == "dev"
+	}
+
+	return false
 }
 
 var _ extractor.Matcher = PipfileMatcher{}
