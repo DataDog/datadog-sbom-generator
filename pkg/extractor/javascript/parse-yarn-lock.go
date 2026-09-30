@@ -31,11 +31,12 @@ func shouldSkipYarnLine(line string) bool {
 // Where several targetVersions of 'semver' resolve to the same version: "7.7.3"
 // In this case, we return 2 YarnPackage. One per TargetVersions.
 func parseYarnPackageBlock(block []string) []YarnPackage {
-	name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(block[0]) // look at the first line
+	name, targetVersions := extractYarnPackageNameAndTargetVersions(block[0]) // look at the first line
 
 	packages := make([]YarnPackage, 0, len(targetVersions))
 	version := determineYarnPackageVersion(block)
 	resolution := determineYarnPackageResolution(block)
+	workspacePath := yarnWorkspacePath(resolution)
 	dependencies := determineYarnPackageDependencies(block)
 
 	// Create one YarnPackage per target version
@@ -125,7 +126,15 @@ func groupYarnPackageLines(scanner *bufio.Scanner, lines []string) []YarnPackage
 	return groups
 }
 
-func extractYarnPackageNameAndTargetVersions(line string) (string, []string, string) {
+// yarnWorkspacePath returns the workspace path from a resolution like "name@workspace:<path>", or "".
+// The entry key can't be used: it may only carry ranges such as workspace:*.
+func yarnWorkspacePath(resolution string) string {
+	_, path, _ := strings.Cut(resolution, yarnWorkspaceResolutionMarker)
+
+	return path
+}
+
+func extractYarnPackageNameAndTargetVersions(line string) (string, []string) {
 	line = strings.ReplaceAll(line, "\"", "")
 	line = strings.TrimSuffix(line, ":")
 	parts := strings.Split(line, ",")
@@ -152,7 +161,7 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 		if strings.HasPrefix(right, "npm:") {
 			right = strings.TrimPrefix(right, "npm:")
 			if strings.Contains(right, "@") {
-				resolvedName, resolvedTargetVersions, _ := extractYarnPackageNameAndTargetVersions(right)
+				resolvedName, resolvedTargetVersions := extractYarnPackageNameAndTargetVersions(right)
 				name = resolvedName
 				targetVersions = append(targetVersions, resolvedTargetVersions...)
 
@@ -174,16 +183,7 @@ func extractYarnPackageNameAndTargetVersions(line string) (string, []string, str
 		targetVersions = append(targetVersions, right)
 	}
 
-	// Extract workspace path if present
-	workspacePath := ""
-	for _, version := range targetVersions {
-		if strings.HasPrefix(version, yarnWorkspaceVersionMarker) {
-			workspacePath = strings.TrimPrefix(version, yarnWorkspaceVersionMarker)
-			break
-		}
-	}
-
-	return name, targetVersions, workspacePath
+	return name, targetVersions
 }
 
 // extractVersionFromGitResolution attempts to extract a version from git-based package resolution.
@@ -486,7 +486,7 @@ func isJSONFormat(content []byte) bool {
 // This function:
 //  1. Unmarshals the JSON into the YarnBerryJSON type structure
 //  2. Iterates through all entries in the lockfile
-//  3. Extracts package name, target versions, and workspace paths from entry keys
+//  3. Extracts package name and target versions from entry keys, and the workspace path from the resolution
 //  4. Converts the JSON dependency map into YarnDependency slices
 //  5. Creates one YarnPackage per target version (handles multi-version resolution)
 //
@@ -603,10 +603,11 @@ func parseYarnBerryJSON(content []byte, lines []string) ([]YarnPackage, error) {
 
 	for entryKey, entry := range berryJSON.Entries {
 		// Parse entry key: "package@registry:targetVersion"
-		name, targetVersions, workspacePath := extractYarnPackageNameAndTargetVersions(entryKey + ":")
+		name, targetVersions := extractYarnPackageNameAndTargetVersions(entryKey + ":")
 
 		version := entry.Resolution.Version
 		resolution := entry.Resolution.Resolution
+		workspacePath := yarnWorkspacePath(resolution)
 
 		// Convert dependencies map to YarnDependency slice
 		dependencies := make([]YarnDependency, 0, len(entry.Resolution.Dependencies))

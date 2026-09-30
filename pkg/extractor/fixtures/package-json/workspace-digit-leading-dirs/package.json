@@ -1,0 +1,9 @@
+{
+  "name": "workspace-digit-leading-dirs",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "1-app",
+    "2-app"
+  ]
+}

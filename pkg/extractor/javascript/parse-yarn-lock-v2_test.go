@@ -731,6 +731,91 @@ func TestParseYarnLock_v2_WorkspacesSameLibSameVersion(t *testing.T) {
 	})
 }
 
+// Test case: workspace-digit-leading-dirs demonstrates workspace dirs that start with a digit:
+// Root: no dependencies
+// 1-app: semver ^7.3.2 (compound key: 2-app depends on it via workspace:*)
+// 2-app: semver ^7.3.2
+func TestParseYarnLock_v2_WorkspacesDigitLeadingDirs(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-digit-leading-dirs/yarn.lock"))
+	packages, err := javascript.ParseYarnLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/package-json/workspace-digit-leading-dirs/package.json")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+	err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	app1path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-digit-leading-dirs/1-app/package.json"))
+	app2path := filepath.FromSlash(filepath.Join(dir, "../fixtures/package-json/workspace-digit-leading-dirs/2-app/package.json"))
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "semver",
+			Version:        "7.8.5",
+			PackageManager: models.Yarn,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: app1path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: app1path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 5, End: 5},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: app1path,
+			},
+			IsDirect:     true,
+			DepGroups:    []string{"prod"},
+			Dependencies: make([]*extractor.PackageDetails, 0),
+		},
+		{
+			Name:           "semver",
+			Version:        "7.8.5",
+			PackageManager: models.Yarn,
+			TargetVersions: []string{"^7.3.2"},
+			Ecosystem:      models.EcosystemNPM,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 5, End: 23},
+				Filename: app2path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 6, End: 12},
+				Filename: app2path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 6, End: 6},
+				Column:   models.Position{Start: 16, End: 22},
+				Filename: app2path,
+			},
+			IsDirect:     true,
+			DepGroups:    []string{"prod"},
+			Dependencies: make([]*extractor.PackageDetails, 0),
+		},
+	})
+}
+
 // Test case: workspace-same-lib-different-version demonstrates semver conflicts:
 // Root: semver ^7.3.4
 // workspace-1: semver ^7.3.3

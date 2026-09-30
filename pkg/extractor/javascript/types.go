@@ -235,7 +235,6 @@ const (
 	yarnOfficiallySupported       = true
 	yarnLocalVersionMarker        = "-use.local"
 	yarnWorkspaceResolutionMarker = "@workspace:"
-	yarnWorkspaceVersionMarker    = "workspace:"
 )
 
 // ============================================================================
