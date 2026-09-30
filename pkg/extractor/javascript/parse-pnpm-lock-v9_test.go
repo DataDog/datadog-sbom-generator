@@ -71,6 +71,77 @@ func TestParsePnpmLock_v9_MultiDocumentStream(t *testing.T) {
 	})
 }
 
+// pnpm's config-dependencies feature resolves packages into the env document's
+// configDependencies map, scoped per-importer just like dependencies/devDependencies.
+// These are real installed packages and must surface in the SBOM (see
+// https://pnpm.io/lockfile#scanning-for-vulnerabilities).
+func TestParsePnpmLock_v9_ConfigDependencies(t *testing.T) {
+	t.Parallel()
+
+	packages, err := javascript.ParsePnpmLock("../fixtures/pnpm/config-dependencies.v9.yaml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "is-odd",
+			Version:        "3.0.1",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"3.0.1"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"prod"},
+		},
+		{
+			Name:           "my-config-tool",
+			Version:        "1.2.0",
+			PackageManager: models.Pnpm,
+			TargetVersions: []string{"1.2.0"},
+			Ecosystem:      models.EcosystemNPM,
+			IsDirect:       true,
+			DepGroups:      []string{"config"},
+		},
+	})
+}
+
+// TestParsePnpmLock_v9_ConfigDependencies_BlockLocation verifies that a config
+// dependency's location resolves to its "packages:" entry in the second YAML
+// document, not the "configDependencies:" declaration in the first document.
+func TestParsePnpmLock_v9_ConfigDependencies_BlockLocation(t *testing.T) {
+	t.Parallel()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/pnpm/config-dependencies.v9.yaml"))
+	packages, err := javascript.ParsePnpmLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	var configTool extractor.PackageDetails
+	found := false
+	for _, p := range packages {
+		if p.Name == "my-config-tool" {
+			configTool = p
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("Expected to find my-config-tool in packages, got %v", packages)
+	}
+
+	// my-config-tool@1.2.0 is at lines 27-28 in config-dependencies.v9.yaml,
+	// in the "packages:" block of the second document - not lines 6-8 where
+	// it's declared under "configDependencies:" in the first document.
+	assert.Equal(t, 27, configTool.BlockLocation.Line.Start)
+	assert.Equal(t, 28, configTool.BlockLocation.Line.End)
+	assert.Equal(t, path, configTool.BlockLocation.Filename)
+}
+
 func TestParsePnpmLock_v9_OnePackage(t *testing.T) {
 	t.Parallel()
 
