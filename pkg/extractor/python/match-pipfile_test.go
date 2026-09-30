@@ -187,3 +187,161 @@ func TestPipfileMatcher_Match_TransitiveDependencies(t *testing.T) {
 		},
 	})
 }
+
+// TestPipfileMatcher_Match_DoesNotMatchSubstringOfAnotherPackageName is a regression test for a
+// bug where a package name that is a substring of another declared package name (e.g.
+// "requests" inside "requests-oauthlib") had its correct lockfile location overwritten with the
+// manifest location of the unrelated package, and was incorrectly marked as a direct dependency.
+func TestPipfileMatcher_Match_DoesNotMatchSubstringOfAnotherPackageName(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/substring-collision/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	transitiveLockLocation := models.FilePosition{
+		Line:     models.Position{Start: 42, End: 42},
+		Column:   models.Position{Start: 1, End: 10},
+		Filename: "../fixtures/pipfile/substring-collision/Pipfile.lock",
+	}
+
+	packages := []extractor.PackageDetails{
+		{
+			Name:           "requests-oauthlib",
+			PackageManager: models.Requirements,
+		},
+		{
+			Name:           "requests",
+			PackageManager: models.Requirements,
+			LocationRole:   models.LocationRoleLockfile,
+			BlockLocation:  transitiveLockLocation,
+		},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests-oauthlib",
+			PackageManager: models.Requirements,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 28},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 1, End: 18},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 22, End: 27},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			// "requests" must keep its original lockfile location untouched: it is not
+			// declared in the Pipfile, so it must not match the "requests-oauthlib" line.
+			Name:           "requests",
+			PackageManager: models.Requirements,
+			LocationRole:   models.LocationRoleLockfile,
+			BlockLocation:  transitiveLockLocation,
+		},
+	})
+}
+
+// TestPipfileMatcher_Match_PoetryInlineTableWithNestedArray is a regression test for a bug where
+// pep621InlineArrayNames matched any "key = ... [ ... ]" line regardless of what came between the
+// "=" and the "[", so a Poetry inline-table dependency such as
+// `requests = { version = "^2", extras = ["socks"] }` was misparsed as a PEP 621 dependency array,
+// extracting "socks" (from the nested "extras" array) instead of "requests". This left "requests"
+// unmatched and, if "socks" happened to be an existing package, could scribble a manifest location
+// onto it that it does not have.
+func TestPipfileMatcher_Match_PoetryInlineTableWithNestedArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/poetry-inline-table-with-array/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "socks", PackageManager: models.Poetry},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "requests",
+			PackageManager: models.Poetry,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 50},
+				Filename: sourceFile.Path(),
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 1, End: 9},
+				Filename: sourceFile.Path(),
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 2, End: 2},
+				Column:   models.Position{Start: 25, End: 46},
+				Filename: sourceFile.Path(),
+			},
+			IsDirect: true,
+		},
+		{
+			// "socks" is nested inside the "extras" array of the inline table, not a
+			// top-level dependency declaration, so it must not be matched at all.
+			Name:           "socks",
+			PackageManager: models.Poetry,
+		},
+	})
+}
+
+// TestPipfileMatcher_Match_PoetryMultilineConstraintArray is a regression test for a bug where the
+// PEP 621 multiline-array tracker treated any "key = [" line as the start of a PEP 621 dependency
+// array, discarding the assignment key. A Poetry multiple-constraint dependency such as
+// `requests = [{version = "^2", ...}, {version = "^3", ...}]` spread across multiple lines has no
+// quoted PEP 508 string items, so it never produced a manifest key and "requests" stayed
+// unmatched (IsDirect=false) even though it is declared in the manifest.
+func TestPipfileMatcher_Match_PoetryMultilineConstraintArray(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pipfile/poetry-multiline-constraint-array/Pipfile")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+	}
+	err = pipfileMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	if !packages[0].IsDirect {
+		t.Errorf("expected requests to be IsDirect, got %+v", packages[0])
+	}
+
+	if packages[0].LocationRole != models.LocationRoleManifest {
+		t.Errorf("expected requests to have LocationRoleManifest, got %v", packages[0].LocationRole)
+	}
+
+	if packages[0].BlockLocation.Line.Start != 2 {
+		t.Errorf("expected requests manifest location on line 2 (the assignment line), got %+v", packages[0].BlockLocation)
+	}
+}

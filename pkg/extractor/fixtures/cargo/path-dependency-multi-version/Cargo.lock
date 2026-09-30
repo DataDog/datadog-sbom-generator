@@ -1,0 +1,26 @@
+version = 3
+
+[[package]]
+name = "mycrate"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "mycrate"
+version = "0.2.0"
+
+[[package]]
+name = "other-crate"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "mycrate",
+]
+
+[[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "mycrate",
+ "other-crate",
+]
