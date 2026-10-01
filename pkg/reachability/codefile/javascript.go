@@ -124,6 +124,27 @@ const tsQueryForInlineRequireCall = `
   (#eq? @_require "require"))
 `
 
+// Inline require callable query: matches `require('pkg')(...)` - the require() result invoked
+// directly, with no property access and no intervening variable, as a default-callable package
+// is used. The outer call's function is the require() call itself rather than a member
+// expression, which is why the member-call query above cannot reach this shape.
+//
+// @selector is the require() call, so a recorded match points at the callee rather than the
+// invocation's arguments, matching the member-call convention.
+//
+// There is no capture for the symbol: nothing in this shape names an export. Detect therefore
+// requires the advisory's Name to equal the package name; see the inline-callable loop there.
+//
+// No `new` counterpart: `new require('pkg')()` parses as `(new require('pkg'))()`, which treats
+// require itself as the constructor and throws at runtime, so there is nothing to match.
+const tsQueryForInlineRequireCallable = `
+(call_expression
+  function: (call_expression
+    function: (identifier) @_require
+    arguments: (arguments . (string (string_fragment) @path))) @selector
+  (#eq? @_require "require"))
+`
+
 // Usage queries: one direct-call/new shape and one member-call/new shape per symbol type
 // (function vs. class). Which one applies to a given advisory symbol is decided per-binding at
 // match time (Named/Default -> direct, Namespace -> member), not by the symbol type.
@@ -230,13 +251,14 @@ func newCompiledQuery(language *treesitter.Language, label string, queryText str
 type jsGrammar struct {
 	parser *treesitter.Parser
 
-	esmImportQuery         *compiledQuery
-	cjsRequireQuery        *compiledQuery
-	directCallQuery        *compiledQuery
-	memberCallQuery        *compiledQuery
-	directNewQuery         *compiledQuery
-	memberNewQuery         *compiledQuery
-	inlineRequireCallQuery *compiledQuery
+	esmImportQuery             *compiledQuery
+	cjsRequireQuery            *compiledQuery
+	directCallQuery            *compiledQuery
+	memberCallQuery            *compiledQuery
+	directNewQuery             *compiledQuery
+	memberNewQuery             *compiledQuery
+	inlineRequireCallQuery     *compiledQuery
+	inlineRequireCallableQuery *compiledQuery
 }
 
 // close releases this grammar's parser and every compiled query it holds. Safe to call on a
@@ -250,7 +272,7 @@ func (g *jsGrammar) close() {
 		g.esmImportQuery, g.cjsRequireQuery,
 		g.directCallQuery, g.memberCallQuery,
 		g.directNewQuery, g.memberNewQuery,
-		g.inlineRequireCallQuery,
+		g.inlineRequireCallQuery, g.inlineRequireCallableQuery,
 	} {
 		if q != nil {
 			q.close()
@@ -284,6 +306,7 @@ func newJSGrammar(language *treesitter.Language) (*jsGrammar, error) {
 		{&g.directNewQuery, "direct news", tsQueryForDirectNew, []string{captureClass}},
 		{&g.memberNewQuery, "member news", tsQueryForMemberNew, []string{capturePkg, captureClass, captureSelector}},
 		{&g.inlineRequireCallQuery, "inline require calls", tsQueryForInlineRequireCall, []string{capturePath, captureFn, captureSelector}},
+		{&g.inlineRequireCallableQuery, "inline require callable", tsQueryForInlineRequireCallable, []string{capturePath, captureSelector}},
 	} {
 		query, err := newCompiledQuery(language, spec.label, spec.text, spec.captureNames...)
 		if err != nil {
@@ -406,6 +429,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 		func() []callSite { return grammar.directNews(tree, fileContent, queryCursor) },
 		func() []callSite { return grammar.memberNews(tree, fileContent, queryCursor) },
 		func() []callSite { return grammar.inlineRequireCalls(tree, fileContent, queryCursor) },
+		func() []callSite { return grammar.inlineRequireCallableCalls(tree, fileContent, queryCursor) },
 	)
 
 	for _, advisoryToCheck := range advisoriesToCheck {
@@ -428,6 +452,23 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 
 					if err := recordCandidate(detectionResults, advisoryToCheck, dir, path, fileContent, candidate.node); err != nil {
 						return err
+					}
+				}
+
+				// An inline callable require names no export, so there is no accessed property
+				// to compare. The advisory's Name must equal the package itself, which is how a
+				// default export is identified - the same check matchesCandidate applies to a
+				// bound Default binding. Without it, require('lodash')([1,2,3]) would match every
+				// function-type lodash advisory.
+				if s.Name == s.Value {
+					for _, candidate := range cache.InlineRequireCallableCalls() {
+						if candidate.objectText != s.Value {
+							continue
+						}
+
+						if err := recordCandidate(detectionResults, advisoryToCheck, dir, path, fileContent, candidate.node); err != nil {
+							return err
+						}
 					}
 				}
 			}

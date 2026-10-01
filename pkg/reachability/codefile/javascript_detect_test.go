@@ -128,6 +128,14 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 			expectedSymbol: `require("lodash")["merge"]`,
 			lineStart:      1, lineEnd: 1, columnStart: 1, columnEnd: 27,
 		},
+		// The require() result invoked directly, with no property access and no binding. The
+		// recorded symbol is the callee, not the invocation.
+		"inline require callable, no binding": {
+			path:           "testdata/CVE-2025-9012/require-inline-callable/app.js",
+			purl:           "pkg:npm/minimist@1.2.0",
+			expectedSymbol: `require("minimist")`,
+			lineStart:      1, lineEnd: 1, columnStart: 1, columnEnd: 20,
+		},
 		"cjs namespace require, member call": {
 			path:           "testdata/CVE-2025-9012/require-namespace/app.js",
 			purl:           "pkg:npm/lodash@4.17.19",
@@ -368,6 +376,19 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 		// The binding resolves, but to a different export than the advisory names.
 		"require property access, unrelated export name": {
 			path: "testdata/CVE-2025-9012/require-property-name-mismatch-notresolved/app.js",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:npm/lodash@4.17.19",
+					AdvisoryID: "CVE-2025-9012",
+					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+				},
+			},
+		},
+		// An inline callable require names no export, so a match requires the advisory's Name to
+		// equal the package. Without that check, this idiomatic lodash chaining - which never
+		// touches merge - would match every function-type lodash advisory.
+		"inline callable require, unrelated advisory symbol": {
+			path: "testdata/CVE-2025-9012/inline-callable-unrelated-symbol-notresolved/app.js",
 			advisoriesToCheck: []models.AdvisoryToCheck{
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",

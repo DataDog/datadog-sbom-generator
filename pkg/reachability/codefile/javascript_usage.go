@@ -33,19 +33,21 @@ type callSite struct {
 // and return every candidate call site found, unfiltered; the caller is responsible for
 // filtering the cached results against specific advisory symbols.
 type usageQueryCache struct {
-	computeDirectCalls        func() []callSite
-	computeMemberCalls        func() []callSite
-	computeDirectNews         func() []callSite
-	computeMemberNews         func() []callSite
-	computeInlineRequireCalls func() []callSite
+	computeDirectCalls                func() []callSite
+	computeMemberCalls                func() []callSite
+	computeDirectNews                 func() []callSite
+	computeMemberNews                 func() []callSite
+	computeInlineRequireCalls         func() []callSite
+	computeInlineRequireCallableCalls func() []callSite
 
 	// A nil pointer means "not yet computed"; a non-nil pointer (even to an empty slice)
 	// means the query has already run and this is its result.
-	directCalls        *[]callSite
-	memberCalls        *[]callSite
-	directNews         *[]callSite
-	memberNews         *[]callSite
-	inlineRequireCalls *[]callSite
+	directCalls                *[]callSite
+	memberCalls                *[]callSite
+	directNews                 *[]callSite
+	memberNews                 *[]callSite
+	inlineRequireCalls         *[]callSite
+	inlineRequireCallableCalls *[]callSite
 }
 
 // newUsageQueryCache creates a usageQueryCache for one file. None of the compute functions run
@@ -56,13 +58,15 @@ func newUsageQueryCache(
 	computeDirectNews func() []callSite,
 	computeMemberNews func() []callSite,
 	computeInlineRequireCalls func() []callSite,
+	computeInlineRequireCallableCalls func() []callSite,
 ) *usageQueryCache {
 	return &usageQueryCache{
-		computeDirectCalls:        computeDirectCalls,
-		computeMemberCalls:        computeMemberCalls,
-		computeDirectNews:         computeDirectNews,
-		computeMemberNews:         computeMemberNews,
-		computeInlineRequireCalls: computeInlineRequireCalls,
+		computeDirectCalls:                computeDirectCalls,
+		computeMemberCalls:                computeMemberCalls,
+		computeDirectNews:                 computeDirectNews,
+		computeMemberNews:                 computeMemberNews,
+		computeInlineRequireCalls:         computeInlineRequireCalls,
+		computeInlineRequireCallableCalls: computeInlineRequireCallableCalls,
 	}
 }
 
@@ -119,6 +123,18 @@ func (c *usageQueryCache) InlineRequireCalls() []callSite {
 	}
 
 	return *c.inlineRequireCalls
+}
+
+// InlineRequireCallableCalls returns every inline callable require site (require('pkg')(...)) in
+// the file. These carry their package path in objectText; identifierText is always empty, since
+// the shape names no export.
+func (c *usageQueryCache) InlineRequireCallableCalls() []callSite {
+	if c.inlineRequireCallableCalls == nil {
+		result := c.computeInlineRequireCallableCalls()
+		c.inlineRequireCallableCalls = &result
+	}
+
+	return *c.inlineRequireCallableCalls
 }
 
 // directSites runs a direct-call/new query (one whose only capture is the called/instantiated
@@ -216,4 +232,34 @@ func (g *jsGrammar) memberNews(tree *treesitter.Tree, fileContent []byte, queryC
 // package rather than a local name.
 func (g *jsGrammar) inlineRequireCalls(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
 	return memberSites(tree, fileContent, queryCursor, g.inlineRequireCallQuery, capturePath, captureFn, captureSelector)
+}
+
+// inlineRequireCallableCalls returns every inline callable require site (require('pkg')(...)) in
+// the tree, unfiltered. This shape has no property capture - require('pkg')(...) names no export
+// - so it cannot reuse memberSites, which expects an identifier capture as well.
+func (g *jsGrammar) inlineRequireCallableCalls(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) []callSite {
+	var results []callSite
+
+	var (
+		pathIdx     = g.inlineRequireCallableQuery.capture(capturePath)
+		selectorIdx = g.inlineRequireCallableQuery.capture(captureSelector)
+	)
+
+	matches := queryCursor.Matches(g.inlineRequireCallableQuery.query, tree.RootNode(), fileContent)
+	for match := matches.Next(); match != nil; match = matches.Next() {
+		var site callSite
+
+		for _, capture := range match.Captures {
+			switch capture.Index {
+			case pathIdx:
+				site.objectText = capture.Node.Utf8Text(fileContent)
+			case selectorIdx:
+				site.node = capture.Node
+			}
+		}
+
+		results = append(results, site)
+	}
+
+	return results
 }
