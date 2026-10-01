@@ -24,6 +24,7 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 	lines := fileposition.BytesToLines(content)
 	var inDevDepTable bool
 	var inDependencyTable bool
+	var inPoetryDependencyTable bool
 	var inArray bool
 	var arrayHasStringItem bool
 	var arrayFallback *manifestKey
@@ -33,13 +34,16 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 		lineNumber := index + 1
 
 		if isTable(line) {
+			header := stripTrailingComment(line)
+
 			// A Poetry dependency can be expanded into its own nested table, e.g.
 			// `[tool.poetry.dependencies.requests]` followed by `version = "^2"`, instead of the
 			// inline-table form `requests = { version = "^2" }`. The dependency name only appears
 			// in the header itself, so match it here before moving on.
-			if name, ok := nestedDependencyTableName(line); ok {
-				inDevDepTable = isDevTable(line)
+			if name, ok := nestedDependencyTableName(header); ok {
+				inDevDepTable = isDevTable(header)
 				inDependencyTable = false
+				inPoetryDependencyTable = false
 				inArray = false
 				arrayFallback = nil
 
@@ -48,8 +52,9 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 				continue
 			}
 
-			inDevDepTable = isDevTable(line)
-			inDependencyTable = isDependencyTable(line)
+			inDevDepTable = isDevTable(header)
+			inDependencyTable = isDependencyTable(header)
+			inPoetryDependencyTable = isPoetryDependencyTable(header)
 			inArray = false
 			arrayFallback = nil
 
@@ -94,13 +99,19 @@ func (m PipfileMatcher) Match(sourceFile extractor.DepFile, packages []extractor
 					arrayHasStringItem = true
 				}
 
-				if fallback, ok := arrayOpenerFallbackKey(line); ok {
+				// Only Poetry dependency tables allow a bare key to be a multi-constraint array
+				// (e.g. `foo = [{version = "1.0"}, {version = "2.0"}]`) instead of a PEP
+				// 621/735 string array. In [project.optional-dependencies] or
+				// [dependency-groups], an array with no string item is an empty or
+				// inclusion-only group (e.g. `dev = [{include-group = "test"}]`), not a
+				// package, so the assignment key must not be used as a fallback there.
+				if fallback, ok := arrayOpenerFallbackKey(line); ok && inPoetryDependencyTable {
 					arrayFallback = &fallback
 					arrayFallbackLine = lineNumber
 				}
 
 				inArray = true
-			} else if keys, ok := tomlLineKeys(line); ok {
+			} else if keys, ok := tomlLineKeys(line, inPoetryDependencyTable); ok {
 				manifestKeys = keys
 			}
 		}
@@ -173,7 +184,7 @@ func matchManifestKeys(packages []extractor.PackageDetails, manifestKeys []manif
 }
 
 func isTable(line string) bool {
-	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+	trimmedLine := strings.TrimSpace(strings.ToLower(stripTrailingComment(line)))
 	return strings.HasPrefix(trimmedLine, "[") && strings.HasSuffix(trimmedLine, "]")
 }
 
@@ -191,14 +202,32 @@ var poetryGroupNestedDependencyTable = cachedregexp.MustCompile(`(?i)^\[tool\.po
 
 // isDependencyTable reports whether line is a table whose own "key = value" or "key = [...]"
 // entries declare dependencies, as opposed to an unrelated table such as [tool.poetry.scripts] or
-// [build-system] whose entries must not be mistaken for dependency declarations.
+// [build-system] whose entries must not be mistaken for dependency declarations. [dependency-groups]
+// (PEP 735, used by uv) has the same shape as [project.optional-dependencies]: each key is a group
+// name (e.g. "dev") mapping to an array of PEP 508 strings.
 func isDependencyTable(line string) bool {
 	trimmedLine := strings.TrimSpace(strings.ToLower(line))
 
 	switch trimmedLine {
 	case "[packages]", "[dev-packages]",
 		"[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]",
-		"[project]", "[project.optional-dependencies]":
+		"[project]", "[project.optional-dependencies]",
+		"[dependency-groups]":
+		return true
+	}
+
+	return poetryGroupTable.MatchString(trimmedLine)
+}
+
+// isPoetryDependencyTable reports whether line is a Poetry dependency table, where a bare "key ="
+// entry can be a multi-constraint array such as `foo = [{version = "1.0"}, {version = "2.0"}]`
+// rather than a PEP 621/735 array of PEP 508 strings. Only these tables allow the
+// assignment-key fallback in arrayOpenerFallbackKey.
+func isPoetryDependencyTable(line string) bool {
+	trimmedLine := strings.TrimSpace(strings.ToLower(line))
+
+	switch trimmedLine {
+	case "[tool.poetry.dependencies]", "[tool.poetry.dev-dependencies]":
 		return true
 	}
 
@@ -251,7 +280,14 @@ func findManifestKey(keys []manifestKey, normalizedName string) (manifestKey, bo
 // `dependencies = ["requests==2.28.0", "flask>=2.0"]` (pyproject.toml `dependencies = [...]`).
 // It is not a full TOML/PEP 508 parser: it only isolates the name(s) so packages are matched
 // exactly instead of via substring search.
-func tomlLineKeys(line string) ([]manifestKey, bool) {
+//
+// allowArrayFallback mirrors the gating in arrayOpenerFallbackKey's caller: only Poetry
+// dependency tables allow a bare key assigned to an array with no PEP 508 string item (e.g. a
+// multi-constraint dependency) to fall back to the assignment key itself. Elsewhere, an inline
+// array with no string item, such as a PEP 735 `dev = [{include-group = "test"}]` or `dev = []`,
+// is an empty or inclusion-only group, not a dependency, so its key must not be used as a
+// fallback.
+func tomlLineKeys(line string, allowArrayFallback bool) ([]manifestKey, bool) {
 	line = stripTrailingComment(line)
 	trimmedLine := strings.TrimSpace(line)
 	if trimmedLine == "" {
@@ -266,8 +302,12 @@ func tomlLineKeys(line string) ([]manifestKey, bool) {
 		return []manifestKey{{name: name, raw: trimmedLine}}, true
 	}
 
-	key, _, found := strings.Cut(trimmedLine, "=")
+	key, value, found := strings.Cut(trimmedLine, "=")
 	if !found {
+		return nil, false
+	}
+
+	if !allowArrayFallback && strings.HasPrefix(strings.TrimSpace(value), "[") {
 		return nil, false
 	}
 

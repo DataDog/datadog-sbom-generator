@@ -731,3 +731,97 @@ func TestPyprojectTomlMatcher_Match_ScriptsTableNotMatched(t *testing.T) {
 	assert.False(t, packages[1].IsDirect, "expected flask to NOT be recognized as a direct dependency from the scripts table")
 	assert.NotEqual(t, models.LocationRoleManifest, packages[1].LocationRole)
 }
+
+// TestPyprojectTomlMatcher_Match_DependencyGroups is a regression test ensuring that packages
+// declared under [dependency-groups] (PEP 735, used by uv) still get manifest-level enrichment.
+// isDependencyTable previously only allowed a fixed set of tables, omitting [dependency-groups],
+// so a uv project's dev-only dependencies fell back to their raw uv.lock location with no
+// manifest occurrence and IsDirect left unset.
+func TestPyprojectTomlMatcher_Match_DependencyGroups(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/dependency-groups/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Uv},
+		{Name: "pytest", PackageManager: models.Uv},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected requests to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+
+	assert.True(t, packages[1].IsDirect, "expected pytest under [dependency-groups] to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[1].LocationRole, "expected pytest to get its manifest location from [dependency-groups]")
+}
+
+// TestPyprojectTomlMatcher_Match_DependencyGroupInclusionOnly is a regression test for a bug where
+// the Poetry multi-constraint-array fallback (which treats an array's own assignment key as a
+// manifest key when the array has no quoted string item) also fired for [dependency-groups]. A
+// PEP 735 group that only includes another group, e.g. `dev = [{include-group = "test"}]`, has no
+// string item either, so the fallback incorrectly treated the group name ("dev", "empty",
+// "inline") as a package name, both for a multiline array and for one declared inline on a single
+// line (e.g. `inline = [{include-group = "test"}]` or `empty = []`). If the lockfile happens to
+// contain an unrelated transitive package sharing one of those names, it was wrongly marked
+// IsDirect with this group's manifest location.
+func TestPyprojectTomlMatcher_Match_DependencyGroupInclusionOnly(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/dependency-groups-inclusion-only/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "pytest", PackageManager: models.Uv},
+		{Name: "dev", PackageManager: models.Uv},
+		{Name: "empty", PackageManager: models.Uv},
+		{Name: "inline", PackageManager: models.Uv},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	assert.True(t, packages[0].IsDirect, "expected pytest under [dependency-groups] to be recognized as a direct dependency")
+	assert.Equal(t, models.LocationRoleManifest, packages[0].LocationRole)
+
+	for _, pkg := range packages[1:] {
+		assert.False(t, pkg.IsDirect, "expected the unrelated '%s' package to NOT be marked direct from an inclusion-only/empty group", pkg.Name)
+		assert.NotEqual(t, models.LocationRoleManifest, pkg.LocationRole, "expected '%s' to NOT get a manifest location from an inclusion-only/empty group", pkg.Name)
+	}
+}
+
+// TestPyprojectTomlMatcher_Match_TableHeaderWithTrailingComment is a regression test for a bug
+// where isTable did not strip a trailing TOML comment before checking whether a line closes with
+// "]", so a valid header such as `[project] # metadata` was not recognized as a table header at
+// all. This left the matcher either skipping every dependency in the first table of the file, or
+// leaking the previous table's state into the next section.
+func TestPyprojectTomlMatcher_Match_TableHeaderWithTrailingComment(t *testing.T) {
+	t.Parallel()
+
+	sourceFile, err := extractor.OpenLocalDepFile("../fixtures/pyproject-toml/table-header-with-comment/pyproject.toml")
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	packages := []extractor.PackageDetails{
+		{Name: "requests", PackageManager: models.Poetry},
+		{Name: "pytest", PackageManager: models.Poetry},
+	}
+	err = pyprojectTOMLMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	for _, pkg := range packages {
+		assert.True(t, pkg.IsDirect, "expected %s to be recognized as a direct dependency", pkg.Name)
+		assert.Equal(t, models.LocationRoleManifest, pkg.LocationRole, "expected %s to have a manifest location", pkg.Name)
+	}
+}
