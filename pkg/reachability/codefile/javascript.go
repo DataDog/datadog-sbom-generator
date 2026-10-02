@@ -406,12 +406,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 		return nil
 	}
 
-	fileContent, err := readFileContent(path)
+	fileContent, err := ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := parseFile(ctx, grammar.parser, fileContent)
+	tree := ParseFile(ctx, grammar.parser, fileContent)
 	defer tree.Close()
 
 	// One cursor, reused sequentially across the binding queries and (lazily) the usage
@@ -499,12 +499,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 // recordCandidate records one matched call/new site as a reachable symbol for the advisory,
 // resolving the node's position into a package location first.
 func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck models.AdvisoryToCheck, dir string, path string, fileContent []byte, node treesitter.Node) error {
-	packageLocation, err := buildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
+	packageLocation, err := BuildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
 	if err != nil {
 		return err
 	}
 
-	recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
+	RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
 
 	return nil
 }
