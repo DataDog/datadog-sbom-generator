@@ -1,10 +1,11 @@
-package codefile
+package java
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
@@ -17,8 +18,10 @@ var tsQueryForJavaClass = `
 )`
 
 var symbolTypeToTSQuery = map[string]string{
-	SymbolTypeClass: tsQueryForJavaClass,
+	codefile.SymbolTypeClass: tsQueryForJavaClass,
 }
+
+var _ codefile.Detector = (*ReachabilityJava)(nil)
 
 type ReachabilityJava struct {
 	tsParser               *treesitter.Parser
@@ -66,12 +69,12 @@ func (r *ReachabilityJava) Close() {
 }
 
 func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	fileContent, err := ReadFileContent(path)
+	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := ParseFile(ctx, r.tsParser, fileContent)
+	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
@@ -104,12 +107,12 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 					Note: This logic is specific to class type and will need to be updated in the future when we build out further symbols.
 				*/
 				if matchedText == s.Name || matchedText == fmt.Sprintf("%s.%s", s.Value, s.Name) {
-					packageLocation, err := BuildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
+					packageLocation, err := codefile.BuildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
 					if err != nil {
 						return err
 					}
 
-					RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
+					codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
 				}
 			}
 		}
