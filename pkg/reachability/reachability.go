@@ -61,11 +61,9 @@ var hardcodedExcludedDirNames = map[string]struct{}{
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
-	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return java.NewJavaReachableDetector(r) },
-	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return golang.NewGoReachableDetector(r) },
-	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
-		return javascript.NewJavaScriptReachableDetector(r)
-	},
+	languageKeyJava:       func(r reporter.Reporter) (codefile.Detector, error) { return java.NewDetector(r) },
+	languageKeyGo:         func(r reporter.Reporter) (codefile.Detector, error) { return golang.NewDetector(r) },
+	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) { return javascript.NewDetector(r) },
 }
 
 type gitIgnoreMatcher struct {
