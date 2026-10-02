@@ -33,9 +33,9 @@ const tsQueryForGoCall = `
 var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v([2-9]|[1-9][0-9]+)$`)
 var dottedMajorVersionSuffixPattern = cachedregexp.MustCompile(`\.v[0-9]+$`)
 
-var _ codefile.Detector = (*ReachabilityGo)(nil)
+var _ codefile.Detector = (*Detector)(nil)
 
-type ReachabilityGo struct {
+type Detector struct {
 	tsParser    *treesitter.Parser
 	importQuery *treesitter.Query
 	callQuery   *treesitter.Query
@@ -50,9 +50,9 @@ type ReachabilityGo struct {
 	reporter reporter.Reporter
 }
 
-// NewGoReachableDetector creates a new ReachabilityGo instance that once instantiated can be
+// NewDetector creates a new Detector instance that once instantiated can be
 // used to parse Go files. You should call Close() on the instance once you're finished parsing.
-func NewGoReachableDetector(r reporter.Reporter) (*ReachabilityGo, error) {
+func NewDetector(r reporter.Reporter) (*Detector, error) {
 	tsLanguage := treesitter.NewLanguage(tree_sitter_go.Language())
 
 	tsParser := treesitter.NewParser()
@@ -77,7 +77,7 @@ func NewGoReachableDetector(r reporter.Reporter) (*ReachabilityGo, error) {
 	fnCaptureIdx, _ := callQuery.CaptureIndexForName("fn")
 	selectorCaptureIdx, _ := callQuery.CaptureIndexForName("selector")
 
-	return &ReachabilityGo{
+	return &Detector{
 		tsParser:             tsParser,
 		importQuery:          importQuery,
 		callQuery:            callQuery,
@@ -93,7 +93,7 @@ func NewGoReachableDetector(r reporter.Reporter) (*ReachabilityGo, error) {
 
 // Close closes all hanging tree-sitter related resources.
 // This should only be called once you're finished parsing all Go files.
-func (r *ReachabilityGo) Close() {
+func (r *Detector) Close() {
 	r.tsParser.Close()
 	r.importQuery.Close()
 	r.callQuery.Close()
@@ -106,7 +106,7 @@ func (r *ReachabilityGo) Close() {
 // imports are skipped entirely: they don't bind a package selector (e.g. "pkg.Func"), so
 // defaulting them to an identifier would risk matching an unrelated import that happens to
 // resolve to the same default alias.
-func (r *ReachabilityGo) resolveImportAliases(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) map[string][]string {
+func (r *Detector) resolveImportAliases(tree *treesitter.Tree, fileContent []byte, queryCursor *treesitter.QueryCursor) map[string][]string {
 	moduleToAliases := make(map[string][]string)
 
 	matches := queryCursor.Matches(r.importQuery, tree.RootNode(), fileContent)
@@ -169,7 +169,7 @@ func defaultIdentifierForModulePath(modulePath string) string {
 	return identifier
 }
 
-func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
 	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err

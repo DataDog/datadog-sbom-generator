@@ -15,7 +15,7 @@ import (
 
 //nolint:paralleltest
 func Test_Detect_JavaScript_NoAdvisories(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -180,7 +180,7 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewDetector(&reporter.VoidReporter{})
 			require.NoError(t, err)
 			defer detector.Close()
 
@@ -279,7 +279,7 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewDetector(&reporter.VoidReporter{})
 			require.NoError(t, err)
 			defer detector.Close()
 
@@ -445,7 +445,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewJavaScriptReachableDetector(reporter.NewMockReporter(gomock.NewController(t)))
+			detector, err := NewDetector(reporter.NewMockReporter(gomock.NewController(t)))
 			require.NoError(t, err)
 			defer detector.Close()
 
@@ -464,7 +464,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 //
 //nolint:paralleltest
 func Test_Detect_JavaScript_SameSymbolReachableMultipleWays(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -549,7 +549,7 @@ func Test_Detect_TypeScriptAndTSX(t *testing.T) {
 			// declared outside this loop would also mean its deferred Close() runs as soon
 			// as the parent function body finishes - which happens before these paused
 			// t.Parallel() subtests actually execute, closing the parser out from under them.
-			detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewDetector(&reporter.VoidReporter{})
 			require.NoError(t, err)
 			defer detector.Close()
 

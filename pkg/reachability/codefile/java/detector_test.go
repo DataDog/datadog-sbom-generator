@@ -12,9 +12,9 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_NewJavaReachableDetector(t *testing.T) {
+func Test_NewDetector(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -23,7 +23,7 @@ func Test_NewJavaReachableDetector(t *testing.T) {
 
 func Test_Detect_NoAdvisories(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -40,7 +40,7 @@ func Test_Detect_NoAdvisories(t *testing.T) {
 
 func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -118,7 +118,7 @@ func Test_Detect_ClassSymbolsFound(t *testing.T) {
 func Test_Detect_Java_UnknownSymbolType(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewJavaReachableDetector(reporter.NewMockReporter(gomock.NewController(t)))
+	detector, err := NewDetector(reporter.NewMockReporter(gomock.NewController(t)))
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -137,7 +137,7 @@ func Test_Detect_Java_UnknownSymbolType(t *testing.T) {
 func Test_Detect_Java_MultipleCallSitesKeepOnlyTheEarliest(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
