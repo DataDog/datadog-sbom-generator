@@ -167,12 +167,12 @@ func defaultIdentifierForModulePath(modulePath string) string {
 }
 
 func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	fileContent, err := readFileContent(path)
+	fileContent, err := ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := parseFile(ctx, r.tsParser, fileContent)
+	tree := ParseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	if len(advisoriesToCheck) == 0 {
@@ -188,7 +188,7 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != symbolTypeFunction {
+			if s.Type != SymbolTypeFunction {
 				r.reporter.Warnf("No Go detection support for symbol type %s", s.Type)
 				continue
 			}
@@ -218,12 +218,12 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 					continue
 				}
 
-				packageLocation, err := buildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
+				packageLocation, err := BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
 				if err != nil {
 					return err
 				}
 
-				recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
+				RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
 			}
 		}
 	}

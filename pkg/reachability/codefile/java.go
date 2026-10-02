@@ -17,7 +17,7 @@ var tsQueryForJavaClass = `
 )`
 
 var symbolTypeToTSQuery = map[string]string{
-	symbolTypeClass: tsQueryForJavaClass,
+	SymbolTypeClass: tsQueryForJavaClass,
 }
 
 type ReachabilityJava struct {
@@ -66,12 +66,12 @@ func (r *ReachabilityJava) Close() {
 }
 
 func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	fileContent, err := readFileContent(path)
+	fileContent, err := ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := parseFile(ctx, r.tsParser, fileContent)
+	tree := ParseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
@@ -104,12 +104,12 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 					Note: This logic is specific to class type and will need to be updated in the future when we build out further symbols.
 				*/
 				if matchedText == s.Name || matchedText == fmt.Sprintf("%s.%s", s.Value, s.Name) {
-					packageLocation, err := buildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
+					packageLocation, err := BuildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
 					if err != nil {
 						return err
 					}
 
-					recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
+					RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
 				}
 			}
 		}
