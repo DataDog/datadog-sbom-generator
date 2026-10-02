@@ -1,4 +1,4 @@
-package codefile
+package golang
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
@@ -31,6 +32,8 @@ const tsQueryForGoCall = `
 
 var majorVersionSuffixPattern = cachedregexp.MustCompile(`^v([2-9]|[1-9][0-9]+)$`)
 var dottedMajorVersionSuffixPattern = cachedregexp.MustCompile(`\.v[0-9]+$`)
+
+var _ codefile.Detector = (*ReachabilityGo)(nil)
 
 type ReachabilityGo struct {
 	tsParser    *treesitter.Parser
@@ -167,12 +170,12 @@ func defaultIdentifierForModulePath(modulePath string) string {
 }
 
 func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	fileContent, err := ReadFileContent(path)
+	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := ParseFile(ctx, r.tsParser, fileContent)
+	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	if len(advisoriesToCheck) == 0 {
@@ -188,7 +191,7 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != SymbolTypeFunction {
+			if s.Type != codefile.SymbolTypeFunction {
 				continue
 			}
 
@@ -217,12 +220,12 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 					continue
 				}
 
-				packageLocation, err := BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
+				packageLocation, err := codefile.BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
 				if err != nil {
 					return err
 				}
 
-				RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
+				codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
 			}
 		}
 	}
