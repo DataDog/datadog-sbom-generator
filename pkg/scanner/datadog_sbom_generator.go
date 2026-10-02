@@ -372,7 +372,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 
 	var reachabilityAnalysis models.ReachabilityAnalysis
 	if actions.Reachability {
-		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, exclusions.Paths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken)
+		reachabilityAnalysis = reachability.PerformReachabilityAnalysis(r, purlsForDirectPackages, actions.DirectoryPaths, actions.ExcludePaths, repoRoot, exclusions.Paths, actions.DDEnvVars.BaseURL, actions.DDEnvVars.JwtToken, !actions.NoIgnore, actions.Recursive)
 	} else {
 		r.Infof("[reachability] Reachability analysis is disabled")
 	}

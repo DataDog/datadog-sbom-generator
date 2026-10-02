@@ -11,6 +11,14 @@ import (
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 )
 
+// symbolTypeFunction and symbolTypeClass are the advisory Symbols.Type values shared across
+// detectors. Not every detector supports every type: Go only checks symbolTypeFunction, Java
+// only checks symbolTypeClass, and JS/TS checks both.
+const (
+	symbolTypeFunction = "function"
+	symbolTypeClass    = "class"
+)
+
 // readFileContent is a thin wrapper over os.ReadFile that reads the content of a file
 // and returns it as a byte slice.
 // TODO(daniel.strong): find a better place for this function

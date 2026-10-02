@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
@@ -14,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -22,25 +25,81 @@ import (
 // languageKeyToDetectorFactory, and purlTypeToLanguageKey (utils.go) so a typo in one map can't
 // silently drift from the others.
 const (
-	languageKeyGo   = "go"
-	languageKeyJava = "java"
+	languageKeyGo         = "go"
+	languageKeyJava       = "java"
+	languageKeyJavaScript = "javascript"
 )
 
 // extensionToLanguageKey maps a file extension to the language key used both to look up
-// advisories to check and to select a detector pool.
+// advisories to check and to select a detector pool. All JavaScript/TypeScript/JSX/TSX
+// extensions share one language key; the detector itself picks the right tree-sitter grammar
+// (JS, TS, or TSX) internally based on the file extension.
 var extensionToLanguageKey = map[string]string{
 	".java": languageKeyJava,
 	".go":   languageKeyGo,
+	".js":   languageKeyJavaScript,
+	".jsx":  languageKeyJavaScript,
+	".mjs":  languageKeyJavaScript,
+	".cjs":  languageKeyJavaScript,
+	".ts":   languageKeyJavaScript,
+	".mts":  languageKeyJavaScript,
+	".cts":  languageKeyJavaScript,
+	".tsx":  languageKeyJavaScript,
+}
+
+// hardcodedExcludedDirNames are directory names never worth walking into during reachability
+// analysis: node_modules (JS/TS dependency tree) and the universal .git. Checked
+// unconditionally, independent of useGitIgnore/--no-ignore - mirroring pkg/scanner's scanDir,
+// which unconditionally skips .git with no toggle. Not user-configurable.
+var hardcodedExcludedDirNames = map[string]struct{}{
+	".git":         {},
+	"node_modules": {},
 }
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
 	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
 	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
+	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
+		return codefile.NewJavaScriptReachableDetector(r)
+	},
+}
+
+type gitIgnoreMatcher struct {
+	matcher  gitignore.Matcher
+	repoPath string
+}
+
+func newGitIgnoreMatcher(dir string, recursive bool) (*gitIgnoreMatcher, error) {
+	patterns, repoRootPath, err := customgitignore.ParseGitIgnores(dir, recursive)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gitIgnoreMatcher{matcher: gitignore.NewMatcher(patterns), repoPath: repoRootPath}, nil
+}
+
+func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
+	pathInGit, err := filepath.Rel(m.repoPath, absPath)
+	if err != nil {
+		return false, err
+	}
+
+	pathInGitSep := []string{"."}
+	if pathInGit != "." {
+		pathInGitSep = append(pathInGitSep, strings.Split(pathInGit, string(filepath.Separator))...)
+	}
+
+	return m.matcher.Match(pathInGitSep, isDir), nil
 }
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
+// useGitIgnore and recursive mirror the same flags that pkg/scanner's scanDir uses: when
+// useGitIgnore is true, .gitignore patterns are respected during the directory walk (just
+// as they are during lockfile scanning), and recursive controls whether child .gitignore
+// files are parsed. Independently of both, directories named in hardcodedExcludedDirNames are
+// always pruned from the walk, regardless of useGitIgnore.
+func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string, useGitIgnore bool, recursive bool) models.ReachabilityAnalysis {
 	r.Infof("[reachability] Fetching symbols...")
 	resp, err := http.PostResolveVulnerableSymbols(purls, ddBaseURL, ddJwtToken)
 	if err != nil {
@@ -59,6 +118,10 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 	detectorPools := make(map[string]chan codefile.Detector, len(languageKeyToDetectorFactory))
 	for languageKey, factory := range languageKeyToDetectorFactory {
+		if len(advisoriesToCheckPerLanguage[languageKey]) == 0 {
+			continue
+		}
+
 		pool := make(chan codefile.Detector, workerCount)
 		for range workerCount {
 			detector, err := factory(r)
@@ -84,14 +147,45 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 	eg.SetLimit(workerCount)
 
 	for _, dir := range directoryPaths {
+		var ignoreMatcher *gitIgnoreMatcher
+		if useGitIgnore {
+			var matcherErr error
+			ignoreMatcher, matcherErr = newGitIgnoreMatcher(dir, recursive)
+			if matcherErr != nil {
+				r.Warnf("[reachability] Unable to parse git ignores for %s: %v\n", dir, matcherErr)
+			}
+		}
+
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
+			// Hardcoded, unconditional pruning - checked first since it's a zero-I/O name
+			// comparison, before the .gitignore matcher below does any path work.
+			if d.IsDir() {
+				if _, excluded := hardcodedExcludedDirNames[d.Name()]; excluded {
+					return filepath.SkipDir
+				}
+			}
+
 			absPath, err := filepath.Abs(path)
 			if err != nil {
 				absPath = path
+			}
+
+			// .gitignore matching — same pattern as pkg/scanner's scanDir.
+			if ignoreMatcher != nil {
+				matched, matchErr := ignoreMatcher.match(absPath, d.IsDir())
+				if matchErr != nil {
+					r.Infof("[reachability] Failed to resolve gitignore for %s: %v\n", path, matchErr)
+				} else if matched {
+					if d.IsDir() {
+						return filepath.SkipDir
+					}
+
+					return nil
+				}
 			}
 
 			shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)

@@ -92,6 +92,76 @@ func main() {
 }
 `
 
+const vulnerableJavaScriptSymbolsResponse = `{
+	"data": {
+		"id": "833c8b78-f95d-11ef-a104-9ec2f3c6472e",
+		"type": "resolve-vulnerable-symbols-response",
+		"attributes": {
+			"results": [
+				{
+					"purl": "pkg:npm/lodash@4.17.19",
+					"vulnerable_symbols": [
+						{
+							"advisory_id": "CVE-2025-9012",
+							"symbols": [
+								{
+									"type": "function",
+									"value": "lodash",
+									"name": "merge"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}`
+
+const vulnerableJavaScriptFile = `import { merge } from 'lodash';
+merge({}, x);
+`
+
+const vulnerableTypeScriptFile = `import { merge } from 'lodash';
+merge({}, x);
+`
+
+const vulnerableClassSymbolsResponse = `{
+	"data": {
+		"id": "833c8b78-f95d-11ef-a104-9ec2f3c6472f",
+		"type": "resolve-vulnerable-symbols-response",
+		"attributes": {
+			"results": [
+				{
+					"purl": "pkg:npm/vulnerable-lib@1.0.0",
+					"vulnerable_symbols": [
+						{
+							"advisory_id": "CVE-2025-9012",
+							"symbols": [
+								{
+									"type": "class",
+									"value": "vulnerable-lib",
+									"name": "Client"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}`
+
+// vulnerableTSXFile combines a direct class instantiation with real JSX syntax in the same
+// file - proving the full pipeline (directory walk -> extension dispatch -> npm PURL routing ->
+// JS detector) correctly reaches a .tsx file specifically, not just the detector in isolation
+// (Test_Detect_TypeScriptAndTSX already covers that level).
+const vulnerableTSXFile = `import { Client } from 'vulnerable-lib';
+const c = new Client(cfg);
+const el = <div>{c}</div>;
+console.log(el);
+`
+
 func Test_PerformReachabilityAnalysis(t *testing.T) {
 	t.Setenv("DD_API_KEY", "test-dd-api-key")
 	t.Setenv("DD_APP_KEY", "test-dd-app-key")
@@ -123,6 +193,7 @@ func Test_PerformReachabilityAnalysis(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -187,6 +258,7 @@ func Test_PerformReachabilityAnalysis_ExcludePath(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -236,6 +308,7 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 		configExcludePaths,
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	// Expected result
@@ -249,6 +322,103 @@ func Test_PerformReachabilityAnalysis_ConfigExcludePath(t *testing.T) {
 	}
 
 	// Assert the result
+	assert.Equal(t, expected, result)
+}
+
+// Test_PerformReachabilityAnalysis_HardcodedExcludedDir covers hardcodedExcludedDirNames: a
+// vulnerable file placed directly inside one of these directory names must never be reported,
+// regardless of which name it is.
+func Test_PerformReachabilityAnalysis_HardcodedExcludedDir(t *testing.T) {
+	for dirName := range hardcodedExcludedDirNames {
+		t.Run(dirName, func(t *testing.T) {
+			t.Setenv("DD_API_KEY", "test-dd-api-key")
+			t.Setenv("DD_APP_KEY", "test-dd-app-key")
+			ddJwtToken := ""
+
+			mockServer := createMockServer(vulnerableSymbolsResponse)
+			defer mockServer.Close()
+
+			tempDir := t.TempDir()
+			excludedSubdir := filepath.Join(tempDir, dirName)
+			err := os.Mkdir(excludedSubdir, 0755)
+			require.NoError(t, err)
+
+			mockJavaFile := filepath.Join(excludedSubdir, "Main.java")
+			err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+			require.NoError(t, err)
+
+			mockReporter := createMockReporter(t)
+
+			result := PerformReachabilityAnalysis(
+				mockReporter,
+				[]string{},
+				[]string{tempDir},
+				[]string{},
+				"",
+				[]string{},
+				mockServer.URL,
+				ddJwtToken,
+				true, true,
+			)
+
+			expected := models.ReachabilityAnalysis{
+				PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+					"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+						AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+						ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
+					},
+				},
+			}
+
+			assert.Equal(t, expected, result)
+		})
+	}
+}
+
+// Test_PerformReachabilityAnalysis_HardcodedExcludedDirIsUnconditional proves the exclusion
+// applies even with useGitIgnore=false, i.e. it isn't just incidentally passing because every
+// other test happens to pass useGitIgnore=true. --no-ignore only disables .gitignore-file-based
+// exclusion; hardcodedExcludedDirNames pruning is independent of it.
+func Test_PerformReachabilityAnalysis_HardcodedExcludedDirIsUnconditional(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	excludedSubdir := filepath.Join(tempDir, "node_modules")
+	err := os.Mkdir(excludedSubdir, 0755)
+	require.NoError(t, err)
+
+	mockJavaFile := filepath.Join(excludedSubdir, "Main.java")
+	err = os.WriteFile(mockJavaFile, []byte(vulnerableClass), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+		false, false, // useGitIgnore=false: only .gitignore-based exclusion is disabled
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:maven/org.example/Greeter@1.2.3": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked:       []string{"CVE-2025-1234"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{}, // should filter out vuln
+			},
+		},
+	}
+
 	assert.Equal(t, expected, result)
 }
 
@@ -279,6 +449,7 @@ func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 		[]string{},
 		mockServer.URL,
 		ddJwtToken,
+		true, true,
 	)
 
 	expected := models.ReachabilityAnalysis{
@@ -297,6 +468,188 @@ func Test_PerformReachabilityAnalysis_Go(t *testing.T) {
 									LineEnd:     6,
 									ColumnStart: 2,
 									ColumnEnd:   11,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func Test_PerformReachabilityAnalysis_JavaScript(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableJavaScriptSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	err := os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	mockJSFile := filepath.Join(tempDir, "subdir", "main.js")
+	err = os.WriteFile(mockJSFile, []byte(vulnerableJavaScriptFile), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+		true, true,
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:npm/lodash@4.17.19": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-2025-9012"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{
+						AdvisoryID: "CVE-2025-9012",
+						ReachableSymbolLocations: []models.ReachableSymbolLocation{
+							{
+								Symbol: "merge",
+								PackageLocation: models.PackageLocation{
+									Filename:    "subdir/main.js",
+									LineStart:   2,
+									LineEnd:     2,
+									ColumnStart: 1,
+									ColumnEnd:   6,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+// Test_PerformReachabilityAnalysis_TypeScript confirms the same npm PURL routing and
+// extensionToLanguageKey dispatch also work for a .ts file - the whole point of routing every
+// JS/TS/JSX/TSX extension to one shared "javascript" language key is that this requires no
+// separate wiring per extension.
+func Test_PerformReachabilityAnalysis_TypeScript(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableJavaScriptSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	err := os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	mockTSFile := filepath.Join(tempDir, "subdir", "main.ts")
+	err = os.WriteFile(mockTSFile, []byte(vulnerableTypeScriptFile), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+		true, true,
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:npm/lodash@4.17.19": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-2025-9012"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{
+						AdvisoryID: "CVE-2025-9012",
+						ReachableSymbolLocations: []models.ReachableSymbolLocation{
+							{
+								Symbol: "merge",
+								PackageLocation: models.PackageLocation{
+									Filename:    "subdir/main.ts",
+									LineStart:   2,
+									LineEnd:     2,
+									ColumnStart: 1,
+									ColumnEnd:   6,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+// Test_PerformReachabilityAnalysis_TSX confirms the full pipeline reaches a .tsx file
+// specifically, combining a class instantiation with real JSX syntax in the same file - closing
+// the gap where only Test_Detect_TypeScriptAndTSX (detector-level) previously covered .tsx, with
+// nothing proving the directory-walk/PURL-routing layers above it also reach a .tsx file.
+func Test_PerformReachabilityAnalysis_TSX(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+	ddJwtToken := ""
+
+	mockServer := createMockServer(vulnerableClassSymbolsResponse)
+	defer mockServer.Close()
+
+	tempDir := t.TempDir()
+	err := os.Mkdir(filepath.Join(tempDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	mockTSXFile := filepath.Join(tempDir, "subdir", "main.tsx")
+	err = os.WriteFile(mockTSXFile, []byte(vulnerableTSXFile), 0600)
+	require.NoError(t, err)
+
+	mockReporter := createMockReporter(t)
+
+	result := PerformReachabilityAnalysis(
+		mockReporter,
+		[]string{},
+		[]string{tempDir},
+		[]string{},
+		"",
+		[]string{},
+		mockServer.URL,
+		ddJwtToken,
+		true, true,
+	)
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:npm/vulnerable-lib@1.0.0": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-2025-9012"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{
+						AdvisoryID: "CVE-2025-9012",
+						ReachableSymbolLocations: []models.ReachableSymbolLocation{
+							{
+								Symbol: "Client",
+								PackageLocation: models.PackageLocation{
+									Filename:    "subdir/main.tsx",
+									LineStart:   2,
+									LineEnd:     2,
+									ColumnStart: 15,
+									ColumnEnd:   21,
 								},
 							},
 						},

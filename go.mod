@@ -19,7 +19,9 @@ require (
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/tree-sitter/tree-sitter-go v0.25.0
 	github.com/tree-sitter/tree-sitter-java v0.23.5
+	github.com/tree-sitter/tree-sitter-javascript v0.25.0
 	github.com/tree-sitter/tree-sitter-ruby v0.23.1
+	github.com/tree-sitter/tree-sitter-typescript v0.23.2
 	github.com/urfave/cli/v2 v2.27.6
 	go.uber.org/mock v0.5.2
 	golang.org/x/mod v0.24.0
