@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"testing"
@@ -127,4 +127,4 @@ func Test_newCompiledQuery_UnknownCaptureNameFails(t *testing.T) {
 }
 
 // Test_Detect_JavaScript_NoAdvisories (the fixture-based version, covering the same
-// early-return behavior with a real testdata path) lives in javascript_detect_test.go.
+// early-return behavior with a real testdata path) lives in detect_test.go.

@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
@@ -321,6 +322,8 @@ func newJSGrammar(language *treesitter.Language) (*jsGrammar, error) {
 	return g, nil
 }
 
+var _ codefile.Detector = (*ReachabilityJavaScript)(nil)
+
 // ReachabilityJavaScript detects reachable vulnerable symbols in JavaScript/TypeScript source
 // files. It holds one jsGrammar per tree-sitter grammar (JavaScript, TypeScript, TSX) and
 // dispatches to the right one per file based on extension.
@@ -406,12 +409,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 		return nil
 	}
 
-	fileContent, err := ReadFileContent(path)
+	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := ParseFile(ctx, grammar.parser, fileContent)
+	tree := codefile.ParseFile(ctx, grammar.parser, fileContent)
 	defer tree.Close()
 
 	// One cursor, reused sequentially across the binding queries and (lazily) the usage
@@ -434,7 +437,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != SymbolTypeFunction && s.Type != SymbolTypeClass {
+			if s.Type != codefile.SymbolTypeFunction && s.Type != codefile.SymbolTypeClass {
 				continue
 			}
 
@@ -443,7 +446,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 			// bindings lookup below - which would otherwise skip the file entirely when the
 			// package is never bound to a local name. Function symbols only; see
 			// tsQueryForInlineRequireCall for why there's no `new` equivalent.
-			if s.Type == SymbolTypeFunction {
+			if s.Type == codefile.SymbolTypeFunction {
 				for _, candidate := range cache.InlineRequireCalls() {
 					if candidate.objectText != s.Value || candidate.identifierText != s.Name {
 						continue
@@ -499,12 +502,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 // recordCandidate records one matched call/new site as a reachable symbol for the advisory,
 // resolving the node's position into a package location first.
 func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck models.AdvisoryToCheck, dir string, path string, fileContent []byte, node treesitter.Node) error {
-	packageLocation, err := BuildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
+	packageLocation, err := codefile.BuildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
 	if err != nil {
 		return err
 	}
 
-	RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
+	codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
 
 	return nil
 }
@@ -516,17 +519,17 @@ func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck m
 // Name itself (checked against the accessed property).
 func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
 	switch {
-	case binding.kind == bindingNamed && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingNamed && s.Type == codefile.SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingDefault && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingDefault && s.Type == codefile.SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingNamespace && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingNamespace && s.Type == codefile.SymbolTypeFunction:
 		return cache.MemberCalls(), s.Name
-	case binding.kind == bindingNamed && s.Type == SymbolTypeClass:
+	case binding.kind == bindingNamed && s.Type == codefile.SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingDefault && s.Type == SymbolTypeClass:
+	case binding.kind == bindingDefault && s.Type == codefile.SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingNamespace && s.Type == SymbolTypeClass:
+	case binding.kind == bindingNamespace && s.Type == codefile.SymbolTypeClass:
 		return cache.MemberNews(), s.Name
 	default:
 		return nil, ""
