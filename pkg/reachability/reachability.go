@@ -16,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/golang"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/java"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/javascript"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -63,7 +64,7 @@ var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.
 	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return java.NewJavaReachableDetector(r) },
 	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return golang.NewGoReachableDetector(r) },
 	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
-		return codefile.NewJavaScriptReachableDetector(r)
+		return javascript.NewJavaScriptReachableDetector(r)
 	},
 }
 
