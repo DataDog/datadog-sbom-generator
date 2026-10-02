@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"testing"

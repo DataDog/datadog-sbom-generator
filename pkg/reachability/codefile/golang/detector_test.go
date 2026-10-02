@@ -1,4 +1,4 @@
-package codefile
+package golang
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-func Test_NewGoReachableDetector(t *testing.T) {
+func Test_NewDetector(t *testing.T) {
 	t.Parallel()
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -23,7 +23,7 @@ func Test_NewGoReachableDetector(t *testing.T) {
 
 func Test_Detect_Go_NoAdvisories(t *testing.T) {
 	t.Parallel()
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -40,7 +40,7 @@ func Test_Detect_Go_NoAdvisories(t *testing.T) {
 
 //nolint:paralleltest
 func Test_resolveImportAliases(t *testing.T) {
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -231,7 +231,7 @@ func Test_Detect_Go_FunctionSymbolFound(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewDetector(&reporter.VoidReporter{})
 			require.NoError(t, err)
 			defer detector.Close()
 
@@ -258,7 +258,7 @@ func Test_Detect_Go_FunctionSymbolFound(t *testing.T) {
 func Test_Detect_Go_NoMatchWhenFunctionNameDiffers(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -294,7 +294,7 @@ func Test_Detect_Go_BlankAndDotImportsNotReachable(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewDetector(&reporter.VoidReporter{})
 			require.NoError(t, err)
 			defer detector.Close()
 
@@ -319,7 +319,7 @@ func Test_Detect_Go_BlankAndDotImportsNotReachable(t *testing.T) {
 func Test_Detect_Go_UnknownSymbolType(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 

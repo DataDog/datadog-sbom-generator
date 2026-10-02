@@ -1,4 +1,4 @@
-package codefile
+package java
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_NewJavaReachableDetector(t *testing.T) {
+func Test_NewDetector(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -22,7 +22,7 @@ func Test_NewJavaReachableDetector(t *testing.T) {
 
 func Test_Detect_NoAdvisories(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -39,7 +39,7 @@ func Test_Detect_NoAdvisories(t *testing.T) {
 
 func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	t.Parallel()
-	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 

@@ -12,9 +12,3 @@ type Detector interface {
 	Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error
 	Close()
 }
-
-var (
-	_ Detector = (*ReachabilityJava)(nil)
-	_ Detector = (*ReachabilityGo)(nil)
-	_ Detector = (*ReachabilityJavaScript)(nil)
-)

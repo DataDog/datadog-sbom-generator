@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 
 //nolint:paralleltest
 func Test_resolveESMBindings(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -144,7 +144,7 @@ import { merge } from 'lodash';`,
 
 //nolint:paralleltest
 func Test_resolveESMBindings_TypeScript(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -186,7 +186,7 @@ func Test_resolveESMBindings_TypeScript(t *testing.T) {
 
 //nolint:paralleltest
 func Test_resolveCJSBindings(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -391,7 +391,7 @@ const lodash2 = require('lodash');`,
 //
 //nolint:paralleltest
 func Test_resolveCJSBindings_MergesWithExistingESMBindings(t *testing.T) {
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
