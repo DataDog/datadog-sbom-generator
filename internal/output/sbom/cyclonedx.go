@@ -174,6 +174,11 @@ func findArtifact(name string, version string, artifacts []models.ScannedArtifac
 }
 
 func createFileComponents(packageDetail models.PackageVulns, artifact *models.ScannedArtifact, dependsOn map[string]cyclonedx.Dependency) {
+	// A version constraint pins a version without declaring a usage, so it is never a module edge.
+	if _, ok := packageDetail.Metadata[models.VersionConstraintMetadata]; ok {
+		return
+	}
+
 	for _, location := range packageDetail.Locations {
 		if artifact != nil {
 			// The current component is a repository artifact, meaning it is an internal dependency, we should report a dependsOn on the location

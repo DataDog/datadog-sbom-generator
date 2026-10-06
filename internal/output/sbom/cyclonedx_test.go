@@ -72,6 +72,42 @@ func TestBuildCycloneDXBom_RubySelfGem_NoDanglingLockfileDep(t *testing.T) {
 	}
 }
 
+func TestBuildCycloneDXBom_VersionConstraintOnInternalModule_NoDependencyEdge(t *testing.T) {
+	t.Parallel()
+
+	core := models.ScannedArtifact{
+		ArtifactDetail: models.ArtifactDetail{
+			Name:      "com.example:core",
+			Version:   "1.0.0",
+			Filename:  "core/pom.xml",
+			Ecosystem: models.EcosystemMaven,
+		},
+	}
+	pin := models.PackageVulns{
+		Package: models.PackageInfo{
+			Name:      "com.example:core",
+			Version:   "1.0.0",
+			Ecosystem: string(models.EcosystemMaven),
+		},
+		Metadata: models.PackageMetadata{models.VersionConstraintMetadata: "true"},
+		Locations: []models.PackageLocations{
+			{Block: models.PackageLocation{Filename: "pom.xml", LineStart: 10, LineEnd: 14}},
+		},
+	}
+
+	bom := BuildCycloneDXBom(
+		Tool{Name: "test", Version: "0"},
+		map[string]models.PackageVulns{"pkg:maven/com.example/core@1.0.0#version-constraint": pin},
+		[]models.ScannedArtifact{core},
+	)
+
+	for _, dep := range *bom.Dependencies {
+		if dep.Ref == "pom.xml" {
+			t.Errorf("unexpected dependency edge from a version constraint: %s -> %v", dep.Ref, *dep.Dependencies)
+		}
+	}
+}
+
 // TestBuildCycloneDXBom_RubyArtifact_PackageNameProperty verifies that
 // PackageName is emitted as the datadog:maven-package property on the Gemfile
 // file component, enabling ctx.ArtifactIDs and BuildFileRelations.ID.
