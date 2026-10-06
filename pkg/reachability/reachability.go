@@ -93,6 +93,12 @@ func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
 	return m.matcher.Match(pathInGitSep, isDir), nil
 }
 
+// advisoryKey identifies one advisory on one package; reachability keeps a single location per key.
+type advisoryKey struct {
+	purl       string
+	advisoryID string
+}
+
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
 // useGitIgnore and recursive mirror the same flags that pkg/scanner's scanDir uses: when
 // useGitIgnore is true, .gitignore patterns are respected during the directory walk (just
@@ -113,6 +119,12 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
+
+	// bestFileIndex records, per advisory, the walk index of the file its kept location came
+	// from. Files are numbered in the order the walk dispatches them, so keeping the lowest index
+	// gives the same location on every run regardless of which worker finishes first.
+	bestFileIndex := make(map[advisoryKey]int)
+	nextFileIndex := 0
 
 	workerCount := runtime.NumCPU()
 
@@ -225,6 +237,9 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 			pool := detectorPools[languageKey]
 
+			fileIndex := nextFileIndex
+			nextFileIndex++
+
 			eg.Go(func() error {
 				// Get a detector from the pool
 				detector := <-pool
@@ -239,14 +254,20 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 					return err
 				}
 
-				// Merge local results back to main detectionResults with mutex protection
+				// Keep the location from the earliest file in walk order; localResults already holds
+				// the earliest location within this file.
 				detectionMutex.Lock()
 				for purl, advisoryMap := range localResults {
-					if _, exists := detectionResults[purl]; !exists {
-						detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
-					}
 					for advisoryID, locations := range advisoryMap {
-						detectionResults[purl][advisoryID] = append(detectionResults[purl][advisoryID], locations...)
+						key := advisoryKey{purl: purl, advisoryID: advisoryID}
+						if best, found := bestFileIndex[key]; found && best < fileIndex {
+							continue
+						}
+						if _, exists := detectionResults[purl]; !exists {
+							detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
+						}
+						detectionResults[purl][advisoryID] = locations
+						bestFileIndex[key] = fileIndex
 					}
 				}
 				detectionMutex.Unlock()

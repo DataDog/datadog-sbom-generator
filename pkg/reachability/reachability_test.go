@@ -1,6 +1,7 @@
 package reachability
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -660,6 +661,51 @@ func Test_PerformReachabilityAnalysis_TSX(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, result)
+}
+
+// Test_PerformReachabilityAnalysis_KeepsFirstLocationInWalkOrder: when many files reach the same
+// advisory, only the first file in walk order (across directoryPaths) is reported, on every run.
+// a.js's match is on a later line than every other file's, so "earliest line" would pick a
+// different file than "first in walk order".
+func Test_PerformReachabilityAnalysis_KeepsFirstLocationInWalkOrder(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+
+	mockServer := createMockServer(vulnerableJavaScriptSymbolsResponse)
+	defer mockServer.Close()
+
+	firstDir := t.TempDir()
+	secondDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(firstDir, "a.js"), []byte("import { merge } from 'lodash';\n\n\nmerge({}, x);\nmerge({}, y);\n"), 0600))
+	for i := 1; i < 30; i++ {
+		require.NoError(t, os.WriteFile(filepath.Join(firstDir, fmt.Sprintf("b%02d.js", i)), []byte(vulnerableJavaScriptFile), 0600))
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(secondDir, "a.js"), []byte(vulnerableJavaScriptFile), 0600))
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:npm/lodash@4.17.19": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-2025-9012"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{{
+					AdvisoryID: "CVE-2025-9012",
+					ReachableSymbolLocations: []models.ReachableSymbolLocation{{
+						Symbol: "merge",
+						PackageLocation: models.PackageLocation{
+							Filename: "a.js", LineStart: 4, LineEnd: 4, ColumnStart: 1, ColumnEnd: 6,
+						},
+					}},
+				}},
+			},
+		},
+	}
+
+	for range 3 {
+		result := PerformReachabilityAnalysis(
+			createMockReporter(t), []string{}, []string{firstDir, secondDir}, []string{}, "", []string{},
+			mockServer.URL, "", true, true,
+		)
+		assert.Equal(t, expected, result)
+	}
 }
 
 func createMockServer(data string) *httptest.Server {
