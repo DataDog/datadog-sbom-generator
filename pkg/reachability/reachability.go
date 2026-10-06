@@ -117,6 +117,13 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(r, resp)
 
+	advisoriesToFind := make(map[advisoryKey]struct{})
+	for _, advisories := range advisoriesToCheckPerLanguage {
+		for _, advisory := range advisories {
+			advisoriesToFind[advisoryKey{purl: advisory.Purl, advisoryID: advisory.AdvisoryID}] = struct{}{}
+		}
+	}
+
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
 
@@ -171,6 +178,15 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+
+			// Every kept location comes from an already-dispatched file, which any file the walk
+			// has yet to reach would lose to.
+			detectionMutex.Lock()
+			allFound := len(bestFileIndex) == len(advisoriesToFind)
+			detectionMutex.Unlock()
+			if allFound {
+				return filepath.SkipAll
 			}
 
 			// Hardcoded, unconditional pruning - checked first since it's a zero-I/O name
