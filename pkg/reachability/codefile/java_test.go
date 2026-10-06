@@ -133,3 +133,28 @@ func Test_Detect_Java_UnknownSymbolType(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, detectionResults)
 }
+
+func Test_Detect_Java_MultipleCallSitesKeepOnlyTheEarliest(t *testing.T) {
+	t.Parallel()
+
+	detector, err := NewJavaReachableDetector(&reporter.VoidReporter{})
+	require.NoError(t, err)
+	defer detector.Close()
+
+	advisoriesToCheck := []models.AdvisoryToCheck{{
+		Purl:       "pkg:maven/org.example/Greeter@1.2.3",
+		AdvisoryID: "CVE-2025-1234",
+		Symbols:    []models.Symbols{{Type: "class", Name: "Greeter", Value: "org.example"}},
+	}}
+
+	detectionResults := models.DetectionResults{}
+	err = detector.Detect(context.Background(), ".", "testdata/CVE-2025-1234/multiple-call-sites/class.java", detectionResults, advisoriesToCheck)
+	require.NoError(t, err)
+
+	reachableSymbols := detectionResults["pkg:maven/org.example/Greeter@1.2.3"]["CVE-2025-1234"]
+	require.Len(t, reachableSymbols, 1)
+	assert.Equal(t, "Greeter", reachableSymbols[0].Symbol)
+	assert.Equal(t, 8, reachableSymbols[0].LineStart)
+	assert.Equal(t, 29, reachableSymbols[0].ColumnStart)
+	assert.Equal(t, 36, reachableSymbols[0].ColumnEnd)
+}

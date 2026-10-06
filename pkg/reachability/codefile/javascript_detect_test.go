@@ -165,6 +165,14 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 			expectedSymbol: "_.merge",
 			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 8,
 		},
+		// The inline require on line 3 is matched before the bound `_` calls, so recording order
+		// differs from source order: the earliest line must still win.
+		"multiple call sites keep only the earliest": {
+			path:           "testdata/CVE-2025-9012/multiple-call-sites/app.js",
+			purl:           "pkg:npm/lodash@4.17.19",
+			expectedSymbol: "_.merge",
+			lineStart:      2, lineEnd: 2, columnStart: 1, columnEnd: 8,
+		},
 	}
 
 	for name, tc := range fixtures {
@@ -450,7 +458,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 
 // Test_Detect_JavaScript_SameSymbolReachableMultipleWays reproduces the CVE-2020-8203 (lodash
 // zipObjectDeep) shape from the design doc: the same vulnerable function reached via two
-// different binding kinds across two files, both correctly attributed to the same advisory from
+// different binding kinds across two files, each file attributing it to the same advisory from
 // one Symbols entry.
 //
 //nolint:paralleltest
@@ -467,37 +475,27 @@ func Test_Detect_JavaScript_SameSymbolReachableMultipleWays(t *testing.T) {
 		},
 	}
 
-	paths := []string{
-		"testdata/CVE-2020-8203/namespace-require/app.js",
-		"testdata/CVE-2020-8203/esm-named-import/app.js",
+	expected := map[string]struct {
+		symbol                       string
+		line, columnStart, columnEnd int
+	}{
+		"testdata/CVE-2020-8203/namespace-require/app.js": {"_.zipObjectDeep", 2, 1, 16},
+		"testdata/CVE-2020-8203/esm-named-import/app.js":  {"zipObjectDeep", 2, 1, 14},
 	}
 
-	detectionResults := models.DetectionResults{}
-	for _, path := range paths {
+	for path, want := range expected {
+		detectionResults := models.DetectionResults{}
 		err := detector.Detect(context.Background(), ".", path, detectionResults, advisoriesToCheck)
 		require.NoError(t, err)
+
+		locations := detectionResults["pkg:npm/lodash@4.17.19"]["CVE-2020-8203"]
+		require.Len(t, locations, 1, path)
+		assert.Equal(t, want.symbol, locations[0].Symbol)
+		assert.Equal(t, path, locations[0].Filename)
+		assert.Equal(t, want.line, locations[0].LineStart)
+		assert.Equal(t, want.columnStart, locations[0].ColumnStart)
+		assert.Equal(t, want.columnEnd, locations[0].ColumnEnd)
 	}
-
-	require.Len(t, detectionResults, 1)
-	locations := detectionResults["pkg:npm/lodash@4.17.19"]["CVE-2020-8203"]
-	require.Len(t, locations, 2)
-
-	byFile := make(map[string]models.ReachableSymbolLocation, 2)
-	for _, loc := range locations {
-		byFile[loc.Filename] = loc
-	}
-
-	namespaceMatch := byFile["testdata/CVE-2020-8203/namespace-require/app.js"]
-	assert.Equal(t, "_.zipObjectDeep", namespaceMatch.Symbol)
-	assert.Equal(t, 2, namespaceMatch.LineStart)
-	assert.Equal(t, 1, namespaceMatch.ColumnStart)
-	assert.Equal(t, 16, namespaceMatch.ColumnEnd)
-
-	namedImportMatch := byFile["testdata/CVE-2020-8203/esm-named-import/app.js"]
-	assert.Equal(t, "zipObjectDeep", namedImportMatch.Symbol)
-	assert.Equal(t, 2, namedImportMatch.LineStart)
-	assert.Equal(t, 1, namedImportMatch.ColumnStart)
-	assert.Equal(t, 14, namedImportMatch.ColumnEnd)
 }
 
 // Test_Detect_TypeScriptAndTSX confirms grammar dispatch works correctly for .ts and .tsx

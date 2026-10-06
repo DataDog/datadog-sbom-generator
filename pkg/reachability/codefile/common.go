@@ -83,20 +83,29 @@ func buildPackageLocation(dir string, path string, start treesitter.Point, end t
 	return packageLocation, nil
 }
 
-// recordMatch appends a reachable symbol match to detectionResults, initializing the
-// per-purl and per-advisory maps if this is the first match for either.
+// recordMatch records location for (purl, advisoryID) in detectionResults, keeping only the
+// earliest one in the file: one reachable location per advisory is all the SBOM needs.
 func recordMatch(detectionResults models.DetectionResults, purl string, advisoryID string, symbol string, location models.PackageLocation) {
 	if _, ok := detectionResults[purl]; !ok {
 		detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
 	}
-	if _, ok := detectionResults[purl][advisoryID]; !ok {
-		detectionResults[purl][advisoryID] = make(models.ReachableSymbolLocations, 0)
+
+	candidate := models.ReachableSymbolLocation{Symbol: symbol, PackageLocation: location}
+	if existing := detectionResults[purl][advisoryID]; len(existing) > 0 && !isEarlierLocation(candidate, existing[0]) {
+		return
 	}
 
-	detectionResults[purl][advisoryID] = append(
-		detectionResults[purl][advisoryID],
-		models.ReachableSymbolLocation{
-			Symbol:          symbol,
-			PackageLocation: location,
-		})
+	detectionResults[purl][advisoryID] = models.ReachableSymbolLocations{candidate}
+}
+
+// isEarlierLocation orders locations within one file; Symbol breaks ties so the choice is total.
+func isEarlierLocation(a, b models.ReachableSymbolLocation) bool {
+	if a.LineStart != b.LineStart {
+		return a.LineStart < b.LineStart
+	}
+	if a.ColumnStart != b.ColumnStart {
+		return a.ColumnStart < b.ColumnStart
+	}
+
+	return a.Symbol < b.Symbol
 }

@@ -202,6 +202,18 @@ func Test_Detect_Go_FunctionSymbolFound(t *testing.T) {
 				},
 			},
 		},
+		"multiple call sites keep only the earliest": {
+			path: "testdata/CVE-2025-5678/multiple-call-sites/main.go",
+			advisoriesToCheck: []models.AdvisoryToCheck{
+				{
+					Purl:       "pkg:golang/github.com/foo/bar@1.2.3",
+					AdvisoryID: "CVE-2025-5678",
+					Symbols: []models.Symbols{
+						{Type: "function", Value: "github.com/foo/bar", Name: "Parse"},
+					},
+				},
+			},
+		},
 		"go- prefixed module import": {
 			path: "testdata/CVE-2025-5678/go-prefix-import/main.go",
 			advisoriesToCheck: []models.AdvisoryToCheck{
