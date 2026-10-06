@@ -434,7 +434,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != symbolTypeFunction && s.Type != symbolTypeClass {
+			if s.Type != SymbolTypeFunction && s.Type != SymbolTypeClass {
 				r.reporter.Warnf("No JavaScript/TypeScript detection support for symbol type %s", s.Type)
 				continue
 			}
@@ -444,7 +444,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 			// bindings lookup below - which would otherwise skip the file entirely when the
 			// package is never bound to a local name. Function symbols only; see
 			// tsQueryForInlineRequireCall for why there's no `new` equivalent.
-			if s.Type == symbolTypeFunction {
+			if s.Type == SymbolTypeFunction {
 				for _, candidate := range cache.InlineRequireCalls() {
 					if candidate.objectText != s.Value || candidate.identifierText != s.Name {
 						continue
@@ -517,17 +517,17 @@ func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck m
 // Name itself (checked against the accessed property).
 func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
 	switch {
-	case binding.kind == bindingNamed && s.Type == symbolTypeFunction:
+	case binding.kind == bindingNamed && s.Type == SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingDefault && s.Type == symbolTypeFunction:
+	case binding.kind == bindingDefault && s.Type == SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingNamespace && s.Type == symbolTypeFunction:
+	case binding.kind == bindingNamespace && s.Type == SymbolTypeFunction:
 		return cache.MemberCalls(), s.Name
-	case binding.kind == bindingNamed && s.Type == symbolTypeClass:
+	case binding.kind == bindingNamed && s.Type == SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingDefault && s.Type == symbolTypeClass:
+	case binding.kind == bindingDefault && s.Type == SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingNamespace && s.Type == symbolTypeClass:
+	case binding.kind == bindingNamespace && s.Type == SymbolTypeClass:
 		return cache.MemberNews(), s.Name
 	default:
 		return nil, ""

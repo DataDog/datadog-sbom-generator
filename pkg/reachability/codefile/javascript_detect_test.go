@@ -27,7 +27,7 @@ func Test_Detect_JavaScript_NoAdvisories(t *testing.T) {
 
 // Test_Detect_JavaScript_FunctionSymbolFound covers every binding shape (ESM named/aliased/
 // default/namespace, CJS namespace/default-callable/destructured) that resolves to a
-// symbolTypeFunction match, asserting the exact matched Symbol text and 1-based line/column
+// SymbolTypeFunction match, asserting the exact matched Symbol text and 1-based line/column
 // range for each - mirroring Test_Detect_Go_FunctionSymbolFound's convention.
 func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 	t.Parallel()
@@ -36,12 +36,12 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 		{
 			Purl:       "pkg:npm/lodash@4.17.19",
 			AdvisoryID: "CVE-2025-9012",
-			Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+			Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 		},
 		{
 			Purl:       "pkg:npm/minimist@1.2.0",
 			AdvisoryID: "CVE-2025-9012",
-			Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "minimist", Name: "minimist"}},
+			Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "minimist", Name: "minimist"}},
 		},
 	}
 
@@ -195,7 +195,7 @@ func Test_Detect_JavaScript_FunctionSymbolFound(t *testing.T) {
 }
 
 // Test_Detect_JavaScript_ClassSymbolFound covers every binding shape that resolves to a
-// symbolTypeClass match: ESM named import, ESM namespace import, ESM default import (the
+// SymbolTypeClass match: ESM named import, ESM namespace import, ESM default import (the
 // Default binding kind - previously only verified with an ad hoc throwaway script, now a
 // committed regression test), CJS require, and a .jsx file combining a direct instantiation
 // with real JSX syntax in the same file (the JS-grammar analog of Test_Detect_TypeScriptAndTSX's
@@ -207,7 +207,7 @@ func Test_Detect_JavaScript_ClassSymbolFound(t *testing.T) {
 		{
 			Purl:       "pkg:npm/vulnerable-lib@1.0.0",
 			AdvisoryID: "CVE-2025-9012",
-			Symbols:    []models.Symbols{{Type: symbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
+			Symbols:    []models.Symbols{{Type: SymbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
 		},
 	}
 
@@ -312,7 +312,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -322,7 +322,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -332,7 +332,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -342,7 +342,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/vulnerable-lib@1.0.0",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
 				},
 			},
 		},
@@ -357,7 +357,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -369,7 +369,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -380,7 +380,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -393,7 +393,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -404,7 +404,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -415,7 +415,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 		},
@@ -462,7 +462,7 @@ func Test_Detect_JavaScript_SameSymbolReachableMultipleWays(t *testing.T) {
 		{
 			Purl:       "pkg:npm/lodash@4.17.19",
 			AdvisoryID: "CVE-2020-8203",
-			Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "zipObjectDeep"}},
+			Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "zipObjectDeep"}},
 		},
 	}
 
@@ -518,7 +518,7 @@ func Test_Detect_TypeScriptAndTSX(t *testing.T) {
 				{
 					Purl:       "pkg:npm/lodash@4.17.19",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeFunction, Value: "lodash", Name: "merge"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeFunction, Value: "lodash", Name: "merge"}},
 				},
 			},
 			purl:           "pkg:npm/lodash@4.17.19",
@@ -531,7 +531,7 @@ func Test_Detect_TypeScriptAndTSX(t *testing.T) {
 				{
 					Purl:       "pkg:npm/vulnerable-lib@1.0.0",
 					AdvisoryID: "CVE-2025-9012",
-					Symbols:    []models.Symbols{{Type: symbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
+					Symbols:    []models.Symbols{{Type: SymbolTypeClass, Value: "vulnerable-lib", Name: "Client"}},
 				},
 			},
 			purl:           "pkg:npm/vulnerable-lib@1.0.0",
