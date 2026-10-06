@@ -241,6 +241,22 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 			nextFileIndex++
 
 			eg.Go(func() error {
+				// An advisory whose kept location comes from an earlier file can't be beaten by
+				// this one, so there's no point checking it here.
+				detectionMutex.Lock()
+				openAdvisories := make([]models.AdvisoryToCheck, 0, len(advisoriesToCheckPerLanguage[languageKey]))
+				for _, advisory := range advisoriesToCheckPerLanguage[languageKey] {
+					if best, found := bestFileIndex[advisoryKey{purl: advisory.Purl, advisoryID: advisory.AdvisoryID}]; found && best < fileIndex {
+						continue
+					}
+					openAdvisories = append(openAdvisories, advisory)
+				}
+				detectionMutex.Unlock()
+
+				if len(openAdvisories) == 0 {
+					return nil
+				}
+
 				// Get a detector from the pool
 				detector := <-pool
 				// Return detector to pool after it's finished
@@ -249,7 +265,7 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 				}()
 
 				localResults := make(models.DetectionResults)
-				err := detector.Detect(ctx, dir, path, localResults, advisoriesToCheckPerLanguage[languageKey])
+				err := detector.Detect(ctx, dir, path, localResults, openAdvisories)
 				if err != nil {
 					return err
 				}
