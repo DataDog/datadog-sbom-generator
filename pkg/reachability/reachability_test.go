@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
@@ -702,6 +703,94 @@ func Test_PerformReachabilityAnalysis_KeepsFirstLocationInWalkOrder(t *testing.T
 	for range 3 {
 		result := PerformReachabilityAnalysis(
 			createMockReporter(t), []string{}, []string{firstDir, secondDir}, []string{}, "", []string{},
+			mockServer.URL, "", true, true,
+		)
+		assert.Equal(t, expected, result)
+	}
+}
+
+// Test_PerformReachabilityAnalysis_AdvisoriesAreClosedIndependently: finding one advisory must not
+// stop the search for the others. CVE-A is found in the first file, but CVE-B and the lodash
+// CVE-SHARED are only found in a much later one, and CVE-C is never found. CVE-SHARED is also an
+// advisory of a second package, which is found in the first file: the same advisory ID on another
+// purl is a different advisory.
+//
+// The filler files in between make the walk wait for the first file's result before it reaches
+// the later ones (it can only have NumCPU files in flight), which is what makes the skipping and
+// early-exit logic run at all; without them every file is dispatched before any finishes.
+func Test_PerformReachabilityAnalysis_AdvisoriesAreClosedIndependently(t *testing.T) {
+	t.Setenv("DD_API_KEY", "test-dd-api-key")
+	t.Setenv("DD_APP_KEY", "test-dd-app-key")
+
+	mockServer := createMockServer(`{
+		"data": {
+			"id": "833c8b78-f95d-11ef-a104-9ec2f3c64730",
+			"type": "resolve-vulnerable-symbols-response",
+			"attributes": {
+				"results": [
+					{
+						"purl": "pkg:npm/lodash@4.17.19",
+						"vulnerable_symbols": [
+							{"advisory_id": "CVE-A", "symbols": [{"type": "function", "value": "lodash", "name": "zipObjectDeep"}]},
+							{"advisory_id": "CVE-B", "symbols": [{"type": "function", "value": "lodash", "name": "merge"}]},
+							{"advisory_id": "CVE-C", "symbols": [{"type": "function", "value": "lodash", "name": "chunk"}]},
+							{"advisory_id": "CVE-SHARED", "symbols": [{"type": "function", "value": "lodash", "name": "template"}]}
+						]
+					},
+					{
+						"purl": "pkg:npm/underscore@1.12.0",
+						"vulnerable_symbols": [
+							{"advisory_id": "CVE-SHARED", "symbols": [{"type": "function", "value": "underscore", "name": "extend"}]}
+						]
+					}
+				]
+			}
+		}
+	}`)
+	defer mockServer.Close()
+
+	files := map[string]string{
+		"f0000.js": "const _ = require('lodash');\n_.zipObjectDeep(['a'], [1]);\nconst u = require('underscore');\nu.extend({}, {});\n",
+		"f9998.js": "const _ = require('lodash');\n_.merge({}, {});\n_.template('x');\n",
+		"f9999.js": "const _ = require('lodash');\n_.zipObjectDeep(['d'], [4]);\n_.merge({}, {});\n_.template('y');\n",
+	}
+	for i := 1; i <= 4*runtime.NumCPU(); i++ {
+		files[fmt.Sprintf("f%04d.js", i)] = "console.log('unrelated');\n"
+	}
+	tempDir := t.TempDir()
+	for name, content := range files {
+		require.NoError(t, os.WriteFile(filepath.Join(tempDir, name), []byte(content), 0600))
+	}
+
+	location := func(file string, line int, columnEnd int, symbol string) []models.ReachableSymbolLocation {
+		return []models.ReachableSymbolLocation{{
+			Symbol:          symbol,
+			PackageLocation: models.PackageLocation{Filename: file, LineStart: line, LineEnd: line, ColumnStart: 1, ColumnEnd: columnEnd},
+		}}
+	}
+
+	expected := models.ReachabilityAnalysis{
+		PurlToReachabilityAnalysisResults: models.PurlToReachabilityAnalysisResults{
+			"pkg:npm/lodash@4.17.19": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-A", "CVE-B", "CVE-C", "CVE-SHARED"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{AdvisoryID: "CVE-A", ReachableSymbolLocations: location("f0000.js", 2, 16, "_.zipObjectDeep")},
+					{AdvisoryID: "CVE-B", ReachableSymbolLocations: location("f9998.js", 2, 8, "_.merge")},
+					{AdvisoryID: "CVE-SHARED", ReachableSymbolLocations: location("f9998.js", 3, 11, "_.template")},
+				},
+			},
+			"pkg:npm/underscore@1.12.0": &models.ReachabilityAnalysisResults{
+				AdvisoryIdsChecked: []string{"CVE-SHARED"},
+				ReachableVulnerabilities: []models.ReachableVulnerability{
+					{AdvisoryID: "CVE-SHARED", ReachableSymbolLocations: location("f0000.js", 4, 9, "u.extend")},
+				},
+			},
+		},
+	}
+
+	for range 3 {
+		result := PerformReachabilityAnalysis(
+			createMockReporter(t), []string{}, []string{tempDir}, []string{}, "", []string{},
 			mockServer.URL, "", true, true,
 		)
 		assert.Equal(t, expected, result)
