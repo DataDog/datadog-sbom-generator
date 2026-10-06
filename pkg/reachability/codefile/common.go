@@ -13,7 +13,8 @@ import (
 
 // SymbolTypeFunction and SymbolTypeClass are the advisory Symbols.Type values shared across
 // detectors. Not every detector supports every type: Go only checks SymbolTypeFunction, Java
-// only checks SymbolTypeClass, and JS/TS checks both.
+// only checks SymbolTypeClass, and JS/TS checks both. isSymbolSupported (pkg/reachability) filters
+// unsupported types out before they reach a detector.
 const (
 	SymbolTypeFunction = "function"
 	SymbolTypeClass    = "class"

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	treesitter "github.com/tree-sitter/go-tree-sitter"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_NewGoReachableDetector(t *testing.T) {
@@ -319,7 +320,7 @@ func Test_Detect_Go_BlankAndDotImportsNotReachable(t *testing.T) {
 func Test_Detect_Go_UnknownSymbolType(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewGoReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewGoReachableDetector(reporter.NewMockReporter(gomock.NewController(t)))
 	require.NoError(t, err)
 	defer detector.Close()
 

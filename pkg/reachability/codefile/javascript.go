@@ -435,7 +435,6 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
 			if s.Type != SymbolTypeFunction && s.Type != SymbolTypeClass {
-				r.reporter.Warnf("No JavaScript/TypeScript detection support for symbol type %s", s.Type)
 				continue
 			}
 

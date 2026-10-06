@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_NewJavaReachableDetector(t *testing.T) {
@@ -112,4 +113,23 @@ func Test_Detect_ClassSymbolsFound(t *testing.T) {
 	assert.Equal(t, 6, reachableSymbols[0].LineEnd)
 	assert.Equal(t, 29, reachableSymbols[0].ColumnStart)
 	assert.Equal(t, 48, reachableSymbols[0].ColumnEnd)
+}
+
+func Test_Detect_Java_UnknownSymbolType(t *testing.T) {
+	t.Parallel()
+
+	detector, err := NewJavaReachableDetector(reporter.NewMockReporter(gomock.NewController(t)))
+	require.NoError(t, err)
+	defer detector.Close()
+
+	advisoriesToCheck := []models.AdvisoryToCheck{{
+		Purl:       "pkg:maven/org.example/Greeter@1.2.3",
+		AdvisoryID: "CVE-2025-1234",
+		Symbols:    []models.Symbols{{Type: "function", Name: "Greeter", Value: "org.example"}},
+	}}
+
+	detectionResults := models.DetectionResults{}
+	err = detector.Detect(context.Background(), ".", "testdata/CVE-2025-1234/explicit-import/class.java", detectionResults, advisoriesToCheck)
+	require.NoError(t, err)
+	assert.Empty(t, detectionResults)
 }

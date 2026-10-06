@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 //nolint:paralleltest
@@ -435,7 +436,7 @@ func Test_Detect_JavaScript_NoMatch(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+			detector, err := NewJavaScriptReachableDetector(reporter.NewMockReporter(gomock.NewController(t)))
 			require.NoError(t, err)
 			defer detector.Close()
 
