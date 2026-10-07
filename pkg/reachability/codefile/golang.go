@@ -14,9 +14,6 @@ import (
 	tree_sitter_go "github.com/tree-sitter/tree-sitter-go/bindings/go"
 )
 
-// symbolTypeFunction is the only Go symbol type currently understood.
-const symbolTypeFunction = "function"
-
 const tsQueryForGoImports = `
 (import_spec
 	name: (package_identifier)? @alias
@@ -191,8 +188,7 @@ func (r *ReachabilityGo) Detect(ctx context.Context, dir string, path string, de
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != symbolTypeFunction {
-				r.reporter.Warnf("No Go detection support for symbol type %s", s.Type)
+			if s.Type != SymbolTypeFunction {
 				continue
 			}
 

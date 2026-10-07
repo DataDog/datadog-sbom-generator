@@ -17,7 +17,7 @@ var tsQueryForJavaClass = `
 )`
 
 var symbolTypeToTSQuery = map[string]string{
-	"class": tsQueryForJavaClass,
+	SymbolTypeClass: tsQueryForJavaClass,
 }
 
 type ReachabilityJava struct {
@@ -82,7 +82,6 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 		for _, s := range advisoryToCheck.Symbols {
 			query := r.tsQueriesPerSymbolType[s.Type]
 			if query == nil {
-				r.reporter.Warnf("No query found for symbol type %s", s.Type)
 				continue
 			}
 

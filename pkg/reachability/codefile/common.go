@@ -11,6 +11,15 @@ import (
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 )
 
+// SymbolTypeFunction and SymbolTypeClass are the advisory Symbols.Type values shared across
+// detectors. Not every detector supports every type: Go only checks SymbolTypeFunction, Java
+// only checks SymbolTypeClass, and JS/TS checks both. isSymbolSupported (pkg/reachability) filters
+// unsupported types out before they reach a detector.
+const (
+	SymbolTypeFunction = "function"
+	SymbolTypeClass    = "class"
+)
+
 // readFileContent is a thin wrapper over os.ReadFile that reads the content of a file
 // and returns it as a byte slice.
 // TODO(daniel.strong): find a better place for this function
@@ -74,20 +83,29 @@ func buildPackageLocation(dir string, path string, start treesitter.Point, end t
 	return packageLocation, nil
 }
 
-// recordMatch appends a reachable symbol match to detectionResults, initializing the
-// per-purl and per-advisory maps if this is the first match for either.
+// recordMatch records location for (purl, advisoryID) in detectionResults, keeping only the
+// earliest one in the file: one reachable location per advisory is all the SBOM needs.
 func recordMatch(detectionResults models.DetectionResults, purl string, advisoryID string, symbol string, location models.PackageLocation) {
 	if _, ok := detectionResults[purl]; !ok {
 		detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
 	}
-	if _, ok := detectionResults[purl][advisoryID]; !ok {
-		detectionResults[purl][advisoryID] = make(models.ReachableSymbolLocations, 0)
+
+	candidate := models.ReachableSymbolLocation{Symbol: symbol, PackageLocation: location}
+	if existing := detectionResults[purl][advisoryID]; len(existing) > 0 && !isEarlierLocation(candidate, existing[0]) {
+		return
 	}
 
-	detectionResults[purl][advisoryID] = append(
-		detectionResults[purl][advisoryID],
-		models.ReachableSymbolLocation{
-			Symbol:          symbol,
-			PackageLocation: location,
-		})
+	detectionResults[purl][advisoryID] = models.ReachableSymbolLocations{candidate}
+}
+
+// isEarlierLocation orders locations within one file; Symbol breaks ties so the choice is total.
+func isEarlierLocation(a, b models.ReachableSymbolLocation) bool {
+	if a.LineStart != b.LineStart {
+		return a.LineStart < b.LineStart
+	}
+	if a.ColumnStart != b.ColumnStart {
+		return a.ColumnStart < b.ColumnStart
+	}
+
+	return a.Symbol < b.Symbol
 }

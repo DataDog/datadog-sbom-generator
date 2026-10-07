@@ -3,6 +3,7 @@ package reachability
 import (
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/package-url/packageurl-go"
@@ -13,11 +14,13 @@ import (
 var purlTypeToLanguageKey = map[string]string{
 	packageurl.TypeMaven:  languageKeyJava,
 	packageurl.TypeGolang: languageKeyGo,
+	packageurl.TypeNPM:    languageKeyJavaScript,
 }
 
 // getAdvisoriesToCheckPerLanguage returns a map of language to advisories with symbols to check.
 // PURLs that fail to parse, or whose type has no known reachability detector, are skipped with
-// a warning rather than aborting the whole reachability pass.
+// a warning rather than aborting the whole reachability pass. Symbols the language's detector
+// can't check are dropped, and so are advisories left with none, so they count as not checked.
 func getAdvisoriesToCheckPerLanguage(r reporter.Reporter, resp http.ResolveVulnerableSymbolsResponse) models.AdvisoriesToCheckPerLanguage {
 	output := models.AdvisoriesToCheckPerLanguage{}
 
@@ -34,20 +37,22 @@ func getAdvisoriesToCheckPerLanguage(r reporter.Reporter, resp http.ResolveVulne
 			continue
 		}
 
-		// Initialize a slice for the language if it doesn't exist
-		if _, languageExists := output[language]; !languageExists {
-			output[language] = []models.AdvisoryToCheck{}
-		}
-
 		// Iterate over the vulnerable symbols and populate the output
 		for _, symbolDetails := range result.VulnerableSymbols {
 			symbols := make([]models.Symbols, 0, len(symbolDetails.Symbols))
 			for _, symbol := range symbolDetails.Symbols {
-				symbols = append(symbols, models.Symbols{
+				s := models.Symbols{
 					Type:  symbol.Type,
 					Value: symbol.Value,
 					Name:  symbol.Name,
-				})
+				}
+				if isSymbolSupported(language, s) {
+					symbols = append(symbols, s)
+				}
+			}
+
+			if len(symbols) == 0 {
+				continue
 			}
 
 			output[language] = append(output[language], models.AdvisoryToCheck{
@@ -59,6 +64,20 @@ func getAdvisoriesToCheckPerLanguage(r reporter.Reporter, resp http.ResolveVulne
 	}
 
 	return output
+}
+
+// isSymbolSupported reports whether the detector for languageKey can check symbols of this type.
+func isSymbolSupported(languageKey string, s models.Symbols) bool {
+	switch languageKey {
+	case languageKeyGo:
+		return s.Type == codefile.SymbolTypeFunction
+	case languageKeyJava:
+		return s.Type == codefile.SymbolTypeClass
+	case languageKeyJavaScript:
+		return s.Type == codefile.SymbolTypeFunction || s.Type == codefile.SymbolTypeClass
+	default:
+		return false
+	}
 }
 
 // getPurlsToReachabilityAnalysisResults flattens the detection results into a map of PURLs to analysis results.

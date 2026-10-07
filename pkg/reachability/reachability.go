@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 
+	"github.com/DataDog/datadog-sbom-generator/internal/customgitignore"
 	"github.com/DataDog/datadog-sbom-generator/internal/http"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/fileposition"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
@@ -14,6 +16,7 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -22,25 +25,87 @@ import (
 // languageKeyToDetectorFactory, and purlTypeToLanguageKey (utils.go) so a typo in one map can't
 // silently drift from the others.
 const (
-	languageKeyGo   = "go"
-	languageKeyJava = "java"
+	languageKeyGo         = "go"
+	languageKeyJava       = "java"
+	languageKeyJavaScript = "javascript"
 )
 
 // extensionToLanguageKey maps a file extension to the language key used both to look up
-// advisories to check and to select a detector pool.
+// advisories to check and to select a detector pool. All JavaScript/TypeScript/JSX/TSX
+// extensions share one language key; the detector itself picks the right tree-sitter grammar
+// (JS, TS, or TSX) internally based on the file extension.
 var extensionToLanguageKey = map[string]string{
 	".java": languageKeyJava,
 	".go":   languageKeyGo,
+	".js":   languageKeyJavaScript,
+	".jsx":  languageKeyJavaScript,
+	".mjs":  languageKeyJavaScript,
+	".cjs":  languageKeyJavaScript,
+	".ts":   languageKeyJavaScript,
+	".mts":  languageKeyJavaScript,
+	".cts":  languageKeyJavaScript,
+	".tsx":  languageKeyJavaScript,
+}
+
+// hardcodedExcludedDirNames are directory names never worth walking into during reachability
+// analysis: node_modules (JS/TS dependency tree) and the universal .git. Checked
+// unconditionally, independent of useGitIgnore/--no-ignore - mirroring pkg/scanner's scanDir,
+// which unconditionally skips .git with no toggle. Not user-configurable.
+var hardcodedExcludedDirNames = map[string]struct{}{
+	".git":         {},
+	"node_modules": {},
 }
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
 	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
 	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
+	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
+		return codefile.NewJavaScriptReachableDetector(r)
+	},
+}
+
+type gitIgnoreMatcher struct {
+	matcher  gitignore.Matcher
+	repoPath string
+}
+
+func newGitIgnoreMatcher(dir string, recursive bool) (*gitIgnoreMatcher, error) {
+	patterns, repoRootPath, err := customgitignore.ParseGitIgnores(dir, recursive)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gitIgnoreMatcher{matcher: gitignore.NewMatcher(patterns), repoPath: repoRootPath}, nil
+}
+
+func (m *gitIgnoreMatcher) match(absPath string, isDir bool) (bool, error) {
+	pathInGit, err := filepath.Rel(m.repoPath, absPath)
+	if err != nil {
+		return false, err
+	}
+
+	pathInGitSep := []string{"."}
+	if pathInGit != "." {
+		pathInGitSep = append(pathInGitSep, strings.Split(pathInGit, string(filepath.Separator))...)
+	}
+
+	return m.matcher.Match(pathInGitSep, isDir), nil
+}
+
+// advisoryKey identifies one advisory on one package; reachability keeps a single location per key.
+type advisoryKey struct {
+	purl       string
+	advisoryID string
 }
 
 // PerformReachabilityAnalysis performs a reachability analysis on the given PURLs.
-func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string) models.ReachabilityAnalysis {
+// useGitIgnore and recursive mirror the same flags that pkg/scanner's scanDir uses: when
+// useGitIgnore is true, .gitignore patterns are respected during the directory walk (just
+// as they are during lockfile scanning), and recursive controls whether child .gitignore
+// files are parsed. Independently of both, directories named in hardcodedExcludedDirNames are
+// always pruned from the walk, regardless of useGitIgnore.
+func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryPaths []string, excludePaths []string, repoRoot string, configExcludePaths []string, ddBaseURL string, ddJwtToken string, useGitIgnore bool, recursive bool) models.ReachabilityAnalysis {
 	r.Infof("[reachability] Fetching symbols...")
 	resp, err := http.PostResolveVulnerableSymbols(purls, ddBaseURL, ddJwtToken)
 	if err != nil {
@@ -52,13 +117,30 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 	advisoriesToCheckPerLanguage := getAdvisoriesToCheckPerLanguage(r, resp)
 
+	advisoriesToFind := make(map[advisoryKey]struct{})
+	for _, advisories := range advisoriesToCheckPerLanguage {
+		for _, advisory := range advisories {
+			advisoriesToFind[advisoryKey{purl: advisory.Purl, advisoryID: advisory.AdvisoryID}] = struct{}{}
+		}
+	}
+
 	detectionResults := make(models.DetectionResults)
 	var detectionMutex sync.Mutex
+
+	// bestFileIndex records, per advisory, the walk index of the file its kept location came
+	// from. Files are numbered in the order the walk dispatches them, so keeping the lowest index
+	// gives the same location on every run regardless of which worker finishes first.
+	bestFileIndex := make(map[advisoryKey]int)
+	nextFileIndex := 0
 
 	workerCount := runtime.NumCPU()
 
 	detectorPools := make(map[string]chan codefile.Detector, len(languageKeyToDetectorFactory))
 	for languageKey, factory := range languageKeyToDetectorFactory {
+		if len(advisoriesToCheckPerLanguage[languageKey]) == 0 {
+			continue
+		}
+
 		pool := make(chan codefile.Detector, workerCount)
 		for range workerCount {
 			detector, err := factory(r)
@@ -84,14 +166,54 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 	eg.SetLimit(workerCount)
 
 	for _, dir := range directoryPaths {
+		var ignoreMatcher *gitIgnoreMatcher
+		if useGitIgnore {
+			var matcherErr error
+			ignoreMatcher, matcherErr = newGitIgnoreMatcher(dir, recursive)
+			if matcherErr != nil {
+				r.Warnf("[reachability] Unable to parse git ignores for %s: %v\n", dir, matcherErr)
+			}
+		}
+
 		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
+			// Every kept location comes from an already-dispatched file, which any file the walk
+			// has yet to reach would lose to.
+			detectionMutex.Lock()
+			allFound := len(bestFileIndex) == len(advisoriesToFind)
+			detectionMutex.Unlock()
+			if allFound {
+				return filepath.SkipAll
+			}
+
+			// Hardcoded, unconditional pruning - checked first since it's a zero-I/O name
+			// comparison, before the .gitignore matcher below does any path work.
+			if d.IsDir() {
+				if _, excluded := hardcodedExcludedDirNames[d.Name()]; excluded {
+					return filepath.SkipDir
+				}
+			}
+
 			absPath, err := filepath.Abs(path)
 			if err != nil {
 				absPath = path
+			}
+
+			// .gitignore matching — same pattern as pkg/scanner's scanDir.
+			if ignoreMatcher != nil {
+				matched, matchErr := ignoreMatcher.match(absPath, d.IsDir())
+				if matchErr != nil {
+					r.Infof("[reachability] Failed to resolve gitignore for %s: %v\n", path, matchErr)
+				} else if matched {
+					if d.IsDir() {
+						return filepath.SkipDir
+					}
+
+					return nil
+				}
 			}
 
 			shouldExcludePath, pattern, err := fileposition.ShouldExcludePath(dir, path, excludePaths)
@@ -131,7 +253,26 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 
 			pool := detectorPools[languageKey]
 
+			fileIndex := nextFileIndex
+			nextFileIndex++
+
 			eg.Go(func() error {
+				// An advisory whose kept location comes from an earlier file can't be beaten by
+				// this one, so there's no point checking it here.
+				detectionMutex.Lock()
+				openAdvisories := make([]models.AdvisoryToCheck, 0, len(advisoriesToCheckPerLanguage[languageKey]))
+				for _, advisory := range advisoriesToCheckPerLanguage[languageKey] {
+					if best, found := bestFileIndex[advisoryKey{purl: advisory.Purl, advisoryID: advisory.AdvisoryID}]; found && best < fileIndex {
+						continue
+					}
+					openAdvisories = append(openAdvisories, advisory)
+				}
+				detectionMutex.Unlock()
+
+				if len(openAdvisories) == 0 {
+					return nil
+				}
+
 				// Get a detector from the pool
 				detector := <-pool
 				// Return detector to pool after it's finished
@@ -140,19 +281,25 @@ func PerformReachabilityAnalysis(r reporter.Reporter, purls []string, directoryP
 				}()
 
 				localResults := make(models.DetectionResults)
-				err := detector.Detect(ctx, dir, path, localResults, advisoriesToCheckPerLanguage[languageKey])
+				err := detector.Detect(ctx, dir, path, localResults, openAdvisories)
 				if err != nil {
 					return err
 				}
 
-				// Merge local results back to main detectionResults with mutex protection
+				// Keep the location from the earliest file in walk order; localResults already holds
+				// the earliest location within this file.
 				detectionMutex.Lock()
 				for purl, advisoryMap := range localResults {
-					if _, exists := detectionResults[purl]; !exists {
-						detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
-					}
 					for advisoryID, locations := range advisoryMap {
-						detectionResults[purl][advisoryID] = append(detectionResults[purl][advisoryID], locations...)
+						key := advisoryKey{purl: purl, advisoryID: advisoryID}
+						if best, found := bestFileIndex[key]; found && best < fileIndex {
+							continue
+						}
+						if _, exists := detectionResults[purl]; !exists {
+							detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
+						}
+						detectionResults[purl][advisoryID] = locations
+						bestFileIndex[key] = fileIndex
 					}
 				}
 				detectionMutex.Unlock()
