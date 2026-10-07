@@ -20,10 +20,10 @@ const (
 	SymbolTypeClass    = "class"
 )
 
-// readFileContent is a thin wrapper over os.ReadFile that reads the content of a file
+// ReadFileContent is a thin wrapper over os.ReadFile that reads the content of a file
 // and returns it as a byte slice.
 // TODO(daniel.strong): find a better place for this function
-func readFileContent(filePath string) ([]byte, error) {
+func ReadFileContent(filePath string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -32,8 +32,8 @@ func readFileContent(filePath string) ([]byte, error) {
 	return data, nil
 }
 
-// parseFile parses fileContent with tsParser, canceling the parse as soon as ctx is done.
-func parseFile(ctx context.Context, tsParser *treesitter.Parser, fileContent []byte) *treesitter.Tree {
+// ParseFile parses fileContent with tsParser, canceling the parse as soon as ctx is done.
+func ParseFile(ctx context.Context, tsParser *treesitter.Parser, fileContent []byte) *treesitter.Tree {
 	readCallback := func(offset int, position treesitter.Point) []byte {
 		if ctx.Err() != nil {
 			return []byte{}
@@ -55,9 +55,9 @@ func parseFile(ctx context.Context, tsParser *treesitter.Parser, fileContent []b
 	})
 }
 
-// buildPackageLocation converts a tree-sitter start/end position pair into a models.PackageLocation
+// BuildPackageLocation converts a tree-sitter start/end position pair into a models.PackageLocation
 // for a match found in the file at path (relative to dir).
-func buildPackageLocation(dir string, path string, start treesitter.Point, end treesitter.Point) (models.PackageLocation, error) {
+func BuildPackageLocation(dir string, path string, start treesitter.Point, end treesitter.Point) (models.PackageLocation, error) {
 	packageLocation := models.PackageLocation{
 		Filename: fileposition.ToRelativePath(dir, path),
 	}
@@ -83,9 +83,9 @@ func buildPackageLocation(dir string, path string, start treesitter.Point, end t
 	return packageLocation, nil
 }
 
-// recordMatch records location for (purl, advisoryID) in detectionResults, keeping only the
+// RecordMatch records location for (purl, advisoryID) in detectionResults, keeping only the
 // earliest one in the file: one reachable location per advisory is all the SBOM needs.
-func recordMatch(detectionResults models.DetectionResults, purl string, advisoryID string, symbol string, location models.PackageLocation) {
+func RecordMatch(detectionResults models.DetectionResults, purl string, advisoryID string, symbol string, location models.PackageLocation) {
 	if _, ok := detectionResults[purl]; !ok {
 		detectionResults[purl] = make(map[string]models.ReachableSymbolLocations)
 	}

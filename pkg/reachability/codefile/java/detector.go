@@ -1,10 +1,11 @@
-package codefile
+package java
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
@@ -17,19 +18,21 @@ var tsQueryForJavaClass = `
 )`
 
 var symbolTypeToTSQuery = map[string]string{
-	SymbolTypeClass: tsQueryForJavaClass,
+	codefile.SymbolTypeClass: tsQueryForJavaClass,
 }
 
-type ReachabilityJava struct {
+var _ codefile.Detector = (*Detector)(nil)
+
+type Detector struct {
 	tsParser               *treesitter.Parser
 	tsQueriesPerSymbolType map[string]*treesitter.Query
 	reporter               reporter.Reporter
 }
 
-// NewJavaReachableDetector creates a new JavaReachableDetector instance that once
+// NewDetector creates a new Detector instance that once
 // instantiated can be used to parse Java files. You should call Close() on the
 // instance once you're finished parsing.
-func NewJavaReachableDetector(r reporter.Reporter) (*ReachabilityJava, error) {
+func NewDetector(r reporter.Reporter) (*Detector, error) {
 	tsLanguage := treesitter.NewLanguage(tree_sitter_java.Language())
 
 	tsParser := treesitter.NewParser()
@@ -49,7 +52,7 @@ func NewJavaReachableDetector(r reporter.Reporter) (*ReachabilityJava, error) {
 		tsQueriesPerSymbolType[symbolType] = query
 	}
 
-	return &ReachabilityJava{
+	return &Detector{
 		tsParser:               tsParser,
 		tsQueriesPerSymbolType: tsQueriesPerSymbolType,
 		reporter:               reporter.Effective(r),
@@ -58,20 +61,20 @@ func NewJavaReachableDetector(r reporter.Reporter) (*ReachabilityJava, error) {
 
 // Close closes all hanging tree-sitter related resources.
 // This should only be called once you're finished parsing all Java files.
-func (r *ReachabilityJava) Close() {
+func (r *Detector) Close() {
 	r.tsParser.Close()
 	for _, query := range r.tsQueriesPerSymbolType {
 		query.Close()
 	}
 }
 
-func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
-	fileContent, err := readFileContent(path)
+func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := parseFile(ctx, r.tsParser, fileContent)
+	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
 	defer tree.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
@@ -103,12 +106,12 @@ func (r *ReachabilityJava) Detect(ctx context.Context, dir string, path string, 
 					Note: This logic is specific to class type and will need to be updated in the future when we build out further symbols.
 				*/
 				if matchedText == s.Name || matchedText == fmt.Sprintf("%s.%s", s.Value, s.Name) {
-					packageLocation, err := buildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
+					packageLocation, err := codefile.BuildPackageLocation(dir, path, match.Captures[index].Node.StartPosition(), match.Captures[index].Node.EndPosition())
 					if err != nil {
 						return err
 					}
 
-					recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
+					codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, matchedText, packageLocation)
 				}
 			}
 		}

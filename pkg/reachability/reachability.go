@@ -14,6 +14,9 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/pathexclusion"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/golang"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/java"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile/javascript"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -58,11 +61,9 @@ var hardcodedExcludedDirNames = map[string]struct{}{
 
 // languageKeyToDetectorFactory constructs a new Detector for a given language key.
 var languageKeyToDetectorFactory = map[string]func(reporter.Reporter) (codefile.Detector, error){
-	languageKeyJava: func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewJavaReachableDetector(r) },
-	languageKeyGo:   func(r reporter.Reporter) (codefile.Detector, error) { return codefile.NewGoReachableDetector(r) },
-	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) {
-		return codefile.NewJavaScriptReachableDetector(r)
-	},
+	languageKeyJava:       func(r reporter.Reporter) (codefile.Detector, error) { return java.NewDetector(r) },
+	languageKeyGo:         func(r reporter.Reporter) (codefile.Detector, error) { return golang.NewDetector(r) },
+	languageKeyJavaScript: func(r reporter.Reporter) (codefile.Detector, error) { return javascript.NewDetector(r) },
 }
 
 type gitIgnoreMatcher struct {

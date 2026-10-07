@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	treesitter "github.com/tree-sitter/go-tree-sitter"

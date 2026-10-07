@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test_recordMatch_KeepsEarliestColumnOnTheSameLine checks that which match is kept doesn't
+// Test_RecordMatch_KeepsEarliestColumnOnTheSameLine checks that which match is kept doesn't
 // depend on the order matches are recorded in.
-func Test_recordMatch_KeepsEarliestColumnOnTheSameLine(t *testing.T) {
+func Test_RecordMatch_KeepsEarliestColumnOnTheSameLine(t *testing.T) {
 	t.Parallel()
 
 	const purl = "pkg:npm/lodash@4.17.19"
@@ -33,7 +33,7 @@ func Test_recordMatch_KeepsEarliestColumnOnTheSameLine(t *testing.T) {
 
 			detectionResults := models.DetectionResults{}
 			for _, column := range columns {
-				recordMatch(detectionResults, purl, advisoryID, "match", atColumn(column))
+				RecordMatch(detectionResults, purl, advisoryID, "match", atColumn(column))
 			}
 
 			locations := detectionResults[purl][advisoryID]

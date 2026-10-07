@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"testing"
@@ -11,10 +11,10 @@ import (
 	tree_sitter_javascript "github.com/tree-sitter/tree-sitter-javascript/bindings/go"
 )
 
-func Test_NewJavaScriptReachableDetector(t *testing.T) {
+func Test_NewDetector(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	defer detector.Close()
 
@@ -24,10 +24,10 @@ func Test_NewJavaScriptReachableDetector(t *testing.T) {
 	assert.NotNil(t, detector.tsxGrammar)
 }
 
-func Test_ReachabilityJavaScript_extensionToGrammar(t *testing.T) {
+func Test_Detector_extensionToGrammar(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
 	// t.Cleanup, not defer: this function's subtests call t.Parallel(), which pauses them
 	// and returns control to this function immediately - a plain defer would close the
@@ -59,18 +59,18 @@ func Test_ReachabilityJavaScript_extensionToGrammar(t *testing.T) {
 	}
 }
 
-// Test_NewJavaScriptReachableDetector_QueriesCompileAndCaptureIndicesResolve pins the exact set
+// Test_NewDetector_QueriesCompileAndCaptureIndicesResolve pins the exact set
 // of captures each query resolves, for every grammar. newCompiledQuery already fails loudly if a
-// registered capture name doesn't resolve, so NewJavaScriptReachableDetector returning no error
+// registered capture name doesn't resolve, so NewDetector returning no error
 // proves each name resolved; this additionally catches the reverse drift - a query-text change
 // that drops, renames, or adds a capture relative to newJSGrammar's spec list - which would
 // otherwise silently narrow what the detector can match.
-func Test_NewJavaScriptReachableDetector_QueriesCompileAndCaptureIndicesResolve(t *testing.T) {
+func Test_NewDetector_QueriesCompileAndCaptureIndicesResolve(t *testing.T) {
 	t.Parallel()
 
-	detector, err := NewJavaScriptReachableDetector(&reporter.VoidReporter{})
+	detector, err := NewDetector(&reporter.VoidReporter{})
 	require.NoError(t, err)
-	// t.Cleanup, not defer - see the comment in Test_ReachabilityJavaScript_extensionToGrammar.
+	// t.Cleanup, not defer - see the comment in Test_Detector_extensionToGrammar.
 	t.Cleanup(detector.Close)
 
 	grammars := map[string]*jsGrammar{
@@ -127,4 +127,4 @@ func Test_newCompiledQuery_UnknownCaptureNameFails(t *testing.T) {
 }
 
 // Test_Detect_JavaScript_NoAdvisories (the fixture-based version, covering the same
-// early-return behavior with a real testdata path) lives in javascript_detect_test.go.
+// early-return behavior with a real testdata path) lives in detect_test.go.

@@ -1,4 +1,4 @@
-package codefile
+package javascript
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reachability/codefile"
 	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
@@ -321,10 +322,12 @@ func newJSGrammar(language *treesitter.Language) (*jsGrammar, error) {
 	return g, nil
 }
 
-// ReachabilityJavaScript detects reachable vulnerable symbols in JavaScript/TypeScript source
+var _ codefile.Detector = (*Detector)(nil)
+
+// Detector detects reachable vulnerable symbols in JavaScript/TypeScript source
 // files. It holds one jsGrammar per tree-sitter grammar (JavaScript, TypeScript, TSX) and
 // dispatches to the right one per file based on extension.
-type ReachabilityJavaScript struct {
+type Detector struct {
 	jsGrammar  *jsGrammar // .js, .jsx, .mjs, .cjs
 	tsGrammar  *jsGrammar // .ts, .mts, .cts
 	tsxGrammar *jsGrammar // .tsx
@@ -334,7 +337,7 @@ type ReachabilityJavaScript struct {
 
 // extensionToGrammar returns the grammar set to use for a file extension (as returned by
 // filepath.Ext, including the leading dot), or nil if the extension isn't recognized.
-func (r *ReachabilityJavaScript) extensionToGrammar(ext string) *jsGrammar {
+func (r *Detector) extensionToGrammar(ext string) *jsGrammar {
 	switch ext {
 	case ".js", ".jsx", ".mjs", ".cjs":
 		return r.jsGrammar
@@ -347,10 +350,10 @@ func (r *ReachabilityJavaScript) extensionToGrammar(ext string) *jsGrammar {
 	}
 }
 
-// NewJavaScriptReachableDetector creates a new ReachabilityJavaScript instance that once
+// NewDetector creates a new Detector instance that once
 // instantiated can be used to parse JavaScript/TypeScript/TSX files. You should call Close() on
 // the instance once you're finished parsing.
-func NewJavaScriptReachableDetector(r reporter.Reporter) (*ReachabilityJavaScript, error) {
+func NewDetector(r reporter.Reporter) (*Detector, error) {
 	jsLanguage := treesitter.NewLanguage(tree_sitter_javascript.Language())
 	tsLanguage := treesitter.NewLanguage(tree_sitter_typescript.LanguageTypescript())
 	tsxLanguage := treesitter.NewLanguage(tree_sitter_typescript.LanguageTSX())
@@ -374,7 +377,7 @@ func NewJavaScriptReachableDetector(r reporter.Reporter) (*ReachabilityJavaScrip
 		return nil, fmt.Errorf("failed to set up TSX grammar: %w", err)
 	}
 
-	return &ReachabilityJavaScript{
+	return &Detector{
 		jsGrammar:  jsGrammar,
 		tsGrammar:  tsGrammar,
 		tsxGrammar: tsxGrammar,
@@ -384,7 +387,7 @@ func NewJavaScriptReachableDetector(r reporter.Reporter) (*ReachabilityJavaScrip
 
 // Close closes all hanging tree-sitter related resources across all three grammars.
 // This should only be called once you're finished parsing all JavaScript/TypeScript files.
-func (r *ReachabilityJavaScript) Close() {
+func (r *Detector) Close() {
 	r.jsGrammar.close()
 	r.tsGrammar.close()
 	r.tsxGrammar.close()
@@ -393,7 +396,7 @@ func (r *ReachabilityJavaScript) Close() {
 // Detect resolves every ESM/CJS binding in the file, then for each advisory symbol checks the
 // resolved bindings for the symbol's package against the matching usage-query shape - decided
 // per-binding by its Kind, not by the symbol's type (see candidatesForBinding).
-func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
 	if len(advisoriesToCheck) == 0 {
 		return nil
 	}
@@ -406,12 +409,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 		return nil
 	}
 
-	fileContent, err := readFileContent(path)
+	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := parseFile(ctx, grammar.parser, fileContent)
+	tree := codefile.ParseFile(ctx, grammar.parser, fileContent)
 	defer tree.Close()
 
 	// One cursor, reused sequentially across the binding queries and (lazily) the usage
@@ -434,7 +437,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != SymbolTypeFunction && s.Type != SymbolTypeClass {
+			if s.Type != codefile.SymbolTypeFunction && s.Type != codefile.SymbolTypeClass {
 				continue
 			}
 
@@ -443,7 +446,7 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 			// bindings lookup below - which would otherwise skip the file entirely when the
 			// package is never bound to a local name. Function symbols only; see
 			// tsQueryForInlineRequireCall for why there's no `new` equivalent.
-			if s.Type == SymbolTypeFunction {
+			if s.Type == codefile.SymbolTypeFunction {
 				for _, candidate := range cache.InlineRequireCalls() {
 					if candidate.objectText != s.Value || candidate.identifierText != s.Name {
 						continue
@@ -499,12 +502,12 @@ func (r *ReachabilityJavaScript) Detect(ctx context.Context, dir string, path st
 // recordCandidate records one matched call/new site as a reachable symbol for the advisory,
 // resolving the node's position into a package location first.
 func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck models.AdvisoryToCheck, dir string, path string, fileContent []byte, node treesitter.Node) error {
-	packageLocation, err := buildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
+	packageLocation, err := codefile.BuildPackageLocation(dir, path, node.StartPosition(), node.EndPosition())
 	if err != nil {
 		return err
 	}
 
-	recordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
+	codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, node.Utf8Text(fileContent), packageLocation)
 
 	return nil
 }
@@ -514,19 +517,19 @@ func recordCandidate(detectionResults models.DetectionResults, advisoryToCheck m
 // against binding.exportName in matchesCandidate); for Default bindings, empty (matchesCandidate
 // compares it against the binding's local name); for Namespace bindings, the advisory symbol's
 // Name itself (checked against the accessed property).
-func (r *ReachabilityJavaScript) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
+func (r *Detector) candidatesForBinding(cache *usageQueryCache, binding resolvedBinding, s models.Symbols) ([]callSite, string) {
 	switch {
-	case binding.kind == bindingNamed && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingNamed && s.Type == codefile.SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingDefault && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingDefault && s.Type == codefile.SymbolTypeFunction:
 		return cache.DirectCalls(), s.Name
-	case binding.kind == bindingNamespace && s.Type == SymbolTypeFunction:
+	case binding.kind == bindingNamespace && s.Type == codefile.SymbolTypeFunction:
 		return cache.MemberCalls(), s.Name
-	case binding.kind == bindingNamed && s.Type == SymbolTypeClass:
+	case binding.kind == bindingNamed && s.Type == codefile.SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingDefault && s.Type == SymbolTypeClass:
+	case binding.kind == bindingDefault && s.Type == codefile.SymbolTypeClass:
 		return cache.DirectNews(), s.Name
-	case binding.kind == bindingNamespace && s.Type == SymbolTypeClass:
+	case binding.kind == bindingNamespace && s.Type == codefile.SymbolTypeClass:
 		return cache.MemberNews(), s.Name
 	default:
 		return nil, ""
