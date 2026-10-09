@@ -1,6 +1,7 @@
 package codefile
 
 import (
+	"bytes"
 	"context"
 	"os"
 
@@ -30,6 +31,22 @@ func ReadFileContent(filePath string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// ContainsAnyLiteral reports whether fileContent contains any of the given literals. It's a cheap
+// pre-filter each detector runs before the expensive tree-sitter parse: a file can only ever match
+// a vulnerable symbol if it textually contains the literal that match requires (the module import
+// path for Go, the class name for Java, the package path for JS/TS), so a file containing none of
+// them can be skipped without parsing. An empty literals slice means "nothing can match", so it
+// returns false.
+func ContainsAnyLiteral(fileContent []byte, literals [][]byte) bool {
+	for _, literal := range literals {
+		if bytes.Contains(fileContent, literal) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ParseFile parses fileContent with tsParser, canceling the parse as soon as ctx is done.

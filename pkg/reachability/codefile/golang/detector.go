@@ -47,6 +47,13 @@ type Detector struct {
 	fnCaptureIdx         uint
 	selectorCaptureIdx   uint
 
+	// prefilterLiterals holds the unique module import paths across all advisories, as raw bytes.
+	// A Go file can only match a vulnerable symbol if it imports that symbol's module, which
+	// requires the import path to appear literally in the file. It's computed once per detector
+	// (lazily, since advisories arrive with the first Detect call) and reused for every file.
+	prefilterLiterals [][]byte
+	prefilterBuilt    bool
+
 	reporter reporter.Reporter
 }
 
@@ -170,17 +177,24 @@ func defaultIdentifierForModulePath(modulePath string) string {
 }
 
 func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	if len(advisoriesToCheck) == 0 {
+		return nil
+	}
+
 	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
-	defer tree.Close()
-
-	if len(advisoriesToCheck) == 0 {
+	// Cheap pre-filter: skip the expensive tree-sitter parse unless the file textually references
+	// at least one vulnerable module. This is correct (no false negatives) because a match always
+	// requires the module to be imported, which requires its import path to appear in the file.
+	if !codefile.ContainsAnyLiteral(fileContent, r.prefilterForAdvisories(advisoriesToCheck)) {
 		return nil
 	}
+
+	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
+	defer tree.Close()
 
 	importCursor := treesitter.NewQueryCursor()
 	defer importCursor.Close()
@@ -189,34 +203,32 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	callCursor := treesitter.NewQueryCursor()
 	defer callCursor.Close()
 
-	for _, advisoryToCheck := range advisoriesToCheck {
-		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != codefile.SymbolTypeFunction {
-				continue
+	// Run the call query over the tree once, then match every call site against all advisory
+	// symbols. Re-running the query per symbol would re-traverse the whole tree needlessly.
+	matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
+	for match := matches.Next(); match != nil; match = matches.Next() {
+		var pkgText, fnText string
+		var selectorNode treesitter.Node
+
+		for _, capture := range match.Captures {
+			switch capture.Index {
+			case uint32(r.pkgCaptureIdx): //nolint:gosec
+				pkgText = capture.Node.Utf8Text(fileContent)
+			case uint32(r.fnCaptureIdx): //nolint:gosec
+				fnText = capture.Node.Utf8Text(fileContent)
+			case uint32(r.selectorCaptureIdx): //nolint:gosec
+				selectorNode = capture.Node
 			}
+		}
 
-			aliases, moduleImported := moduleToAliases[s.Value]
-			if !moduleImported {
-				continue
-			}
-
-			matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
-			for match := matches.Next(); match != nil; match = matches.Next() {
-				var pkgText, fnText string
-				var selectorNode treesitter.Node
-
-				for _, capture := range match.Captures {
-					switch capture.Index {
-					case uint32(r.pkgCaptureIdx): //nolint:gosec
-						pkgText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.fnCaptureIdx): //nolint:gosec
-						fnText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.selectorCaptureIdx): //nolint:gosec
-						selectorNode = capture.Node
-					}
+		for _, advisoryToCheck := range advisoriesToCheck {
+			for _, s := range advisoryToCheck.Symbols {
+				if s.Type != codefile.SymbolTypeFunction {
+					continue
 				}
 
-				if fnText != s.Name || !slices.Contains(aliases, pkgText) {
+				aliases, moduleImported := moduleToAliases[s.Value]
+				if !moduleImported || fnText != s.Name || !slices.Contains(aliases, pkgText) {
 					continue
 				}
 
@@ -231,4 +243,31 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	}
 
 	return nil
+}
+
+// prefilterForAdvisories returns the unique module import paths across all advisories as raw bytes,
+// building them once on first use and caching them for subsequent files. The advisory set is fixed
+// for the lifetime of a run, so the literals never change between calls.
+func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
+	if r.prefilterBuilt {
+		return r.prefilterLiterals
+	}
+
+	seen := make(map[string]struct{})
+	for _, advisoryToCheck := range advisoriesToCheck {
+		for _, s := range advisoryToCheck.Symbols {
+			if s.Type != codefile.SymbolTypeFunction || s.Value == "" {
+				continue
+			}
+			if _, ok := seen[s.Value]; ok {
+				continue
+			}
+			seen[s.Value] = struct{}{}
+			r.prefilterLiterals = append(r.prefilterLiterals, []byte(s.Value))
+		}
+	}
+
+	r.prefilterBuilt = true
+
+	return r.prefilterLiterals
 }

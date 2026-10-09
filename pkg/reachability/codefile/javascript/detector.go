@@ -332,6 +332,14 @@ type Detector struct {
 	tsGrammar  *jsGrammar // .ts, .mts, .cts
 	tsxGrammar *jsGrammar // .tsx
 
+	// prefilterLiterals holds the unique package paths across all advisories, as raw bytes. A JS/TS
+	// file can only match a vulnerable symbol if it imports/requires that symbol's package, which
+	// requires the package path to appear literally in the file (as the import source or the
+	// require() argument). It's computed once per detector (lazily, since advisories arrive with the
+	// first Detect call) and reused for every file.
+	prefilterLiterals [][]byte
+	prefilterBuilt    bool
+
 	reporter reporter.Reporter
 }
 
@@ -412,6 +420,13 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
+	}
+
+	// Cheap pre-filter: skip the expensive tree-sitter parse unless the file textually references
+	// at least one vulnerable package. A match always requires the package to be imported or
+	// required, which requires its path to appear literally in the file.
+	if !codefile.ContainsAnyLiteral(fileContent, r.prefilterForAdvisories(advisoriesToCheck)) {
+		return nil
 	}
 
 	tree := codefile.ParseFile(ctx, grammar.parser, fileContent)
@@ -497,6 +512,36 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	}
 
 	return nil
+}
+
+// prefilterForAdvisories returns the unique package paths across all advisories as raw bytes,
+// building them once on first use and caching them for subsequent files. The advisory set is fixed
+// for the lifetime of a run, so the literals never change between calls.
+func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
+	if r.prefilterBuilt {
+		return r.prefilterLiterals
+	}
+
+	seen := make(map[string]struct{})
+	for _, advisoryToCheck := range advisoriesToCheck {
+		for _, s := range advisoryToCheck.Symbols {
+			if s.Type != codefile.SymbolTypeFunction && s.Type != codefile.SymbolTypeClass {
+				continue
+			}
+			if s.Value == "" {
+				continue
+			}
+			if _, ok := seen[s.Value]; ok {
+				continue
+			}
+			seen[s.Value] = struct{}{}
+			r.prefilterLiterals = append(r.prefilterLiterals, []byte(s.Value))
+		}
+	}
+
+	r.prefilterBuilt = true
+
+	return r.prefilterLiterals
 }
 
 // recordCandidate records one matched call/new site as a reachable symbol for the advisory,
