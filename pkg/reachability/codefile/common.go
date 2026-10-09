@@ -33,6 +33,32 @@ func ReadFileContent(filePath string) ([]byte, error) {
 	return data, nil
 }
 
+// DistinctLiterals collects the unique, non-empty literals produced by pick over every symbol in
+// advisories, as raw bytes ready for ContainsAnyLiteral. Each detector supplies its own pick: the
+// literal that a match in that language always requires to appear in the file (the module import
+// path for Go, the class name for Java, the package path for JS/TS). pick returning "" drops the
+// symbol from the pre-filter.
+func DistinctLiterals(advisories []models.AdvisoryToCheck, pick func(models.Symbols) string) [][]byte {
+	seen := make(map[string]struct{})
+	var literals [][]byte
+
+	for _, advisory := range advisories {
+		for _, s := range advisory.Symbols {
+			literal := pick(s)
+			if literal == "" {
+				continue
+			}
+			if _, ok := seen[literal]; ok {
+				continue
+			}
+			seen[literal] = struct{}{}
+			literals = append(literals, []byte(literal))
+		}
+	}
+
+	return literals
+}
+
 // ContainsAnyLiteral reports whether fileContent contains any of the given literals. It's a cheap
 // pre-filter each detector runs before the expensive tree-sitter parse: a file can only ever match
 // a vulnerable symbol if it textually contains the literal that match requires (the module import

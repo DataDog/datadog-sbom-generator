@@ -3,7 +3,6 @@ package golang
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
@@ -200,11 +199,19 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	defer importCursor.Close()
 	moduleToAliases := r.resolveImportAliases(tree, fileContent, importCursor)
 
+	// Index the advisory symbols whose module this file actually imports by (localIdentifier,
+	// functionName). Each call site is then matched by one map lookup instead of a scan over every
+	// advisory symbol, keeping detection O(call sites) rather than O(call sites × all symbols).
+	candidates := candidatesByCallSite(advisoriesToCheck, moduleToAliases)
+	if len(candidates) == 0 {
+		return nil
+	}
+
 	callCursor := treesitter.NewQueryCursor()
 	defer callCursor.Close()
 
-	// Run the call query over the tree once, then match every call site against all advisory
-	// symbols. Re-running the query per symbol would re-traverse the whole tree needlessly.
+	// Run the call query over the tree once; re-running it per symbol would re-traverse the whole
+	// tree needlessly.
 	matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		var pkgText, fnText string
@@ -221,53 +228,80 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 			}
 		}
 
-		for _, advisoryToCheck := range advisoriesToCheck {
-			for _, s := range advisoryToCheck.Symbols {
-				if s.Type != codefile.SymbolTypeFunction {
-					continue
-				}
+		matched := candidates[callSiteKey{identifier: pkgText, function: fnText}]
+		if len(matched) == 0 {
+			continue
+		}
 
-				aliases, moduleImported := moduleToAliases[s.Value]
-				if !moduleImported || fnText != s.Name || !slices.Contains(aliases, pkgText) {
-					continue
-				}
+		packageLocation, err := codefile.BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
+		if err != nil {
+			return err
+		}
 
-				packageLocation, err := codefile.BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
-				if err != nil {
-					return err
-				}
-
-				codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
-			}
+		symbolText := selectorNode.Utf8Text(fileContent)
+		for _, c := range matched {
+			codefile.RecordMatch(detectionResults, c.purl, c.advisoryID, symbolText, packageLocation)
 		}
 	}
 
 	return nil
 }
 
-// prefilterForAdvisories returns the unique module import paths across all advisories as raw bytes,
-// building them once on first use and caching them for subsequent files. The advisory set is fixed
-// for the lifetime of a run, so the literals never change between calls.
-func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
-	if r.prefilterBuilt {
-		return r.prefilterLiterals
-	}
+// callSiteKey identifies a Go call site as the local package identifier and the function name, e.g.
+// the call `object.DecodeCommit(...)` has key {identifier: "object", function: "DecodeCommit"}.
+type callSiteKey struct {
+	identifier string
+	function   string
+}
 
-	seen := make(map[string]struct{})
+// advisoryRef is the minimal advisory identity recorded for a matched call site.
+type advisoryRef struct {
+	purl       string
+	advisoryID string
+}
+
+// candidatesByCallSite indexes the advisory function symbols whose module is imported by this file,
+// keyed by the (localIdentifier, functionName) a matching call would have. Only imported modules
+// contribute, so the index is empty when the file imports none of the vulnerable modules, letting
+// Detect skip the call-query traversal entirely.
+func candidatesByCallSite(advisoriesToCheck []models.AdvisoryToCheck, moduleToAliases map[string][]string) map[callSiteKey][]advisoryRef {
+	candidates := make(map[callSiteKey][]advisoryRef)
+
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
-			if s.Type != codefile.SymbolTypeFunction || s.Value == "" {
+			if s.Type != codefile.SymbolTypeFunction {
 				continue
 			}
-			if _, ok := seen[s.Value]; ok {
+
+			aliases, moduleImported := moduleToAliases[s.Value]
+			if !moduleImported {
 				continue
 			}
-			seen[s.Value] = struct{}{}
-			r.prefilterLiterals = append(r.prefilterLiterals, []byte(s.Value))
+
+			for _, alias := range aliases {
+				key := callSiteKey{identifier: alias, function: s.Name}
+				candidates[key] = append(candidates[key], advisoryRef{purl: advisoryToCheck.Purl, advisoryID: advisoryToCheck.AdvisoryID})
+			}
 		}
 	}
 
-	r.prefilterBuilt = true
+	return candidates
+}
+
+// prefilterForAdvisories returns the unique module import paths across all function advisories as
+// raw bytes, building them once on first use and caching them for subsequent files. The advisory
+// set is fixed for the lifetime of a run, so the literals never change between calls.
+func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
+	if !r.prefilterBuilt {
+		r.prefilterLiterals = codefile.DistinctLiterals(advisoriesToCheck, func(s models.Symbols) string {
+			if s.Type != codefile.SymbolTypeFunction {
+				return ""
+			}
+
+			return s.Value
+		})
+		r.prefilterBuilt = true
+	}
 
 	return r.prefilterLiterals
 }

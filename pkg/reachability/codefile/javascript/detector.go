@@ -514,32 +514,20 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	return nil
 }
 
-// prefilterForAdvisories returns the unique package paths across all advisories as raw bytes,
-// building them once on first use and caching them for subsequent files. The advisory set is fixed
-// for the lifetime of a run, so the literals never change between calls.
+// prefilterForAdvisories returns the unique package paths across all supported advisories as raw
+// bytes, building them once on first use and caching them for subsequent files. The advisory set is
+// fixed for the lifetime of a run, so the literals never change between calls.
 func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
-	if r.prefilterBuilt {
-		return r.prefilterLiterals
-	}
-
-	seen := make(map[string]struct{})
-	for _, advisoryToCheck := range advisoriesToCheck {
-		for _, s := range advisoryToCheck.Symbols {
+	if !r.prefilterBuilt {
+		r.prefilterLiterals = codefile.DistinctLiterals(advisoriesToCheck, func(s models.Symbols) string {
 			if s.Type != codefile.SymbolTypeFunction && s.Type != codefile.SymbolTypeClass {
-				continue
+				return ""
 			}
-			if s.Value == "" {
-				continue
-			}
-			if _, ok := seen[s.Value]; ok {
-				continue
-			}
-			seen[s.Value] = struct{}{}
-			r.prefilterLiterals = append(r.prefilterLiterals, []byte(s.Value))
-		}
-	}
 
-	r.prefilterBuilt = true
+			return s.Value
+		})
+		r.prefilterBuilt = true
+	}
 
 	return r.prefilterLiterals
 }
