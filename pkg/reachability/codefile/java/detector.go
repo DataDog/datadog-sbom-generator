@@ -26,7 +26,15 @@ var _ codefile.Detector = (*Detector)(nil)
 type Detector struct {
 	tsParser               *treesitter.Parser
 	tsQueriesPerSymbolType map[string]*treesitter.Query
-	reporter               reporter.Reporter
+
+	// prefilterLiterals holds the unique class names across all advisories, as raw bytes. A Java
+	// file can only match a vulnerable symbol if the class name appears literally in the file (see
+	// the matchedText comparison in Detect). It's computed once per detector (lazily, since
+	// advisories arrive with the first Detect call) and reused for every file.
+	prefilterLiterals [][]byte
+	prefilterBuilt    bool
+
+	reporter reporter.Reporter
 }
 
 // NewDetector creates a new Detector instance that once
@@ -69,9 +77,20 @@ func (r *Detector) Close() {
 }
 
 func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	if len(advisoriesToCheck) == 0 {
+		return nil
+	}
+
 	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
+	}
+
+	// Cheap pre-filter: skip the expensive tree-sitter parse unless the file textually references
+	// at least one vulnerable class name. A match always requires the class name to appear literally
+	// (see the matchedText comparison below), so a file without any candidate name can't match.
+	if !codefile.ContainsAnyLiteral(fileContent, r.prefilterForAdvisories(advisoriesToCheck)) {
+		return nil
 	}
 
 	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
@@ -118,4 +137,22 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 	}
 
 	return nil
+}
+
+// prefilterForAdvisories returns the unique class names across all supported advisories as raw
+// bytes, building them once on first use and caching them for subsequent files. The advisory set is
+// fixed for the lifetime of a run, so the literals never change between calls.
+func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
+	if !r.prefilterBuilt {
+		r.prefilterLiterals = codefile.DistinctLiterals(advisoriesToCheck, func(s models.Symbols) string {
+			if r.tsQueriesPerSymbolType[s.Type] == nil {
+				return ""
+			}
+
+			return s.Name
+		})
+		r.prefilterBuilt = true
+	}
+
+	return r.prefilterLiterals
 }

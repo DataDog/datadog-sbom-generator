@@ -3,7 +3,6 @@ package golang
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
@@ -46,6 +45,13 @@ type Detector struct {
 	pkgCaptureIdx        uint
 	fnCaptureIdx         uint
 	selectorCaptureIdx   uint
+
+	// prefilterLiterals holds the unique module import paths across all advisories, as raw bytes.
+	// A Go file can only match a vulnerable symbol if it imports that symbol's module, which
+	// requires the import path to appear literally in the file. It's computed once per detector
+	// (lazily, since advisories arrive with the first Detect call) and reused for every file.
+	prefilterLiterals [][]byte
+	prefilterBuilt    bool
 
 	reporter reporter.Reporter
 }
@@ -170,24 +176,96 @@ func defaultIdentifierForModulePath(modulePath string) string {
 }
 
 func (r *Detector) Detect(ctx context.Context, dir string, path string, detectionResults models.DetectionResults, advisoriesToCheck []models.AdvisoryToCheck) error {
+	if len(advisoriesToCheck) == 0 {
+		return nil
+	}
+
 	fileContent, err := codefile.ReadFileContent(path)
 	if err != nil {
 		return err
 	}
 
-	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
-	defer tree.Close()
-
-	if len(advisoriesToCheck) == 0 {
+	// Cheap pre-filter: skip the expensive tree-sitter parse unless the file textually references
+	// at least one vulnerable module. This is correct (no false negatives) because a match always
+	// requires the module to be imported, which requires its import path to appear in the file.
+	if !codefile.ContainsAnyLiteral(fileContent, r.prefilterForAdvisories(advisoriesToCheck)) {
 		return nil
 	}
+
+	tree := codefile.ParseFile(ctx, r.tsParser, fileContent)
+	defer tree.Close()
 
 	importCursor := treesitter.NewQueryCursor()
 	defer importCursor.Close()
 	moduleToAliases := r.resolveImportAliases(tree, fileContent, importCursor)
 
+	// Index the advisory symbols whose module this file actually imports by (localIdentifier,
+	// functionName). Each call site is then matched by one map lookup instead of a scan over every
+	// advisory symbol, keeping detection O(call sites) rather than O(call sites × all symbols).
+	candidates := candidatesByCallSite(advisoriesToCheck, moduleToAliases)
+	if len(candidates) == 0 {
+		return nil
+	}
+
 	callCursor := treesitter.NewQueryCursor()
 	defer callCursor.Close()
+
+	// Run the call query over the tree once; re-running it per symbol would re-traverse the whole
+	// tree needlessly.
+	matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
+	for match := matches.Next(); match != nil; match = matches.Next() {
+		var pkgText, fnText string
+		var selectorNode treesitter.Node
+
+		for _, capture := range match.Captures {
+			switch capture.Index {
+			case uint32(r.pkgCaptureIdx): //nolint:gosec
+				pkgText = capture.Node.Utf8Text(fileContent)
+			case uint32(r.fnCaptureIdx): //nolint:gosec
+				fnText = capture.Node.Utf8Text(fileContent)
+			case uint32(r.selectorCaptureIdx): //nolint:gosec
+				selectorNode = capture.Node
+			}
+		}
+
+		matched := candidates[callSiteKey{identifier: pkgText, function: fnText}]
+		if len(matched) == 0 {
+			continue
+		}
+
+		packageLocation, err := codefile.BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
+		if err != nil {
+			return err
+		}
+
+		symbolText := selectorNode.Utf8Text(fileContent)
+		for _, c := range matched {
+			codefile.RecordMatch(detectionResults, c.purl, c.advisoryID, symbolText, packageLocation)
+		}
+	}
+
+	return nil
+}
+
+// callSiteKey identifies a Go call site as the local package identifier and the function name, e.g.
+// the call `object.DecodeCommit(...)` has key {identifier: "object", function: "DecodeCommit"}.
+type callSiteKey struct {
+	identifier string
+	function   string
+}
+
+// advisoryRef is the minimal advisory identity recorded for a matched call site.
+type advisoryRef struct {
+	purl       string
+	advisoryID string
+}
+
+// candidatesByCallSite indexes the advisory function symbols whose module is imported by this file,
+// keyed by the (localIdentifier, functionName) a matching call would have. Only imported modules
+// contribute, so the index is empty when the file imports none of the vulnerable modules, letting
+// Detect skip the call-query traversal entirely.
+func candidatesByCallSite(advisoriesToCheck []models.AdvisoryToCheck, moduleToAliases map[string][]string) map[callSiteKey][]advisoryRef {
+	candidates := make(map[callSiteKey][]advisoryRef)
 
 	for _, advisoryToCheck := range advisoriesToCheck {
 		for _, s := range advisoryToCheck.Symbols {
@@ -200,35 +278,30 @@ func (r *Detector) Detect(ctx context.Context, dir string, path string, detectio
 				continue
 			}
 
-			matches := callCursor.Matches(r.callQuery, tree.RootNode(), fileContent)
-			for match := matches.Next(); match != nil; match = matches.Next() {
-				var pkgText, fnText string
-				var selectorNode treesitter.Node
-
-				for _, capture := range match.Captures {
-					switch capture.Index {
-					case uint32(r.pkgCaptureIdx): //nolint:gosec
-						pkgText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.fnCaptureIdx): //nolint:gosec
-						fnText = capture.Node.Utf8Text(fileContent)
-					case uint32(r.selectorCaptureIdx): //nolint:gosec
-						selectorNode = capture.Node
-					}
-				}
-
-				if fnText != s.Name || !slices.Contains(aliases, pkgText) {
-					continue
-				}
-
-				packageLocation, err := codefile.BuildPackageLocation(dir, path, selectorNode.StartPosition(), selectorNode.EndPosition())
-				if err != nil {
-					return err
-				}
-
-				codefile.RecordMatch(detectionResults, advisoryToCheck.Purl, advisoryToCheck.AdvisoryID, selectorNode.Utf8Text(fileContent), packageLocation)
+			for _, alias := range aliases {
+				key := callSiteKey{identifier: alias, function: s.Name}
+				candidates[key] = append(candidates[key], advisoryRef{purl: advisoryToCheck.Purl, advisoryID: advisoryToCheck.AdvisoryID})
 			}
 		}
 	}
 
-	return nil
+	return candidates
+}
+
+// prefilterForAdvisories returns the unique module import paths across all function advisories as
+// raw bytes, building them once on first use and caching them for subsequent files. The advisory
+// set is fixed for the lifetime of a run, so the literals never change between calls.
+func (r *Detector) prefilterForAdvisories(advisoriesToCheck []models.AdvisoryToCheck) [][]byte {
+	if !r.prefilterBuilt {
+		r.prefilterLiterals = codefile.DistinctLiterals(advisoriesToCheck, func(s models.Symbols) string {
+			if s.Type != codefile.SymbolTypeFunction {
+				return ""
+			}
+
+			return s.Value
+		})
+		r.prefilterBuilt = true
+	}
+
+	return r.prefilterLiterals
 }
