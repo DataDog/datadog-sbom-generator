@@ -556,8 +556,10 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 			}
 			versionPosition.Filename = lockPackage.SourceFile
 
-			pkgDetails.Version = resolvedVersion
-			pkgDetails.VersionLocation = &versionPosition
+			if resolvedVersion != "" {
+				pkgDetails.Version = resolvedVersion
+				pkgDetails.VersionLocation = &versionPosition
+			}
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
 			// Only append non-default scope (compile is the default scope).

@@ -36,8 +36,8 @@ func TestScopeVersionConstraints(t *testing.T) {
 			fixture: "child-repin",
 			want: map[string][]string{
 				"com.fasterxml.jackson.core:jackson-databind@2.18.0": {"child/pom.xml:3", "parent/pom.xml:14"},
-				"org.yaml:snakeyaml@2.3": {"parent/pom.xml:9"},
-				"org.yaml:snakeyaml@2.4": {"child/pom.xml:12"},
+				"org.yaml:snakeyaml@2.3":                             {"parent/pom.xml:9"},
+				"org.yaml:snakeyaml@2.4":                             {"child/pom.xml:12"},
 			},
 		},
 		{
@@ -61,7 +61,7 @@ func TestScopeVersionConstraints(t *testing.T) {
 			fixture: "aggregator-mixed",
 			want: map[string][]string{
 				"com.fasterxml.jackson.core:jackson-databind@2.18.0": {"agg/member/pom.xml:3"},
-				"org.yaml:snakeyaml@2.4": {"agg/inheritor/pom.xml:3"},
+				"org.yaml:snakeyaml@2.4":                             {"agg/inheritor/pom.xml:3"},
 			},
 		},
 	}
@@ -84,7 +84,18 @@ func TestScopeVersionConstraints_NormalLayoutUnchanged(t *testing.T) {
 	root, pkgs := extractFixture(t, "normal")
 	scoped := java.ScopeVersionConstraints(&reporter.VoidReporter{}, slices.Clone(pkgs))
 
-	require.Equal(t, pkgs, scoped)
+	// Nothing is added or re-keyed: only the identical pins each inheriting pom emits collapse into one.
+	require.Equal(t, keyedPins(t, root, pkgs), keyedPins(t, root, scoped))
+	for _, pkg := range scoped {
+		require.Contains(t, pkgs, pkg)
+	}
+	for _, pkg := range pkgs {
+		if !pkg.IsVersionConstraint {
+			require.Contains(t, scoped, pkg)
+		}
+	}
+	pins := slices.DeleteFunc(slices.Clone(scoped), func(pkg extractor.PackageDetails) bool { return !pkg.IsVersionConstraint })
+	require.Len(t, pins, 3)
 	testutility.NewSnapshot().MatchJSON(t, keyedPins(t, root, scoped))
 }
 

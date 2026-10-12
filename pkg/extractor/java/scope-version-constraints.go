@@ -29,7 +29,7 @@ func ScopeVersionConstraints(r reporter.Reporter, pkgs []extractor.PackageDetail
 		return pkg.IsVersionConstraint && dropped[pinKeyOf(pkg)]
 	})
 
-	return append(kept, copies...)
+	return uniquePins(append(kept, copies...))
 }
 
 // pinKey identifies a pin declaration: the pom declaring it and the package it pins.
@@ -38,8 +38,19 @@ type pinKey struct {
 	name string
 }
 
+// pinOccurrence is everything that ends up in a pin's SBOM occurrence; every inheriting pom emits the same ones.
+type pinOccurrence struct {
+	name        string
+	version     string
+	block       models.FilePosition
+	nameAt      models.FilePosition
+	namespaceAt models.FilePosition
+	versionAt   models.FilePosition
+}
+
 type constraintScope struct {
 	poms     []string                              // scanned poms, by folder depth then path
+	depPoms  []string                              // scanned poms whose folder declares dependencies
 	pomByDir map[string]string                     // folder -> scanned pom
 	pins     map[string][]extractor.PackageDetails // scanned pom -> its effective pins, by name
 	pinNames map[string]map[string]bool            // scanned pom -> names of its effective pins
@@ -89,6 +100,11 @@ func newConstraintScope(pkgs []extractor.PackageDetails) constraintScope {
 
 		return strings.Compare(a, b)
 	})
+	for _, pom := range scope.poms {
+		if scope.depsDirs[filepath.Dir(pom)] {
+			scope.depPoms = append(scope.depPoms, pom)
+		}
+	}
 
 	return scope
 }
@@ -153,12 +169,11 @@ func (s constraintScope) pinCopies(dropped map[pinKey]bool) ([]extractor.Package
 // harms reports whether a pin of package name declared in file, keyed under dir, would reach a pom with dependencies
 // in dir or below that doesn't get that package in Maven, and that no closer pom with dependencies shields.
 func (s constraintScope) harms(dir string, file string, name string) bool {
-	for _, pom := range s.poms {
-		pomDir := filepath.Dir(pom)
-		if pom == file || !s.depsDirs[pomDir] || !isWithin(pomDir, dir) {
+	for _, pom := range s.depPoms {
+		if pom == file || s.pinNames[pom][name] || s.pinFiles[pom][file] {
 			continue
 		}
-		if s.pinNames[pom][name] || s.pinFiles[pom][file] || s.shielded(dir, pom, name) {
+		if !isWithin(filepath.Dir(pom), dir) || s.shielded(dir, pom, name) {
 			continue
 		}
 
@@ -229,6 +244,31 @@ func pinCopy(pin extractor.PackageDetails, block models.FilePosition) extractor.
 	return pin
 }
 
+// uniquePins keeps the first of identical pins, as the SBOM would dedupe their occurrences anyway.
+func uniquePins(pkgs []extractor.PackageDetails) []extractor.PackageDetails {
+	seen := map[pinOccurrence]bool{}
+
+	return slices.DeleteFunc(pkgs, func(pkg extractor.PackageDetails) bool {
+		if !pkg.IsVersionConstraint {
+			return false
+		}
+		occurrence := pinOccurrence{
+			name:        pkg.Name,
+			version:     pkg.Version,
+			block:       pkg.BlockLocation,
+			nameAt:      positionOf(pkg.NameLocation),
+			namespaceAt: positionOf(pkg.NamespaceLocation),
+			versionAt:   positionOf(pkg.VersionLocation),
+		}
+		if seen[occurrence] {
+			return true
+		}
+		seen[occurrence] = true
+
+		return false
+	})
+}
+
 // resolvedVersions mirrors the backend lookup: the versions keyed at the nearest folder, from dir upward, that pins name.
 func resolvedVersions(keys map[string]map[string]map[string]bool, dir string, name string) map[string]bool {
 	for {
@@ -244,16 +284,9 @@ func resolvedVersions(keys map[string]map[string]map[string]bool, dir string, na
 }
 
 func isWithin(path string, dir string) bool {
-	for {
-		if path == dir {
-			return true
-		}
-		parent := filepath.Dir(path)
-		if parent == path {
-			return false
-		}
-		path = parent
-	}
+	separator := string(filepath.Separator)
+
+	return path == dir || strings.HasPrefix(path, strings.TrimSuffix(dir, separator)+separator)
 }
 
 func pinKeyOf(pin extractor.PackageDetails) pinKey {
@@ -272,6 +305,14 @@ func addVersion(keys map[string]map[string]map[string]bool, dir string, name str
 		keys[dir] = map[string]map[string]bool{}
 	}
 	addToSet(keys[dir], name, version)
+}
+
+func positionOf(position *models.FilePosition) models.FilePosition {
+	if position == nil {
+		return models.FilePosition{}
+	}
+
+	return *position
 }
 
 func clonePosition(position *models.FilePosition) *models.FilePosition {
