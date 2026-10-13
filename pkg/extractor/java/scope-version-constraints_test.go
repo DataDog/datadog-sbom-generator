@@ -56,6 +56,15 @@ func TestScopeVersionConstraints(t *testing.T) {
 			},
 		},
 		{
+			name:    "child overriding the version property gets its own key instead of a second version at the root",
+			fixture: "property-override",
+			want: map[string][]string{
+				"com.fasterxml.jackson.core:jackson-databind@2.18.0": {"pom.xml:16"},
+				"com.fasterxml.jackson.core:jackson-databind@2.18.3": {"b/pom.xml:3"},
+				"org.yaml:snakeyaml@2.4":                             {"pom.xml:21"},
+			},
+		},
+		{
 			// The root is an aggregator too: agg/inheritor sits in its folder without inheriting it.
 			name:    "aggregator pins move to their inheriting members only",
 			fixture: "aggregator-mixed",
@@ -95,7 +104,7 @@ func TestScopeVersionConstraints_NormalLayoutUnchanged(t *testing.T) {
 		}
 	}
 	pins := slices.DeleteFunc(slices.Clone(scoped), func(pkg extractor.PackageDetails) bool { return !pkg.IsVersionConstraint })
-	require.Len(t, pins, 3)
+	require.Len(t, pins, 2)
 	testutility.NewSnapshot().MatchJSON(t, keyedPins(t, root, scoped))
 }
 

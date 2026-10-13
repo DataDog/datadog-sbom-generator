@@ -25,7 +25,7 @@ func Group(packageSources []models.PackageSource) (map[string]models.PackageVuln
 
 			key := packageURL.ToString()
 			if _, ok := pkg.Metadata[models.VersionConstraintMetadata]; ok {
-				key += "#" + string(models.VersionConstraintMetadata)
+				key += models.VersionConstraintRefSuffix
 			}
 
 			packageVulns, packageExists := uniquePackages[key]

@@ -6,9 +6,6 @@
     <version>1.0.0</version>
   </parent>
   <artifactId>b</artifactId>
-  <properties>
-    <jackson.version>2.18.3</jackson.version>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

@@ -207,7 +207,7 @@ func createLibraryComponent(packageURL string, packageDetail models.PackageVulns
 	// component never shares a bom-ref with a regular dependency of the same purl;
 	// PackageURL strips it to stay a spec-valid purl.
 	component.BOMRef = packageURL
-	component.PackageURL = strings.TrimSuffix(packageURL, "#"+string(models.VersionConstraintMetadata))
+	component.PackageURL = strings.TrimSuffix(packageURL, models.VersionConstraintRefSuffix)
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 

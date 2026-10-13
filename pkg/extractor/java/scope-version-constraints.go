@@ -22,14 +22,20 @@ func ScopeVersionConstraints(r reporter.Reporter, pkgs []extractor.PackageDetail
 	copies, err := scope.pinCopies(dropped)
 	if err != nil {
 		r.Warnf("Keeping Maven version constraints unscoped: %v\n", err)
-		return pkgs
+		return uniquePins(pkgs)
 	}
 
 	kept := slices.DeleteFunc(pkgs, func(pkg extractor.PackageDetails) bool {
-		return pkg.IsVersionConstraint && dropped[pinKeyOf(pkg)]
+		return pkg.IsVersionConstraint && !scope.keyedAtDeclaration(pkg, dropped)
 	})
+	scoped := append(kept, copies...)
+	unique := uniquePins(scoped)
 
-	return uniquePins(append(kept, copies...))
+	if removed, collapsed := len(pkgs)-len(kept), len(scoped)-len(unique); removed+len(copies)+collapsed > 0 {
+		r.Verbosef("Scoped Maven version constraints: %d removed from their declaring pom, %d keyed under modules, %d duplicates collapsed\n", removed, len(copies), collapsed)
+	}
+
+	return unique
 }
 
 // pinKey identifies a pin declaration: the pom declaring it and the package it pins.
@@ -56,6 +62,7 @@ type constraintScope struct {
 	pinNames map[string]map[string]bool            // scanned pom -> names of its effective pins
 	pinFiles map[string]map[string]bool            // scanned pom -> files declaring its effective pins
 	depsDirs map[string]bool                       // folders declaring at least one dependency
+	declared map[pinKey]string                     // declaration -> the version its declaring pom resolves itself
 }
 
 func newConstraintScope(pkgs []extractor.PackageDetails) constraintScope {
@@ -65,6 +72,7 @@ func newConstraintScope(pkgs []extractor.PackageDetails) constraintScope {
 		pinNames: map[string]map[string]bool{},
 		pinFiles: map[string]map[string]bool{},
 		depsDirs: map[string]bool{},
+		declared: map[pinKey]string{},
 	}
 
 	for _, pkg := range pkgs {
@@ -104,9 +112,24 @@ func newConstraintScope(pkgs []extractor.PackageDetails) constraintScope {
 		if scope.depsDirs[filepath.Dir(pom)] {
 			scope.depPoms = append(scope.depPoms, pom)
 		}
+		// When the declaring pom isn't scanned, the first pom resolving the declaration stands in for it.
+		for _, pin := range scope.pins[pom] {
+			key := pinKeyOf(pin)
+			if _, ok := scope.declared[key]; !ok || pom == key.file {
+				scope.declared[key] = pin.Version
+			}
+		}
 	}
 
 	return scope
+}
+
+// keyedAtDeclaration reports whether pin stays keyed at its declaration: modules resolving it to another version
+// (e.g. by overriding a property) get their own copy instead of a second, ambiguous version in the same folder.
+func (s constraintScope) keyedAtDeclaration(pin extractor.PackageDetails, dropped map[pinKey]bool) bool {
+	key := pinKeyOf(pin)
+
+	return !dropped[key] && s.declared[key] == pin.Version
 }
 
 // droppedPins returns the declarations whose key would pin a nested pom that doesn't inherit them (aggregators).
@@ -132,7 +155,7 @@ func (s constraintScope) pinCopies(dropped map[pinKey]bool) ([]extractor.Package
 	keys := map[string]map[string]map[string]bool{} // folder -> package -> versions keyed there
 	for _, pom := range s.poms {
 		for _, pin := range s.pins[pom] {
-			if !dropped[pinKeyOf(pin)] {
+			if s.keyedAtDeclaration(pin, dropped) {
 				addVersion(keys, filepath.Dir(pin.BlockLocation.Filename), pin.Name, pin.Version)
 			}
 		}
@@ -244,7 +267,8 @@ func pinCopy(pin extractor.PackageDetails, block models.FilePosition) extractor.
 	return pin
 }
 
-// uniquePins keeps the first of identical pins, as the SBOM would dedupe their occurrences anyway.
+// uniquePins keeps the first of identical pins: CycloneDX output dedupes their occurrences anyway, but the json
+// format then lists a shared pin under the first pom only.
 func uniquePins(pkgs []extractor.PackageDetails) []extractor.PackageDetails {
 	seen := map[pinOccurrence]bool{}
 

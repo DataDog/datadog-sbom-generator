@@ -1021,6 +1021,27 @@ func TestMavenLock_WithParentUnresolvedManagedDependencyOverride(t *testing.T) {
 	})
 }
 
+func TestMavenLock_WithParentPropertyManagedDependencyOverride(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	parentPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/parent.xml"))
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-parent-property-managed-override.xml"))
+	packages, err := java.ParseMavenLock(childPath)
+	require.NoError(t, err)
+
+	// The child's override takes its version from a parent property, so both locations point at the parent.
+	for _, pkg := range packages {
+		if pkg.Name != "io.netty:netty-all" {
+			continue
+		}
+		require.Equal(t, "1.0.0", pkg.Version)
+		require.Equal(t, parentPath, pkg.VersionLocation.Filename)
+		require.Equal(t, 4, pkg.VersionLocation.Line.Start)
+	}
+}
+
 func TestMavenLock_WithParentDirOnly(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
@@ -2192,6 +2213,18 @@ func TestParseMavenLock_SkipsManagedDependencyWithoutVersion(t *testing.T) {
 	require.NoError(t, err)
 
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-no-version.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+}
+
+func TestParseMavenLock_SkipsManagedDependencyWithUnresolvedGroup(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-unresolved-group.xml"))
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 

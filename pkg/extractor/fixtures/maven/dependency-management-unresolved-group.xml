@@ -1,0 +1,11 @@
+<project>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>${missing.group}</groupId>
+        <artifactId>some-artifact</artifactId>
+        <version>1.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

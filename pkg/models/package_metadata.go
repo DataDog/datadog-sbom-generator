@@ -15,6 +15,10 @@ const (
 	VersionConstraintMetadata            PackageMetadataType = "version-constraint"
 )
 
+// VersionConstraintRefSuffix keeps a version-constraint component's grouping key and bom-ref apart from a regular
+// dependency with the same purl.
+const VersionConstraintRefSuffix = "#" + string(VersionConstraintMetadata)
+
 type PackageMetadata map[PackageMetadataType]string
 
 func (metadata PackageMetadata) Merge(other PackageMetadata) PackageMetadata {
