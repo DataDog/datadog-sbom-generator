@@ -28,7 +28,7 @@ func ScopeVersionConstraints(r reporter.Reporter, pkgs []extractor.PackageDetail
 	kept := slices.DeleteFunc(pkgs, func(pkg extractor.PackageDetails) bool {
 		return pkg.IsVersionConstraint && !scope.keyedAtDeclaration(pkg, dropped)
 	})
-	scoped := append(kept, copies...)
+	scoped := slices.Concat(kept, copies)
 	unique := uniquePins(scoped)
 
 	if removed, collapsed := len(pkgs)-len(kept), len(scoped)-len(unique); removed+len(copies)+collapsed > 0 {

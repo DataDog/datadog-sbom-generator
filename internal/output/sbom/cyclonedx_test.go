@@ -209,6 +209,7 @@ func TestBuildCycloneDXBom_VersionConstraintLibrary(t *testing.T) {
 		if comp.BOMRef == constraintKey {
 			component = comp
 			found = true
+
 			break
 		}
 	}
