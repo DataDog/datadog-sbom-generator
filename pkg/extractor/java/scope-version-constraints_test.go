@@ -73,6 +73,14 @@ func TestScopeVersionConstraints(t *testing.T) {
 				"org.yaml:snakeyaml@2.4":                             {"agg/inheritor/pom.xml:3"},
 			},
 		},
+		{
+			name:    "module scanned without its parent keys the inherited pins under its own parent element",
+			fixture: "child-repin/child",
+			want: map[string][]string{
+				"com.fasterxml.jackson.core:jackson-databind@2.18.0": {"pom.xml:3"},
+				"org.yaml:snakeyaml@2.4":                             {"pom.xml:12"},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -112,7 +120,7 @@ func TestScopeVersionConstraints_NormalLayoutUnchanged(t *testing.T) {
 func extractFixture(t *testing.T, fixture string) (string, []extractor.PackageDetails) {
 	t.Helper()
 
-	root, err := filepath.Abs(filepath.Join("..", "fixtures", "maven", "scope", fixture))
+	root, err := filepath.Abs(filepath.Join("..", "fixtures", "maven", "scope", filepath.FromSlash(fixture)))
 	require.NoError(t, err)
 
 	var pkgs []extractor.PackageDetails

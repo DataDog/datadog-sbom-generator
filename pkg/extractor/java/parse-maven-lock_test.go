@@ -723,14 +723,6 @@ func TestParseMavenLock_Interpolation(t *testing.T) {
 			},
 			IsDirect: true,
 		},
-		mavenVersionConstraint(
-			"org.mine:ranged-package",
-			"9.4.35.v20201120",
-			filePos(path, 38, 42, 7, 20),
-			filePos(path, 40, 40, 21, 35),
-			filePos(path, 39, 39, 18, 26),
-			filePos(path, 14, 14, 20, 42),
-		),
 	})
 }
 

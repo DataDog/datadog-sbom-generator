@@ -161,9 +161,13 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 }
 
 func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile, context extractor.ScanContext) (string, models.FilePosition) {
+	return requirementVersion(mld.resolvePropertiesValue(lockfile, mld.Version.Value, context))
+}
+
+// requirementVersion returns the version a requirement such as `1.0`, `[1.0]` or `[1.0,2.0)` starts with.
+func requirementVersion(requirement string, position models.FilePosition) (string, models.FilePosition) {
 	versionRequirementReg := cachedregexp.MustCompile(`[[(]?(.*?)(?:,|[)\]]|$)`)
-	version, position := mld.resolvePropertiesValue(lockfile, mld.Version.Value, context)
-	results := versionRequirementReg.FindStringSubmatch(version)
+	results := versionRequirementReg.FindStringSubmatch(requirement)
 
 	if results == nil || results[1] == "" {
 		return "", models.FilePosition{}
@@ -182,13 +186,14 @@ func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile, context ex
 
 // mavenCoordinates is a dependency entry resolved against its lockfile, with the locations of each part.
 type mavenCoordinates struct {
-	groupID     string
-	artifactID  string
-	version     string
-	block       models.FilePosition
-	namespaceAt *models.FilePosition
-	nameAt      models.FilePosition
-	versionAt   models.FilePosition
+	groupID        string
+	artifactID     string
+	version        string
+	isVersionRange bool
+	block          models.FilePosition
+	namespaceAt    *models.FilePosition
+	nameAt         models.FilePosition
+	versionAt      models.FilePosition
 }
 
 func (c mavenCoordinates) name() string {
@@ -198,7 +203,8 @@ func (c mavenCoordinates) name() string {
 func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, context extractor.ScanContext) mavenCoordinates {
 	groupID, groupIDPosition := mld.ResolveGroupID(lockfile, context)
 	artifactID, artifactPosition := mld.ResolveArtifactID(lockfile, context)
-	version, versionPosition := mld.ResolveVersion(lockfile, context)
+	requirement, requirementPosition := mld.resolvePropertiesValue(lockfile, mld.Version.Value, context)
+	version, versionPosition := requirementVersion(requirement, requirementPosition)
 
 	// A position is null after resolving the Value in case the Value is directly defined in the block
 	if artifactPosition == (models.FilePosition{}) {
@@ -215,12 +221,13 @@ func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, contex
 	}
 
 	coordinates := mavenCoordinates{
-		groupID:    groupID,
-		artifactID: artifactID,
-		version:    version,
-		block:      models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
-		nameAt:     artifactPosition,
-		versionAt:  versionPosition,
+		groupID:        groupID,
+		artifactID:     artifactID,
+		version:        version,
+		isVersionRange: strings.Contains(requirement, ","),
+		block:          models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
+		nameAt:         artifactPosition,
+		versionAt:      versionPosition,
 	}
 
 	// Skip namespace location when groupId is inherited via ${project.*} or ${pom.*}
@@ -627,12 +634,12 @@ func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 	return extractor.ExtractFromFile(pathToLockfile, MavenLockExtractor{})
 }
 
-// versionConstraintPackage returns the pin of a local managed entry whose coordinates fully resolve.
+// versionConstraintPackage returns the pin of a local managed entry whose coordinates fully resolve to an exact version.
 func versionConstraintPackage(lockPackage MavenLockDependency, coordinates mavenCoordinates) (extractor.PackageDetails, bool) {
 	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") || lockPackage.SourceFile == "" {
 		return extractor.PackageDetails{}, false
 	}
-	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || !coordinates.block.IsStartSet() {
+	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isVersionRange || !coordinates.block.IsStartSet() {
 		return extractor.PackageDetails{}, false
 	}
 

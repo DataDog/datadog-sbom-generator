@@ -112,10 +112,8 @@ func newConstraintScope(pkgs []extractor.PackageDetails) constraintScope {
 		if scope.depsDirs[filepath.Dir(pom)] {
 			scope.depPoms = append(scope.depPoms, pom)
 		}
-		// When the declaring pom isn't scanned, the first pom resolving the declaration stands in for it.
 		for _, pin := range scope.pins[pom] {
-			key := pinKeyOf(pin)
-			if _, ok := scope.declared[key]; !ok || pom == key.file {
+			if key := pinKeyOf(pin); pom == key.file {
 				scope.declared[key] = pin.Version
 			}
 		}
