@@ -1013,6 +1013,41 @@ func TestMavenLock_WithParentUnresolvedManagedDependencyOverride(t *testing.T) {
 	})
 }
 
+func TestMavenLock_WithParentRangedManagedDependencyOverride(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-parent-ranged-managed-override.xml"))
+	packages, err := java.ParseMavenLock(childPath)
+	require.NoError(t, err)
+
+	// The child's ranged override replaces the parent's netty-all pin (4.1.42.Final) without emitting one.
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "com.google.code.findbugs:jsr305",
+			Version:        "3.0.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:           "io.netty:netty-all",
+			Version:        "4.1.100.Final",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:                "com.google.code.findbugs:jsr305",
+			Version:             "3.0.2",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+	})
+}
+
 func TestMavenLock_WithParentPropertyManagedDependencyOverride(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
@@ -2217,6 +2252,18 @@ func TestParseMavenLock_SkipsManagedDependencyWithUnresolvedGroup(t *testing.T) 
 	require.NoError(t, err)
 
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-unresolved-group.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+}
+
+func TestParseMavenLock_SkipsManagedDependencyWithDynamicVersion(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-dynamic-version.xml"))
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 

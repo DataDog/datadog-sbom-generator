@@ -186,14 +186,14 @@ func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile, context ex
 
 // mavenCoordinates is a dependency entry resolved against its lockfile, with the locations of each part.
 type mavenCoordinates struct {
-	groupID        string
-	artifactID     string
-	version        string
-	isVersionRange bool
-	block          models.FilePosition
-	namespaceAt    *models.FilePosition
-	nameAt         models.FilePosition
-	versionAt      models.FilePosition
+	groupID          string
+	artifactID       string
+	version          string
+	isDynamicVersion bool
+	block            models.FilePosition
+	namespaceAt      *models.FilePosition
+	nameAt           models.FilePosition
+	versionAt        models.FilePosition
 }
 
 func (c mavenCoordinates) name() string {
@@ -221,13 +221,13 @@ func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, contex
 	}
 
 	coordinates := mavenCoordinates{
-		groupID:        groupID,
-		artifactID:     artifactID,
-		version:        version,
-		isVersionRange: strings.Contains(requirement, ","),
-		block:          models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
-		nameAt:         artifactPosition,
-		versionAt:      versionPosition,
+		groupID:          groupID,
+		artifactID:       artifactID,
+		version:          version,
+		isDynamicVersion: strings.Contains(requirement, ",") || requirement == "LATEST" || requirement == "RELEASE",
+		block:            models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
+		nameAt:           artifactPosition,
+		versionAt:        versionPosition,
 	}
 
 	// Skip namespace location when groupId is inherited via ${project.*} or ${pom.*}
@@ -571,6 +571,9 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		finalName := coordinates.name()
 		if pin, ok := versionConstraintPackage(lockPackage, coordinates); ok {
 			constraints[finalName] = pin
+		} else if coordinates.isDynamicVersion {
+			// A dynamic version overrides the inherited pins without being one itself.
+			delete(constraints, finalName)
 		}
 
 		pkgDetails, pkgExists := details[finalName]
@@ -639,7 +642,7 @@ func versionConstraintPackage(lockPackage MavenLockDependency, coordinates maven
 	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") || lockPackage.SourceFile == "" {
 		return extractor.PackageDetails{}, false
 	}
-	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isVersionRange || !coordinates.block.IsStartSet() {
+	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isDynamicVersion || !coordinates.block.IsStartSet() {
 		return extractor.PackageDetails{}, false
 	}
 
