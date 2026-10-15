@@ -17016,6 +17016,54 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
       }
     },
     {
+      "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2#version-constraint",
+      "type": "library",
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "purl": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":18,/"line_end/":22,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":19,/"line_end/":19,/"column_start/":18,/"column_end/":42,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":20,/"line_end/":20,/"column_start/":21,/"column_end/":27,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/io.netty/netty-all@4.1.42.Final#version-constraint",
+      "type": "library",
+      "name": "io.netty:netty-all",
+      "version": "4.1.42.Final",
+      "purl": "pkg:maven/io.netty/netty-all@4.1.42.Final",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":13,/"line_end/":17,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":14,/"line_end/":14,/"column_start/":18,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":15,/"line_end/":15,/"column_start/":21,/"column_end/":30,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":16,/"line_end/":16,/"column_start/":18,/"column_end/":30,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:nuget/Test.Core@6.0.5",
       "type": "library",
       "name": "Test.Core",
@@ -22205,6 +22253,54 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":31,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":28,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2#version-constraint",
+      "type": "library",
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "purl": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":18,/"line_end/":22,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":19,/"line_end/":19,/"column_start/":18,/"column_end/":42,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":20,/"line_end/":20,/"column_start/":21,/"column_end/":27,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/io.netty/netty-all@4.1.42.Final#version-constraint",
+      "type": "library",
+      "name": "io.netty:netty-all",
+      "version": "4.1.42.Final",
+      "purl": "pkg:maven/io.netty/netty-all@4.1.42.Final",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":13,/"line_end/":17,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":14,/"line_end/":14,/"column_start/":18,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":15,/"line_end/":15,/"column_start/":21,/"column_end/":30,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":16,/"line_end/":16,/"column_start/":18,/"column_end/":30,/"role/":/"manifest/"}}"
           }
         ]
       }
@@ -28208,6 +28304,54 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
+      "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2#version-constraint",
+      "type": "library",
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "purl": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":18,/"line_end/":23,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":19,/"line_end/":19,/"column_start/":18,/"column_end/":42,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":20,/"line_end/":20,/"column_start/":21,/"column_end/":27,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/io.netty/netty-all@4.1.42.Final#version-constraint",
+      "type": "library",
+      "name": "io.netty:netty-all",
+      "version": "4.1.42.Final",
+      "purl": "pkg:maven/io.netty/netty-all@4.1.42.Final",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":13,/"line_end/":17,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":14,/"line_end/":14,/"column_start/":18,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":15,/"line_end/":15,/"column_start/":21,/"column_end/":30,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":16,/"line_end/":16,/"column_start/":18,/"column_end/":30,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:maven/junit/junit@4.13.1",
       "type": "library",
       "name": "junit:junit",
@@ -34178,6 +34322,54 @@ No package sources found. Use the 'parsers list' command to view supported lockf
       }
     },
     {
+      "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2#version-constraint",
+      "type": "library",
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "purl": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":18,/"line_end/":23,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":19,/"line_end/":19,/"column_start/":18,/"column_end/":42,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":20,/"line_end/":20,/"column_start/":21,/"column_end/":27,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/io.netty/netty-all@4.1.42.Final#version-constraint",
+      "type": "library",
+      "name": "io.netty:netty-all",
+      "version": "4.1.42.Final",
+      "purl": "pkg:maven/io.netty/netty-all@4.1.42.Final",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":13,/"line_end/":17,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":14,/"line_end/":14,/"column_start/":18,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":15,/"line_end/":15,/"column_start/":21,/"column_end/":30,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":16,/"line_end/":16,/"column_start/":18,/"column_end/":30,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "pkg:maven/junit/junit@4.13.1",
       "type": "library",
       "name": "junit:junit",
@@ -35123,6 +35315,54 @@ No package sources found. Use the 'parsers list' command to view supported lockf
         "occurrences": [
           {
             "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":27,/"line_end/":30,/"column_start/":5,/"column_end/":18,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":28,/"line_end/":28,/"column_start/":16,/"column_end/":40,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":29,/"line_end/":29,/"column_start/":19,/"column_end/":25,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2#version-constraint",
+      "type": "library",
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "purl": "pkg:maven/com.google.code.findbugs/jsr305@3.0.2",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":18,/"line_end/":22,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":19,/"line_end/":19,/"column_start/":18,/"column_end/":42,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":20,/"line_end/":20,/"column_start/":21,/"column_end/":27,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":21,/"line_end/":21,/"column_start/":18,/"column_end/":23,/"role/":/"manifest/"}}"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "pkg:maven/io.netty/netty-all@4.1.42.Final#version-constraint",
+      "type": "library",
+      "name": "io.netty:netty-all",
+      "version": "4.1.42.Final",
+      "purl": "pkg:maven/io.netty/netty-all@4.1.42.Final",
+      "properties": [
+        {
+          "name": "datadog:package-manager",
+          "value": "Maven"
+        },
+        {
+          "name": "datadog:version-constraint",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"pom.xml/",/"line_start/":13,/"line_end/":17,/"column_start/":7,/"column_end/":20,/"role/":/"manifest/"},/"namespace/":{/"file_name/":/"pom.xml/",/"line_start/":14,/"line_end/":14,/"column_start/":18,/"column_end/":26,/"role/":/"manifest/"},/"name/":{/"file_name/":/"pom.xml/",/"line_start/":15,/"line_end/":15,/"column_start/":21,/"column_end/":30,/"role/":/"manifest/"},/"version/":{/"file_name/":/"pom.xml/",/"line_start/":16,/"line_end/":16,/"column_start/":18,/"column_end/":30,/"role/":/"manifest/"}}"
           }
         ]
       }

@@ -174,6 +174,11 @@ func findArtifact(name string, version string, artifacts []models.ScannedArtifac
 }
 
 func createFileComponents(packageDetail models.PackageVulns, artifact *models.ScannedArtifact, dependsOn map[string]cyclonedx.Dependency) {
+	// A version constraint pins a version without declaring a usage, so it is never a module edge.
+	if _, ok := packageDetail.Metadata[models.VersionConstraintMetadata]; ok {
+		return
+	}
+
 	for _, location := range packageDetail.Locations {
 		if artifact != nil {
 			// The current component is a repository artifact, meaning it is an internal dependency, we should report a dependsOn on the location
@@ -198,8 +203,11 @@ func createLibraryComponent(packageURL string, packageDetail models.PackageVulns
 	component := cyclonedx.Component{}
 
 	component.Type = libraryComponentType
+	// BOMRef keeps the grouping key's disambiguation suffix so a version-constraint
+	// component never shares a bom-ref with a regular dependency of the same purl;
+	// PackageURL strips it to stay a spec-valid purl.
 	component.BOMRef = packageURL
-	component.PackageURL = packageURL
+	component.PackageURL = strings.TrimSuffix(packageURL, models.VersionConstraintRefSuffix)
 	component.Name = packageDetail.Package.Name
 	component.Version = packageDetail.Package.Version
 

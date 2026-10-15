@@ -20,7 +20,7 @@ import (
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/dotnet"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/elixir"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
-	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
+	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/javascript"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/php"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/python"
@@ -320,6 +320,7 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		if err != nil {
 			return models.VulnerabilityResults{}, err
 		}
+		pkgs = java.ScopeVersionConstraints(r, pkgs)
 
 		// Transforming any path into a relative path to the scanned directory path
 		for index, pkg := range pkgs {
