@@ -1048,6 +1048,41 @@ func TestMavenLock_WithParentRangedManagedDependencyOverride(t *testing.T) {
 	})
 }
 
+func TestMavenLock_WithParentLatestManagedDependencyOverride(t *testing.T) {
+	t.Parallel()
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-parent-latest-managed-override.xml"))
+	packages, err := java.ParseMavenLock(childPath)
+	require.NoError(t, err)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "com.google.code.findbugs:jsr305",
+			Version:        "3.0.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			// LATEST is not a version, so the parent's managed version still applies, as for an unresolvable override.
+			Name:           "io.netty:netty-all",
+			Version:        "4.1.42.Final",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:                "com.google.code.findbugs:jsr305",
+			Version:             "3.0.2",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+	})
+}
+
 func TestMavenLock_WithParentPropertyManagedDependencyOverride(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
@@ -2267,7 +2302,15 @@ func TestParseMavenLock_SkipsManagedDependencyWithDynamicVersion(t *testing.T) {
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 
-	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "io.netty:netty-all",
+			Version:        "",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+	})
 }
 
 func TestParseMavenLock_TwoExclusions(t *testing.T) {

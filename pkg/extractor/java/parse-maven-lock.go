@@ -176,6 +176,11 @@ func requirementVersion(requirement string, position models.FilePosition) (strin
 	return results[1], position
 }
 
+// isVersionPlaceholder reports whether version is LATEST or RELEASE, which Maven resolves from repository metadata.
+func isVersionPlaceholder(version string) bool {
+	return version == "LATEST" || version == "RELEASE"
+}
+
 func (mld MavenLockDependency) ResolveArtifactID(lockfile MavenLockFile, context extractor.ScanContext) (string, models.FilePosition) {
 	return mld.resolvePropertiesValue(lockfile, mld.ArtifactID.Value, context)
 }
@@ -224,7 +229,7 @@ func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, contex
 		groupID:          groupID,
 		artifactID:       artifactID,
 		version:          version,
-		isDynamicVersion: strings.Contains(requirement, ",") || requirement == "LATEST" || requirement == "RELEASE",
+		isDynamicVersion: strings.Contains(requirement, ",") || isVersionPlaceholder(requirement),
 		block:            models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
 		nameAt:           artifactPosition,
 		versionAt:        versionPosition,
@@ -580,7 +585,7 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		if !pkgExists {
 			continue
 		}
-		if needsManagedVersion[finalName] && coordinates.version != "" {
+		if needsManagedVersion[finalName] && coordinates.version != "" && !isVersionPlaceholder(coordinates.version) {
 			pkgDetails.Version = coordinates.version
 			pkgDetails.VersionLocation = &coordinates.versionAt
 		}
