@@ -81,6 +81,42 @@ func TestShouldExcludePath(t *testing.T) {
 			expectedPattern: "",
 			expectError:     false,
 		},
+		{
+			name:            "** matches root-level file",
+			dir:             "project",
+			path:            filepath.Join("project", "maven_install.json"),
+			excludePaths:    []string{"**/maven_install.json"},
+			expected:        true,
+			expectedPattern: "**/maven_install.json",
+			expectError:     false,
+		},
+		{
+			name:            "** matches single nested level",
+			dir:             "project",
+			path:            filepath.Join("project", "a", "maven_install.json"),
+			excludePaths:    []string{"**/maven_install.json"},
+			expected:        true,
+			expectedPattern: "**/maven_install.json",
+			expectError:     false,
+		},
+		{
+			name:            "** matches multiple nested levels",
+			dir:             "project",
+			path:            filepath.Join("project", "a", "b", "maven_install.json"),
+			excludePaths:    []string{"**/maven_install.json"},
+			expected:        true,
+			expectedPattern: "**/maven_install.json",
+			expectError:     false,
+		},
+		{
+			name:            "plain path does not match nested file",
+			dir:             "project",
+			path:            filepath.Join("project", "tests", "unit", "file.go"),
+			excludePaths:    []string{"tests"},
+			expected:        false,
+			expectedPattern: "",
+			expectError:     false,
+		},
 	}
 
 	for _, tt := range tests {

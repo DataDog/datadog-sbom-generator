@@ -32,7 +32,7 @@ func MatchConfigExcludePath(repoRoot, path string, configExcludePaths []string) 
 	for _, pattern := range configExcludePaths {
 		cleanPattern := strings.TrimSuffix(filepath.ToSlash(pattern), "/")
 		if strings.ContainsAny(cleanPattern, "*?[") {
-			matched, err := doublestar.PathMatch(cleanPattern, relativePath)
+			matched, err := doublestar.Match(cleanPattern, relativePath)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("invalid glob pattern %q: %w", pattern, err))
 				continue
