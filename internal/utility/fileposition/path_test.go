@@ -117,6 +117,24 @@ func TestShouldExcludePath(t *testing.T) {
 			expectedPattern: "",
 			expectError:     false,
 		},
+		{
+			name:            "brace alternation matches one of the listed names",
+			dir:             "project",
+			path:            filepath.Join("project", "package-lock.json"),
+			excludePaths:    []string{"{pom.xml,package-lock.json}"},
+			expected:        true,
+			expectedPattern: "{pom.xml,package-lock.json}",
+			expectError:     false,
+		},
+		{
+			name:            "brace alternation does not match an unlisted name",
+			dir:             "project",
+			path:            filepath.Join("project", "yarn.lock"),
+			excludePaths:    []string{"{pom.xml,package-lock.json}"},
+			expected:        false,
+			expectedPattern: "",
+			expectError:     false,
+		},
 	}
 
 	for _, tt := range tests {

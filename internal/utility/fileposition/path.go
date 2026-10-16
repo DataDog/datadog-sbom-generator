@@ -29,10 +29,8 @@ func ToRelativePath(scanPath string, packagePath string) string {
 	return path
 }
 
-// ShouldExcludePath checks if a given path should be excluded based on a list of exclusion
-// patterns. Glob patterns are matched with doublestar.Match on slash-normalized paths, so "**"
-// matches any number of path segments (unlike filepath.Match, where "**" behaves like a single
-// "*" and never crosses a "/"); plain paths without glob metacharacters match exactly.
+// ShouldExcludePath checks path against excludePaths, using doublestar glob matching so "**"
+// crosses path segments (unlike filepath.Match).
 func ShouldExcludePath(dir, path string, excludePaths []string) (bool, string, error) {
 	relativePath, err := filepath.Rel(dir, path)
 	if err != nil {
@@ -47,7 +45,7 @@ func ShouldExcludePath(dir, path string, excludePaths []string) (bool, string, e
 	for _, pattern := range excludePaths {
 		cleanPattern := filepath.ToSlash(pattern)
 
-		if strings.ContainsAny(cleanPattern, "*?[") {
+		if strings.ContainsAny(cleanPattern, "*?[{") {
 			matched, err := doublestar.Match(cleanPattern, relativePath)
 			if err != nil {
 				return false, "", err
