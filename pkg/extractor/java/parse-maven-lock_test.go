@@ -2,6 +2,8 @@ package java_test
 
 import (
 	"io/fs"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,6 +17,33 @@ import (
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/internal/testutil"
 )
+
+// mockMavenCentral redirects java.MavenCentral to a local TLS server serving the given
+// path -> POM body responses, restoring the real URL and http.DefaultClient when the test
+// ends. A TLS server is required because the production code identifies a remote parent by
+// its "https" scheme prefix. Not safe to run with t.Parallel(), since java.MavenCentral and
+// http.DefaultClient are shared, mutable package state.
+func mockMavenCentral(t *testing.T, poms map[string]string) {
+	t.Helper()
+
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, ok := poms[r.URL.Path]
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = w.Write([]byte(body))
+	}))
+	t.Cleanup(server.Close)
+
+	originalURL := java.MavenCentral
+	java.MavenCentral = server.URL
+	t.Cleanup(func() { java.MavenCentral = originalURL })
+
+	originalClient := http.DefaultClient
+	http.DefaultClient = server.Client()
+	t.Cleanup(func() { http.DefaultClient = originalClient })
+}
 
 func TestMavenLockExtractor_ShouldExtract(t *testing.T) {
 	t.Parallel()
@@ -296,8 +325,28 @@ func TestParseMavenLock_OnePackage(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
 func TestParseMavenLock_WithExternalParent(t *testing.T) {
-	t.Parallel()
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>2.7.3</version>
+			<properties>
+				<activemq.version>5.16.5</activemq.version>
+			</properties>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.activemq</groupId>
+						<artifactId>activemq-amqp</artifactId>
+						<version>${activemq.version}</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
@@ -1907,8 +1956,40 @@ func TestParseMavenLock_NoVersion(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
 func TestParseMavenLock_SpringRemote(t *testing.T) {
-	t.Parallel()
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-starter-parent/3.4.0/spring-boot-starter-parent-3.4.0.pom": `<project>
+			<parent>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>3.4.0</version>
+			</parent>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-parent</artifactId>
+			<version>3.4.0</version>
+		</project>`,
+		"/org/springframework/boot/spring-boot-dependencies/3.4.0/spring-boot-dependencies-3.4.0.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>3.4.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+						<version>3.4.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-test</artifactId>
+						<version>3.4.0</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
 	dir, err := os.Getwd()
 	require.NoError(t, err)
 
