@@ -161,9 +161,13 @@ func (mld MavenLockDependency) resolvePropertiesValue(lockfile MavenLockFile, fi
 }
 
 func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile, context extractor.ScanContext) (string, models.FilePosition) {
+	return requirementVersion(mld.resolvePropertiesValue(lockfile, mld.Version.Value, context))
+}
+
+// requirementVersion returns the version a requirement such as `1.0`, `[1.0]` or `[1.0,2.0)` starts with.
+func requirementVersion(requirement string, position models.FilePosition) (string, models.FilePosition) {
 	versionRequirementReg := cachedregexp.MustCompile(`[[(]?(.*?)(?:,|[)\]]|$)`)
-	version, position := mld.resolvePropertiesValue(lockfile, mld.Version.Value, context)
-	results := versionRequirementReg.FindStringSubmatch(version)
+	results := versionRequirementReg.FindStringSubmatch(requirement)
 
 	if results == nil || results[1] == "" {
 		return "", models.FilePosition{}
@@ -172,12 +176,74 @@ func (mld MavenLockDependency) ResolveVersion(lockfile MavenLockFile, context ex
 	return results[1], position
 }
 
+// isVersionPlaceholder reports whether version is LATEST or RELEASE, which Maven resolves from repository metadata.
+func isVersionPlaceholder(version string) bool {
+	return version == "LATEST" || version == "RELEASE"
+}
+
 func (mld MavenLockDependency) ResolveArtifactID(lockfile MavenLockFile, context extractor.ScanContext) (string, models.FilePosition) {
 	return mld.resolvePropertiesValue(lockfile, mld.ArtifactID.Value, context)
 }
 
 func (mld MavenLockDependency) ResolveGroupID(lockfile MavenLockFile, context extractor.ScanContext) (string, models.FilePosition) {
 	return mld.resolvePropertiesValue(lockfile, mld.GroupID.Value, context)
+}
+
+// mavenCoordinates is a dependency entry resolved against its lockfile, with the locations of each part.
+type mavenCoordinates struct {
+	groupID          string
+	artifactID       string
+	version          string
+	isDynamicVersion bool
+	block            models.FilePosition
+	namespaceAt      *models.FilePosition
+	nameAt           models.FilePosition
+	versionAt        models.FilePosition
+}
+
+func (c mavenCoordinates) name() string {
+	return c.groupID + ":" + c.artifactID
+}
+
+func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, context extractor.ScanContext) mavenCoordinates {
+	groupID, groupIDPosition := mld.ResolveGroupID(lockfile, context)
+	artifactID, artifactPosition := mld.ResolveArtifactID(lockfile, context)
+	requirement, requirementPosition := mld.resolvePropertiesValue(lockfile, mld.Version.Value, context)
+	version, versionPosition := requirementVersion(requirement, requirementPosition)
+
+	// A position is null after resolving the Value in case the Value is directly defined in the block
+	if artifactPosition == (models.FilePosition{}) {
+		artifactPosition = mld.ArtifactID.FilePosition
+		artifactPosition.Filename = mld.SourceFile
+	}
+	if versionPosition == (models.FilePosition{}) {
+		versionPosition = mld.Version.FilePosition
+		versionPosition.Filename = mld.SourceFile
+	}
+	if groupIDPosition == (models.FilePosition{}) {
+		groupIDPosition = mld.GroupID.FilePosition
+		groupIDPosition.Filename = mld.SourceFile
+	}
+
+	coordinates := mavenCoordinates{
+		groupID:          groupID,
+		artifactID:       artifactID,
+		version:          version,
+		isDynamicVersion: strings.Contains(requirement, ",") || isVersionPlaceholder(requirement),
+		block:            models.FilePosition{Line: mld.Line, Column: mld.Column, Filename: mld.SourceFile},
+		nameAt:           artifactPosition,
+		versionAt:        versionPosition,
+	}
+
+	// Skip namespace location when groupId is inherited via ${project.*} or ${pom.*}
+	// property: the resolved position carries the parent POM's line/column mapped onto
+	// the child file, which would point to the wrong text. ${pom.*} is a deprecated
+	// alias for ${project.*} and behaves identically.
+	if !strings.HasPrefix(mld.GroupID.Value, "${project.") && !strings.HasPrefix(mld.GroupID.Value, "${pom.") {
+		coordinates.namespaceAt = &groupIDPosition
+	}
+
+	return coordinates
 }
 
 func (p *MavenLockProperties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -466,40 +532,8 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 	details := map[string]extractor.PackageDetails{}
 
 	for _, lockPackage := range parsedLockfile.Dependencies.Dependencies {
-		resolvedGroupID, groupIDPosition := lockPackage.ResolveGroupID(*parsedLockfile, context)
-		resolvedArtifactID, artifactPosition := lockPackage.ResolveArtifactID(*parsedLockfile, context)
-		resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
-		finalName := resolvedGroupID + ":" + resolvedArtifactID
-
-		blockLocation := models.FilePosition{
-			Line:     lockPackage.Line,
-			Column:   lockPackage.Column,
-			Filename: lockPackage.SourceFile,
-		}
-
-		// A position is null after resolving the Value in case the Value is directly defined in the block
-		if artifactPosition == (models.FilePosition{}) {
-			artifactPosition = lockPackage.ArtifactID.FilePosition
-			artifactPosition.Filename = lockPackage.SourceFile
-		}
-		if versionPosition == (models.FilePosition{}) {
-			versionPosition = lockPackage.Version.FilePosition
-			versionPosition.Filename = lockPackage.SourceFile
-		}
-		if groupIDPosition == (models.FilePosition{}) {
-			groupIDPosition = lockPackage.GroupID.FilePosition
-			groupIDPosition.Filename = lockPackage.SourceFile
-		}
-
-		// Skip namespace location when groupId is inherited via ${project.*} or ${pom.*}
-		// property: the resolved position carries the parent POM's line/column mapped onto
-		// the child file, which would point to the wrong text. ${pom.*} is a deprecated
-		// alias for ${project.*} and behaves identically.
-		var namespaceLocation *models.FilePosition
-		if !strings.HasPrefix(lockPackage.GroupID.Value, "${project.") &&
-			!strings.HasPrefix(lockPackage.GroupID.Value, "${pom.") {
-			namespaceLocation = &groupIDPosition
-		}
+		coordinates := lockPackage.resolveCoordinates(*parsedLockfile, context)
+		finalName := coordinates.name()
 
 		var exclusions []string
 		if len(lockPackage.Exclusions) > 0 {
@@ -511,13 +545,13 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 
 		pkgDetails := extractor.PackageDetails{
 			Name:              finalName,
-			Version:           resolvedVersion,
+			Version:           coordinates.version,
 			Ecosystem:         models.EcosystemMaven,
-			BlockLocation:     blockLocation,
+			BlockLocation:     coordinates.block,
 			LocationRole:      models.LocationRoleManifest,
-			NameLocation:      &artifactPosition,
-			NamespaceLocation: namespaceLocation,
-			VersionLocation:   &versionPosition,
+			NameLocation:      &coordinates.nameAt,
+			NamespaceLocation: coordinates.namespaceAt,
+			VersionLocation:   &coordinates.versionAt,
 			PackageManager:    mavenPackageManager,
 			IsDirect:          true,
 			Exclusions:        exclusions,
@@ -529,27 +563,31 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	// If a dependency is declared and have not specified its version, then use the one declared in the managed dependencies
+	// Managed dependencies are merged parent-first (see mergeLockfiles), so the last resolvable entry for a name is
+	// the closest one: it sets the version of a dependency declared without one, and it is the pin emitted.
+	needsManagedVersion := map[string]bool{}
+	for name, pkgDetails := range details {
+		needsManagedVersion[name] = pkgDetails.IsVersionEmpty()
+	}
+
+	constraints := map[string]extractor.PackageDetails{}
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
-		resolvedGroupID, _ := lockPackage.ResolveGroupID(*parsedLockfile, context)
-		resolvedArtifactID, _ := lockPackage.ResolveArtifactID(*parsedLockfile, context)
-		finalName := resolvedGroupID + ":" + resolvedArtifactID
+		coordinates := lockPackage.resolveCoordinates(*parsedLockfile, context)
+		finalName := coordinates.name()
+		if pin, ok := versionConstraintPackage(lockPackage, coordinates); ok {
+			constraints[finalName] = pin
+		} else if coordinates.isDynamicVersion {
+			// A dynamic version overrides the inherited pins without being one itself.
+			delete(constraints, finalName)
+		}
+
 		pkgDetails, pkgExists := details[finalName]
 		if !pkgExists {
 			continue
 		}
-
-		if pkgDetails.IsVersionEmpty() {
-			resolvedVersion, versionPosition := lockPackage.ResolveVersion(*parsedLockfile, context)
-
-			// A position is null after resolving the Value in case the Value is directly defined in the block
-			if versionPosition == (models.FilePosition{}) {
-				versionPosition = lockPackage.Version.FilePosition
-			}
-			versionPosition.Filename = lockPackage.SourceFile
-
-			pkgDetails.Version = resolvedVersion
-			pkgDetails.VersionLocation = &versionPosition
+		if needsManagedVersion[finalName] && coordinates.version != "" && !isVersionPlaceholder(coordinates.version) {
+			pkgDetails.Version = coordinates.version
+			pkgDetails.VersionLocation = &coordinates.versionAt
 		}
 		if scope := strings.TrimSpace(lockPackage.Scope); scope != "" && scope != "compile" {
 			// Only append non-default scope (compile is the default scope).
@@ -558,7 +596,7 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	return slices.Collect(maps.Values(details)), nil
+	return append(slices.Collect(maps.Values(details)), slices.Collect(maps.Values(constraints))...), nil
 }
 
 func (e MavenLockExtractor) GetArtifact(f extractor.DepFile, context extractor.ScanContext) (*models.ScannedArtifact, error) {
@@ -602,4 +640,27 @@ func init() {
 
 func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 	return extractor.ExtractFromFile(pathToLockfile, MavenLockExtractor{})
+}
+
+// versionConstraintPackage returns the pin of a local managed entry whose coordinates fully resolve to an exact version.
+func versionConstraintPackage(lockPackage MavenLockDependency, coordinates mavenCoordinates) (extractor.PackageDetails, bool) {
+	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") || lockPackage.SourceFile == "" {
+		return extractor.PackageDetails{}, false
+	}
+	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isDynamicVersion || !coordinates.block.IsStartSet() {
+		return extractor.PackageDetails{}, false
+	}
+
+	return extractor.PackageDetails{
+		Name:                coordinates.name(),
+		Version:             coordinates.version,
+		Ecosystem:           models.EcosystemMaven,
+		BlockLocation:       coordinates.block,
+		LocationRole:        models.LocationRoleManifest,
+		NameLocation:        &coordinates.nameAt,
+		NamespaceLocation:   coordinates.namespaceAt,
+		VersionLocation:     &coordinates.versionAt,
+		PackageManager:      mavenPackageManager,
+		IsVersionConstraint: true,
+	}, true
 }

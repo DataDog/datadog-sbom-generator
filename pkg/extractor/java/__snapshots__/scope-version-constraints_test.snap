@@ -1,0 +1,11 @@
+
+[TestScopeVersionConstraints_NormalLayoutUnchanged - 1]
+{
+  "com.fasterxml.jackson.core:jackson-databind@2.18.0": [
+    "pom.xml:16"
+  ],
+  "org.yaml:snakeyaml@2.4": [
+    "pom.xml:21"
+  ]
+}
+---

@@ -22,6 +22,7 @@ type PackageDetails struct {
 	NamespaceLocation            *models.FilePosition  `json:"namespaceLocation,omitempty"`
 	PackageManager               models.PackageManager `json:"packageManager,omitempty"`
 	IsDirect                     bool                  `json:"isDirect,omitempty"`
+	IsVersionConstraint          bool                  `json:"isVersionConstraint,omitempty"`
 	RequiresTransitiveEnrichment bool                  `json:"requiresTransitiveEnrichment,omitempty"`
 	Opaque                       bool                  `json:"opaque,omitempty"`
 	Dependencies                 []*PackageDetails     `json:"dependencies,omitempty"`
