@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 func ToRelativePath(scanPath string, packagePath string) string {
@@ -27,24 +29,31 @@ func ToRelativePath(scanPath string, packagePath string) string {
 	return path
 }
 
-// ShouldExcludePath checks if a given path should be excluded based on a list of exclusion patterns.
+// ShouldExcludePath checks path against excludePaths, using doublestar glob matching so "**"
+// crosses path segments (unlike filepath.Match).
 func ShouldExcludePath(dir, path string, excludePaths []string) (bool, string, error) {
 	relativePath, err := filepath.Rel(dir, path)
 	if err != nil {
 		return false, "", err
 	}
 
+	relativePath = filepath.ToSlash(relativePath)
 	if relativePath == "" {
 		return false, "", nil
 	}
 
 	for _, pattern := range excludePaths {
-		matched, err := filepath.Match(pattern, relativePath)
-		if err != nil {
-			return false, "", err
-		}
+		cleanPattern := filepath.ToSlash(pattern)
 
-		if matched {
+		if strings.ContainsAny(cleanPattern, "*?[{") {
+			matched, err := doublestar.Match(cleanPattern, relativePath)
+			if err != nil {
+				return false, "", err
+			}
+			if matched {
+				return true, pattern, nil
+			}
+		} else if relativePath == cleanPattern {
 			return true, pattern, nil
 		}
 	}

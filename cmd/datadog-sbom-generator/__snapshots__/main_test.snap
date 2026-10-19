@@ -1841,6 +1841,64 @@ Scanned <rootdir>/fixtures/integration-nuget/multiple-versions-with-lockfile/pac
 [reachability] Reachability analysis is disabled
 ---
 
+[TestRun/Scan_integration-test-locks_with_**_exclusion_matching_pom.xml_at_any_depth - 1]
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "group": "datadog",
+          "name": "datadog-sbom-generator",
+          "version": "set at build time, see .goreleaser.yml ldflags section"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:nuget/Test.Core@6.0.5",
+      "type": "library",
+      "name": "Test.Core",
+      "version": "6.0.5",
+      "purl": "pkg:nuget/Test.Core@6.0.5",
+      "properties": [
+        {
+          "name": "datadog:is-direct",
+          "value": "true"
+        },
+        {
+          "name": "datadog:package-manager",
+          "value": "NuGet"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "{/"block/":{/"file_name/":/"packages.lock.json/",/"line_start/":5,/"line_end/":10,/"column_start/":7,/"column_end/":8,/"role/":/"lockfile/"}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+
+---
+
+[TestRun/Scan_integration-test-locks_with_**_exclusion_matching_pom.xml_at_any_depth - 2]
+Scanning directory './fixtures/integration-test-locks', resolved absolute path '<rootdir>/fixtures/integration-test-locks'
+Skipping <rootdir>/fixtures/integration-test-locks/libs/pom.xml with exclusion rule: **/pom.xml
+Skipping <rootdir>/fixtures/integration-test-locks/other-dir/pom.xml with exclusion rule: **/pom.xml
+Failed to match the source file of <rootdir>/fixtures/integration-test-locks/packages.lock.json: no csproj file found, it leads to incomplete enrichment components
+Scanned <rootdir>/fixtures/integration-test-locks/packages.lock.json file and found 1 package
+Skipping <rootdir>/fixtures/integration-test-locks/pom.xml with exclusion rule: **/pom.xml
+[reachability] Reachability analysis is disabled
+---
+
 [TestRun/Scan_locks-many - 1]
 {
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",

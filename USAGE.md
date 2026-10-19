@@ -30,20 +30,20 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 
 #### Flags
 
-| Flag                       | Aliases | Default         | Description                                                        |
-| -------------------------- | ------- | --------------- | ------------------------------------------------------------------ |
-| `--format`                 | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                  |
-| `--output`                 | `-o`    | stdout          | Save output to specified file path                                 |
-| `--verbosity`              | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`          |
-| `--not-recursive`          |         | `false`         | Do not scan subdirectories                                         |
-| `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                          |
-| `--reachability`           |         | `false`         | Enable reachability analysis                                       |
-| `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below)  |
-| `--exclude`                |         | (none)          | Exclude paths using glob patterns (relative to scanned directory)  |
-| `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned |
-| `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`          |
-| `--pretty`                 |         | `false`         | Format JSON output with indentation                                |
-| `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails          |
+| Flag                       | Aliases | Default         | Description                                                                                                            |
+| -------------------------- | ------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `--format`                 | `-f`    | `cyclonedx-1-5` | Output format. Supported: `cyclonedx-1-5`, `json`                                                                      |
+| `--output`                 | `-o`    | stdout          | Save output to specified file path                                                                                     |
+| `--verbosity`              | `-v`    | `error`         | Logging level. Values: `error`, `warn`, `info`, `verbose`                                                              |
+| `--not-recursive`          |         | `false`         | Do not scan subdirectories                                                                                             |
+| `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                                                                              |
+| `--reachability`           |         | `false`         | Enable reachability analysis                                                                                           |
+| `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below)                                                      |
+| `--exclude`                |         | (none)          | Exclude paths using doublestar glob patterns (relative to scanned directory); `**` matches any number of path segments |
+| `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned                                                     |
+| `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`                                                              |
+| `--pretty`                 |         | `false`         | Format JSON output with indentation                                                                                    |
+| `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails                                                              |
 
 #### Examples
 
@@ -67,8 +67,8 @@ datadog-sbom-generator scan --output sbom.json --pretty .
 **Filtering and exclusions:**
 
 ```bash
-# Exclude paths (relative to scanned directory)
-datadog-sbom-generator scan --exclude "node_modules/**,test/**" .
+# Exclude paths at any depth (relative to scanned directory)
+datadog-sbom-generator scan --exclude "node_modules/**,**/maven_install.json" .
 
 # Exclude ecosystems from being scanned
 datadog-sbom-generator scan --exclude-ecosystem "npm,Go" .
@@ -155,5 +155,5 @@ Displays a table with columns: Language, Package Manager, Lockfile Parsers
   - **Package manager**: `npm`, `maven`, `gradle`, `poetry`, etc.
   - **Language**: `javascript`, `java`, `python`, etc.
 - Use `parsers list` to see all available parser names
-- Glob patterns in `--exclude` are relative to the scanned directory
+- Glob patterns in `--exclude` are relative to the scanned directory and use doublestar syntax: `*` matches within one path segment, `**` matches any number of segments (e.g. `**/maven_install.json` matches that file at any depth, including the root)
 - Multiple `--enable-parsers`, `--exclude`, `--exclude-ecosystem`, or `--exclude-package` values can be specified by repeating the flag or using comma separation

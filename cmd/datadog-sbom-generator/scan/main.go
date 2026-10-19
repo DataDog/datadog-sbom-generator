@@ -29,7 +29,7 @@ Examples:
 	datadog-sbom-generator scan --verbosity verbose .
 
 	# Exclude specific paths from being scanned
-	datadog-sbom-generator scan --exclude "node_modules/**,test/**" .
+	datadog-sbom-generator scan --exclude "node_modules/**,**/maven_install.json" .
 
 	# Exclude specific ecosystems and packages from being scanned
 	datadog-sbom-generator scan --exclude-ecosystem "npm,Go" --exclude-package "npm:lodash" .`,
@@ -86,7 +86,7 @@ Examples:
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
-				Usage: "exclude paths from being scanned using a glob expression (relative to scanned directory)",
+				Usage: "exclude paths from being scanned using a doublestar glob expression, relative to scanned directory (\"**\" matches any number of path segments, e.g. \"**/maven_install.json\" at any depth)",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude-ecosystem",

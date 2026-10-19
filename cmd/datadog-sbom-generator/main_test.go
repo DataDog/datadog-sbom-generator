@@ -266,6 +266,11 @@ func TestRun(t *testing.T) {
 			exit: 0,
 		},
 		{
+			name: "Scan integration-test-locks with ** exclusion matching pom.xml at any depth",
+			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude", "**/pom.xml", "./fixtures/integration-test-locks"},
+			exit: 0,
+		},
+		{
 			name: "Scan locks-many with --exclude-ecosystem",
 			args: []string{"", "--pretty", "--verbosity", "verbose", "--exclude-ecosystem", "npm", "./fixtures/locks-many"},
 			exit: 0,
