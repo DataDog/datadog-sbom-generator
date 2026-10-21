@@ -397,6 +397,8 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
 // declared with a relativePath (as spring-boot-starter-parent <= 2.2 points at
 // spring-boot-dependencies), which used to break the second remote fetch.
+//
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
 func TestParseMavenLock_WithExternalParentChain(t *testing.T) {
 	mockMavenCentral(t, map[string]string{
 		"/com/example/parent-a/1.0/parent-a-1.0.pom": `<project>
