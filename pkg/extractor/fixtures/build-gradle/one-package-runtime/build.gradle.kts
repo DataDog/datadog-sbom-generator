@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-  runtimeOnly("org.springframework.security:spring-security-crypto:5.7.3")
+  runtimeOnly("org.springframework.security:spring-security-crypto:5.8.0")
 }
 
 dependencyLocking {
