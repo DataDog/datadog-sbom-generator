@@ -394,6 +394,77 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 	})
 }
 
+// TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
+// declared with a relativePath (as spring-boot-starter-parent <= 2.2 points at
+// spring-boot-dependencies), which used to break the second remote fetch.
+func TestParseMavenLock_WithExternalParentChain(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/com/example/parent-a/1.0/parent-a-1.0.pom": `<project>
+			<parent>
+				<groupId>com.example</groupId>
+				<artifactId>parent-b</artifactId>
+				<version>1.0</version>
+				<relativePath>../../parent-b</relativePath>
+			</parent>
+			<groupId>com.example</groupId>
+			<artifactId>parent-a</artifactId>
+			<version>1.0</version>
+		</project>`,
+		"/com/example/parent-b/1.0/parent-b-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>parent-b</artifactId>
+			<version>1.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.activemq</groupId>
+						<artifactId>activemq-amqp</artifactId>
+						<version>5.16.5</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-chain.xml"))
+	packages, err := java.ParseMavenLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "org.apache.activemq:activemq-amqp",
+			Version:        "5.16.5",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 10, End: 13},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: path,
+			},
+			LocationRole:    models.LocationRoleManifest,
+			VersionLocation: &models.FilePosition{},
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 12, End: 12},
+				Column:   models.Position{Start: 19, End: 32},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 11, End: 11},
+				Column:   models.Position{Start: 16, End: 35},
+				Filename: path,
+			},
+			IsDirect: true,
+		},
+	})
+}
+
 func TestParseMavenLock_OnePackageWithMultipleVersionVariable(t *testing.T) {
 	t.Parallel()
 	dir, err := os.Getwd()
