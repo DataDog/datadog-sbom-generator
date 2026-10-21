@@ -398,35 +398,39 @@ func (e MavenLockExtractor) enrichProperties(path string, properties map[string]
 }
 
 func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, currentPath string, context extractor.ScanContext) string {
+	buildRemoteURL := func() string {
+		u, err := url.JoinPath(
+			MavenCentral,
+			strings.ReplaceAll(parent.GroupID, ".", "/"),
+			parent.ArtifactID,
+			parent.Version,
+			fmt.Sprintf("%s-%s.pom", parent.ArtifactID, parent.Version),
+		)
+		if err != nil {
+			context.Reporter.Warnf("Failed to construct remote path: %s\n", err)
+			return ""
+		}
+
+		return u
+	}
+
+	// relativePath only makes sense against a local checkout. Once currentPath is itself a
+	// remote pom (e.g. a parent fetched one level up from Maven Central), resolve the next
+	// parent by its groupId/artifactId/version instead of joining relativePath onto the URL,
+	// which filepath.Join would corrupt (it collapses "https://" into "https:/").
+	if strings.HasPrefix(currentPath, "https") {
+		return buildRemoteURL()
+	}
+
 	// If a parent is defined, use its relative path to find the File, then recurse to decode it properly and enrich its dependencies
 	// If the relativePath is not defined, default to ../pom.xml
 	parentRelativePath := parent.RelativePath
 	if len(parentRelativePath) == 0 {
-		// if the parent path exists, use that,
-		// else we return an empty string to signal that we should fetch a remote pom
 		parentRelativePath = "../" + models.MavenFilePath.String()
 
-		shouldComputeURL := strings.HasPrefix(currentPath, "https")
-		if !shouldComputeURL {
-			localPath := filepath.Join(filepath.Dir(currentPath), parentRelativePath)
-			_, err := os.Stat(localPath)
-			shouldComputeURL = errors.Is(err, os.ErrNotExist)
-		}
-
-		if shouldComputeURL {
-			u, err := url.JoinPath(
-				MavenCentral,
-				strings.ReplaceAll(parent.GroupID, ".", "/"),
-				parent.ArtifactID,
-				parent.Version,
-				fmt.Sprintf("%s-%s.pom", parent.ArtifactID, parent.Version),
-			)
-			if err != nil {
-				context.Reporter.Warnf("Failed to construct remote path: %s\n", err)
-				return ""
-			}
-
-			return u
+		localPath := filepath.Join(filepath.Dir(currentPath), parentRelativePath)
+		if _, err := os.Stat(localPath); errors.Is(err, os.ErrNotExist) {
+			return buildRemoteURL()
 		}
 	} else if !strings.HasSuffix(parentRelativePath, ".xml") {
 		// It means we only have a path, we should append the default pom.xml
