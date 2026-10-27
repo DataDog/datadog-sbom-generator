@@ -461,6 +461,184 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<properties>
+				<netty.version>4.2.19.Final</netty.version>
+				<micrometer.version>1.17.2</micrometer.version>
+			</properties>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-bom</artifactId>
+						<version>${netty.version}</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-bom</artifactId>
+						<version>${micrometer.version}</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/io/netty/netty-bom/4.2.18.Final/netty-bom-4.2.18.Final.pom": `<project>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-bom</artifactId>
+			<version>4.2.18.Final</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-handler</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/io/micrometer/micrometer-bom/1.17.2/micrometer-bom-1.17.2.pom": `<project>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-bom</artifactId>
+			<version>1.17.2</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-core</artifactId>
+						<version>1.17.2</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlin/kotlin-bom/2.4.21/kotlin-bom-2.4.21.pom": `<project>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-bom</artifactId>
+			<version>2.4.21</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlinx</groupId>
+						<artifactId>kotlinx-coroutines-bom</artifactId>
+						<version>1.10.2</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.4.21</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-reflect</artifactId>
+						<version>2.4.21</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.10.2/kotlinx-coroutines-bom-1.10.2.pom": `<project>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-bom</artifactId>
+			<version>1.10.2</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlinx</groupId>
+						<artifactId>kotlinx-coroutines-core</artifactId>
+						<version>1.10.2</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.0.0</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-bom-imports.xml"))
+	packages, err := java.ParseMavenLock(path)
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	nettyProperty := models.FilePosition{
+		Line:     models.Position{Start: 10, End: 10},
+		Column:   models.Position{Start: 20, End: 32},
+		Filename: path,
+	}
+	kotlinImport := models.FilePosition{
+		Line:     models.Position{Start: 15, End: 21},
+		Column:   models.Position{Start: 7, End: 20},
+		Filename: path,
+	}
+	kotlinImportVersion := models.FilePosition{
+		Line:     models.Position{Start: 18, End: 18},
+		Column:   models.Position{Start: 18, End: 24},
+		Filename: path,
+	}
+	importedPin := func(name string, version string, block models.FilePosition, versionAt models.FilePosition) extractor.PackageDetails {
+		return extractor.PackageDetails{
+			Name:                name,
+			Version:             version,
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			BlockLocation:       block,
+			LocationRole:        models.LocationRoleManifest,
+			VersionLocation:     &versionAt,
+			IsVersionConstraint: true,
+		}
+	}
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		importedPin("io.netty:netty-handler", "4.2.18.Final", nettyProperty, nettyProperty),
+		importedPin("org.jetbrains.kotlin:kotlin-stdlib", "2.4.21", kotlinImport, kotlinImportVersion),
+		importedPin("org.jetbrains.kotlinx:kotlinx-coroutines-core", "1.10.2", kotlinImport, kotlinImportVersion),
+		{
+			Name:           "org.jetbrains.kotlin:kotlin-reflect",
+			Version:        "2.4.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 22, End: 26},
+				Column:   models.Position{Start: 7, End: 20},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 24, End: 24},
+				Column:   models.Position{Start: 21, End: 35},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 18, End: 38},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 25, End: 25},
+				Column:   models.Position{Start: 18, End: 23},
+				Filename: path,
+			},
+			IsVersionConstraint: true,
+		},
+	})
+}
+
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
 // declared with a relativePath (as spring-boot-starter-parent <= 2.2 points at
 // spring-boot-dependencies), which used to break the second remote fetch.
@@ -2478,8 +2656,24 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	})
 }
 
-func TestParseMavenLock_SkipsImportedBOM(t *testing.T) {
-	t.Parallel()
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_ExpandsImportedBOM(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/3.4.0/spring-boot-dependencies-3.4.0.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>3.4.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.yaml</groupId>
+						<artifactId>snakeyaml</artifactId>
+						<version>2.3</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
 	dir, err := os.Getwd()
 	require.NoError(t, err)
 
@@ -2487,7 +2681,26 @@ func TestParseMavenLock_SkipsImportedBOM(t *testing.T) {
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 
-	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "org.yaml:snakeyaml",
+			Version:        "2.3",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 10},
+				Column:   models.Position{Start: 7, End: 20},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 18, End: 23},
+				Filename: path,
+			},
+			IsVersionConstraint: true,
+		},
+	})
 }
 
 func TestParseMavenLock_SkipsManagedDependencyWithoutVersion(t *testing.T) {
