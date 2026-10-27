@@ -66,6 +66,18 @@ func parentPin(name string, version string, parentBlock models.FilePosition) ext
 	}
 }
 
+// parseMavenLockExpandingBOMs parses a pom with the --maven-expand-boms option on.
+func parseMavenLockExpandingBOMs(t *testing.T, path string) []extractor.PackageDetails {
+	t.Helper()
+
+	context := testutil.GetTestContext()
+	context.MavenExpandBOMs = true
+	packages, err := extractor.ExtractFromFileWithContext(path, java.MavenLockExtractor{}, context)
+	require.NoError(t, err)
+
+	return packages
+}
+
 func TestMavenLockExtractor_ShouldExtract(t *testing.T) {
 	t.Parallel()
 
@@ -412,34 +424,43 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 			},
 			IsDirect: true,
 		},
-		parentPin("org.apache.activemq:activemq-amqp", "5.16.5", models.FilePosition{
-			Line:     models.Position{Start: 2, End: 6},
-			Column:   models.Position{Start: 3, End: 12},
-			Filename: path,
-		}),
 	})
 }
 
 //nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
-func TestParseMavenLock_DownloadsRemotePomOnce(t *testing.T) {
-	requests := mockMavenCentral(t, map[string]string{
-		"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-dependencies</artifactId>
-			<version>2.7.3</version>
-		</project>`,
-	})
-
+func TestParseMavenLock_DownloadsRemotePomOnceExpandingBOMs(t *testing.T) {
 	dir, err := os.Getwd()
 	require.NoError(t, err)
-
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent.xml"))
-	for range 2 {
-		_, err := java.ParseMavenLock(path)
-		require.NoError(t, err)
-	}
 
-	require.Equal(t, int64(1), requests.Load())
+	for _, tt := range []struct {
+		name       string
+		expandBOMs bool
+		requests   int64
+	}{
+		{name: "default", requests: 2},
+		{name: "expanding BOMs", expandBOMs: true, requests: 1},
+	} {
+		//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+		t.Run(tt.name, func(t *testing.T) {
+			requests := mockMavenCentral(t, map[string]string{
+				"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-dependencies</artifactId>
+					<version>2.7.3</version>
+				</project>`,
+			})
+			context := testutil.GetTestContext()
+			context.MavenExpandBOMs = tt.expandBOMs
+
+			for range 2 {
+				_, err := extractor.ExtractFromFileWithContext(path, java.MavenLockExtractor{}, context)
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.requests, requests.Load())
+		})
+	}
 }
 
 //nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
@@ -487,11 +508,6 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 		Column:   models.Position{Start: 21, End: 28},
 		Filename: rootPath,
 	}
-	rootParent := models.FilePosition{
-		Line:     models.Position{Start: 2, End: 6},
-		Column:   models.Position{Start: 3, End: 12},
-		Filename: rootPath,
-	}
 
 	for _, path := range []string{rootPath, childPath} {
 		packages, err := java.ParseMavenLock(path)
@@ -510,8 +526,6 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 				VersionLocation:     &propertyLocation,
 				IsVersionConstraint: true,
 			},
-			parentPin("org.apache.activemq:activemq-amqp", "5.16.5", rootParent),
-			parentPin("com.google.code.findbugs:jsr305", "3.0.2", rootParent),
 		})
 	}
 }
@@ -753,13 +767,54 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 	}
 
 	for _, pomPath := range []string{path, childPath} {
-		packages, err := java.ParseMavenLock(pomPath)
-		if err != nil {
-			t.Errorf("Got unexpected error: %v", err)
-		}
-
-		testutil.ExpectPackages(t, packages, expected)
+		testutil.ExpectPackages(t, parseMavenLockExpandingBOMs(t, pomPath), expected)
 	}
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_SkipsImportedBOMsByDefault(t *testing.T) {
+	requests := mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-bom</artifactId>
+						<version>1.17.2</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-bom-imports.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "io.micrometer:micrometer-core",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:                "org.jetbrains.kotlin:kotlin-reflect",
+			Version:             "2.4.0",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+	})
+	require.Equal(t, int64(1), requests.Load())
 }
 
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
@@ -832,11 +887,6 @@ func TestParseMavenLock_WithExternalParentChain(t *testing.T) {
 			},
 			IsDirect: true,
 		},
-		parentPin("org.apache.activemq:activemq-amqp", "5.16.5", models.FilePosition{
-			Line:     models.Position{Start: 2, End: 6},
-			Column:   models.Position{Start: 3, End: 12},
-			Filename: path,
-		}),
 	})
 }
 
@@ -2731,11 +2781,6 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 
-	parentBlock := models.FilePosition{
-		Line:     models.Position{Start: 5, End: 10},
-		Column:   models.Position{Start: 2, End: 11},
-		Filename: path,
-	}
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-test",
@@ -2786,8 +2831,6 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 			VersionLocation: &models.FilePosition{},
 			IsDirect:        true,
 		},
-		parentPin("org.springframework.boot:spring-boot-starter-web", "3.4.0", parentBlock),
-		parentPin("org.springframework.boot:spring-boot-starter-test", "3.4.0", parentBlock),
 	})
 }
 
@@ -2813,8 +2856,7 @@ func TestParseMavenLock_ExpandsImportedBOM(t *testing.T) {
 	require.NoError(t, err)
 
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-import.xml"))
-	packages, err := java.ParseMavenLock(path)
-	require.NoError(t, err)
+	packages := parseMavenLockExpandingBOMs(t, path)
 
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
 		{

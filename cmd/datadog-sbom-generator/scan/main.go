@@ -97,6 +97,11 @@ Examples:
 				Usage: "exclude a package at any version from being scanned, in \"<ecosystem>:<name>\" form (e.g. npm:lodash); unioned with sca.ignore-packages from the unified config",
 			},
 			&cli.BoolFlag{
+				Name:  "maven-expand-boms",
+				Usage: "resolve Maven versions like Maven's effective POM: download every BOM imported by a pom or its parents from Maven central, report every version they manage as a version constraint, and use them for dependencies declared without a version",
+				Value: false,
+			},
+			&cli.BoolFlag{
 				Name:  "pretty",
 				Usage: "format output with indentation and newlines for readability",
 				Value: false,
@@ -151,6 +156,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		EnableParsers:       context.StringSlice("enable-parsers"),
 		ManifestParsers:     context.Bool("manifest-parsers"),
 		ExitOnConfigFailure: context.Bool("exit-on-config-failure"),
+		MavenExpandBOMs:     context.Bool("maven-expand-boms"),
 	}, r)
 
 	if err != nil && !errors.Is(err, scanner.NoPackagesFoundErr) && !errors.Is(err, scanner.VulnerabilitiesFoundErr) {

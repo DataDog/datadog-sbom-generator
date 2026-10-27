@@ -153,6 +153,8 @@ type ScanContext struct {
 	RootDir            string
 	Reporter           reporter.Reporter
 	ExtractArtifactIds bool
+	// MavenExpandBOMs resolves Maven versions from downloaded parents and every imported BOM, as Maven's effective POM.
+	MavenExpandBOMs bool
 }
 
 func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {

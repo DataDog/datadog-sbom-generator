@@ -32,17 +32,13 @@ var errAPIFailed = errors.New("API query failed")
 var remotePoms sync.Map
 
 func NewMavenRegistryAPIClient(url string) (extractor.DepFile, error) {
-	body, ok := remotePoms.Load(url)
-	if !ok {
-		fetched, err := fetchRemotePom(url)
-		if err != nil {
-			return nil, err
-		}
-		body, _ = remotePoms.LoadOrStore(url, fetched)
+	body, err := fetchRemotePom(url)
+	if err != nil {
+		return nil, err
 	}
 
 	return &MavenRegistryProject{
-		ReadCloser: io.NopCloser(bytes.NewReader(body.([]byte))),
+		ReadCloser: io.NopCloser(bytes.NewReader(body)),
 		path:       url,
 	}, nil
 }
@@ -475,7 +471,7 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 
 	// If the parent pom does not exist, it still can be in an external repository
 	if strings.HasPrefix(parentPath, "https") {
-		mavenRegistryClient, clientErr := NewMavenRegistryAPIClient(parentPath)
+		mavenRegistryClient, clientErr := openRemotePom(parentPath, context)
 		// If the remote pom does not exist, we can't do anything.
 		if clientErr != nil {
 			context.Reporter.Warnf("Failed to fetch parent pom from remote repository: %s\n", parentPath)
@@ -489,7 +485,7 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 		}
 
 		parentFilePath = parentPath
-		if !strings.HasPrefix(f.Path(), "https") {
+		if context.MavenExpandBOMs && !strings.HasPrefix(f.Path(), "https") {
 			block, blockErr := parentElementPosition(f.Path())
 			if blockErr != nil {
 				context.Reporter.Warnf("Failed to locate the parent of %s: %v\n", f.Path(), blockErr)
@@ -699,8 +695,11 @@ func versionConstraintPackage(coordinates mavenCoordinates, remoteParentBlock mo
 // importedPins returns a pin for every version the BOMs imported by lockfile manage, located where versionConstraintPackage
 // locates each import. The first BOM managing a package wins.
 func (e MavenLockExtractor) importedPins(lockfile MavenLockFile, context extractor.ScanContext) map[string]extractor.PackageDetails {
-	pins := map[string]extractor.PackageDetails{}
+	if !context.MavenExpandBOMs {
+		return nil
+	}
 
+	pins := map[string]extractor.PackageDetails{}
 	for _, imported := range orderedImports(lockfile) {
 		bom := imported.resolveCoordinates(lockfile, context)
 		anchor, ok := versionConstraintPackage(bom, lockfile.RemoteParentBlock)
@@ -772,7 +771,7 @@ func orderedImports(lockfile MavenLockFile) []MavenLockDependency {
 }
 
 func (e MavenLockExtractor) fetchBOM(pomURL string, context extractor.ScanContext) (*MavenLockFile, bool) {
-	file, err := NewMavenRegistryAPIClient(pomURL)
+	file, err := openRemotePom(pomURL, context)
 	if err != nil {
 		context.Reporter.Warnf("Failed to fetch imported BOM from remote repository: %s: %v\n", pomURL, err)
 		return nil, false
@@ -792,6 +791,27 @@ func isImport(dependency MavenLockDependency) bool {
 
 func remotePomURL(groupID string, artifactID string, version string) (string, error) {
 	return url.JoinPath(MavenCentral, strings.ReplaceAll(groupID, ".", "/"), artifactID, version, fmt.Sprintf("%s-%s.pom", artifactID, version))
+}
+
+// openRemotePom downloads a pom from Maven central, once per process when BOM expansion is on.
+func openRemotePom(url string, context extractor.ScanContext) (extractor.DepFile, error) {
+	if !context.MavenExpandBOMs {
+		return NewMavenRegistryAPIClient(url)
+	}
+
+	body, ok := remotePoms.Load(url)
+	if !ok {
+		fetched, err := fetchRemotePom(url)
+		if err != nil {
+			return nil, err
+		}
+		body, _ = remotePoms.LoadOrStore(url, fetched)
+	}
+
+	return &MavenRegistryProject{
+		ReadCloser: io.NopCloser(bytes.NewReader(body.([]byte))),
+		path:       url,
+	}, nil
 }
 
 func fetchRemotePom(url string) ([]byte, error) {
