@@ -394,6 +394,73 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/4.1.2/spring-boot-dependencies-4.1.2.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>4.1.2</version>
+			<properties>
+				<tomcat.version>11.0.27</tomcat.version>
+				<activemq.version>5.16.5</activemq.version>
+			</properties>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.tomcat.embed</groupId>
+						<artifactId>tomcat-embed-core</artifactId>
+						<version>${tomcat.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.activemq</groupId>
+						<artifactId>activemq-amqp</artifactId>
+						<version>${activemq.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>com.google.code.findbugs</groupId>
+						<artifactId>jsr305</artifactId>
+						<version>3.0.2</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	rootPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-property-override.xml"))
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-external-parent-property-override.xml"))
+	propertyLocation := models.FilePosition{
+		Line:     models.Position{Start: 10, End: 10},
+		Column:   models.Position{Start: 21, End: 28},
+		Filename: rootPath,
+	}
+
+	for _, path := range []string{rootPath, childPath} {
+		packages, err := java.ParseMavenLock(path)
+		if err != nil {
+			t.Errorf("Got unexpected error: %v", err)
+		}
+
+		testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+			{
+				Name:                "org.apache.tomcat.embed:tomcat-embed-core",
+				Version:             "11.0.26",
+				PackageManager:      models.Maven,
+				Ecosystem:           models.EcosystemMaven,
+				BlockLocation:       propertyLocation,
+				LocationRole:        models.LocationRoleManifest,
+				VersionLocation:     &propertyLocation,
+				IsVersionConstraint: true,
+			},
+		})
+	}
+}
+
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
 // declared with a relativePath (as spring-boot-starter-parent <= 2.2 points at
 // spring-boot-dependencies), which used to break the second remote fetch.

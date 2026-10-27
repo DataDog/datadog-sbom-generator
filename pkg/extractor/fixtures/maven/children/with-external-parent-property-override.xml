@@ -1,0 +1,9 @@
+<project>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>root</artifactId>
+    <version>1.0</version>
+    <relativePath>../with-external-parent-property-override.xml</relativePath>
+  </parent>
+  <artifactId>app</artifactId>
+</project>

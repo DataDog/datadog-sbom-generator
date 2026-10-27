@@ -375,6 +375,7 @@ func (e MavenLockExtractor) enrichDependencies(path string, dependencies []Maven
 			dependency.FilePosition = models.FilePosition{}
 			dependency.Version.FilePosition = models.FilePosition{}
 			dependency.ArtifactID.FilePosition = models.FilePosition{}
+			dependency.GroupID.FilePosition = models.FilePosition{}
 		}
 		result[index] = dependency
 	}
@@ -646,12 +647,21 @@ func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 	return extractor.ExtractFromFile(pathToLockfile, MavenLockExtractor{})
 }
 
-// versionConstraintPackage returns the pin of a local managed entry whose coordinates fully resolve to an exact version.
+// versionConstraintPackage returns the pin of a managed entry whose coordinates fully resolve to an exact version. A remote
+// parent's entry has no location in the repository, so it is pinned at the repository property that sets its version.
 func versionConstraintPackage(lockPackage MavenLockDependency, coordinates mavenCoordinates) (extractor.PackageDetails, bool) {
-	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") || lockPackage.SourceFile == "" {
+	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") {
 		return extractor.PackageDetails{}, false
 	}
-	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isDynamicVersion || !coordinates.block.IsStartSet() {
+	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isDynamicVersion {
+		return extractor.PackageDetails{}, false
+	}
+
+	block, nameAt, namespaceAt := coordinates.block, &coordinates.nameAt, coordinates.namespaceAt
+	if !block.IsStartSet() {
+		block, nameAt, namespaceAt = coordinates.versionAt, nil, nil
+	}
+	if !block.IsStartSet() {
 		return extractor.PackageDetails{}, false
 	}
 
@@ -659,10 +669,10 @@ func versionConstraintPackage(lockPackage MavenLockDependency, coordinates maven
 		Name:                coordinates.name(),
 		Version:             coordinates.version,
 		Ecosystem:           models.EcosystemMaven,
-		BlockLocation:       coordinates.block,
+		BlockLocation:       block,
 		LocationRole:        models.LocationRoleManifest,
-		NameLocation:        &coordinates.nameAt,
-		NamespaceLocation:   coordinates.namespaceAt,
+		NameLocation:        nameAt,
+		NamespaceLocation:   namespaceAt,
 		VersionLocation:     &coordinates.versionAt,
 		PackageManager:      mavenPackageManager,
 		IsVersionConstraint: true,
