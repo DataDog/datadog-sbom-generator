@@ -85,8 +85,8 @@ This tool also supports enriching lockfile-derived package information from the 
 - This tool only supports extracting packages and locations from `pom.xml`.
 - It can only scan `pom.xml` files which are stored in the same repository.
 - If a pom file defines a parent that is not stored in the repository or is an artifact hosted by an artifact registry, the scanner will try to download it from Maven central. If the scanner cannot locate it there, or cannot access it, it won't be able to resolve the version.
-- `<dependencyManagement>` versions are reported as version constraints when they are declared in a pom file of the repository, or when a downloaded parent's entry takes its version from a property set in the repository (for example `<tomcat.version>` with `spring-boot-starter-parent`).
-- A BOM imported with `<scope>import</scope>` is downloaded from Maven central and its versions are reported as version constraints when the import is declared in a pom file of the repository, or when its version is set by a property in the repository (for example `<netty.version>`). Other imported BOMs are not expanded, and imported versions are not used to resolve dependencies declared without a version.
+- BOMs imported with `<scope>import</scope>` are downloaded from Maven central the same way, with the BOMs they import, following Maven's precedence: an entry declared in a `<dependencyManagement>` section wins over every import, and the first import wins, starting with the imports of the closest pom.
+- `<dependencyManagement>` versions, including those of downloaded parents and imported BOMs, are reported as version constraints. Each one is located where the repository sets it: its entry or import in a pom file of the repository, the property setting its version (for example `<tomcat.version>` with `spring-boot-starter-parent`), or else the `<parent>` element declaring the downloaded parent.
 
 #### Gradle
 

@@ -53,6 +53,19 @@ func mockMavenCentral(t *testing.T, poms map[string]string) *atomic.Int64 {
 	return requests
 }
 
+// parentPin is the pin of a version managed by a downloaded parent, located at the <parent> element of the pom.
+func parentPin(name string, version string, parentBlock models.FilePosition) extractor.PackageDetails {
+	return extractor.PackageDetails{
+		Name:                name,
+		Version:             version,
+		PackageManager:      models.Maven,
+		Ecosystem:           models.EcosystemMaven,
+		BlockLocation:       parentBlock,
+		LocationRole:        models.LocationRoleManifest,
+		IsVersionConstraint: true,
+	}
+}
+
 func TestMavenLockExtractor_ShouldExtract(t *testing.T) {
 	t.Parallel()
 
@@ -399,6 +412,11 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		parentPin("org.apache.activemq:activemq-amqp", "5.16.5", models.FilePosition{
+			Line:     models.Position{Start: 2, End: 6},
+			Column:   models.Position{Start: 3, End: 12},
+			Filename: path,
+		}),
 	})
 }
 
@@ -469,6 +487,11 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 		Column:   models.Position{Start: 21, End: 28},
 		Filename: rootPath,
 	}
+	rootParent := models.FilePosition{
+		Line:     models.Position{Start: 2, End: 6},
+		Column:   models.Position{Start: 3, End: 12},
+		Filename: rootPath,
+	}
 
 	for _, path := range []string{rootPath, childPath} {
 		packages, err := java.ParseMavenLock(path)
@@ -487,6 +510,8 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 				VersionLocation:     &propertyLocation,
 				IsVersionConstraint: true,
 			},
+			parentPin("org.apache.activemq:activemq-amqp", "5.16.5", rootParent),
+			parentPin("com.google.code.findbugs:jsr305", "3.0.2", rootParent),
 		})
 	}
 }
@@ -505,6 +530,13 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 			<dependencyManagement>
 				<dependencies>
 					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-bom</artifactId>
+						<version>2.0.0</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
 						<groupId>io.netty</groupId>
 						<artifactId>netty-bom</artifactId>
 						<version>${netty.version}</version>
@@ -517,6 +549,25 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 						<version>${micrometer.version}</version>
 						<type>pom</type>
 						<scope>import</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlin/kotlin-bom/2.0.0/kotlin-bom-2.0.0.pom": `<project>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-bom</artifactId>
+			<version>2.0.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.0.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-test</artifactId>
+						<version>2.0.0</version>
 					</dependency>
 				</dependencies>
 			</dependencyManagement>
@@ -545,6 +596,11 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 						<groupId>io.micrometer</groupId>
 						<artifactId>micrometer-core</artifactId>
 						<version>1.17.2</version>
+					</dependency>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-handler</artifactId>
+						<version>4.1.0.Final</version>
 					</dependency>
 				</dependencies>
 			</dependencyManagement>
@@ -602,11 +658,7 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 	}
 
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-bom-imports.xml"))
-	packages, err := java.ParseMavenLock(path)
-	if err != nil {
-		t.Errorf("Got unexpected error: %v", err)
-	}
-
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-external-parent-bom-imports.xml"))
 	nettyProperty := models.FilePosition{
 		Line:     models.Position{Start: 10, End: 10},
 		Column:   models.Position{Start: 20, End: 32},
@@ -622,6 +674,11 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 		Column:   models.Position{Start: 18, End: 24},
 		Filename: path,
 	}
+	parentBlock := models.FilePosition{
+		Line:     models.Position{Start: 2, End: 6},
+		Column:   models.Position{Start: 3, End: 12},
+		Filename: path,
+	}
 	importedPin := func(name string, version string, block models.FilePosition, versionAt models.FilePosition) extractor.PackageDetails {
 		return extractor.PackageDetails{
 			Name:                name,
@@ -634,10 +691,14 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 			IsVersionConstraint: true,
 		}
 	}
-	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+	expected := []extractor.PackageDetails{
+		// netty-bom is imported before micrometer-bom, which also manages netty-handler.
 		importedPin("io.netty:netty-handler", "4.2.18.Final", nettyProperty, nettyProperty),
+		// The repository's kotlin-bom import wins over the parent's.
 		importedPin("org.jetbrains.kotlin:kotlin-stdlib", "2.4.21", kotlinImport, kotlinImportVersion),
 		importedPin("org.jetbrains.kotlinx:kotlinx-coroutines-core", "1.10.2", kotlinImport, kotlinImportVersion),
+		parentPin("org.jetbrains.kotlin:kotlin-test", "2.0.0", parentBlock),
+		parentPin("io.micrometer:micrometer-core", "1.17.2", parentBlock),
 		{
 			Name:           "org.jetbrains.kotlin:kotlin-reflect",
 			Version:        "2.4.0",
@@ -666,7 +727,16 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 			},
 			IsVersionConstraint: true,
 		},
-	})
+	}
+
+	for _, pomPath := range []string{path, childPath} {
+		packages, err := java.ParseMavenLock(pomPath)
+		if err != nil {
+			t.Errorf("Got unexpected error: %v", err)
+		}
+
+		testutil.ExpectPackages(t, packages, expected)
+	}
 }
 
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
@@ -739,6 +809,11 @@ func TestParseMavenLock_WithExternalParentChain(t *testing.T) {
 			},
 			IsDirect: true,
 		},
+		parentPin("org.apache.activemq:activemq-amqp", "5.16.5", models.FilePosition{
+			Line:     models.Position{Start: 2, End: 6},
+			Column:   models.Position{Start: 3, End: 12},
+			Filename: path,
+		}),
 	})
 }
 
@@ -2633,6 +2708,11 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	packages, err := java.ParseMavenLock(path)
 	require.NoError(t, err)
 
+	parentBlock := models.FilePosition{
+		Line:     models.Position{Start: 5, End: 10},
+		Column:   models.Position{Start: 2, End: 11},
+		Filename: path,
+	}
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
 		{
 			Name:           "org.springframework.boot:spring-boot-starter-test",
@@ -2683,6 +2763,8 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 			VersionLocation: &models.FilePosition{},
 			IsDirect:        true,
 		},
+		parentPin("org.springframework.boot:spring-boot-starter-web", "3.4.0", parentBlock),
+		parentPin("org.springframework.boot:spring-boot-starter-test", "3.4.0", parentBlock),
 	})
 }
 

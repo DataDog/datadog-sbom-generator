@@ -2,6 +2,7 @@ package java
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -444,6 +445,9 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 
 	parsedLockfile.MainSourceFile = f.Path()
 	parsedLockfile.ProjectVersionSourceFile = f.Path()
+	for i := range parsedLockfile.ManagedDependencies.Dependencies {
+		parsedLockfile.ManagedDependencies.Dependencies[i].InheritanceDepth = depth
+	}
 
 	if parsedLockfile.Properties.m == nil {
 		parsedLockfile.Properties.m = map[string]MavenLockProperty{}
@@ -485,6 +489,13 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 		}
 
 		parentFilePath = parentPath
+		if !strings.HasPrefix(f.Path(), "https") {
+			block, blockErr := parentElementPosition(f.Path())
+			if blockErr != nil {
+				context.Reporter.Warnf("Failed to locate the parent of %s: %v\n", f.Path(), blockErr)
+			}
+			parentLockfile.RemoteParentBlock = block
+		}
 	} else if _, err = os.Stat(parentPath); errors.Is(err, os.ErrNotExist) {
 		// If the parent pom does not exist and is not a remote file, we can't do anything.
 		context.Reporter.Warnf("Maven lockfile parser couldn't reach the parent because it is not locally defined: %s\n", parentPath)
@@ -561,18 +572,16 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 	}
 
 	constraints := map[string]extractor.PackageDetails{}
-	imported := map[string]extractor.PackageDetails{}
 	explicitlyManaged := map[string]bool{}
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
-		coordinates := lockPackage.resolveCoordinates(*parsedLockfile, context)
 		if isImport(lockPackage) {
-			maps.Copy(imported, e.importedPins(coordinates, context))
 			continue
 		}
 
+		coordinates := lockPackage.resolveCoordinates(*parsedLockfile, context)
 		finalName := coordinates.name()
 		explicitlyManaged[finalName] = true
-		if pin, ok := versionConstraintPackage(coordinates); ok {
+		if pin, ok := versionConstraintPackage(coordinates, parsedLockfile.RemoteParentBlock); ok {
 			constraints[finalName] = pin
 		} else if coordinates.isDynamicVersion {
 			// A dynamic version overrides the inherited pins without being one itself.
@@ -595,7 +604,7 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 	}
 
 	// An entry declared in a dependencyManagement section wins over every imported BOM.
-	for name, pin := range imported {
+	for name, pin := range e.importedPins(*parsedLockfile, context) {
 		if !explicitlyManaged[name] {
 			constraints[name] = pin
 		}
@@ -648,15 +657,18 @@ func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 }
 
 // versionConstraintPackage returns the pin of a managed entry whose coordinates fully resolve to an exact version. A remote
-// parent's entry has no location in the repository, so it is pinned at the repository property that sets its version.
-func versionConstraintPackage(coordinates mavenCoordinates) (extractor.PackageDetails, bool) {
+// parent's entry is pinned at the repository property that sets its version, or else at the <parent> element.
+func versionConstraintPackage(coordinates mavenCoordinates, remoteParentBlock models.FilePosition) (extractor.PackageDetails, bool) {
 	if !coordinates.isExact() {
 		return extractor.PackageDetails{}, false
 	}
 
-	block, nameAt, namespaceAt := coordinates.block, &coordinates.nameAt, coordinates.namespaceAt
+	block, nameAt, namespaceAt, versionAt := coordinates.block, &coordinates.nameAt, coordinates.namespaceAt, &coordinates.versionAt
 	if !block.IsStartSet() {
 		block, nameAt, namespaceAt = coordinates.versionAt, nil, nil
+	}
+	if !block.IsStartSet() {
+		block, versionAt = remoteParentBlock, nil
 	}
 	if !block.IsStartSet() {
 		return extractor.PackageDetails{}, false
@@ -670,28 +682,33 @@ func versionConstraintPackage(coordinates mavenCoordinates) (extractor.PackageDe
 		LocationRole:        models.LocationRoleManifest,
 		NameLocation:        nameAt,
 		NamespaceLocation:   namespaceAt,
-		VersionLocation:     &coordinates.versionAt,
+		VersionLocation:     versionAt,
 		PackageManager:      mavenPackageManager,
 		IsVersionConstraint: true,
 	}, true
 }
 
-// importedPins returns a pin for every version the BOM of an import entry manages, located where versionConstraintPackage
-// locates the import itself: an import the repository neither declares nor versions brings no pins.
-func (e MavenLockExtractor) importedPins(bom mavenCoordinates, context extractor.ScanContext) map[string]extractor.PackageDetails {
-	// SHORTCUT: imports without a location are not downloaded, so one declared earlier cannot win over these pins as it
-	// does in Maven; expanding every import fixes it (and fills the versions of dependencies declared without one).
-	anchor, ok := versionConstraintPackage(bom)
-	if !ok {
-		return nil
-	}
-
+// importedPins returns a pin for every version the BOMs imported by lockfile manage, located where versionConstraintPackage
+// locates each import. The first BOM managing a package wins.
+func (e MavenLockExtractor) importedPins(lockfile MavenLockFile, context extractor.ScanContext) map[string]extractor.PackageDetails {
 	pins := map[string]extractor.PackageDetails{}
-	for name, version := range e.bomVersions(bom, map[string]bool{}, context) {
-		pin := anchor
-		pin.Name, pin.Version = name, version
-		pin.NameLocation, pin.NamespaceLocation, pin.VersionLocation = nil, nil, clonePosition(anchor.VersionLocation)
-		pins[name] = pin
+
+	for _, imported := range orderedImports(lockfile) {
+		bom := imported.resolveCoordinates(lockfile, context)
+		anchor, ok := versionConstraintPackage(bom, lockfile.RemoteParentBlock)
+		if !ok {
+			continue
+		}
+
+		for name, version := range e.bomVersions(bom, map[string]bool{}, context) {
+			if _, ok := pins[name]; ok {
+				continue
+			}
+			pin := anchor
+			pin.Name, pin.Version = name, version
+			pin.NameLocation, pin.NamespaceLocation, pin.VersionLocation = nil, nil, clonePosition(anchor.VersionLocation)
+			pins[name] = pin
+		}
 	}
 
 	return pins
@@ -711,17 +728,16 @@ func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string
 	}
 
 	versions := map[string]string{}
-	var imports []mavenCoordinates
 	for _, managed := range lockfile.ManagedDependencies.Dependencies {
-		coordinates := managed.resolveCoordinates(*lockfile, context)
 		if isImport(managed) {
-			imports = append(imports, coordinates)
-		} else if coordinates.isExact() {
+			continue
+		}
+		if coordinates := managed.resolveCoordinates(*lockfile, context); coordinates.isExact() {
 			versions[coordinates.name()] = coordinates.version
 		}
 	}
-	for _, imported := range imports {
-		for name, version := range e.bomVersions(imported, visited, context) {
+	for _, imported := range orderedImports(*lockfile) {
+		for name, version := range e.bomVersions(imported.resolveCoordinates(*lockfile, context), visited, context) {
 			if _, ok := versions[name]; !ok {
 				versions[name] = version
 			}
@@ -731,10 +747,26 @@ func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string
 	return versions
 }
 
+// orderedImports returns the BOMs a merged lockfile imports in the order Maven reads them: the closest pom's first, each
+// pom's in declaration order.
+func orderedImports(lockfile MavenLockFile) []MavenLockDependency {
+	var imports []MavenLockDependency
+	for _, managed := range lockfile.ManagedDependencies.Dependencies {
+		if isImport(managed) {
+			imports = append(imports, managed)
+		}
+	}
+	slices.SortStableFunc(imports, func(a, b MavenLockDependency) int {
+		return cmp.Compare(a.InheritanceDepth, b.InheritanceDepth)
+	})
+
+	return imports
+}
+
 func (e MavenLockExtractor) fetchBOM(pomURL string, context extractor.ScanContext) (*MavenLockFile, bool) {
 	file, err := NewMavenRegistryAPIClient(pomURL)
 	if err != nil {
-		context.Reporter.Warnf("Failed to fetch imported BOM from remote repository: %s\n", pomURL)
+		context.Reporter.Warnf("Failed to fetch imported BOM from remote repository: %s: %v\n", pomURL, err)
 		return nil, false
 	}
 	lockfile, err := e.decodeMavenFile(file, 0, map[string]bool{pomURL: true}, context)

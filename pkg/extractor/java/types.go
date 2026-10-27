@@ -93,6 +93,8 @@ type MavenLockDependency struct {
 	Scope      string                    `xml:"scope"`
 	Exclusions []MavenLockExclusion      `xml:"exclusions>exclusion"`
 	SourceFile string
+	// InheritanceDepth is 0 for an entry of the decoded pom, 1 for one of its parent, and so on.
+	InheritanceDepth int
 	models.FilePosition
 }
 
@@ -126,6 +128,8 @@ type MavenLockFile struct {
 	ManagedDependencies      MavenLockDependencyHolder `xml:"dependencyManagement>dependencies"`
 	MainSourceFile           string
 	ProjectVersionSourceFile string
+	// RemoteParentBlock is the <parent> element, in the repository, declaring the first parent downloaded from Maven central.
+	RemoteParentBlock models.FilePosition
 }
 
 type MavenLockProperty struct {
