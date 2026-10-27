@@ -700,6 +700,29 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 		parentPin("org.jetbrains.kotlin:kotlin-test", "2.0.0", parentBlock),
 		parentPin("io.micrometer:micrometer-core", "1.17.2", parentBlock),
 		{
+			Name:           "io.micrometer:micrometer-core",
+			Version:        "1.17.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 31, End: 34},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 33, End: 33},
+				Column:   models.Position{Start: 19, End: 34},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 32, End: 32},
+				Column:   models.Position{Start: 16, End: 29},
+				Filename: path,
+			},
+			IsDirect: true,
+		},
+		{
 			Name:           "org.jetbrains.kotlin:kotlin-reflect",
 			Version:        "2.4.0",
 			PackageManager: models.Maven,

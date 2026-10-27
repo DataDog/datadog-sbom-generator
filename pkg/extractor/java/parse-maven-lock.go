@@ -603,10 +603,18 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 		details[finalName] = pkgDetails
 	}
 
-	// An entry declared in a dependencyManagement section wins over every imported BOM.
+	// Imported BOMs also set the version of a dependency declared without one, but an entry declared in a
+	// dependencyManagement section wins over all of them.
 	for name, pin := range e.importedPins(*parsedLockfile, context) {
-		if !explicitlyManaged[name] {
-			constraints[name] = pin
+		if explicitlyManaged[name] {
+			continue
+		}
+		constraints[name] = pin
+
+		if pkgDetails, ok := details[name]; ok && pkgDetails.IsVersionEmpty() {
+			pkgDetails.Version = pin.Version
+			pkgDetails.VersionLocation = clonePosition(pin.VersionLocation)
+			details[name] = pkgDetails
 		}
 	}
 
