@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
@@ -22,12 +24,16 @@ import (
 // path -> POM body responses, restoring the real URL and http.DefaultClient when the test
 // ends. A TLS server is required because the production code identifies a remote parent by
 // its "https" scheme prefix. Not safe to run with t.Parallel(), since java.MavenCentral and
-// http.DefaultClient are shared, mutable package state.
-func mockMavenCentral(t *testing.T, poms map[string]string) {
+// http.DefaultClient are shared, mutable package state. The URL is prefixed with the test
+// name so poms cached by another test never answer this one; the returned counter counts requests.
+func mockMavenCentral(t *testing.T, poms map[string]string) *atomic.Int64 {
 	t.Helper()
 
+	prefix := "/" + t.Name()
+	requests := &atomic.Int64{}
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, ok := poms[r.URL.Path]
+		requests.Add(1)
+		body, ok := poms[strings.TrimPrefix(r.URL.Path, prefix)]
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -37,12 +43,14 @@ func mockMavenCentral(t *testing.T, poms map[string]string) {
 	t.Cleanup(server.Close)
 
 	originalURL := java.MavenCentral
-	java.MavenCentral = server.URL
+	java.MavenCentral = server.URL + prefix
 	t.Cleanup(func() { java.MavenCentral = originalURL })
 
 	originalClient := http.DefaultClient
 	http.DefaultClient = server.Client()
 	t.Cleanup(func() { http.DefaultClient = originalClient })
+
+	return requests
 }
 
 func TestMavenLockExtractor_ShouldExtract(t *testing.T) {
@@ -392,6 +400,28 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 			IsDirect: true,
 		},
 	})
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_DownloadsRemotePomOnce(t *testing.T) {
+	requests := mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>2.7.3</version>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent.xml"))
+	for range 2 {
+		_, err := java.ParseMavenLock(path)
+		require.NoError(t, err)
+	}
+
+	require.Equal(t, int64(1), requests.Load())
 }
 
 //nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral

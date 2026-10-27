@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"maps"
 
@@ -25,36 +26,22 @@ import (
 
 var errAPIFailed = errors.New("API query failed")
 
+// SHORTCUT: process-wide and unbounded cache of downloaded poms (a released artifact never changes); scope it to a scan
+// if a long-lived service embeds the library.
+var remotePoms sync.Map
+
 func NewMavenRegistryAPIClient(url string) (extractor.DepFile, error) {
-	ctx := context.Background()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make new request: %w", err)
+	body, ok := remotePoms.Load(url)
+	if !ok {
+		fetched, err := fetchRemotePom(url)
+		if err != nil {
+			return nil, err
+		}
+		body, _ = remotePoms.LoadOrStore(url, fetched)
 	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: Maven registry query failed: %w", errAPIFailed, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w: Maven registry query status: %s", errAPIFailed, resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: failed to read response body: %w", errAPIFailed, err)
-	}
-
-	if len(body) == 0 {
-		return nil, fmt.Errorf("%w: empty response body", errAPIFailed)
-	}
-
-	readCloser := io.NopCloser(bytes.NewReader(body))
 
 	return &MavenRegistryProject{
-		ReadCloser: readCloser,
+		ReadCloser: io.NopCloser(bytes.NewReader(body.([]byte))),
 		path:       url,
 	}, nil
 }
@@ -745,7 +732,6 @@ func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string
 }
 
 func (e MavenLockExtractor) fetchBOM(pomURL string, context extractor.ScanContext) (*MavenLockFile, bool) {
-	// SHORTCUT: no cache, every pom downloads the BOMs it imports again; key one by URL before expanding every import.
 	file, err := NewMavenRegistryAPIClient(pomURL)
 	if err != nil {
 		context.Reporter.Warnf("Failed to fetch imported BOM from remote repository: %s\n", pomURL)
@@ -766,4 +752,33 @@ func isImport(dependency MavenLockDependency) bool {
 
 func remotePomURL(groupID string, artifactID string, version string) (string, error) {
 	return url.JoinPath(MavenCentral, strings.ReplaceAll(groupID, ".", "/"), artifactID, version, fmt.Sprintf("%s-%s.pom", artifactID, version))
+}
+
+func fetchRemotePom(url string) ([]byte, error) {
+	ctx := context.Background()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make new request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("%w: Maven registry query failed: %w", errAPIFailed, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: Maven registry query status: %s", errAPIFailed, resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%w: failed to read response body: %w", errAPIFailed, err)
+	}
+
+	if len(body) == 0 {
+		return nil, fmt.Errorf("%w: empty response body", errAPIFailed)
+	}
+
+	return body, nil
 }
