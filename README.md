@@ -84,7 +84,7 @@ This tool also supports enriching lockfile-derived package information from the 
 
 - This tool only supports extracting packages and locations from `pom.xml`.
 - It can only scan `pom.xml` files which are stored in the same repository.
-- If a pom file defines a parent that is not stored in the repository or is an artifact hosted by an artifact registry, the scanner will try to download it from Maven central. If the scanner cannot locate it there, or cannot access it, it won't be able to resolve the version.
+- If a pom file defines a parent that is not stored in the repository or is an artifact hosted by an artifact registry, the scanner will try to download it from Google's mirror of Maven central (`maven-central.storage-download.googleapis.com`). If the scanner cannot locate it there, or cannot access it, it won't be able to resolve the version.
 
 #### Gradle
 
