@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
@@ -22,12 +24,16 @@ import (
 // path -> POM body responses, restoring the real URL and http.DefaultClient when the test
 // ends. A TLS server is required because the production code identifies a remote parent by
 // its "https" scheme prefix. Not safe to run with t.Parallel(), since java.MavenCentral and
-// http.DefaultClient are shared, mutable package state.
-func mockMavenCentral(t *testing.T, poms map[string]string) {
+// http.DefaultClient are shared, mutable package state. The URL is prefixed with the test
+// name so poms cached by another test never answer this one; the returned counter counts requests.
+func mockMavenCentral(t *testing.T, poms map[string]string) *atomic.Int64 {
 	t.Helper()
 
+	prefix := "/" + t.Name()
+	requests := &atomic.Int64{}
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, ok := poms[r.URL.Path]
+		requests.Add(1)
+		body, ok := poms[strings.TrimPrefix(r.URL.Path, prefix)]
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -37,12 +43,39 @@ func mockMavenCentral(t *testing.T, poms map[string]string) {
 	t.Cleanup(server.Close)
 
 	originalURL := java.MavenCentral
-	java.MavenCentral = server.URL
+	java.MavenCentral = server.URL + prefix
 	t.Cleanup(func() { java.MavenCentral = originalURL })
 
 	originalClient := http.DefaultClient
 	http.DefaultClient = server.Client()
 	t.Cleanup(func() { http.DefaultClient = originalClient })
+
+	return requests
+}
+
+// parentPin is the pin of a version managed by a downloaded parent, located at the <parent> element of the pom.
+func parentPin(name string, version string, parentBlock models.FilePosition) extractor.PackageDetails {
+	return extractor.PackageDetails{
+		Name:                name,
+		Version:             version,
+		PackageManager:      models.Maven,
+		Ecosystem:           models.EcosystemMaven,
+		BlockLocation:       parentBlock,
+		LocationRole:        models.LocationRoleManifest,
+		IsVersionConstraint: true,
+	}
+}
+
+// parseMavenLockExpandingBOMs parses a pom with the --maven-expand-boms option on.
+func parseMavenLockExpandingBOMs(t *testing.T, path string) []extractor.PackageDetails {
+	t.Helper()
+
+	context := testutil.GetTestContext()
+	context.MavenExpandBOMs = true
+	packages, err := extractor.ExtractFromFileWithContext(path, java.MavenLockExtractor{}, context)
+	require.NoError(t, err)
+
+	return packages
 }
 
 func TestMavenLockExtractor_ShouldExtract(t *testing.T) {
@@ -392,6 +425,436 @@ func TestParseMavenLock_WithExternalParent(t *testing.T) {
 			IsDirect: true,
 		},
 	})
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_DownloadsRemotePomOnceExpandingBOMs(t *testing.T) {
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent.xml"))
+	parent := map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>2.7.3</version>
+		</project>`,
+	}
+
+	for _, tt := range []struct {
+		name       string
+		poms       map[string]string
+		expandBOMs bool
+		requests   int64
+	}{
+		{name: "default", poms: parent, requests: 2},
+		{name: "expanding BOMs", poms: parent, expandBOMs: true, requests: 1},
+		{name: "failed download", requests: 2},
+		{name: "failed download expanding BOMs", expandBOMs: true, requests: 1},
+	} {
+		//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+		t.Run(tt.name, func(t *testing.T) {
+			requests := mockMavenCentral(t, tt.poms)
+			context := testutil.GetTestContext()
+			context.MavenExpandBOMs = tt.expandBOMs
+
+			for range 2 {
+				_, err := extractor.ExtractFromFileWithContext(path, java.MavenLockExtractor{}, context)
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.requests, requests.Load())
+		})
+	}
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/4.1.2/spring-boot-dependencies-4.1.2.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>4.1.2</version>
+			<properties>
+				<tomcat.version>11.0.27</tomcat.version>
+				<activemq.version>5.16.5</activemq.version>
+			</properties>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.tomcat.embed</groupId>
+						<artifactId>tomcat-embed-core</artifactId>
+						<version>${tomcat.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.activemq</groupId>
+						<artifactId>activemq-amqp</artifactId>
+						<version>${activemq.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>com.google.code.findbugs</groupId>
+						<artifactId>jsr305</artifactId>
+						<version>3.0.2</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	rootPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-property-override.xml"))
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-external-parent-property-override.xml"))
+	propertyLocation := models.FilePosition{
+		Line:     models.Position{Start: 10, End: 10},
+		Column:   models.Position{Start: 21, End: 28},
+		Filename: rootPath,
+	}
+
+	for _, path := range []string{rootPath, childPath} {
+		packages, err := java.ParseMavenLock(path)
+		if err != nil {
+			t.Errorf("Got unexpected error: %v", err)
+		}
+
+		testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+			{
+				Name:                "org.apache.tomcat.embed:tomcat-embed-core",
+				Version:             "11.0.26",
+				PackageManager:      models.Maven,
+				Ecosystem:           models.EcosystemMaven,
+				BlockLocation:       propertyLocation,
+				LocationRole:        models.LocationRoleManifest,
+				VersionLocation:     &propertyLocation,
+				IsVersionConstraint: true,
+			},
+		})
+	}
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithExternalParentInheritedVersion(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>com.example</groupId>
+						<artifactId>example-core</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-inherited-version.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	// The pom inherits its version from the downloaded parent, so the repository doesn't set example-core's version.
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+	testutil.ExpectPackages(t, parseMavenLockExpandingBOMs(t, path), []extractor.PackageDetails{
+		parentPin("com.example:example-core", "1.0", models.FilePosition{
+			Line:     models.Position{Start: 2, End: 6},
+			Column:   models.Position{Start: 3, End: 12},
+			Filename: path,
+		}),
+	})
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<properties>
+				<netty.version>4.2.19.Final</netty.version>
+				<micrometer.version>1.17.2</micrometer.version>
+			</properties>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-bom</artifactId>
+						<version>2.0.0</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-bom</artifactId>
+						<version>${netty.version}</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-bom</artifactId>
+						<version>${micrometer.version}</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlin/kotlin-bom/2.0.0/kotlin-bom-2.0.0.pom": `<project>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-bom</artifactId>
+			<version>2.0.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.0.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-test</artifactId>
+						<version>2.0.0</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/io/netty/netty-bom/4.2.18.Final/netty-bom-4.2.18.Final.pom": `<project>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-bom</artifactId>
+			<version>4.2.18.Final</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-handler</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/io/micrometer/micrometer-bom/1.17.2/micrometer-bom-1.17.2.pom": `<project>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-bom</artifactId>
+			<version>1.17.2</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-core</artifactId>
+						<version>1.17.2</version>
+					</dependency>
+					<dependency>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-handler</artifactId>
+						<version>4.1.0.Final</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlin/kotlin-bom/2.4.21/kotlin-bom-2.4.21.pom": `<project>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-bom</artifactId>
+			<version>2.4.21</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlinx</groupId>
+						<artifactId>kotlinx-coroutines-bom</artifactId>
+						<version>1.10.2</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.4.21</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-reflect</artifactId>
+						<version>2.4.21</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+		"/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.10.2/kotlinx-coroutines-bom-1.10.2.pom": `<project>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-bom</artifactId>
+			<version>1.10.2</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlinx</groupId>
+						<artifactId>kotlinx-coroutines-core</artifactId>
+						<version>1.10.2</version>
+					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib</artifactId>
+						<version>2.0.0</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Got unexpected error: %v", err)
+	}
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-bom-imports.xml"))
+	childPath := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/children/with-external-parent-bom-imports.xml"))
+	nettyProperty := models.FilePosition{
+		Line:     models.Position{Start: 10, End: 10},
+		Column:   models.Position{Start: 20, End: 32},
+		Filename: path,
+	}
+	kotlinImport := models.FilePosition{
+		Line:     models.Position{Start: 15, End: 21},
+		Column:   models.Position{Start: 7, End: 20},
+		Filename: path,
+	}
+	kotlinImportVersion := models.FilePosition{
+		Line:     models.Position{Start: 18, End: 18},
+		Column:   models.Position{Start: 18, End: 24},
+		Filename: path,
+	}
+	parentBlock := models.FilePosition{
+		Line:     models.Position{Start: 2, End: 6},
+		Column:   models.Position{Start: 3, End: 12},
+		Filename: path,
+	}
+	importedPin := func(name string, version string, block models.FilePosition, versionAt models.FilePosition) extractor.PackageDetails {
+		return extractor.PackageDetails{
+			Name:                name,
+			Version:             version,
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			BlockLocation:       block,
+			LocationRole:        models.LocationRoleManifest,
+			VersionLocation:     &versionAt,
+			IsVersionConstraint: true,
+		}
+	}
+	expected := []extractor.PackageDetails{
+		// netty-bom is imported before micrometer-bom, which also manages netty-handler.
+		importedPin("io.netty:netty-handler", "4.2.18.Final", nettyProperty, nettyProperty),
+		// The repository's kotlin-bom import replaces the parent's, so kotlin-test, only in the parent's, isn't managed.
+		importedPin("org.jetbrains.kotlin:kotlin-stdlib", "2.4.21", kotlinImport, kotlinImportVersion),
+		importedPin("org.jetbrains.kotlinx:kotlinx-coroutines-core", "1.10.2", kotlinImport, kotlinImportVersion),
+		parentPin("io.micrometer:micrometer-core", "1.17.2", parentBlock),
+		{
+			Name:           "io.micrometer:micrometer-core",
+			Version:        "1.17.2",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 31, End: 34},
+				Column:   models.Position{Start: 5, End: 18},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 33, End: 33},
+				Column:   models.Position{Start: 19, End: 34},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 32, End: 32},
+				Column:   models.Position{Start: 16, End: 29},
+				Filename: path,
+			},
+			IsDirect: true,
+		},
+		{
+			Name:           "org.jetbrains.kotlin:kotlin-reflect",
+			Version:        "2.4.0",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 22, End: 26},
+				Column:   models.Position{Start: 7, End: 20},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			NameLocation: &models.FilePosition{
+				Line:     models.Position{Start: 24, End: 24},
+				Column:   models.Position{Start: 21, End: 35},
+				Filename: path,
+			},
+			NamespaceLocation: &models.FilePosition{
+				Line:     models.Position{Start: 23, End: 23},
+				Column:   models.Position{Start: 18, End: 38},
+				Filename: path,
+			},
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 25, End: 25},
+				Column:   models.Position{Start: 18, End: 23},
+				Filename: path,
+			},
+			IsVersionConstraint: true,
+		},
+	}
+
+	for _, pomPath := range []string{path, childPath} {
+		testutil.ExpectPackages(t, parseMavenLockExpandingBOMs(t, pomPath), expected)
+	}
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_SkipsImportedBOMsByDefault(t *testing.T) {
+	requests := mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>io.micrometer</groupId>
+						<artifactId>micrometer-bom</artifactId>
+						<version>1.17.2</version>
+						<type>pom</type>
+						<scope>import</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-bom-imports.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "io.micrometer:micrometer-core",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			IsDirect:       true,
+		},
+		{
+			Name:                "org.jetbrains.kotlin:kotlin-reflect",
+			Version:             "2.4.0",
+			PackageManager:      models.Maven,
+			Ecosystem:           models.EcosystemMaven,
+			IsVersionConstraint: true,
+		},
+	})
+	require.Equal(t, int64(1), requests.Load())
 }
 
 // TestParseMavenLock_WithExternalParentChain covers a remote parent whose own parent is
@@ -2411,16 +2874,50 @@ func TestParseMavenLock_SpringRemote(t *testing.T) {
 	})
 }
 
-func TestParseMavenLock_SkipsImportedBOM(t *testing.T) {
-	t.Parallel()
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_ExpandsImportedBOM(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/3.4.0/spring-boot-dependencies-3.4.0.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>3.4.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.yaml</groupId>
+						<artifactId>snakeyaml</artifactId>
+						<version>2.3</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
 	dir, err := os.Getwd()
 	require.NoError(t, err)
 
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/dependency-management-import.xml"))
-	packages, err := java.ParseMavenLock(path)
-	require.NoError(t, err)
+	packages := parseMavenLockExpandingBOMs(t, path)
 
-	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{
+		{
+			Name:           "org.yaml:snakeyaml",
+			Version:        "2.3",
+			PackageManager: models.Maven,
+			Ecosystem:      models.EcosystemMaven,
+			BlockLocation: models.FilePosition{
+				Line:     models.Position{Start: 4, End: 10},
+				Column:   models.Position{Start: 7, End: 20},
+				Filename: path,
+			},
+			LocationRole: models.LocationRoleManifest,
+			VersionLocation: &models.FilePosition{
+				Line:     models.Position{Start: 7, End: 7},
+				Column:   models.Position{Start: 18, End: 23},
+				Filename: path,
+			},
+			IsVersionConstraint: true,
+		},
+	})
 }
 
 func TestParseMavenLock_SkipsManagedDependencyWithoutVersion(t *testing.T) {

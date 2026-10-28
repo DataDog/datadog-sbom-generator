@@ -42,6 +42,7 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 | `--exclude`                |         | (none)          | Exclude paths using doublestar glob patterns (relative to scanned directory); `**` matches any number of path segments |
 | `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned                                                     |
 | `--exclude-package`        |         | (none)          | Exclude a package at any version, as `<ecosystem>:<name>`                                                              |
+| `--maven-expand-boms`      |         | `false`         | Resolve Maven versions as in the effective POM, downloading every imported BOM from Maven central                      |
 | `--pretty`                 |         | `false`         | Format JSON output with indentation                                                                                    |
 | `--exit-on-config-failure` |         | `false`         | Exit with code 129 if fetching merged configuration fails                                                              |
 

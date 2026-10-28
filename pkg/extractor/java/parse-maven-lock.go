@@ -2,6 +2,7 @@ package java
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -14,6 +15,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
+	"time"
 
 	"maps"
 
@@ -25,36 +28,23 @@ import (
 
 var errAPIFailed = errors.New("API query failed")
 
+// SHORTCUT: process-wide and unbounded cache of pom downloads, failed ones included; scope it to a scan if a long-lived
+// service embeds the library, as it would never retry a failure.
+var remotePoms sync.Map
+
+type remotePom struct {
+	body []byte
+	err  error
+}
+
 func NewMavenRegistryAPIClient(url string) (extractor.DepFile, error) {
-	ctx := context.Background()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, err := fetchRemotePom(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make new request: %w", err)
+		return nil, err
 	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: Maven registry query failed: %w", errAPIFailed, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w: Maven registry query status: %s", errAPIFailed, resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: failed to read response body: %w", errAPIFailed, err)
-	}
-
-	if len(body) == 0 {
-		return nil, fmt.Errorf("%w: empty response body", errAPIFailed)
-	}
-
-	readCloser := io.NopCloser(bytes.NewReader(body))
 
 	return &MavenRegistryProject{
-		ReadCloser: readCloser,
+		ReadCloser: io.NopCloser(bytes.NewReader(body)),
 		path:       url,
 	}, nil
 }
@@ -203,6 +193,10 @@ type mavenCoordinates struct {
 
 func (c mavenCoordinates) name() string {
 	return c.groupID + ":" + c.artifactID
+}
+
+func (c mavenCoordinates) isExact() bool {
+	return c.groupID != "" && c.artifactID != "" && c.version != "" && !c.isDynamicVersion
 }
 
 func (mld MavenLockDependency) resolveCoordinates(lockfile MavenLockFile, context extractor.ScanContext) mavenCoordinates {
@@ -375,6 +369,7 @@ func (e MavenLockExtractor) enrichDependencies(path string, dependencies []Maven
 			dependency.FilePosition = models.FilePosition{}
 			dependency.Version.FilePosition = models.FilePosition{}
 			dependency.ArtifactID.FilePosition = models.FilePosition{}
+			dependency.GroupID.FilePosition = models.FilePosition{}
 		}
 		result[index] = dependency
 	}
@@ -399,13 +394,7 @@ func (e MavenLockExtractor) enrichProperties(path string, properties map[string]
 
 func (e MavenLockExtractor) resolveParentFilename(parent MavenLockParent, currentPath string, context extractor.ScanContext) string {
 	buildRemoteURL := func() string {
-		u, err := url.JoinPath(
-			MavenCentral,
-			strings.ReplaceAll(parent.GroupID, ".", "/"),
-			parent.ArtifactID,
-			parent.Version,
-			fmt.Sprintf("%s-%s.pom", parent.ArtifactID, parent.Version),
-		)
+		u, err := remotePomURL(parent.GroupID, parent.ArtifactID, parent.Version)
 		if err != nil {
 			context.Reporter.Warnf("Failed to construct remote path: %s\n", err)
 			return ""
@@ -458,6 +447,9 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 
 	parsedLockfile.MainSourceFile = f.Path()
 	parsedLockfile.ProjectVersionSourceFile = f.Path()
+	for i := range parsedLockfile.ManagedDependencies.Dependencies {
+		parsedLockfile.ManagedDependencies.Dependencies[i].InheritanceDepth = depth
+	}
 
 	if parsedLockfile.Properties.m == nil {
 		parsedLockfile.Properties.m = map[string]MavenLockProperty{}
@@ -485,7 +477,7 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 
 	// If the parent pom does not exist, it still can be in an external repository
 	if strings.HasPrefix(parentPath, "https") {
-		mavenRegistryClient, clientErr := NewMavenRegistryAPIClient(parentPath)
+		mavenRegistryClient, clientErr := openRemotePom(parentPath, context)
 		// If the remote pom does not exist, we can't do anything.
 		if clientErr != nil {
 			context.Reporter.Warnf("Failed to fetch parent pom from remote repository: %s\n", parentPath)
@@ -499,6 +491,13 @@ func (e MavenLockExtractor) decodeMavenFile(f extractor.DepFile, depth int, visi
 		}
 
 		parentFilePath = parentPath
+		if context.MavenExpandBOMs && !strings.HasPrefix(f.Path(), "https") {
+			block, blockErr := parentElementPosition(f.Path())
+			if blockErr != nil {
+				context.Reporter.Warnf("Failed to locate the parent of %s: %v\n", f.Path(), blockErr)
+			}
+			parentLockfile.RemoteParentBlock = block
+		}
 	} else if _, err = os.Stat(parentPath); errors.Is(err, os.ErrNotExist) {
 		// If the parent pom does not exist and is not a remote file, we can't do anything.
 		context.Reporter.Warnf("Maven lockfile parser couldn't reach the parent because it is not locally defined: %s\n", parentPath)
@@ -575,10 +574,16 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 	}
 
 	constraints := map[string]extractor.PackageDetails{}
+	explicitlyManaged := map[string]bool{}
 	for _, lockPackage := range parsedLockfile.ManagedDependencies.Dependencies {
+		if isImport(lockPackage) {
+			continue
+		}
+
 		coordinates := lockPackage.resolveCoordinates(*parsedLockfile, context)
 		finalName := coordinates.name()
-		if pin, ok := versionConstraintPackage(lockPackage, coordinates); ok {
+		explicitlyManaged[finalName] = true
+		if pin, ok := versionConstraintPackage(coordinates, parsedLockfile.RemoteParentBlock); ok {
 			constraints[finalName] = pin
 		} else if coordinates.isDynamicVersion {
 			// A dynamic version overrides the inherited pins without being one itself.
@@ -598,6 +603,21 @@ func (e MavenLockExtractor) Extract(f extractor.DepFile, context extractor.ScanC
 			pkgDetails.DepGroups = append(pkgDetails.DepGroups, scope)
 		}
 		details[finalName] = pkgDetails
+	}
+
+	// Imported BOMs also set the version of a dependency declared without one, but an entry declared in a
+	// dependencyManagement section wins over all of them.
+	for name, pin := range e.importedPins(*parsedLockfile, context) {
+		if explicitlyManaged[name] {
+			continue
+		}
+		constraints[name] = pin
+
+		if pkgDetails, ok := details[name]; ok && pkgDetails.IsVersionEmpty() {
+			pkgDetails.Version = pin.Version
+			pkgDetails.VersionLocation = clonePosition(pin.VersionLocation)
+			details[name] = pkgDetails
+		}
 	}
 
 	return append(slices.Collect(maps.Values(details)), slices.Collect(maps.Values(constraints))...), nil
@@ -646,12 +666,22 @@ func ParseMavenLock(pathToLockfile string) ([]extractor.PackageDetails, error) {
 	return extractor.ExtractFromFile(pathToLockfile, MavenLockExtractor{})
 }
 
-// versionConstraintPackage returns the pin of a local managed entry whose coordinates fully resolve to an exact version.
-func versionConstraintPackage(lockPackage MavenLockDependency, coordinates mavenCoordinates) (extractor.PackageDetails, bool) {
-	if strings.EqualFold(strings.TrimSpace(lockPackage.Scope), "import") || lockPackage.SourceFile == "" {
+// versionConstraintPackage returns the pin of a managed entry whose coordinates fully resolve to an exact version. A remote
+// parent's entry is pinned at the repository property that sets its version, or else at the <parent> element.
+func versionConstraintPackage(coordinates mavenCoordinates, remoteParentBlock models.FilePosition) (extractor.PackageDetails, bool) {
+	if !coordinates.isExact() {
 		return extractor.PackageDetails{}, false
 	}
-	if coordinates.groupID == "" || coordinates.artifactID == "" || coordinates.version == "" || coordinates.isDynamicVersion || !coordinates.block.IsStartSet() {
+
+	block, nameAt, namespaceAt, versionAt := coordinates.block, &coordinates.nameAt, coordinates.namespaceAt, &coordinates.versionAt
+	if !block.IsStartSet() {
+		block, nameAt, namespaceAt = coordinates.versionAt, nil, nil
+	}
+	// A version set in a downloaded pom, such as an inherited ${project.version}, is not located in the repository.
+	if !block.IsStartSet() || strings.HasPrefix(block.Filename, "https") {
+		block, versionAt = remoteParentBlock, nil
+	}
+	if !block.IsStartSet() {
 		return extractor.PackageDetails{}, false
 	}
 
@@ -659,12 +689,175 @@ func versionConstraintPackage(lockPackage MavenLockDependency, coordinates maven
 		Name:                coordinates.name(),
 		Version:             coordinates.version,
 		Ecosystem:           models.EcosystemMaven,
-		BlockLocation:       coordinates.block,
+		BlockLocation:       block,
 		LocationRole:        models.LocationRoleManifest,
-		NameLocation:        &coordinates.nameAt,
-		NamespaceLocation:   coordinates.namespaceAt,
-		VersionLocation:     &coordinates.versionAt,
+		NameLocation:        nameAt,
+		NamespaceLocation:   namespaceAt,
+		VersionLocation:     versionAt,
 		PackageManager:      mavenPackageManager,
 		IsVersionConstraint: true,
 	}, true
+}
+
+// importedPins returns a pin for every version the BOMs imported by lockfile manage, located where versionConstraintPackage
+// locates each import. The first BOM managing a package wins.
+func (e MavenLockExtractor) importedPins(lockfile MavenLockFile, context extractor.ScanContext) map[string]extractor.PackageDetails {
+	if !context.MavenExpandBOMs {
+		return nil
+	}
+
+	pins := map[string]extractor.PackageDetails{}
+	for _, bom := range orderedImports(lockfile, context) {
+		anchor, ok := versionConstraintPackage(bom, lockfile.RemoteParentBlock)
+		if !ok {
+			continue
+		}
+
+		for name, version := range e.bomVersions(bom, map[string]bool{}, context) {
+			if _, ok := pins[name]; ok {
+				continue
+			}
+			pin := anchor
+			pin.Name, pin.Version = name, version
+			pin.NameLocation, pin.NamespaceLocation, pin.VersionLocation = nil, nil, clonePosition(anchor.VersionLocation)
+			pins[name] = pin
+		}
+	}
+
+	return pins
+}
+
+// bomVersions returns the versions a BOM manages, resolved in its own context: its own entries win over the BOMs it
+// imports, and an earlier import wins over a later one.
+func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string]bool, context extractor.ScanContext) map[string]string {
+	pomURL, err := remotePomURL(bom.groupID, bom.artifactID, bom.version)
+	if err != nil || visited[pomURL] {
+		return nil
+	}
+	visited[pomURL] = true
+	lockfile, ok := e.fetchBOM(pomURL, context)
+	if !ok {
+		return nil
+	}
+
+	versions := map[string]string{}
+	for _, managed := range lockfile.ManagedDependencies.Dependencies {
+		if isImport(managed) {
+			continue
+		}
+		if coordinates := managed.resolveCoordinates(*lockfile, context); coordinates.isExact() {
+			versions[coordinates.name()] = coordinates.version
+		}
+	}
+	for _, imported := range orderedImports(*lockfile, context) {
+		for name, version := range e.bomVersions(imported, visited, context) {
+			if _, ok := versions[name]; !ok {
+				versions[name] = version
+			}
+		}
+	}
+
+	return versions
+}
+
+// orderedImports resolves the BOMs a merged lockfile imports in the order Maven reads them: the closest pom's first, each
+// pom's in declaration order. Only the closest import of a BOM counts, as Maven's inheritance replaces the farther ones.
+func orderedImports(lockfile MavenLockFile, context extractor.ScanContext) []mavenCoordinates {
+	var imports []MavenLockDependency
+	for _, managed := range lockfile.ManagedDependencies.Dependencies {
+		if isImport(managed) {
+			imports = append(imports, managed)
+		}
+	}
+	slices.SortStableFunc(imports, func(a, b MavenLockDependency) int {
+		return cmp.Compare(a.InheritanceDepth, b.InheritanceDepth)
+	})
+
+	boms := make([]mavenCoordinates, 0, len(imports))
+	seen := map[string]bool{}
+	for _, imported := range imports {
+		bom := imported.resolveCoordinates(lockfile, context)
+		if seen[bom.name()] {
+			continue
+		}
+		seen[bom.name()] = true
+		boms = append(boms, bom)
+	}
+
+	return boms
+}
+
+func (e MavenLockExtractor) fetchBOM(pomURL string, context extractor.ScanContext) (*MavenLockFile, bool) {
+	file, err := openRemotePom(pomURL, context)
+	if err != nil {
+		context.Reporter.Warnf("Failed to fetch imported BOM from remote repository: %s: %v\n", pomURL, err)
+		return nil, false
+	}
+	lockfile, err := e.decodeMavenFile(file, 0, map[string]bool{pomURL: true}, context)
+	if err != nil {
+		context.Reporter.Warnf("Failed to decode imported BOM %s: %v\n", pomURL, err)
+		return nil, false
+	}
+
+	return lockfile, true
+}
+
+func isImport(dependency MavenLockDependency) bool {
+	return strings.EqualFold(strings.TrimSpace(dependency.Scope), "import")
+}
+
+func remotePomURL(groupID string, artifactID string, version string) (string, error) {
+	return url.JoinPath(MavenCentral, strings.ReplaceAll(groupID, ".", "/"), artifactID, version, fmt.Sprintf("%s-%s.pom", artifactID, version))
+}
+
+// openRemotePom downloads a pom from Maven central, once per process when BOM expansion is on.
+func openRemotePom(url string, context extractor.ScanContext) (extractor.DepFile, error) {
+	if !context.MavenExpandBOMs {
+		return NewMavenRegistryAPIClient(url)
+	}
+
+	cached, ok := remotePoms.Load(url)
+	if !ok {
+		body, err := fetchRemotePom(url)
+		cached, _ = remotePoms.LoadOrStore(url, remotePom{body: body, err: err})
+	}
+	pom := cached.(remotePom)
+	if pom.err != nil {
+		return nil, pom.err
+	}
+
+	return &MavenRegistryProject{
+		ReadCloser: io.NopCloser(bytes.NewReader(pom.body)),
+		path:       url,
+	}, nil
+}
+
+func fetchRemotePom(url string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make new request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("%w: Maven registry query failed: %w", errAPIFailed, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w: Maven registry query status: %s", errAPIFailed, resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%w: failed to read response body: %w", errAPIFailed, err)
+	}
+
+	if len(body) == 0 {
+		return nil, fmt.Errorf("%w: empty response body", errAPIFailed)
+	}
+
+	return body, nil
 }
