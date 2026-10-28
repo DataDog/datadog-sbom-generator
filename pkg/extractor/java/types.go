@@ -73,8 +73,9 @@ type GradleVerificationMetadataExtractor struct {
 // Maven Constants
 // ============================================================================
 
-// MavenCentral is a var, not a const, so tests can redirect it to a mock server.
-var MavenCentral = "https://repo.maven.apache.org/maven2"
+// MavenCentral is Google's mirror of Maven Central, used because Maven Central rate limits remote pom downloads.
+// It is a var, not a const, so tests can redirect it to a mock server.
+var MavenCentral = "https://maven-central.storage-download.googleapis.com/maven2"
 
 // ============================================================================
 // Maven Types
