@@ -701,8 +701,7 @@ func (e MavenLockExtractor) importedPins(lockfile MavenLockFile, context extract
 	}
 
 	pins := map[string]extractor.PackageDetails{}
-	for _, imported := range orderedImports(lockfile) {
-		bom := imported.resolveCoordinates(lockfile, context)
+	for _, bom := range orderedImports(lockfile, context) {
 		anchor, ok := versionConstraintPackage(bom, lockfile.RemoteParentBlock)
 		if !ok {
 			continue
@@ -744,8 +743,8 @@ func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string
 			versions[coordinates.name()] = coordinates.version
 		}
 	}
-	for _, imported := range orderedImports(*lockfile) {
-		for name, version := range e.bomVersions(imported.resolveCoordinates(*lockfile, context), visited, context) {
+	for _, imported := range orderedImports(*lockfile, context) {
+		for name, version := range e.bomVersions(imported, visited, context) {
 			if _, ok := versions[name]; !ok {
 				versions[name] = version
 			}
@@ -755,9 +754,9 @@ func (e MavenLockExtractor) bomVersions(bom mavenCoordinates, visited map[string
 	return versions
 }
 
-// orderedImports returns the BOMs a merged lockfile imports in the order Maven reads them: the closest pom's first, each
-// pom's in declaration order.
-func orderedImports(lockfile MavenLockFile) []MavenLockDependency {
+// orderedImports resolves the BOMs a merged lockfile imports in the order Maven reads them: the closest pom's first, each
+// pom's in declaration order. Only the closest import of a BOM counts, as Maven's inheritance replaces the farther ones.
+func orderedImports(lockfile MavenLockFile, context extractor.ScanContext) []mavenCoordinates {
 	var imports []MavenLockDependency
 	for _, managed := range lockfile.ManagedDependencies.Dependencies {
 		if isImport(managed) {
@@ -768,7 +767,18 @@ func orderedImports(lockfile MavenLockFile) []MavenLockDependency {
 		return cmp.Compare(a.InheritanceDepth, b.InheritanceDepth)
 	})
 
-	return imports
+	boms := make([]mavenCoordinates, 0, len(imports))
+	seen := map[string]bool{}
+	for _, imported := range imports {
+		bom := imported.resolveCoordinates(lockfile, context)
+		if seen[bom.name()] {
+			continue
+		}
+		seen[bom.name()] = true
+		boms = append(boms, bom)
+	}
+
+	return boms
 }
 
 func (e MavenLockExtractor) fetchBOM(pomURL string, context extractor.ScanContext) (*MavenLockFile, bool) {

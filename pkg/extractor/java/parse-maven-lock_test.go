@@ -745,10 +745,9 @@ func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 	expected := []extractor.PackageDetails{
 		// netty-bom is imported before micrometer-bom, which also manages netty-handler.
 		importedPin("io.netty:netty-handler", "4.2.18.Final", nettyProperty, nettyProperty),
-		// The repository's kotlin-bom import wins over the parent's.
+		// The repository's kotlin-bom import replaces the parent's, so kotlin-test, only in the parent's, isn't managed.
 		importedPin("org.jetbrains.kotlin:kotlin-stdlib", "2.4.21", kotlinImport, kotlinImportVersion),
 		importedPin("org.jetbrains.kotlinx:kotlinx-coroutines-core", "1.10.2", kotlinImport, kotlinImportVersion),
-		parentPin("org.jetbrains.kotlin:kotlin-test", "2.0.0", parentBlock),
 		parentPin("io.micrometer:micrometer-core", "1.17.2", parentBlock),
 		{
 			Name:           "io.micrometer:micrometer-core",
