@@ -1,0 +1,8 @@
+<project>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>remote-parent</artifactId>
+    <version>1.0</version>
+  </parent>
+  <artifactId>app</artifactId>
+</project>

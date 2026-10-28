@@ -671,7 +671,8 @@ func versionConstraintPackage(coordinates mavenCoordinates, remoteParentBlock mo
 	if !block.IsStartSet() {
 		block, nameAt, namespaceAt = coordinates.versionAt, nil, nil
 	}
-	if !block.IsStartSet() {
+	// A version set in a downloaded pom, such as an inherited ${project.version}, is not located in the repository.
+	if !block.IsStartSet() || strings.HasPrefix(block.Filename, "https") {
 		block, versionAt = remoteParentBlock, nil
 	}
 	if !block.IsStartSet() {

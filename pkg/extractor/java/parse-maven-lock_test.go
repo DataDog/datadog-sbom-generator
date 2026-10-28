@@ -531,6 +531,43 @@ func TestParseMavenLock_WithExternalParentPropertyOverride(t *testing.T) {
 }
 
 //nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
+func TestParseMavenLock_WithExternalParentInheritedVersion(t *testing.T) {
+	mockMavenCentral(t, map[string]string{
+		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
+			<groupId>com.example</groupId>
+			<artifactId>remote-parent</artifactId>
+			<version>1.0</version>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>com.example</groupId>
+						<artifactId>example-core</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+		</project>`,
+	})
+
+	dir, err := os.Getwd()
+	require.NoError(t, err)
+
+	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent-inherited-version.xml"))
+	packages, err := java.ParseMavenLock(path)
+	require.NoError(t, err)
+
+	// The pom inherits its version from the downloaded parent, so the repository doesn't set example-core's version.
+	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+	testutil.ExpectPackages(t, parseMavenLockExpandingBOMs(t, path), []extractor.PackageDetails{
+		parentPin("com.example:example-core", "1.0", models.FilePosition{
+			Line:     models.Position{Start: 2, End: 6},
+			Column:   models.Position{Start: 3, End: 12},
+			Filename: path,
+		}),
+	})
+}
+
+//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
 func TestParseMavenLock_WithImportedBOMs(t *testing.T) {
 	mockMavenCentral(t, map[string]string{
 		"/com/example/remote-parent/1.0/remote-parent-1.0.pom": `<project>
