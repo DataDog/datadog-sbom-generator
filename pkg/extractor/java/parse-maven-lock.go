@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"maps"
 
@@ -27,9 +28,14 @@ import (
 
 var errAPIFailed = errors.New("API query failed")
 
-// SHORTCUT: process-wide and unbounded cache of downloaded poms (a released artifact never changes); scope it to a scan
-// if a long-lived service embeds the library.
+// SHORTCUT: process-wide and unbounded cache of pom downloads, failed ones included; scope it to a scan if a long-lived
+// service embeds the library, as it would never retry a failure.
 var remotePoms sync.Map
+
+type remotePom struct {
+	body []byte
+	err  error
+}
 
 func NewMavenRegistryAPIClient(url string) (extractor.DepFile, error) {
 	body, err := fetchRemotePom(url)
@@ -810,23 +816,25 @@ func openRemotePom(url string, context extractor.ScanContext) (extractor.DepFile
 		return NewMavenRegistryAPIClient(url)
 	}
 
-	body, ok := remotePoms.Load(url)
+	cached, ok := remotePoms.Load(url)
 	if !ok {
-		fetched, err := fetchRemotePom(url)
-		if err != nil {
-			return nil, err
-		}
-		body, _ = remotePoms.LoadOrStore(url, fetched)
+		body, err := fetchRemotePom(url)
+		cached, _ = remotePoms.LoadOrStore(url, remotePom{body: body, err: err})
+	}
+	pom := cached.(remotePom)
+	if pom.err != nil {
+		return nil, pom.err
 	}
 
 	return &MavenRegistryProject{
-		ReadCloser: io.NopCloser(bytes.NewReader(body.([]byte))),
+		ReadCloser: io.NopCloser(bytes.NewReader(pom.body)),
 		path:       url,
 	}, nil
 }
 
 func fetchRemotePom(url string) ([]byte, error) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make new request: %w", err)

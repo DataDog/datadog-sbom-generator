@@ -432,24 +432,28 @@ func TestParseMavenLock_DownloadsRemotePomOnceExpandingBOMs(t *testing.T) {
 	dir, err := os.Getwd()
 	require.NoError(t, err)
 	path := filepath.FromSlash(filepath.Join(dir, "../fixtures/maven/with-external-parent.xml"))
+	parent := map[string]string{
+		"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>2.7.3</version>
+		</project>`,
+	}
 
 	for _, tt := range []struct {
 		name       string
+		poms       map[string]string
 		expandBOMs bool
 		requests   int64
 	}{
-		{name: "default", requests: 2},
-		{name: "expanding BOMs", expandBOMs: true, requests: 1},
+		{name: "default", poms: parent, requests: 2},
+		{name: "expanding BOMs", poms: parent, expandBOMs: true, requests: 1},
+		{name: "failed download", requests: 2},
+		{name: "failed download expanding BOMs", expandBOMs: true, requests: 1},
 	} {
 		//nolint:paralleltest // mutates shared java.MavenCentral and http.DefaultClient via mockMavenCentral
 		t.Run(tt.name, func(t *testing.T) {
-			requests := mockMavenCentral(t, map[string]string{
-				"/org/springframework/boot/spring-boot-dependencies/2.7.3/spring-boot-dependencies-2.7.3.pom": `<project>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-dependencies</artifactId>
-					<version>2.7.3</version>
-				</project>`,
-			})
+			requests := mockMavenCentral(t, tt.poms)
 			context := testutil.GetTestContext()
 			context.MavenExpandBOMs = tt.expandBOMs
 
