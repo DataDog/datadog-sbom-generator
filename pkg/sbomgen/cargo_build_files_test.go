@@ -93,6 +93,29 @@ func TestCargo_PackageRootDependsOnlyOnWhatItUses(t *testing.T) {
 	assert.Contains(t, result, cargoTomlFile("lib/c/Cargo.toml"))
 }
 
+func TestCargo_ExcludedAndNonMemberCrates(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-exclude")
+	assert.NotContains(t, result, cargoTomlFile("crates/legacy/Cargo.toml"))
+	assert.Equal(t, []string{"crates/old/Cargo.toml", "vendor/vendored/Cargo.toml"}, depPaths(result[cargoTomlFile("crates/app/Cargo.toml")]))
+
+	old := result[cargoTomlFile("crates/old/Cargo.toml")]
+	assert.Equal(t, "x-old", old.ID)
+	assert.Equal(t, []string{"vendor/vendored/Cargo.toml"}, depPaths(old))
+	assert.Equal(t, "x-vendored", result[cargoTomlFile("vendor/vendored/Cargo.toml")].ID)
+}
+
+func TestCargo_PathOutsideScanRoot(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-outside-root/app")
+	app := result[cargoTomlFile("Cargo.toml")]
+	assert.Equal(t, "o-app", app.ID)
+	assert.Empty(t, app.Dependencies)
+	assert.Len(t, result, 1, "keys: %v", keys(result))
+}
+
 func TestCargo_FlagGating(t *testing.T) {
 	t.Parallel()
 

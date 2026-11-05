@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/CycloneDX/cyclonedx-go"
@@ -88,12 +89,23 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 					continue
 				}
 				for _, match := range matches {
-					manifests = append(manifests, filepath.Join(match, "Cargo.toml"))
+					if !isCargoExcluded(rootDir, root.Workspace.Exclude, match) {
+						manifests = append(manifests, filepath.Join(match, "Cargo.toml"))
+					}
 				}
 			}
 		}
 
-		for _, manifestPath := range manifests {
+		// manifests grows while we walk it: path dependencies on crates that are
+		// not workspace members are followed too.
+		visited := make(map[string]struct{})
+		for i := 0; i < len(manifests); i++ {
+			manifestPath := manifests[i]
+			if _, seen := visited[manifestPath]; seen {
+				continue
+			}
+			visited[manifestPath] = struct{}{}
+
 			manifest, ok := readCargoManifest(manifestPath)
 			if !ok {
 				continue
@@ -106,12 +118,28 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 				if _, err := os.Stat(target); err != nil {
 					continue
 				}
-				if to, ok := cargoRef(scanRoot, target); ok && to != from {
-					addCargoEdge(bom, depIndex, from, to)
+				to, ok := cargoRef(scanRoot, target)
+				if !ok || to == from || to == ".." || strings.HasPrefix(to, "../") {
+					continue
 				}
+				addCargoEdge(bom, depIndex, from, to)
+				manifests = append(manifests, target)
 			}
 		}
 	}
+}
+
+// isCargoExcluded reports whether dir is, or is inside, one of the workspace
+// exclude paths, which are relative to rootDir.
+func isCargoExcluded(rootDir string, excludes []string, dir string) bool {
+	for _, exclude := range excludes {
+		rel, err := filepath.Rel(filepath.Join(rootDir, filepath.FromSlash(exclude)), dir)
+		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // cargoPathDeps returns the Cargo.toml path of every `path` dependency in the
