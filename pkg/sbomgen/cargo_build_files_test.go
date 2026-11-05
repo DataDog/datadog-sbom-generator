@@ -74,6 +74,25 @@ func TestCargo_PathDependencySections(t *testing.T) {
 	assert.Empty(t, result[cargoTomlFile("Cargo.toml")].Dependencies)
 }
 
+func TestCargo_WorkspaceInheritedDeps(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-virtual")
+	assert.Equal(t, []string{"crates/core/Cargo.toml"}, depPaths(result[cargoTomlFile("crates/db/Cargo.toml")]))
+	assert.Equal(t, []string{"crates/core/Cargo.toml", "crates/db/Cargo.toml"}, depPaths(result[cargoTomlFile("crates/api/Cargo.toml")]))
+	assert.Empty(t, result[cargoTomlFile("Cargo.toml")].Dependencies)
+}
+
+func TestCargo_PackageRootDependsOnlyOnWhatItUses(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-pkg-ws")
+	root := result[cargoTomlFile("Cargo.toml")]
+	assert.Equal(t, "pw-root", root.ID)
+	assert.Equal(t, []string{"lib/a/Cargo.toml"}, depPaths(root)) // no root→member edges
+	assert.Contains(t, result, cargoTomlFile("lib/c/Cargo.toml"))
+}
+
 func TestCargo_FlagGating(t *testing.T) {
 	t.Parallel()
 

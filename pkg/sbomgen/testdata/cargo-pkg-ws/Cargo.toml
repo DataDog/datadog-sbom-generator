@@ -1,0 +1,15 @@
+[package]
+name = "pw-root"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "lib/*"]
+
+[workspace.dependencies]
+pw-a = { path = "lib/a" }
+pw-b = { path = "lib/b" }
+pw-c = { path = "lib/c" }
+
+[dependencies]
+pw-a = { workspace = true }

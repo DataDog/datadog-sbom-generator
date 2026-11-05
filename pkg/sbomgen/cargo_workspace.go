@@ -79,9 +79,9 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 			continue
 		}
 
+		rootDir := filepath.Dir(rootPath)
 		manifests := []string{rootPath}
 		if root.Workspace != nil {
-			rootDir := filepath.Dir(rootPath)
 			for _, pattern := range root.Workspace.Members {
 				matches, err := filepath.Glob(filepath.Join(rootDir, filepath.FromSlash(pattern)))
 				if err != nil {
@@ -102,7 +102,7 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 			if from == "" {
 				continue
 			}
-			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath)) {
+			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath), root, rootDir) {
 				if _, err := os.Stat(target); err != nil {
 					continue
 				}
@@ -115,8 +115,10 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 }
 
 // cargoPathDeps returns the Cargo.toml path of every `path` dependency in the
-// manifest's normal, build and target-specific dependency tables.
-func cargoPathDeps(manifest *cargoManifest, manifestDir string) []string {
+// manifest's normal, build and target-specific dependency tables. A
+// `workspace = true` dependency takes its path from the root's
+// [workspace.dependencies], resolved against the root's directory.
+func cargoPathDeps(manifest *cargoManifest, manifestDir string, root *cargoManifest, rootDir string) []string {
 	tables := []map[string]any{manifest.Dependencies, manifest.BuildDependencies}
 	for _, target := range manifest.Target {
 		tables = append(tables, target.Dependencies, target.BuildDependencies)
@@ -124,13 +126,25 @@ func cargoPathDeps(manifest *cargoManifest, manifestDir string) []string {
 
 	var targets []string
 	for _, table := range tables {
-		for _, value := range table {
+		for name, value := range table {
 			dep, ok := value.(map[string]any)
 			if !ok {
 				continue
 			}
 			if path, ok := dep["path"].(string); ok {
 				targets = append(targets, filepath.Clean(filepath.Join(manifestDir, filepath.FromSlash(path), "Cargo.toml")))
+
+				continue
+			}
+			if inherited, _ := dep["workspace"].(bool); !inherited || root.Workspace == nil {
+				continue
+			}
+			wsDep, ok := root.Workspace.Dependencies[name].(map[string]any)
+			if !ok {
+				continue
+			}
+			if path, ok := wsDep["path"].(string); ok {
+				targets = append(targets, filepath.Clean(filepath.Join(rootDir, filepath.FromSlash(path), "Cargo.toml")))
 			}
 		}
 	}
