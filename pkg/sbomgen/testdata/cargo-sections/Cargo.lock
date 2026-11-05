@@ -1,0 +1,25 @@
+version = 3
+
+[[package]]
+name = "s-app"
+version = "0.1.0"
+
+[[package]]
+name = "s-core"
+version = "0.1.0"
+
+[[package]]
+name = "s-gen"
+version = "0.1.0"
+
+[[package]]
+name = "s-renamed"
+version = "0.1.0"
+
+[[package]]
+name = "s-testkit"
+version = "0.1.0"
+
+[[package]]
+name = "s-unix"
+version = "0.1.0"

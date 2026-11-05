@@ -1,0 +1,20 @@
+[package]
+name = "s-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+s-core = { path = "../core" }
+serde = "1"
+other = { version = "1", git = "https://example.com/x" }
+alias = { path = "./../renamed/", package = "s-renamed" }
+
+[build-dependencies]
+s-gen = { path = "../gen" }
+s-core = { path = "../core" }
+
+[target.'cfg(unix)'.dependencies]
+s-unix = { path = "../unix" }
+
+[dev-dependencies]
+s-testkit = { path = "../testkit" }

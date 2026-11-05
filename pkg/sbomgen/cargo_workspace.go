@@ -3,6 +3,7 @@ package sbomgen
 import (
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/BurntSushi/toml"
 	"github.com/CycloneDX/cyclonedx-go"
@@ -30,19 +31,29 @@ type cargoManifest struct {
 }
 
 // AddCargoWorkspaceEdges adds a file component for every crate in each Cargo
-// workspace found in the BOM. It must be called after the BOM is built but
-// before serialization, while the scan root directories are still known.
+// workspace found in the BOM, plus an edge for every path dependency between
+// crates. It must be called after the BOM is built but before serialization,
+// while the scan root directories are still known.
 //
 // Each Cargo.toml file component in the BOM was emitted next to a Cargo.lock,
 // so it is a workspace root. This function reads it from disk by trying each
-// rootDir in order until one succeeds, expands its workspace members, and adds
-// a component for each member that does not have one yet.
+// rootDir in order until one succeeds, expands its workspace members, adds a
+// component for each member that does not have one yet, and adds an edge from
+// each crate to every crate it depends on through `path`. Dev-dependencies are
+// skipped because Cargo never builds them into a binary.
 //
 // This has no effect on normal package scanning or SBOM output — it only
-// enriches the build files used by GetBuildFileTrees.
+// enriches the dependency graph used by GetBuildFileTrees.
 func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 	if bom.Components == nil || len(rootDirs) == 0 {
 		return
+	}
+
+	depIndex := make(map[string]int)
+	if bom.Dependencies != nil {
+		for i, dep := range *bom.Dependencies {
+			depIndex[dep.Ref] = i
+		}
 	}
 
 	known := make(map[string]struct{})
@@ -64,21 +75,95 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 		}
 
 		root, ok := readCargoManifest(rootPath)
-		if !ok || root.Workspace == nil {
+		if !ok {
 			continue
 		}
 
-		rootDir := filepath.Dir(rootPath)
-		for _, pattern := range root.Workspace.Members {
-			matches, err := filepath.Glob(filepath.Join(rootDir, filepath.FromSlash(pattern)))
-			if err != nil {
+		manifests := []string{rootPath}
+		if root.Workspace != nil {
+			rootDir := filepath.Dir(rootPath)
+			for _, pattern := range root.Workspace.Members {
+				matches, err := filepath.Glob(filepath.Join(rootDir, filepath.FromSlash(pattern)))
+				if err != nil {
+					continue
+				}
+				for _, match := range matches {
+					manifests = append(manifests, filepath.Join(match, "Cargo.toml"))
+				}
+			}
+		}
+
+		for _, manifestPath := range manifests {
+			manifest, ok := readCargoManifest(manifestPath)
+			if !ok {
 				continue
 			}
-			for _, match := range matches {
-				addCargoComponent(bom, known, scanRoot, filepath.Join(match, "Cargo.toml"))
+			from := addCargoComponent(bom, known, scanRoot, manifestPath, manifest)
+			if from == "" {
+				continue
+			}
+			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath)) {
+				if _, err := os.Stat(target); err != nil {
+					continue
+				}
+				if to, ok := cargoRef(scanRoot, target); ok && to != from {
+					addCargoEdge(bom, depIndex, from, to)
+				}
 			}
 		}
 	}
+}
+
+// cargoPathDeps returns the Cargo.toml path of every `path` dependency in the
+// manifest's normal, build and target-specific dependency tables.
+func cargoPathDeps(manifest *cargoManifest, manifestDir string) []string {
+	tables := []map[string]any{manifest.Dependencies, manifest.BuildDependencies}
+	for _, target := range manifest.Target {
+		tables = append(tables, target.Dependencies, target.BuildDependencies)
+	}
+
+	var targets []string
+	for _, table := range tables {
+		for _, value := range table {
+			dep, ok := value.(map[string]any)
+			if !ok {
+				continue
+			}
+			if path, ok := dep["path"].(string); ok {
+				targets = append(targets, filepath.Clean(filepath.Join(manifestDir, filepath.FromSlash(path), "Cargo.toml")))
+			}
+		}
+	}
+
+	return targets
+}
+
+// addCargoEdge records that from depends on to in bom.Dependencies, unless
+// that edge already exists.
+func addCargoEdge(bom *cyclonedx.BOM, depIndex map[string]int, from string, to string) {
+	if bom.Dependencies == nil {
+		bom.Dependencies = &[]cyclonedx.Dependency{}
+	}
+
+	i, ok := depIndex[from]
+	if !ok {
+		updated := append(*bom.Dependencies, cyclonedx.Dependency{Ref: from})
+		bom.Dependencies = &updated
+		i = len(updated) - 1
+		depIndex[from] = i
+	}
+
+	// Index into the slice so the element is mutated in place (range-over-value gives a copy).
+	deps := *bom.Dependencies
+	var targets []string
+	if deps[i].Dependencies != nil {
+		targets = *deps[i].Dependencies
+	}
+	if slices.Contains(targets, to) {
+		return
+	}
+	targets = append(targets, to)
+	deps[i].Dependencies = &targets
 }
 
 // findCargoRoot returns the absolute scan root and the absolute path of the
@@ -113,21 +198,27 @@ func readCargoManifest(path string) (*cargoManifest, bool) {
 	return &manifest, true
 }
 
-// addCargoComponent appends a file component for the Cargo.toml at
-// manifestPath, unless one already exists or the file cannot be parsed.
-func addCargoComponent(bom *cyclonedx.BOM, known map[string]struct{}, scanRoot string, manifestPath string) {
-	rel, err := filepath.Rel(scanRoot, manifestPath)
+// cargoRef returns the BOMRef of the file at path: its path relative to
+// scanRoot, with forward slashes.
+func cargoRef(scanRoot string, path string) (string, bool) {
+	rel, err := filepath.Rel(scanRoot, path)
 	if err != nil {
-		return
-	}
-	ref := filepath.ToSlash(rel)
-	if _, exists := known[ref]; exists {
-		return
+		return "", false
 	}
 
-	manifest, ok := readCargoManifest(manifestPath)
+	return filepath.ToSlash(rel), true
+}
+
+// addCargoComponent appends a file component for the Cargo.toml at
+// manifestPath, unless one already exists. It returns the component's BOMRef,
+// or "" when the path cannot be made relative to scanRoot.
+func addCargoComponent(bom *cyclonedx.BOM, known map[string]struct{}, scanRoot string, manifestPath string, manifest *cargoManifest) string {
+	ref, ok := cargoRef(scanRoot, manifestPath)
 	if !ok {
-		return
+		return ""
+	}
+	if _, exists := known[ref]; exists {
+		return ref
 	}
 
 	comp := cyclonedx.Component{
@@ -143,4 +234,6 @@ func addCargoComponent(bom *cyclonedx.BOM, known map[string]struct{}, scanRoot s
 
 	known[ref] = struct{}{}
 	*bom.Components = append(*bom.Components, comp)
+
+	return ref
 }

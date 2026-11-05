@@ -20,6 +20,15 @@ func cargoTrees(t *testing.T, dir string) map[BuildFile]BuildFileRelations {
 	return GetBuildFileTrees(sbom, FileTypeCargoToml)
 }
 
+func depPaths(rel BuildFileRelations) []string {
+	paths := []string{}
+	for _, dep := range rel.Dependencies {
+		paths = append(paths, dep.FilePath)
+	}
+
+	return paths
+}
+
 func TestCargo_Single(t *testing.T) {
 	t.Parallel()
 
@@ -49,6 +58,20 @@ func TestCargo_VirtualWorkspace_Members(t *testing.T) {
 		assert.Equal(t, id, rel.ID)
 	}
 	assert.NotContains(t, result, cargoTomlFile("crates/docs/Cargo.toml"))
+}
+
+func TestCargo_PathDependencySections(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-sections")
+	app := result[cargoTomlFile("crates/app/Cargo.toml")]
+	assert.Equal(t, []string{
+		"crates/core/Cargo.toml",
+		"crates/gen/Cargo.toml",
+		"crates/renamed/Cargo.toml",
+		"crates/unix/Cargo.toml",
+	}, depPaths(app)) // testkit absent: dev-dependency; core listed once
+	assert.Empty(t, result[cargoTomlFile("Cargo.toml")].Dependencies)
 }
 
 func TestCargo_FlagGating(t *testing.T) {
