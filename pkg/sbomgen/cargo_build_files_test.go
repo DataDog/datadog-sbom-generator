@@ -1,8 +1,10 @@
 package sbomgen
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -114,6 +116,38 @@ func TestCargo_PathOutsideScanRoot(t *testing.T) {
 	assert.Equal(t, "o-app", app.ID)
 	assert.Empty(t, app.Dependencies)
 	assert.Len(t, result, 1, "keys: %v", keys(result))
+}
+
+func TestCargo_NestedWorkspaceAndBrokenManifest(t *testing.T) {
+	t.Parallel()
+
+	sbom, err := GenerateSBOM([]string{"testdata/cargo-nested"}, DefaultOptions())
+	require.NoError(t, err)
+	result := GetBuildFileTrees(sbom, FileTypeCargoToml)
+
+	fuzz := result[cargoTomlFile("fuzz/Cargo.toml")]
+	assert.Equal(t, "n-fuzz", fuzz.ID)
+	assert.Equal(t, []string{"crates/core/Cargo.toml"}, depPaths(fuzz))
+	assert.Equal(t, "n-core", result[cargoTomlFile("crates/core/Cargo.toml")].ID)
+
+	var bom cyclonedx.BOM
+	require.NoError(t, json.Unmarshal(sbom, &bom))
+	refs := map[string]int{}
+	for _, c := range *bom.Components {
+		if c.Type == cyclonedx.ComponentTypeFile {
+			refs[c.BOMRef]++
+		}
+	}
+	for ref, n := range refs {
+		assert.Equal(t, 1, n, "duplicate component %s", ref)
+	}
+}
+
+func TestCargo_MultipleScanDirsDoNotFail(t *testing.T) {
+	t.Parallel()
+
+	_, err := GenerateSBOM([]string{"testdata/cargo-single", "testdata/cargo-virtual"}, DefaultOptions())
+	require.NoError(t, err)
 }
 
 func TestCargo_FlagGating(t *testing.T) {
