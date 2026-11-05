@@ -1,0 +1,17 @@
+version = 3
+
+[[package]]
+name = "c-a-util"
+version = "0.1.0"
+
+[[package]]
+name = "c-app"
+version = "0.1.0"
+
+[[package]]
+name = "c-b-util"
+version = "0.1.0"
+
+[[package]]
+name = "c-x"
+version = "0.1.0"

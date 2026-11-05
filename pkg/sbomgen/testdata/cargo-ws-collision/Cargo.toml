@@ -1,0 +1,6 @@
+[workspace]
+members = ["app", "a-util"]
+exclude = ["b"]
+
+[workspace.dependencies]
+util = { path = "a-util" }

@@ -98,6 +98,7 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 
 		// manifests grows while we walk it: path dependencies on crates that are
 		// not workspace members are followed too.
+		members := len(manifests)
 		visited := make(map[string]struct{})
 		for i := 0; i < len(manifests); i++ {
 			manifestPath := manifests[i]
@@ -114,7 +115,13 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 			if from == "" {
 				continue
 			}
-			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath), root, rootDir) {
+			// A followed crate may belong to another workspace, whose
+			// [workspace.dependencies] can map the same name to a different path.
+			ws, wsDir := root, rootDir
+			if i >= members {
+				ws, wsDir = findCargoWorkspace(filepath.Dir(manifestPath), scanRoot)
+			}
+			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath), ws, wsDir) {
 				if _, err := os.Stat(target); err != nil {
 					continue
 				}
@@ -126,6 +133,22 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 				manifests = append(manifests, target)
 			}
 		}
+	}
+}
+
+// findCargoWorkspace returns the nearest Cargo.toml with a [workspace] table at
+// or above dir, without leaving scanRoot, and its directory. It returns nil
+// when there is none.
+func findCargoWorkspace(dir string, scanRoot string) (*cargoManifest, string) {
+	for {
+		if manifest, ok := readCargoManifest(filepath.Join(dir, "Cargo.toml")); ok && manifest.Workspace != nil {
+			return manifest, dir
+		}
+		parent := filepath.Dir(dir)
+		if dir == scanRoot || parent == dir {
+			return nil, ""
+		}
+		dir = parent
 	}
 }
 
@@ -164,7 +187,7 @@ func cargoPathDeps(manifest *cargoManifest, manifestDir string, root *cargoManif
 
 				continue
 			}
-			if inherited, _ := dep["workspace"].(bool); !inherited || root.Workspace == nil {
+			if inherited, _ := dep["workspace"].(bool); !inherited || root == nil || root.Workspace == nil {
 				continue
 			}
 			wsDep, ok := root.Workspace.Dependencies[name].(map[string]any)

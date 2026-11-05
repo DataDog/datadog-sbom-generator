@@ -85,6 +85,14 @@ func TestCargo_WorkspaceInheritedDeps(t *testing.T) {
 	assert.Empty(t, result[cargoTomlFile("Cargo.toml")].Dependencies)
 }
 
+func TestCargo_WorkspaceInheritedDepsUseOwnWorkspace(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-ws-collision")
+	assert.Equal(t, []string{"b/b-util/Cargo.toml"}, depPaths(result[cargoTomlFile("b/x/Cargo.toml")]))
+	assert.Equal(t, "c-b-util", result[cargoTomlFile("b/b-util/Cargo.toml")].ID)
+}
+
 func TestCargo_PackageRootDependsOnlyOnWhatItUses(t *testing.T) {
 	t.Parallel()
 
