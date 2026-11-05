@@ -30,6 +30,27 @@ func TestCargo_Single(t *testing.T) {
 	assert.Empty(t, root.Dependencies)
 }
 
+func TestCargo_VirtualWorkspace_Members(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-virtual")
+	root, ok := result[cargoTomlFile("Cargo.toml")]
+	require.True(t, ok, "keys: %v", keys(result))
+	assert.Empty(t, root.ID)
+	assert.Empty(t, root.Dependencies)
+
+	for path, id := range map[string]string{
+		"crates/core/Cargo.toml": "v-core",
+		"crates/db/Cargo.toml":   "v-db",
+		"crates/api/Cargo.toml":  "v-api",
+	} {
+		rel, ok := result[cargoTomlFile(path)]
+		require.True(t, ok, "missing %s, keys: %v", path, keys(result))
+		assert.Equal(t, id, rel.ID)
+	}
+	assert.NotContains(t, result, cargoTomlFile("crates/docs/Cargo.toml"))
+}
+
 func TestCargo_FlagGating(t *testing.T) {
 	t.Parallel()
 

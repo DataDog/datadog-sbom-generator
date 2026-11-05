@@ -92,6 +92,7 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 
 	if opts.ExtractArtifactIds {
 		AddNpmWorkspaceEdges(bom, dirs...)
+		AddCargoWorkspaceEdges(bom, dirs...)
 	}
 
 	var buf bytes.Buffer
