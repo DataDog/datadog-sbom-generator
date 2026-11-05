@@ -150,6 +150,32 @@ func TestCargo_MultipleScanDirsDoNotFail(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestCargo_ShopExample(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-shop")
+	want := map[string]struct {
+		id   string
+		deps []string
+	}{
+		"Cargo.toml":                 {"shop-api", []string{"crates/core/Cargo.toml", "crates/proto/Cargo.toml"}},
+		"services/worker/Cargo.toml": {"shop-worker", []string{"crates/core/Cargo.toml", "crates/db/Cargo.toml"}},
+		"crates/db/Cargo.toml":       {"shop-db", []string{"crates/core/Cargo.toml"}},
+		"crates/core/Cargo.toml":     {"shop-core", []string{}},
+		"crates/proto/Cargo.toml":    {"shop-proto", []string{}},
+		"crates/testkit/Cargo.toml":  {"shop-testkit", []string{}},
+		"tools/codegen/Cargo.toml":   {"shop-codegen", []string{}},
+	}
+	assert.Len(t, result, len(want), "keys: %v", keys(result))
+
+	for path, w := range want {
+		rel, ok := result[cargoTomlFile(path)]
+		require.True(t, ok, "missing %s", path)
+		assert.Equal(t, w.id, rel.ID, path)
+		assert.Equal(t, w.deps, depPaths(rel), path)
+	}
+}
+
 func TestCargo_FlagGating(t *testing.T) {
 	t.Parallel()
 

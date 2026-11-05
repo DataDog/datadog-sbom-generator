@@ -1,0 +1,8 @@
+[package]
+name = "shop-worker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shop-core = { workspace = true }
+shop-db = { workspace = true }

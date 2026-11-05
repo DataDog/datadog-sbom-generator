@@ -1,0 +1,18 @@
+[package]
+name = "shop-api"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [".", "crates/*", "services/*", "tools/*"]
+exclude = ["crates/legacy"]
+
+[workspace.dependencies]
+shop-core = { path = "crates/core" }
+shop-db = { path = "crates/db" }
+shop-proto = { path = "crates/proto" }
+
+[dependencies]
+shop-core = { workspace = true }
+shop-proto = { workspace = true }
+axum = "0.8"

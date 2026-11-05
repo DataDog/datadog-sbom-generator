@@ -1,0 +1,10 @@
+[package]
+name = "shop-db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shop-core = { workspace = true }
+
+[dev-dependencies]
+shop-testkit = { path = "../testkit" }

@@ -1,0 +1,34 @@
+version = 3
+
+[[package]]
+name = "axum"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "shop-api"
+version = "0.1.0"
+
+[[package]]
+name = "shop-codegen"
+version = "0.1.0"
+
+[[package]]
+name = "shop-core"
+version = "0.1.0"
+
+[[package]]
+name = "shop-db"
+version = "0.1.0"
+
+[[package]]
+name = "shop-proto"
+version = "0.1.0"
+
+[[package]]
+name = "shop-testkit"
+version = "0.1.0"
+
+[[package]]
+name = "shop-worker"
+version = "0.1.0"
