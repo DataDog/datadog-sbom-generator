@@ -3,8 +3,11 @@ package java
 import (
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -18,14 +21,22 @@ const (
 
 	pomPropertiesPrefix = "META-INF/maven/"
 	pomPropertiesSuffix = "/pom.properties"
+
+	// maxArchiveDepth bounds archive nesting (EAR > WAR > fat JAR > JAR needs 3).
+	maxArchiveDepth = 5
+	// maxNestedArchiveSize bounds the bytes read into memory per nested archive.
+	maxNestedArchiveSize = 256 << 20
 )
 
 // JarPomPropertiesExtractor extracts Maven artifact information from
-// pom.properties files embedded inside JAR (ZIP) archives.
+// pom.properties files embedded inside JAR (ZIP) archives. WAR and EAR archives
+// are treated as containers: they are not reported themselves, but the JARs
+// they contain are. Nested archives (jar-in-jar, war-in-ear) are walked
+// recursively.
 type JarPomPropertiesExtractor struct{}
 
 func (e JarPomPropertiesExtractor) ShouldExtract(path string) bool {
-	return filepath.Ext(path) == ".jar"
+	return isArchiveName(filepath.Base(path)) && !strings.HasSuffix(path, "/")
 }
 
 func (e JarPomPropertiesExtractor) IsOfficiallySupported() bool {
@@ -56,7 +67,83 @@ func (e JarPomPropertiesExtractor) Extract(f extractor.DepFile, context extracto
 		return []extractor.PackageDetails{}, extractor.ErrIncompatibleFileFormat
 	}
 
-	packages := make([]extractor.PackageDetails, 0, len(zipReader.File))
+	return extractArchive(f.Path(), filepath.Base(f.Path()), zipReader, 0, context), nil
+}
+
+// extractArchive walks a JAR, WAR or EAR archive. JARs are reported as packages
+// (from their root pom.properties or, as fallback, MANIFEST.MF + filename).
+// WARs and EARs are containers only. Every nested archive entry is walked
+// recursively, up to maxArchiveDepth levels.
+func extractArchive(displayPath, name string, zipReader *zip.Reader, depth int, context extractor.ScanContext) []extractor.PackageDetails {
+	var packages []extractor.PackageDetails
+	if path.Ext(name) == ".jar" {
+		packages = extractJarPackages(displayPath, name, zipReader, context)
+	}
+
+	for _, entry := range zipReader.File {
+		if entry.FileInfo().IsDir() || !isArchiveName(entry.Name) {
+			continue
+		}
+
+		nestedPath := displayPath + "!/" + entry.Name
+		if depth+1 > maxArchiveDepth {
+			context.Reporter.Warnf("Skipping nested archive %s: maximum nesting depth %d reached\n", nestedPath, maxArchiveDepth)
+			continue
+		}
+
+		nested, err := openNestedArchive(entry)
+		if err != nil {
+			context.Reporter.Warnf("Skipping nested archive %s: %v\n", nestedPath, err)
+			continue
+		}
+
+		packages = append(packages, extractArchive(nestedPath, path.Base(entry.Name), nested, depth+1, context)...)
+	}
+
+	if packages == nil {
+		return []extractor.PackageDetails{}
+	}
+
+	return packages
+}
+
+func isArchiveName(name string) bool {
+	switch path.Ext(name) {
+	case ".jar", ".war", ".ear":
+		return true
+	}
+
+	return false
+}
+
+// openNestedArchive reads a nested archive entry into memory (bounded by
+// maxNestedArchiveSize) and opens it as a zip.
+func openNestedArchive(entry *zip.File) (*zip.Reader, error) {
+	if entry.UncompressedSize64 > maxNestedArchiveSize {
+		return nil, fmt.Errorf("size %d exceeds limit of %d bytes", entry.UncompressedSize64, maxNestedArchiveSize)
+	}
+
+	rc, err := entry.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer rc.Close()
+
+	buf, err := io.ReadAll(io.LimitReader(rc, maxNestedArchiveSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(buf) > maxNestedArchiveSize {
+		return nil, fmt.Errorf("size exceeds limit of %d bytes", maxNestedArchiveSize)
+	}
+
+	return zip.NewReader(bytes.NewReader(buf), int64(len(buf)))
+}
+
+// extractJarPackages reports the packages declared by the root pom.properties
+// files of a single JAR, falling back to MANIFEST.MF + filename.
+func extractJarPackages(displayPath, name string, zipReader *zip.Reader, context extractor.ScanContext) []extractor.PackageDetails {
+	packages := make([]extractor.PackageDetails, 0)
 
 	for _, entry := range zipReader.File {
 		if !strings.HasPrefix(entry.Name, pomPropertiesPrefix) || !strings.HasSuffix(entry.Name, pomPropertiesSuffix) {
@@ -65,13 +152,13 @@ func (e JarPomPropertiesExtractor) Extract(f extractor.DepFile, context extracto
 
 		groupID, artifactID, version, parseErr := parsePomProperties(entry)
 		if parseErr != nil {
-			context.Reporter.Warnf("Failed to read pom.properties in %s: %s: %v\n", f.Path(), entry.Name, parseErr)
+			context.Reporter.Warnf("Failed to read pom.properties in %s: %s: %v\n", displayPath, entry.Name, parseErr)
 			continue
 		}
 
 		if groupID == "" || artifactID == "" || version == "" {
 			context.Reporter.Warnf("Skipping incomplete pom.properties in %s: %s (groupId=%q, artifactId=%q, version=%q)\n",
-				f.Path(), entry.Name, groupID, artifactID, version)
+				displayPath, entry.Name, groupID, artifactID, version)
 
 			continue
 		}
@@ -88,10 +175,10 @@ func (e JarPomPropertiesExtractor) Extract(f extractor.DepFile, context extracto
 
 	// Fallback: if no pom.properties found, try to infer from MANIFEST.MF + filename
 	if len(packages) == 0 {
-		packages = extractFromManifest(f.Path(), zipReader, packages)
+		packages = extractFromManifest(name, zipReader, packages)
 	}
 
-	return packages, nil
+	return packages
 }
 
 // parsePomProperties reads a pom.properties file from a ZIP entry and extracts
