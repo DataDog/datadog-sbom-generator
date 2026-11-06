@@ -5,12 +5,14 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/internal/testutil"
 	"github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/DataDog/datadog-sbom-generator/pkg/reporter"
 )
 
 // buildZip returns a zip archive containing the given entries (name -> content).
@@ -163,4 +165,82 @@ func TestParseJarPomProperties_NotAZipWar(t *testing.T) {
 
 	testutil.ExpectErrIs(t, err, extractor.ErrIncompatibleFileFormat)
 	testutil.ExpectPackages(t, packages, []extractor.PackageDetails{})
+}
+
+// parseWithWarnings extracts an archive and returns its packages and the warnings emitted.
+func parseWithWarnings(t *testing.T, p string) ([]extractor.PackageDetails, string) {
+	t.Helper()
+
+	var stderr bytes.Buffer
+	context := extractor.ScanContext{Reporter: reporter.NewCycloneDXReporter(&bytes.Buffer{}, &stderr, reporter.WarnLevel)}
+
+	packages, err := extractor.ExtractFromFileWithContext(p, java.JarPomPropertiesExtractor{}, context)
+	if err != nil {
+		t.Fatalf("Got unexpected error: %v", err)
+	}
+
+	return packages, stderr.String()
+}
+
+// nestedWar wraps a JAR declaring com.example:deep in `levels` levels of
+// nested WARs (the JAR sits at nesting depth `levels`) next to a sibling JAR
+// at depth 1.
+func nestedWar(t *testing.T, levels int) []byte {
+	t.Helper()
+
+	archive := buildZip(t, pomProps("com.example", "deep", "1.0.0"))
+	name := "deep-1.0.0.jar"
+	for range levels - 1 {
+		archive = buildZip(t, map[string][]byte{name: archive})
+		name = "level.war"
+	}
+	sibling := buildZip(t, pomProps("com.example", "sibling", "1.0.0"))
+
+	return buildZip(t, map[string][]byte{name: archive, "sibling-1.0.0.jar": sibling})
+}
+
+func TestParseJarPomProperties_MaxDepthAccepted(t *testing.T) {
+	t.Parallel()
+
+	packages, _ := parseWithWarnings(t, writeArchive(t, "app.war", nestedWar(t, 5)))
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		mavenPkg("com.example:deep", "1.0.0"),
+		mavenPkg("com.example:sibling", "1.0.0"),
+	})
+}
+
+func TestParseJarPomProperties_BeyondMaxDepthSkipped(t *testing.T) {
+	t.Parallel()
+
+	packages, warnings := parseWithWarnings(t, writeArchive(t, "app.war", nestedWar(t, 6)))
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		mavenPkg("com.example:sibling", "1.0.0"),
+	})
+	if !strings.Contains(warnings, "maximum nesting depth") || !strings.Contains(warnings, "!/deep-1.0.0.jar") {
+		t.Errorf("expected depth warning naming the nested path, got %q", warnings)
+	}
+}
+
+//nolint:paralleltest // mutates the global nested archive size limit
+func TestParseJarPomProperties_OversizedNestedEntrySkipped(t *testing.T) {
+	small := buildZip(t, pomProps("com.example", "small", "1.0.0"))
+	big := buildZip(t, with(pomProps("com.example", "big", "1.0.0"), "padding", bytes.Repeat([]byte("x"), 4096)))
+	t.Cleanup(java.SetMaxNestedArchiveSize(uint64(len(small))))
+
+	war := buildZip(t, map[string][]byte{
+		"WEB-INF/lib/big-1.0.0.jar":   big,
+		"WEB-INF/lib/small-1.0.0.jar": small,
+	})
+	warPath := writeArchive(t, "app.war", war)
+
+	packages, warnings := parseWithWarnings(t, warPath)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		mavenPkg("com.example:small", "1.0.0"),
+	})
+	if !strings.Contains(warnings, warPath+"!/WEB-INF/lib/big-1.0.0.jar") || !strings.Contains(warnings, "exceeds limit") {
+		t.Errorf("expected size warning naming the nested path, got %q", warnings)
+	}
 }

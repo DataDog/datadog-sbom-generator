@@ -24,9 +24,11 @@ const (
 
 	// maxArchiveDepth bounds archive nesting (EAR > WAR > fat JAR > JAR needs 3).
 	maxArchiveDepth = 5
-	// maxNestedArchiveSize bounds the bytes read into memory per nested archive.
-	maxNestedArchiveSize = 256 << 20
 )
+
+// maxNestedArchiveSize bounds the bytes read into memory per nested archive.
+// It is a variable so tests can lower it.
+var maxNestedArchiveSize uint64 = 256 << 20
 
 // JarPomPropertiesExtractor extracts Maven artifact information from
 // pom.properties files embedded inside JAR (ZIP) archives. WAR and EAR archives
@@ -129,11 +131,11 @@ func openNestedArchive(entry *zip.File) (*zip.Reader, error) {
 	}
 	defer rc.Close()
 
-	buf, err := io.ReadAll(io.LimitReader(rc, maxNestedArchiveSize+1))
+	buf, err := io.ReadAll(io.LimitReader(rc, int64(maxNestedArchiveSize)+1))
 	if err != nil {
 		return nil, err
 	}
-	if len(buf) > maxNestedArchiveSize {
+	if uint64(len(buf)) > maxNestedArchiveSize {
 		return nil, fmt.Errorf("size exceeds limit of %d bytes", maxNestedArchiveSize)
 	}
 
