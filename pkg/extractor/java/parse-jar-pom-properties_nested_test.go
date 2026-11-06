@@ -37,7 +37,9 @@ func buildZip(t *testing.T, entries map[string][]byte) []byte {
 	return buf.Bytes()
 }
 
-func pomProps(group, artifact, version string) map[string][]byte {
+func pomProps(artifact, version string) map[string][]byte {
+	const group = "com.example"
+
 	return map[string][]byte{
 		"META-INF/maven/" + group + "/" + artifact + "/pom.properties": []byte(
 			"groupId=" + group + "\nartifactId=" + artifact + "\nversion=" + version + "\n"),
@@ -74,8 +76,8 @@ func mavenPkg(name, version string) extractor.PackageDetails {
 func TestParseJarPomProperties_WarReportsOnlyInnerJars(t *testing.T) {
 	t.Parallel()
 
-	inner := buildZip(t, pomProps("com.example", "a", "1.0.0"))
-	war := buildZip(t, with(pomProps("com.example", "webapp", "9.9.9"), "WEB-INF/lib/a-1.0.0.jar", inner))
+	inner := buildZip(t, pomProps("a", "1.0.0"))
+	war := buildZip(t, with(pomProps("webapp", "9.9.9"), "WEB-INF/lib/a-1.0.0.jar", inner))
 
 	packages, err := java.ParseJarPomProperties(writeArchive(t, "app.war", war))
 	if err != nil {
@@ -90,7 +92,7 @@ func TestParseJarPomProperties_WarReportsOnlyInnerJars(t *testing.T) {
 func TestParseJarPomProperties_EarWarJar(t *testing.T) {
 	t.Parallel()
 
-	jar := buildZip(t, pomProps("com.example", "deep", "2.0.0"))
+	jar := buildZip(t, pomProps("deep", "2.0.0"))
 	war := buildZip(t, map[string][]byte{"WEB-INF/lib/deep-2.0.0.jar": jar})
 	ear := buildZip(t, map[string][]byte{"web.war": war})
 
@@ -107,8 +109,8 @@ func TestParseJarPomProperties_EarWarJar(t *testing.T) {
 func TestParseJarPomProperties_FatJar(t *testing.T) {
 	t.Parallel()
 
-	inner := buildZip(t, pomProps("com.example", "b", "3.0.0"))
-	fat := buildZip(t, with(pomProps("com.example", "boot-app", "1.2.3"), "BOOT-INF/lib/b-3.0.0.jar", inner))
+	inner := buildZip(t, pomProps("b", "3.0.0"))
+	fat := buildZip(t, with(pomProps("boot-app", "1.2.3"), "BOOT-INF/lib/b-3.0.0.jar", inner))
 
 	packages, err := java.ParseJarPomProperties(writeArchive(t, "boot-app-1.2.3.jar", fat))
 	if err != nil {
@@ -142,7 +144,7 @@ func TestParseJarPomProperties_NestedManifestFallbackUsesEntryName(t *testing.T)
 func TestParseJarPomProperties_CorruptNestedJarSkipped(t *testing.T) {
 	t.Parallel()
 
-	good := buildZip(t, pomProps("com.example", "good", "1.0.0"))
+	good := buildZip(t, pomProps("good", "1.0.0"))
 	war := buildZip(t, map[string][]byte{
 		"WEB-INF/lib/broken.jar":     []byte("not a zip"),
 		"WEB-INF/lib/good-1.0.0.jar": good,
@@ -188,13 +190,13 @@ func parseWithWarnings(t *testing.T, p string) ([]extractor.PackageDetails, stri
 func nestedWar(t *testing.T, levels int) []byte {
 	t.Helper()
 
-	archive := buildZip(t, pomProps("com.example", "deep", "1.0.0"))
+	archive := buildZip(t, pomProps("deep", "1.0.0"))
 	name := "deep-1.0.0.jar"
 	for range levels - 1 {
 		archive = buildZip(t, map[string][]byte{name: archive})
 		name = "level.war"
 	}
-	sibling := buildZip(t, pomProps("com.example", "sibling", "1.0.0"))
+	sibling := buildZip(t, pomProps("sibling", "1.0.0"))
 
 	return buildZip(t, map[string][]byte{name: archive, "sibling-1.0.0.jar": sibling})
 }
@@ -225,8 +227,8 @@ func TestParseJarPomProperties_BeyondMaxDepthSkipped(t *testing.T) {
 
 //nolint:paralleltest // mutates the global nested archive size limit
 func TestParseJarPomProperties_OversizedNestedEntrySkipped(t *testing.T) {
-	small := buildZip(t, pomProps("com.example", "small", "1.0.0"))
-	big := buildZip(t, with(pomProps("com.example", "big", "1.0.0"), "padding", bytes.Repeat([]byte("x"), 4096)))
+	small := buildZip(t, pomProps("small", "1.0.0"))
+	big := buildZip(t, with(pomProps("big", "1.0.0"), "padding", bytes.Repeat([]byte("x"), 4096)))
 	t.Cleanup(java.SetMaxNestedArchiveSize(uint64(len(small))))
 
 	war := buildZip(t, map[string][]byte{

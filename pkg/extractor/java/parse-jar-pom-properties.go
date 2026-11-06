@@ -131,7 +131,7 @@ func openNestedArchive(entry *zip.File) (*zip.Reader, error) {
 	}
 	defer rc.Close()
 
-	buf, err := io.ReadAll(io.LimitReader(rc, int64(maxNestedArchiveSize)+1))
+	buf, err := io.ReadAll(io.LimitReader(rc, int64(maxNestedArchiveSize)+1)) //nolint:gosec // limit is far below math.MaxInt64
 	if err != nil {
 		return nil, err
 	}
