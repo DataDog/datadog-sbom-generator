@@ -193,6 +193,19 @@ func TestCargo_ShopExample(t *testing.T) {
 	}
 }
 
+func TestCargo_SBOMIsDeterministic(t *testing.T) {
+	t.Parallel()
+
+	first, err := GenerateSBOM([]string{"testdata/cargo-shop"}, DefaultOptions())
+	require.NoError(t, err)
+
+	for range 20 {
+		next, err := GenerateSBOM([]string{"testdata/cargo-shop"}, DefaultOptions())
+		require.NoError(t, err)
+		require.Equal(t, string(first), string(next))
+	}
+}
+
 func TestCargo_FlagGating(t *testing.T) {
 	t.Parallel()
 

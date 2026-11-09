@@ -210,6 +210,9 @@ func cargoPathDeps(tables []map[string]any, manifestDir string, root *cargoManif
 		}
 	}
 
+	// Map iteration order is random; sort so the SBOM is identical across runs.
+	slices.Sort(targets)
+
 	return targets
 }
 
