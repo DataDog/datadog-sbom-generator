@@ -116,6 +116,15 @@ func TestCargo_ExcludedAndNonMemberCrates(t *testing.T) {
 	assert.Equal(t, "x-vendored", result[cargoTomlFile("vendor/vendored/Cargo.toml")].ID)
 }
 
+func TestCargo_DevOnlyPathDepsAreCratesWithoutEdges(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-dev-only")
+	assert.Empty(t, result[cargoTomlFile("crates/app/Cargo.toml")].Dependencies)
+	assert.Equal(t, "d-testkit", result[cargoTomlFile("crates/testkit/Cargo.toml")].ID)
+	assert.Equal(t, "d-fixtures", result[cargoTomlFile("support/fixtures/Cargo.toml")].ID)
+}
+
 func TestCargo_PathOutsideScanRoot(t *testing.T) {
 	t.Parallel()
 

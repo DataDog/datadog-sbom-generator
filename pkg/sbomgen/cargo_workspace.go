@@ -25,9 +25,11 @@ type cargoManifest struct {
 	} `toml:"workspace"`
 	Dependencies      map[string]any `toml:"dependencies"`
 	BuildDependencies map[string]any `toml:"build-dependencies"`
+	DevDependencies   map[string]any `toml:"dev-dependencies"`
 	Target            map[string]struct {
 		Dependencies      map[string]any `toml:"dependencies"`
 		BuildDependencies map[string]any `toml:"build-dependencies"`
+		DevDependencies   map[string]any `toml:"dev-dependencies"`
 	} `toml:"target"`
 }
 
@@ -40,8 +42,9 @@ type cargoManifest struct {
 // so it is a workspace root. This function reads it from disk by trying each
 // rootDir in order until one succeeds, expands its workspace members, adds a
 // component for each member that does not have one yet, and adds an edge from
-// each crate to every crate it depends on through `path`. Dev-dependencies are
-// skipped because Cargo never builds them into a binary.
+// each crate to every crate it depends on through `path`. Dev-dependencies get
+// no edge because Cargo never builds them into a binary, but the crates they
+// point to are still added: Cargo makes them workspace members.
 //
 // This has no effect on normal package scanning or SBOM output — it only
 // enriches the dependency graph used by GetBuildFileTrees.
@@ -121,17 +124,29 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 			if i >= members {
 				ws, wsDir = findCargoWorkspace(filepath.Dir(manifestPath), scanRoot)
 			}
-			for _, target := range cargoPathDeps(manifest, filepath.Dir(manifestPath), ws, wsDir) {
-				if _, err := os.Stat(target); err != nil {
-					continue
+			follow := func(tables []map[string]any, withEdges bool) {
+				for _, target := range cargoPathDeps(tables, filepath.Dir(manifestPath), ws, wsDir) {
+					if _, err := os.Stat(target); err != nil {
+						continue
+					}
+					to, ok := cargoRef(scanRoot, target)
+					if !ok || to == from || to == ".." || strings.HasPrefix(to, "../") {
+						continue
+					}
+					if withEdges {
+						addCargoEdge(bom, depIndex, from, to)
+					}
+					manifests = append(manifests, target)
 				}
-				to, ok := cargoRef(scanRoot, target)
-				if !ok || to == from || to == ".." || strings.HasPrefix(to, "../") {
-					continue
-				}
-				addCargoEdge(bom, depIndex, from, to)
-				manifests = append(manifests, target)
 			}
+			normal := []map[string]any{manifest.Dependencies, manifest.BuildDependencies}
+			dev := []map[string]any{manifest.DevDependencies}
+			for _, target := range manifest.Target {
+				normal = append(normal, target.Dependencies, target.BuildDependencies)
+				dev = append(dev, target.DevDependencies)
+			}
+			follow(normal, true)
+			follow(dev, false)
 		}
 	}
 }
@@ -166,15 +181,10 @@ func isCargoExcluded(rootDir string, excludes []string, dir string) bool {
 }
 
 // cargoPathDeps returns the Cargo.toml path of every `path` dependency in the
-// manifest's normal, build and target-specific dependency tables. A
-// `workspace = true` dependency takes its path from the root's
-// [workspace.dependencies], resolved against the root's directory.
-func cargoPathDeps(manifest *cargoManifest, manifestDir string, root *cargoManifest, rootDir string) []string {
-	tables := []map[string]any{manifest.Dependencies, manifest.BuildDependencies}
-	for _, target := range manifest.Target {
-		tables = append(tables, target.Dependencies, target.BuildDependencies)
-	}
-
+// given dependency tables of a manifest in manifestDir. A `workspace = true`
+// dependency takes its path from the root's [workspace.dependencies], resolved
+// against the root's directory.
+func cargoPathDeps(tables []map[string]any, manifestDir string, root *cargoManifest, rootDir string) []string {
 	var targets []string
 	for _, table := range tables {
 		for name, value := range table {

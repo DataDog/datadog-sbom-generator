@@ -1,0 +1,10 @@
+[package]
+name = "d-app"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+d-testkit = { path = "../testkit" }
+
+[target.'cfg(unix)'.dev-dependencies]
+d-fixtures = { workspace = true }
