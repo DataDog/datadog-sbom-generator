@@ -62,6 +62,14 @@ func TestCargo_VirtualWorkspace_Members(t *testing.T) {
 	assert.NotContains(t, result, cargoTomlFile("crates/docs/Cargo.toml"))
 }
 
+func TestCargo_RecursiveMemberGlob(t *testing.T) {
+	t.Parallel()
+
+	result := cargoTrees(t, "testdata/cargo-recursive-glob")
+	assert.Equal(t, "r-top", result[cargoTomlFile("crates/top/Cargo.toml")].ID)
+	assert.Equal(t, "r-nested", result[cargoTomlFile("crates/group/nested/Cargo.toml")].ID)
+}
+
 func TestCargo_PathDependencySections(t *testing.T) {
 	t.Parallel()
 

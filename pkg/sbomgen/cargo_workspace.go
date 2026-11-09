@@ -10,6 +10,7 @@ import (
 	"github.com/CycloneDX/cyclonedx-go"
 	"github.com/DataDog/datadog-sbom-generator/internal/utility/purl"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 // cargoManifest is the subset of a Cargo.toml needed to resolve in-repo
@@ -87,7 +88,7 @@ func AddCargoWorkspaceEdges(bom *cyclonedx.BOM, rootDirs ...string) {
 		manifests := []string{rootPath}
 		if root.Workspace != nil {
 			for _, pattern := range root.Workspace.Members {
-				matches, err := filepath.Glob(filepath.Join(rootDir, filepath.FromSlash(pattern)))
+				matches, err := doublestar.FilepathGlob(filepath.Join(rootDir, filepath.FromSlash(pattern)))
 				if err != nil {
 					continue
 				}
