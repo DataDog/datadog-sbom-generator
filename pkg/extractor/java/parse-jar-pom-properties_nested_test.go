@@ -256,7 +256,7 @@ func TestParseJarPomProperties_NestedArchiveBudgetExhausted(t *testing.T) {
 	second := buildZip(t, pomProps("second", "1.0.0"))
 	chain := buildZip(t, map[string][]byte{"WEB-INF/lib/second-1.0.0.jar": second})
 	// Budget fits the first JAR but not the chained WAR that follows it.
-	t.Cleanup(java.SetMaxNestedArchiveBudget(uint64(len(first) + len(chain) - 1)))
+	t.Cleanup(java.SetMaxNestedArchiveBudget(uint64(len(first)) + uint64(len(chain)) - 1))
 
 	ear := buildZip(t, map[string][]byte{
 		"a-first-1.0.0.jar": first,
