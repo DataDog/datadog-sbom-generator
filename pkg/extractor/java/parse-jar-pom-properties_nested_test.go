@@ -3,8 +3,10 @@ package java_test
 import (
 	"archive/zip"
 	"bytes"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -21,7 +23,8 @@ func buildZip(t *testing.T, entries map[string][]byte) []byte {
 
 	var buf bytes.Buffer
 	w := zip.NewWriter(&buf)
-	for name, content := range entries {
+	for _, name := range slices.Sorted(maps.Keys(entries)) {
+		content := entries[name]
 		f, err := w.Create(name)
 		if err != nil {
 			t.Fatalf("could not create zip entry %s: %v", name, err)
@@ -244,5 +247,29 @@ func TestParseJarPomProperties_OversizedNestedEntrySkipped(t *testing.T) {
 	})
 	if !strings.Contains(warnings, warPath+"!/WEB-INF/lib/big-1.0.0.jar") || !strings.Contains(warnings, "exceeds limit") {
 		t.Errorf("expected size warning naming the nested path, got %q", warnings)
+	}
+}
+
+//nolint:paralleltest // mutates the global nested archive budget
+func TestParseJarPomProperties_NestedArchiveBudgetExhausted(t *testing.T) {
+	first := buildZip(t, pomProps("first", "1.0.0"))
+	second := buildZip(t, pomProps("second", "1.0.0"))
+	chain := buildZip(t, map[string][]byte{"WEB-INF/lib/second-1.0.0.jar": second})
+	// Budget fits the first JAR but not the chained WAR that follows it.
+	t.Cleanup(java.SetMaxNestedArchiveBudget(uint64(len(first) + len(chain) - 1)))
+
+	ear := buildZip(t, map[string][]byte{
+		"a-first-1.0.0.jar": first,
+		"b-chain.war":       chain,
+	})
+	earPath := writeArchive(t, "app.ear", ear)
+
+	packages, warnings := parseWithWarnings(t, earPath)
+
+	testutil.ExpectPackagesWithoutLocations(t, packages, []extractor.PackageDetails{
+		mavenPkg("com.example:first", "1.0.0"),
+	})
+	if !strings.Contains(warnings, earPath+"!/b-chain.war") || !strings.Contains(warnings, "budget exhausted") {
+		t.Errorf("expected budget warning naming the nested path, got %q", warnings)
 	}
 }
