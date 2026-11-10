@@ -48,7 +48,12 @@ func TestJarPomPropertiesExtractor_ShouldExtract(t *testing.T) {
 		{
 			name: "war file",
 			path: "library.war",
-			want: false,
+			want: true,
+		},
+		{
+			name: "ear file",
+			path: "app.ear",
+			want: true,
 		},
 		{
 			name: "pom.xml",
