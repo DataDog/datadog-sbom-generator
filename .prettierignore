@@ -4,3 +4,4 @@
 .copyright-overrides.yml
 .wwhrd.yml
 tasks/**
+.github/PULL_REQUEST_TEMPLATE.md
