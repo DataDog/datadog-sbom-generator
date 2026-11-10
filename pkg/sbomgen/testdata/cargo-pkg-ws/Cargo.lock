@@ -1,0 +1,17 @@
+version = 3
+
+[[package]]
+name = "pw-a"
+version = "0.1.0"
+
+[[package]]
+name = "pw-b"
+version = "0.1.0"
+
+[[package]]
+name = "pw-c"
+version = "0.1.0"
+
+[[package]]
+name = "pw-root"
+version = "0.1.0"

@@ -103,4 +103,5 @@ func init() {
 	RegisterBuildFileProcessor(FileTypeComposerJSON, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypeGemfile, &SimpleProcessor{})
 	RegisterBuildFileProcessor(FileTypePackageJSON, &SimpleProcessor{})
+	RegisterBuildFileProcessor(FileTypeCargoToml, &SimpleProcessor{})
 }

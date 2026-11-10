@@ -1,0 +1,5 @@
+[workspace]
+members = ["crates/app"]
+
+[workspace.dependencies]
+d-fixtures = { path = "support/fixtures" }

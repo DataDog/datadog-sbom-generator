@@ -1,0 +1,6 @@
+[workspace]
+members = ["crates/*"]
+
+[workspace.dependencies]
+v-core = { path = "crates/core" }
+v-db = { path = "crates/db" }

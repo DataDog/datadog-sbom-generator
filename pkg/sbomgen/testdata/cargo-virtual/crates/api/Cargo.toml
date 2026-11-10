@@ -1,0 +1,8 @@
+[package]
+name = "v-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+v-db = { workspace = true }
+tokio = "1"

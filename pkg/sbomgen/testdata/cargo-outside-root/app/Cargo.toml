@@ -1,0 +1,7 @@
+[package]
+name = "o-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+o-shared = { path = "../shared" }

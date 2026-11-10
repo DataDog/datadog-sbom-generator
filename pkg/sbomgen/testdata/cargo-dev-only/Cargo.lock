@@ -1,0 +1,13 @@
+version = 3
+
+[[package]]
+name = "d-app"
+version = "0.1.0"
+
+[[package]]
+name = "d-fixtures"
+version = "0.1.0"
+
+[[package]]
+name = "d-testkit"
+version = "0.1.0"

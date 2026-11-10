@@ -1,0 +1,13 @@
+version = 3
+
+[[package]]
+name = "v-api"
+version = "0.1.0"
+
+[[package]]
+name = "v-core"
+version = "0.1.0"
+
+[[package]]
+name = "v-db"
+version = "0.1.0"
