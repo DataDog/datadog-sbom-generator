@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-  implementation("org.springframework.security:spring-security-crypto:5.7.3")
+  implementation("org.springframework.security:spring-security-crypto:5.8.0")
   testImplementation("junit:junit:4.13.2")
 }
 

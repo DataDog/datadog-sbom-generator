@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-  implementation("org.springframework.security:spring-security-crypto:5.7.3")
+  implementation("org.springframework.security:spring-security-crypto:5.8.0")
 }
 
 dependencyLocking {
