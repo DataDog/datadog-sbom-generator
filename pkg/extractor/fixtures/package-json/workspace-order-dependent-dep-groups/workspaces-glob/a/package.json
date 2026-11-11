@@ -1,0 +1,6 @@
+{
+  "name": "a",
+  "devDependencies": {
+    "tool": "^1.0.0"
+  }
+}

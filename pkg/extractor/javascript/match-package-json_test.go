@@ -323,3 +323,48 @@ func TestPackageJSONMatcher_Match_Target_Version(t *testing.T) {
 
 	testutility.NewSnapshot().MatchText(t, testutility.NormalizeJSON(t, packages))
 }
+
+func TestPackageJSONMatcher_Match_WorkspaceOrderIsDeterministic(t *testing.T) {
+	t.Parallel()
+
+	// "helper" is only reachable through the dev-only "tool" of workspace "a". It picks up the prod group of its
+	// sibling "shared" (workspace "b") only if "b" is matched before "a", so the result depends on workspace order.
+	tests := []struct {
+		name string
+		dir  string
+	}{
+		{name: "workspaces glob", dir: "workspaces-glob"},
+		{name: "pnpm fallback", dir: "pnpm-fallback"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			for i := range 50 {
+				sourceFile, err := extractor.OpenLocalDepFile("../fixtures/package-json/workspace-order-dependent-dep-groups/" + tt.dir + "/package.json")
+				if err != nil {
+					t.Fatalf("Got unexpected error: %v", err)
+				}
+
+				packages := []extractor.PackageDetails{
+					{Name: "tool", Version: "1.0.0", TargetVersions: []string{"^1.0.0"}, PackageManager: models.NPM, NameLocation: &models.FilePosition{Filename: "a"}},
+					{Name: "shared", Version: "1.0.0", TargetVersions: []string{"^1.0.0"}, PackageManager: models.NPM, NameLocation: &models.FilePosition{Filename: "b"}},
+					{Name: "helper", Version: "1.0.0", PackageManager: models.NPM},
+				}
+				packages[0].Dependencies = []*extractor.PackageDetails{&packages[1], &packages[2]}
+
+				err = packageJSONMatcher.Match(sourceFile, packages, testutil.GetTestContext())
+				if err != nil {
+					t.Fatalf("Got unexpected error: %v", err)
+				}
+
+				helper := packages[2]
+				if !assert.Equal(t, []string{"dev"}, helper.DepGroups, "iteration %d", i) ||
+					!assert.True(t, models.EcosystemNPM.IsDevGroup(helper.DepGroups), "iteration %d", i) {
+					t.FailNow()
+				}
+			}
+		})
+	}
+}
