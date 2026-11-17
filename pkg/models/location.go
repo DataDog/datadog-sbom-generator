@@ -21,10 +21,11 @@ type PackageLocation struct {
 }
 
 type PackageLocations struct {
-	Block     PackageLocation  `json:"block"`
-	Namespace *PackageLocation `json:"namespace,omitempty"`
-	Name      *PackageLocation `json:"name,omitempty"`
-	Version   *PackageLocation `json:"version,omitempty"`
+	Block      PackageLocation  `json:"block"`
+	Namespace  *PackageLocation `json:"namespace,omitempty"`
+	Name       *PackageLocation `json:"name,omitempty"`
+	Version    *PackageLocation `json:"version,omitempty"`
+	Codeowners *[]string        `json:"codeowners,omitempty"`
 }
 
 func (location PackageLocation) IsValid() bool {

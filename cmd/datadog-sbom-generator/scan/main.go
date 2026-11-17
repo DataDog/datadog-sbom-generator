@@ -69,6 +69,10 @@ Examples:
 				Usage: "enable reachability analysis",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  "resolve-codeowners",
+				Usage: "attach owning GitHub teams from the checkout's CODEOWNERS to dependency locations",
+			},
 			&cli.StringFlag{
 				Name:    "verbosity",
 				Aliases: []string{"v"},
@@ -149,6 +153,7 @@ func action(context *cli.Context, stdout, stderr io.Writer) (reporter.Reporter, 
 		Recursive:           !context.Bool("not-recursive"),
 		NoIgnore:            context.Bool("no-ignore"),
 		Reachability:        context.Bool("reachability"),
+		ResolveCodeowners:   context.Bool("resolve-codeowners"),
 		DirectoryPaths:      context.Args().Slice(),
 		ExcludePaths:        context.StringSlice("exclude"),
 		ExcludeEcosystems:   context.StringSlice("exclude-ecosystem"),

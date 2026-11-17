@@ -23,6 +23,10 @@ datadog-sbom-generator scan -o "/tmp/sbom.json" "/path/to/directory"
 
 For detailed documentation on all commands and options, see [USAGE.md](USAGE.md).
 
+Pass `--resolve-codeowners` to attach owning GitHub teams to each dependency location.
+The generator reads `.github/CODEOWNERS`, `CODEOWNERS`, then `docs/CODEOWNERS` from the local repository and uses the first file found.
+Ownership is omitted by default. When enabled, an empty `codeowners` array means no team matched; the field is omitted if the file could not be read or parsed.
+
 You can also get help directly from the command line:
 
 ```bash

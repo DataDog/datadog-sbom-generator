@@ -68,6 +68,8 @@ linters-settings:
     block-size: 2
 
 issues:
+  exclude-dirs:
+    - internal/thirdparty
   exclude-rules:
     - path: pkg/reporter
       linters:

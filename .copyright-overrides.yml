@@ -55,6 +55,7 @@ github.com/skydive-project/go-debouncer: Copyright (C) 2018 Red Hat, Inc.
 
 # https://raw.githubusercontent.com/golang/go/master/LICENSE
 golang/go: Copyright (c) 2009 The Go Authors. All rights reserved.
+github.com/hmarr/codeowners: Copyright (c) 2020 Harry Marr
 
 # This has old and new code licensed to two different names, with some awkward
 # line wrapping
