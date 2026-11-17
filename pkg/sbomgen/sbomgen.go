@@ -36,6 +36,8 @@ type Options struct {
 	// present. Additive to the default lockfile extractor set.
 	ManifestParsers bool
 
+	ResolveCodeowners bool
+
 	// ExtractArtifactIds controls whether build file artifact IDs and dependency
 	// relationships are extracted and included in the SBOM. When true, extractors
 	// that implement ArtifactExtractor produce file-type components and dependency
@@ -70,6 +72,7 @@ func GenerateSBOM(dirs []string, opts Options) ([]byte, error) {
 		ExcludePaths:       opts.ExcludePaths,
 		Recursive:          opts.Recursive,
 		ManifestParsers:    opts.ManifestParsers || opts.ExtractArtifactIds,
+		ResolveCodeowners:  opts.ResolveCodeowners,
 		ExtractArtifactIds: opts.ExtractArtifactIds,
 	}
 
