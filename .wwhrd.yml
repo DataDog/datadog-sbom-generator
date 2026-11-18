@@ -31,3 +31,4 @@ exceptions:
 additional:
   # list here paths to additional licenses
   golang/go: "raw.githubusercontent.com/golang/go/master/LICENSE"
+  github.com/hmarr/codeowners: "raw.githubusercontent.com/hmarr/codeowners/master/LICENSE"

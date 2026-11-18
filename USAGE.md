@@ -38,6 +38,7 @@ datadog-sbom-generator scan [flags] [directory1 directory2...]
 | `--not-recursive`          |         | `false`         | Do not scan subdirectories                                                                                             |
 | `--no-ignore`              |         | `false`         | Scan files normally ignored by .gitignore                                                                              |
 | `--reachability`           |         | `false`         | Enable reachability analysis                                                                                           |
+| `--resolve-codeowners`     |         | `false`         | Attach owning GitHub teams from the local CODEOWNERS file to dependency locations                                      |
 | `--enable-parsers`         |         | (all)           | Filter by lockfile name, package manager, or language (see below)                                                      |
 | `--exclude`                |         | (none)          | Exclude paths using doublestar glob patterns (relative to scanned directory); `**` matches any number of path segments |
 | `--exclude-ecosystem`      |         | (none)          | Exclude an ecosystem (e.g. `npm`, `Go`, `PyPI`) from being scanned                                                     |

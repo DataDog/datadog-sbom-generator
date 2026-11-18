@@ -47,6 +47,7 @@ type ScannerActions struct {
 	Debug               bool
 	EnableParsers       []string
 	ManifestParsers     bool
+	ResolveCodeowners   bool
 	DDEnvVars           DDEnvVars
 	ExitOnConfigFailure bool
 	// ExtractArtifactIds controls whether build file artifact IDs and dependency
@@ -324,8 +325,22 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		}
 		pkgs = java.ScopeVersionConstraints(r, pkgs)
 
+		var owners *repositoryCodeowners
+		if actions.ResolveCodeowners {
+			owners, err = loadRepositoryCodeowners(dir)
+			if err != nil {
+				reporter.AlwaysWarnf(r, "[codeowners] Ownership unavailable for %s: %v\n", dir, err)
+			}
+		}
+
 		// Transforming any path into a relative path to the scanned directory path
 		for index, pkg := range pkgs {
+			if owners != nil {
+				pkgs[index].Codeowners, err = owners.teamsForFile(pkg.BlockLocation.Filename)
+				if err != nil {
+					reporter.AlwaysWarnf(r, "[codeowners] Ownership unavailable for %s: %v\n", pkg.BlockLocation.Filename, err)
+				}
+			}
 			pkgs[index].Source.Path = fileposition.ToRelativePath(dir, pkg.Source.Path)
 			pkgs[index].BlockLocation.Filename = fileposition.ToRelativePath(dir, pkg.BlockLocation.Filename)
 

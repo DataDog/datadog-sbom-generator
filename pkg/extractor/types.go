@@ -17,6 +17,7 @@ type PackageDetails struct {
 	DepGroups                    []string              `json:"depGroups,omitempty"`
 	BlockLocation                models.FilePosition   `json:"blockLocation,omitempty"`
 	LocationRole                 string                `json:"locationRole,omitempty"`
+	Codeowners                   *[]string             `json:"codeowners,omitempty"`
 	VersionLocation              *models.FilePosition  `json:"versionLocation,omitempty"`
 	NameLocation                 *models.FilePosition  `json:"nameLocation,omitempty"`
 	NamespaceLocation            *models.FilePosition  `json:"namespaceLocation,omitempty"`
