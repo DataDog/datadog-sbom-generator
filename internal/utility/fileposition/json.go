@@ -5,14 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
 	"github.com/DataDog/datadog-sbom-generator/pkg/models"
 )
 
-var shouldDebugInJSON bool
-
 func InJSON[P models.IFilePosition](groupKey string, dependencies map[string]P, lines []string, offset int) {
-	shouldDebugInJSON = os.Getenv("debug") == "true"
+	shouldDebug := os.Getenv("debug") == "true"
 	var group, dependency string
 	var groupLevel, stack int
 
@@ -22,13 +19,13 @@ func InJSON[P models.IFilePosition](groupKey string, dependencies map[string]P, 
 			stack++
 			if key := retrieveKeyFromLine(line); key != "" {
 				if group != "" && stack == groupLevel+1 {
-					openJSONDependency(key, line, dependencies, position, &dependency)
+					openJSONDependency(key, line, dependencies, position, &dependency, shouldDebug)
 				}
 				if groupKey == key {
 					if group == "" {
-						openJSONGroup(key, stack, position, &group, &groupLevel)
+						openJSONGroup(key, stack, position, &group, &groupLevel, shouldDebug)
 					} else if dep, ok := dependencies[dependency]; ok {
-						handleNestedDependencies(lines, groupKey, dep, position)
+						handleNestedDependencies(lines, groupKey, dep, position, shouldDebug)
 					}
 				}
 			}
@@ -38,12 +35,12 @@ func InJSON[P models.IFilePosition](groupKey string, dependencies map[string]P, 
 			if group != "" {
 				if stack == groupLevel {
 					if dependency != "" {
-						closeJSONDependency(line, dependencies, position, &dependency)
+						closeJSONDependency(line, dependencies, position, &dependency, shouldDebug)
 					}
 				} else if stack == groupLevel-1 {
-					closeJSONGroup(position, &group)
+					closeJSONGroup(position, &group, shouldDebug)
 					if offset != 0 {
-						if shouldDebugInJSON {
+						if shouldDebug {
 							_, _ = fmt.Fprintf(os.Stdout, "[NESTED][END] At line %d\n", position)
 						}
 
@@ -56,16 +53,19 @@ func InJSON[P models.IFilePosition](groupKey string, dependencies map[string]P, 
 }
 
 func retrieveKeyFromLine(line string) string {
-	keyRegexp := cachedregexp.MustCompile(`"(.+)"`)
-	match := keyRegexp.FindStringSubmatch(line)
-	if len(match) == 2 {
-		return match[1]
+	start := strings.IndexByte(line, '"')
+	if start < 0 {
+		return ""
+	}
+	end := strings.LastIndexByte(line, '"')
+	if end <= start+1 {
+		return ""
 	}
 
-	return ""
+	return line[start+1 : end]
 }
 
-func openJSONDependency[P models.IFilePosition](key string, line string, dependencies map[string]P, position int, dependency *string) {
+func openJSONDependency[P models.IFilePosition](key string, line string, dependencies map[string]P, position int, dependency *string, shouldDebug bool) {
 	if dep, ok := dependencies[key]; ok {
 		*dependency = key
 		lineStart := position + 1
@@ -73,13 +73,13 @@ func openJSONDependency[P models.IFilePosition](key string, line string, depende
 		dep.SetLineStart(lineStart)
 		dep.SetColumnStart(columnStart)
 		dependencies[*dependency] = dep
-		if shouldDebugInJSON {
+		if shouldDebug {
 			_, _ = fmt.Fprintf(os.Stdout, "[DEPENDENCY][START] '%s' at line %d, column %d\n", *dependency, lineStart, columnStart)
 		}
 	}
 }
 
-func closeJSONDependency[P models.IFilePosition](line string, dependencies map[string]P, position int, dependency *string) {
+func closeJSONDependency[P models.IFilePosition](line string, dependencies map[string]P, position int, dependency *string, shouldDebug bool) {
 	if dep, ok := dependencies[*dependency]; ok {
 		lineEnd := position + 1
 		// Adding two because we want an index start at 1 on columns, and we want to include the closing curly bracket
@@ -88,31 +88,31 @@ func closeJSONDependency[P models.IFilePosition](line string, dependencies map[s
 		dep.SetColumnEnd(columnEnd)
 		dependencies[*dependency] = dep
 		*dependency = ""
-		if shouldDebugInJSON {
+		if shouldDebug {
 			_, _ = fmt.Fprintf(os.Stdout, "[DEPENDENCY][END] '%s' at line %d, column %d\n", *dependency, lineEnd, columnEnd)
 		}
 	}
 }
 
-func openJSONGroup(key string, stack int, position int, group *string, groupLevel *int) {
+func openJSONGroup(key string, stack int, position int, group *string, groupLevel *int, shouldDebug bool) {
 	*group = key
 	*groupLevel = stack
-	if shouldDebugInJSON {
+	if shouldDebug {
 		_, _ = fmt.Fprintf(os.Stdout, "[GROUP][START] '%s' at line %d\n", *group, position+1)
 	}
 }
 
-func closeJSONGroup(position int, group *string) {
+func closeJSONGroup(position int, group *string, shouldDebug bool) {
 	*group = ""
-	if shouldDebugInJSON {
+	if shouldDebug {
 		_, _ = fmt.Fprintf(os.Stdout, "[GROUP][END] '%s' at line %d\n", *group, position)
 	}
 }
 
-func handleNestedDependencies[P models.IFilePosition](lines []string, groupKey string, dep P, position int) {
+func handleNestedDependencies[P models.IFilePosition](lines []string, groupKey string, dep P, position int, shouldDebug bool) {
 	nestedDependencies := dep.GetNestedDependencies()
 	if nestedDependencies != nil {
-		if shouldDebugInJSON {
+		if shouldDebug {
 			_, _ = fmt.Fprintf(os.Stdout, "[NESTED][START] At line %d\n", position+1)
 		}
 		InJSON(groupKey, nestedDependencies, lines[position:], position)

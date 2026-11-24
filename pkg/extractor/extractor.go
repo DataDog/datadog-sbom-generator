@@ -1,6 +1,8 @@
 package extractor
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -79,6 +81,64 @@ func (f LocalFile) Open(path string) (DepFile, error) {
 
 func (f LocalFile) Path() string { return f.path }
 
+// lazyBOMReader avoids allocating transform.NewReader's 8KB internal buffers
+// for the vast majority of files that do not start with a UTF-8/UTF-16 BOM.
+type lazyBOMReader struct {
+	src      io.Reader
+	probed   bool
+	fallback io.Reader // set only if a UTF-16 BOM is detected
+	buf      [3]byte
+	bufPos   int
+	bufLen   int
+	eof      bool
+}
+
+func (l *lazyBOMReader) Read(p []byte) (int, error) {
+	if !l.probed {
+		l.probed = true
+		n, err := io.ReadFull(l.src, l.buf[:])
+		if err != nil && !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
+			return 0, err
+		}
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+			l.eof = true
+		}
+
+		// UTF-16 BE/LE BOM: delegate to unicode.BOMOverride decoder
+		if n >= 2 && ((l.buf[0] == 0xFE && l.buf[1] == 0xFF) || (l.buf[0] == 0xFF && l.buf[1] == 0xFE)) {
+			transformer := unicode.BOMOverride(encoding.Nop.NewDecoder())
+			combined := io.MultiReader(bytes.NewReader(l.buf[:n]), l.src)
+			l.fallback = transform.NewReader(combined, transformer)
+		} else if n == 3 && l.buf[0] == 0xEF && l.buf[1] == 0xBB && l.buf[2] == 0xBF {
+			// UTF-8 BOM: strip the 3 BOM bytes and stream directly from src
+			l.bufLen = 0
+		} else {
+			// No BOM: serve peeked bytes then stream directly from src
+			l.bufLen = n
+		}
+	}
+
+	if l.fallback != nil {
+		return l.fallback.Read(p)
+	}
+
+	if l.bufPos < l.bufLen {
+		n := copy(p, l.buf[l.bufPos:l.bufLen])
+		l.bufPos += n
+		if l.bufPos == l.bufLen && l.eof {
+			return n, io.EOF
+		}
+
+		return n, nil
+	}
+
+	if l.eof {
+		return 0, io.EOF
+	}
+
+	return l.src.Read(p)
+}
+
 func OpenLocalDepFile(path string) (DepFile, error) {
 	r, err := os.Open(path)
 
@@ -89,11 +149,7 @@ func OpenLocalDepFile(path string) (DepFile, error) {
 	// Very unlikely to have Abs return an error if the file opens correctly
 	path, _ = filepath.Abs(path)
 
-	// We apply a decoder on it to avoid issues with utf-16
-	var transformer = unicode.BOMOverride(encoding.Nop.NewDecoder())
-	decodedReader := transform.NewReader(r, transformer)
-
-	return LocalFile{decodedReader, r, path}, nil
+	return LocalFile{&lazyBOMReader{src: r}, r, path}, nil
 }
 
 var _ DepFile = LocalFile{}

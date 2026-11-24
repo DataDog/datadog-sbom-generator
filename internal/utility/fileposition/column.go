@@ -1,26 +1,24 @@
 package fileposition
 
-import (
-	"github.com/DataDog/datadog-sbom-generator/internal/cachedregexp"
-)
-
-var wordRe = cachedregexp.MustCompile(`[^\s\r\n]+`)
+func isRegexpWhitespace(b byte) bool {
+	return b == ' ' || b == '\t' || b == '\n' || b == '\f' || b == '\r'
+}
 
 func GetFirstNonEmptyCharacterIndexInLine(line string) int {
-	firstWord := wordRe.FindStringIndex(line)
-	if firstWord != nil {
-		return firstWord[0] + 1
+	for i := range len(line) {
+		if !isRegexpWhitespace(line[i]) {
+			return i + 1
+		}
 	}
 
 	return -1
 }
 
 func GetLastNonEmptyCharacterIndexInLine(line string) int {
-	words := wordRe.FindAllStringIndex(line, -1)
-	if words != nil {
-		lastWord := words[len(words)-1]
-
-		return lastWord[1] + 1
+	for i := len(line) - 1; i >= 0; i-- {
+		if !isRegexpWhitespace(line[i]) {
+			return i + 2
+		}
 	}
 
 	return -1

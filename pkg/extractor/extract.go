@@ -198,15 +198,16 @@ func ExtractDeps(f DepFile, context ScanContext) (Lockfile, error) {
 		Packages: packages,
 	}
 
-	depFile, err := OpenLocalDepFile(f.Path())
-	if err != nil {
-		return parsedLockfile, err
-	}
-	defer depFile.Close()
 	if context.ExtractArtifactIds {
 		if e, ok := extractor.(ArtifactExtractor); ok {
-			artifact, err := e.GetArtifact(depFile, context)
-			if err == nil {
+			depFile, openErr := OpenLocalDepFile(f.Path())
+			if openErr != nil {
+				return parsedLockfile, openErr
+			}
+			defer depFile.Close()
+
+			artifact, artErr := e.GetArtifact(depFile, context)
+			if artErr == nil {
 				parsedLockfile.Artifact = artifact
 			}
 			// Even if GetArtifact returned nil, emit a bare file-type component
