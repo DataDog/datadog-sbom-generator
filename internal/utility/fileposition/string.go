@@ -10,9 +10,38 @@ import (
 )
 
 func BytesToLines(data []byte) []string {
-	re := cachedregexp.MustCompile(`\r\n|\r|\n`)
 	str := string(data)
-	lines := re.Split(str, -1)
+	if strings.IndexByte(str, '\r') < 0 {
+		return strings.Split(str, "\n")
+	}
+
+	count := 1
+	for i := 0; i < len(str); i++ {
+		if str[i] == '\r' {
+			count++
+			if i+1 < len(str) && str[i+1] == '\n' {
+				i++
+			}
+		} else if str[i] == '\n' {
+			count++
+		}
+	}
+
+	lines := make([]string, 0, count)
+	start := 0
+	for i := 0; i < len(str); i++ {
+		if str[i] == '\r' {
+			lines = append(lines, str[start:i])
+			if i+1 < len(str) && str[i+1] == '\n' {
+				i++
+			}
+			start = i + 1
+		} else if str[i] == '\n' {
+			lines = append(lines, str[start:i])
+			start = i + 1
+		}
+	}
+	lines = append(lines, str[start:])
 
 	return lines
 }

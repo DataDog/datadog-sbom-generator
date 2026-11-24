@@ -42,21 +42,62 @@ The expected result of FindAllStringSubmatchIndex is a [6]int, with the followin
 - index 4/5 represents version start/end
 */
 func ExtractPackageIndexes(pkgName, targetedVersion, content string) []int {
-	var versionRegex string
+	quotedName := `"` + pkgName + `"`
+	searchFrom := 0
+	for {
+		idx := strings.Index(content[searchFrom:], quotedName)
+		if idx < 0 {
+			return []int{}
+		}
+		blockStart := searchFrom + idx
+		nameStart := blockStart + 1
+		nameEnd := nameStart + len(pkgName)
+		pos := nameEnd + 1 // byte after closing '"'
 
-	if len(targetedVersion) == 0 {
-		versionRegex = ".*"
-	} else {
-		versionRegex = cachedregexp.QuoteMeta(targetedVersion)
+		for pos < len(content) && isASCIIWhitespace(content[pos]) {
+			pos++
+		}
+		if pos >= len(content) || content[pos] != ':' {
+			searchFrom = blockStart + 1
+			continue
+		}
+		pos++ // skip ':'
+		for pos < len(content) && isASCIIWhitespace(content[pos]) {
+			pos++
+		}
+		if pos >= len(content) || content[pos] != '"' {
+			searchFrom = blockStart + 1
+			continue
+		}
+		versionStart := pos + 1
+
+		if len(targetedVersion) > 0 {
+			versionEnd := versionStart + len(targetedVersion)
+			if versionEnd < len(content) && content[versionStart:versionEnd] == targetedVersion && content[versionEnd] == '"' {
+				return []int{blockStart, versionEnd + 1, nameStart, nameEnd, versionStart, versionEnd}
+			}
+			searchFrom = blockStart + 1
+			continue
+		}
+
+		// No targetedVersion: match greedily up to the last '"' on the same line (equivalent to .*" in Go regexp).
+		lineEnd := strings.IndexByte(content[versionStart:], '\n')
+		var lineSlice string
+		if lineEnd < 0 {
+			lineSlice = content[versionStart:]
+		} else {
+			lineSlice = content[versionStart : versionStart+lineEnd]
+		}
+		quoteIdx := strings.LastIndexByte(lineSlice, '"')
+		if quoteIdx >= 0 {
+			versionEnd := versionStart + quoteIdx
+
+			return []int{blockStart, versionEnd + 1, nameStart, nameEnd, versionStart, versionEnd}
+		}
+		searchFrom = blockStart + 1
 	}
-	pkgNameRegex := cachedregexp.QuoteMeta(pkgName)
+}
 
-	pkgMatcher := cachedregexp.MustCompile(`"(?P<pkgName>` + pkgNameRegex + `)\"\s*:\s*\"(?P<version>` + versionRegex + `)"`)
-	result := pkgMatcher.FindAllStringSubmatchIndex(content, -1)
-
-	if len(result) == 0 || len(result[0]) < 6 {
-		return []int{}
-	}
-
-	return result[0]
+func isASCIIWhitespace(b byte) bool {
+	return b == ' ' || b == '\t' || b == '\n' || b == '\r' || b == '\f'
 }

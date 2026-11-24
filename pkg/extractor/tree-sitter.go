@@ -4,10 +4,39 @@ import (
 	"errors"
 	"io"
 	"strings"
+	"sync"
 
 	treesitter "github.com/tree-sitter/go-tree-sitter"
 	ruby "github.com/tree-sitter/tree-sitter-ruby/bindings/go"
 )
+
+type queryCacheKey struct {
+	language *treesitter.Language
+	query    string
+}
+
+var compiledQueryCache sync.Map // map[queryCacheKey]*treesitter.Query
+
+func getCompiledQuery(language *treesitter.Language, queryString string) (*treesitter.Query, error) {
+	key := queryCacheKey{language: language, query: queryString}
+	if cached, ok := compiledQueryCache.Load(key); ok {
+		return cached.(*treesitter.Query), nil
+	}
+
+	query, err := treesitter.NewQuery(language, queryString)
+	if err != nil {
+		return nil, err
+	}
+
+	actual, loaded := compiledQueryCache.LoadOrStore(key, query)
+	if loaded {
+		query.Close()
+
+		return actual.(*treesitter.Query), nil
+	}
+
+	return query, nil
+}
 
 var Ruby = treesitter.NewLanguage(ruby.Language())
 
@@ -126,11 +155,10 @@ type Node struct {
 }
 
 func (n Node) Query(queryString string, onMatch func(match *MatchResult) error) error {
-	query, err := treesitter.NewQuery(n.Ctx.language, queryString)
+	query, err := getCompiledQuery(n.Ctx.language, queryString)
 	if err != nil {
 		return err
 	}
-	defer query.Close()
 
 	queryCursor := treesitter.NewQueryCursor()
 	defer queryCursor.Close()
