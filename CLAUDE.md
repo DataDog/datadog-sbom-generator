@@ -65,7 +65,7 @@ Extractors self-register via `init()` calling `lockfile.RegisterExtractor()`. Th
    - `lockfile.go` - `ParsedFilePath` constant for the lockfile name
    - `package_manager.go` - `PackageManager` constant + entry in `PackageManagerToLanguage`
    - `ecosystem.go` - `Ecosystem` constant if new ecosystem
-3. Add blank import in `pkg/extractor/parsers/parsers.go`
+3. Add blank import in `pkg/extractor/parsers/parsers.go` and in `pkg/scanner/datadog_sbom_generator.go` (the CLI only registers the extractors imported there)
 4. Add test fixtures in `pkg/extractor/fixtures/`
 
 Reference implementation: `pkg/extractor/rust/` (simple, clean, has both extractor and matcher).
