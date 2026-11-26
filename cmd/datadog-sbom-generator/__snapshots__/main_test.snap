@@ -16803,6 +16803,8 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 +------------+-----------------+----------------------------------+
 | LANGUAGE   | PACKAGE MANAGER | LOCKFILE PARSERS                 |
 +------------+-----------------+----------------------------------+
+|            | GitHubActions   | .github/workflows                |
+|            | GitHubActions   | action.yml                       |
 | .NET       | NuGet           | csproj                           |
 | .NET       | NuGet           | packages.lock.json               |
 | C++        | Conan           | conan.lock                       |

@@ -115,6 +115,8 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
+		".github/workflows",
+		"action.yml",
 		"BUILD.bazel",
 		"bun.lock",
 		"Cargo.lock",
@@ -273,6 +275,8 @@ func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
 
 func filesToParsers() map[string]string {
 	return map[string]string{
+		".github/workflows/ci.yml":         ".github/workflows",
+		"action.yml":                       "action.yml",
 		"BUILD.bazel":                      "BUILD.bazel",
 		"buildscript-gradle.lockfile":      "gradle.lockfile",
 		"bun.lock":                         "bun.lock",

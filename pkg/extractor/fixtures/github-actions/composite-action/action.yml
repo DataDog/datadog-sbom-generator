@@ -1,0 +1,10 @@
+name: Setup
+description: Composite action
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+    - uses: ./local-action
+    - run: npm ci
+      shell: bash
+    - uses: aws-actions/configure-aws-credentials/subpath@v4
