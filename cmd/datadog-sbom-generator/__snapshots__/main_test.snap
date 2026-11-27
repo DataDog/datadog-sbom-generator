@@ -16827,6 +16827,8 @@ Warning: `scan` exists as both a subcommand of datadog-sbom-generator and as a f
 | Ruby       | Bundler         | Gemfile.lock                     |
 | Rust       | Crates          | Cargo.lock                       |
 | Swift      | SwiftPM         | Package.resolved                 |
+| YAML       | GitHubActions   | .github/workflows                |
+| YAML       | GitHubActions   | action.yml                       |
 +------------+-----------------+----------------------------------+
 
 ---

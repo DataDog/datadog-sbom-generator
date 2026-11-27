@@ -1,0 +1,13 @@
+on: push
+env:
+  "✅": &checkout actions/checkout@v4
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: *checkout
+  b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: *checkout
+      - uses: actions/setup-go@v5

@@ -115,6 +115,8 @@ func TestListExtractors(t *testing.T) {
 	t.Parallel()
 
 	expectedOrder := []string{
+		".github/workflows",
+		"action.yml",
 		"BUILD.bazel",
 		"bun.lock",
 		"Cargo.lock",
@@ -239,6 +241,11 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	expected = []string{"BUILD.bazel", "gradle.lockfile", "gradle/verification-metadata.xml", "maven_install.json", "pom.xml"}
 	assert.Equal(t, expected, result)
 
+	// Test case expand a language that is not a programming language
+	result = extractor.ExpandLanguagesAndPackageManagersToExtractors([]string{"yaml"})
+	expected = []string{".github/workflows", "action.yml"}
+	assert.Equal(t, expected, result)
+
 	// Test invalid language/parser names (should be still be passed - validation is not done here)
 	result = extractor.ExpandLanguagesAndPackageManagersToExtractors([]string{"invalid-language", "go"})
 	expected = []string{"go.mod", "invalid-language"}
@@ -273,6 +280,8 @@ func expectNumberOfParsersCalled(t *testing.T, numberOfParsersCalled int) {
 
 func filesToParsers() map[string]string {
 	return map[string]string{
+		".github/workflows/ci.yml":         ".github/workflows",
+		"action.yml":                       "action.yml",
 		"BUILD.bazel":                      "BUILD.bazel",
 		"buildscript-gradle.lockfile":      "gradle.lockfile",
 		"bun.lock":                         "bun.lock",

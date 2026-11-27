@@ -24,13 +24,16 @@ var EcosystemToPURLMapper = map[models.Ecosystem]string{
 	models.EcosystemHex:         packageurl.TypeHex,
 	models.EcosystemCRAN:        packageurl.TypeCran,
 	models.EcosystemSwiftURL:    packageurl.TypeSwift,
+	// packageurl-go has no constant yet: the type is proposed in package-url/purl-spec#243
+	models.EcosystemGitHubActions: "githubactions",
 }
 
 var ecosystemPURLExtractor = map[models.Ecosystem]ParameterExtractor{
-	models.EcosystemMaven:     FromMaven,
-	models.EcosystemGo:        FromGo,
-	models.EcosystemPackagist: FromComposer,
-	models.EcosystemSwiftURL:  FromSwift,
+	models.EcosystemMaven:         FromMaven,
+	models.EcosystemGo:            FromGo,
+	models.EcosystemPackagist:     FromComposer,
+	models.EcosystemSwiftURL:      FromSwift,
+	models.EcosystemGitHubActions: FromGitHubActions,
 }
 
 func From(packageInfo models.PackageInfo) (*packageurl.PackageURL, error) {

@@ -38,18 +38,19 @@ datadog-sbom-generator scan --help
 
 This tool sources all dependencies by parsing package manager files. As new package managers appears everyday, we do not support all of them. Here's a list of supported package managers:
 
-| Language   | Package Manager                           |
-| ---------- | ----------------------------------------- |
-| .NET       | Nuget                                     |
-| C++        | Conan                                     |
-| Go         | Golang                                    |
-| Java       | Gradle, Maven, Bazel (rules_jvm_external) |
-| JavaScript | Bun, NPM, PNPM, Yarn, package.json        |
-| PHP        | Composer                                  |
-| Python     | Pdm, Pipenv, Poetry, Requirements, uv     |
-| Ruby       | Bundler                                   |
-| Rust       | Crates                                    |
-| Swift      | Swift Package Manager                     |
+| Language       | Package Manager                           |
+| -------------- | ----------------------------------------- |
+| .NET           | Nuget                                     |
+| C++            | Conan                                     |
+| GitHub Actions | Workflows, composite actions              |
+| Go             | Golang                                    |
+| Java           | Gradle, Maven, Bazel (rules_jvm_external) |
+| JavaScript     | Bun, NPM, PNPM, Yarn, package.json        |
+| PHP            | Composer                                  |
+| Python         | Pdm, Pipenv, Poetry, Requirements, uv     |
+| Ruby           | Bundler                                   |
+| Rust           | Crates                                    |
+| Swift          | Swift Package Manager                     |
 
 ## Limitations
 
@@ -179,6 +180,15 @@ NPM, Yarn and PNPM have workspace support
 - This tool only supports package information enrichment from `Package.swift`.
 - When Xcode writes the lockfile at `.swiftpm/configuration/Package.resolved`, `Package.swift` enrichment is not available because the manifest is two directory levels above the lockfile.
 - `IsDirect` is only set for packages declared with a URL in `Package.swift`. Registry-based dependencies (`.package(id: ...)`) are always reported as transitive.
+
+### GitHub Actions
+
+- This tool extracts the actions and reusable workflows referenced by `uses:` in `.github/workflows/*.yml`, `.github/workflow-templates/*.yml` and composite actions (`action.yml` / `action.yaml`).
+- Local actions and workflows (`./path`) and Docker images (`docker://`, `container`, `services`) are not reported.
+- `uses:` values containing `${{ }}` expressions are skipped with a warning: GitHub rejects them, and their value is unknown before the run.
+- The package name is `owner/repo` as written in the file (no case normalization), and the version is the ref after the `@`. A commit SHA is not resolved to a tag, and moving tags (`v4`) or branches (`main`) are reported as written.
+- Actions in a sub-directory of a repository (`github/codeql-action/init`) are reported as the repository (`github/codeql-action`).
+- Actions used by remote composite actions or reusable workflows are not reported: only the files present in the scanned repository are read.
 
 ## Using as a Go library
 

@@ -13,6 +13,7 @@ import (
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/dart"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/dotnet"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/elixir"
+	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/githubactions"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/golang"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/java"
 	_ "github.com/DataDog/datadog-sbom-generator/pkg/extractor/javascript"

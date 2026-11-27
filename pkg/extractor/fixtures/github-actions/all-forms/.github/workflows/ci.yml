@@ -1,0 +1,24 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:20
+    services:
+      redis:
+        image: redis:7
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - name: Pinned
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      - uses: github/codeql-action/init@v3
+      - uses: "actions/cache@v4"
+      - uses: 'docker/build-push-action@main'
+      - uses: ./.github/actions/local
+      - uses: docker://alpine:3.20
+      - run: 'echo "uses: not/an-action@v1"'
+      - uses: actions/checkout@v4.1.1
+  call:
+    uses: octo-org/shared/.github/workflows/build.yml@v2
+  local-call:
+    uses: ./.github/workflows/local.yml
