@@ -241,6 +241,11 @@ func TestExpandLanguagesAndPackageManagersToExtractors(t *testing.T) {
 	expected = []string{"BUILD.bazel", "gradle.lockfile", "gradle/verification-metadata.xml", "maven_install.json", "pom.xml"}
 	assert.Equal(t, expected, result)
 
+	// Test case expand a language that is not a programming language
+	result = extractor.ExpandLanguagesAndPackageManagersToExtractors([]string{"yaml"})
+	expected = []string{".github/workflows", "action.yml"}
+	assert.Equal(t, expected, result)
+
 	// Test invalid language/parser names (should be still be passed - validation is not done here)
 	result = extractor.ExpandLanguagesAndPackageManagersToExtractors([]string{"invalid-language", "go"})
 	expected = []string{"go.mod", "invalid-language"}
