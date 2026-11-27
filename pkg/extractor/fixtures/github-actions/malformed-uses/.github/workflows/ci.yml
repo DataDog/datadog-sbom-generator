@@ -8,4 +8,6 @@ jobs:
       - uses: actions/checkout@
       - uses:
           nested: mapping
+      - uses: actions/checkout@${{ inputs.ref }}
+      - uses: ${{ matrix.action }}
       - uses: actions/setup-python@v5

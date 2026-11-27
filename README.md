@@ -185,6 +185,7 @@ NPM, Yarn and PNPM have workspace support
 
 - This tool extracts the actions and reusable workflows referenced by `uses:` in `.github/workflows/*.yml`, `.github/workflow-templates/*.yml` and composite actions (`action.yml` / `action.yaml`).
 - Local actions and workflows (`./path`) and Docker images (`docker://`, `container`, `services`) are not reported.
+- `uses:` values containing `${{ }}` expressions are skipped with a warning: GitHub rejects them, and their value is unknown before the run.
 - The package name is `owner/repo` as written in the file (no case normalization), and the version is the ref after the `@`. A commit SHA is not resolved to a tag, and moving tags (`v4`) or branches (`main`) are reported as written.
 - Actions in a sub-directory of a repository (`github/codeql-action/init`) are reported as the repository (`github/codeql-action`).
 - Actions used by remote composite actions or reusable workflows are not reported: only the files present in the scanned repository are read.

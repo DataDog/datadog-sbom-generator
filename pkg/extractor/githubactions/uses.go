@@ -27,7 +27,10 @@ type actionReference struct {
 	ref string
 }
 
-var errMalformedUses = errors.New("malformed uses value")
+var (
+	errMalformedUses  = errors.New("malformed uses value")
+	errUsesExpression = errors.New("expressions are not supported in uses values")
+)
 
 // parseUsesValue parses the value of a `uses:` key. It supports the forms
 //
@@ -37,8 +40,13 @@ var errMalformedUses = errors.New("malformed uses value")
 //
 // and returns (_, false, nil) for references that are not remote repositories: local actions or
 // workflows ("./path") and docker images ("docker://image"). Values that look like a remote reference
-// but cannot be resolved by GitHub (no ref, no repo, several "@") return errMalformedUses.
+// but cannot be resolved by GitHub (no ref, no repo, several "@") return errMalformedUses. GitHub rejects
+// workflows with `${{ }}` expressions in `uses`, and their value is unknown: they return errUsesExpression.
 func parseUsesValue(value string) (actionReference, bool, error) {
+	if strings.Contains(value, "${{") {
+		return actionReference{}, false, errUsesExpression
+	}
+
 	if strings.HasPrefix(value, "docker://") || strings.HasPrefix(value, ".") {
 		return actionReference{}, false, nil
 	}
